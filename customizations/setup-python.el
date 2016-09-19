@@ -4,13 +4,13 @@
 (add-hook 'python-mode-hook 'flycheck-mode)
 (setq py-indent-level 4)
 
-(add-hook
- 'python-mode
- (lambda ()
-   ;; Make sure `ac-source-chunk-list' comes first.
-   (setq ac-sources (append '(ac-source-chunk-list) ac-sources))
-   (setq ac-chunk-list
-         '("os.path.abspath" "os.path.altsep" "os.path.basename"))))
+;; (add-hook
+;;  'python-mode
+;;  (lambda ()
+;;    ;; Make sure `ac-source-chunk-list' comes first.
+;;    (setq ac-sources (append '(ac-source-chunk-list) ac-sources))
+;;    (setq ac-chunk-list
+;;          '("os.path.abspath" "os.path.altsep" "os.path.basename"))))
 
 ;; switch to the interpreter after executing code
 (setq py-shell-switch-buffers-on-execute-p t)

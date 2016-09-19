@@ -8,9 +8,11 @@
 (require 'auto-complete-clang)
 
 (setq-default ac-sources '(ac-source-abbrev ac-source-dictionary ac-source-words-in-same-mode-buffers ac-source-clang))
-
 ;; defun xwl-c-mode-common-hook ()
 ;;   (setq ac-sources (cons 'ac-source-clang ac-sources)))
 
 (add-hook 'c-mode-common-hook 'xwl-c-mode-common-hook)
 (global-auto-complete-mode t)
+
+;; Fix bugs with layout of AC choices
+(setq popup-use-optimized-column-computation nil)

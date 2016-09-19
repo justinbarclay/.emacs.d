@@ -1,5 +1,5 @@
 ;;;;
-;; Packages
+;; PackageS
 ;;;;
 (require 'package)
 ;; Define package repositories
@@ -10,9 +10,9 @@
 ;; (add-to-list 'package-archives
 ;;              '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
-(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                          ("marmalade" . "http://marmalade-repo.org/packages/")
-                          ("melpa" . "http://melpa.milkbox.net/packages/")))
+(setq package-archives '(("tromey" . "http://tromey.com/elpa/")
+			 ("marmalade" . "http://marmalade-repo.org/packages/")
+			 ("melpa" . "http://stable.melpa.org/packages/")))
 
 ;; Load and activate emacs packages. Do this first so that the
 ;; packages are loaded before you start trying to modify them.
@@ -68,7 +68,11 @@
     multiple-cursors
 
     ;; auto-complete for easy auto-completeing for languages
-    auto-complete
+    ;; auto-complete
+   ;;  ycmd
+    company
+    company-irony
+   ;; company-ycmd
 
     ;; add syntax checking
     flycheck
@@ -149,8 +153,9 @@
 ;; Hard-to-categorize customizations
 (load "misc.el")
 
-(load "AC-Config.el")
-
+;; Setup for auto complete
+;;  (load "AC-Config.el")
+(load "company-config.el")
 ;; For editing lisps
 (load "elisp-editing.el")
 
@@ -194,7 +199,7 @@
  '(magit-diff-use-overlays nil)
  '(package-selected-packages
    (quote
-    (auto-complete-clang tagedit smex rainbow-delimiters projectile paredit multiple-cursors monokai-theme monochrome-theme material-theme majapahit-theme magit look-dired jedi ido-ubiquitous flycheck fill-column-indicator exec-path-from-shell cparen company clojure-mode-extra-font-locking cider auto-package-update auto-complete-chunk auto-complete-c-headers achievements ac-python ac-c-headers)))
+    (company-anaconda ycmd auto-complete-clang tagedit smex rainbow-delimiters projectile paredit multiple-cursors monokai-theme monochrome-theme material-theme majapahit-theme magit look-dired jedi ido-ubiquitous flycheck fill-column-indicator exec-path-from-shell cparen company clojure-mode-extra-font-locking cider auto-package-update auto-complete-chunk auto-complete-c-headers achievements ac-python ac-c-headers)))
  '(pos-tip-background-color "#A6E22E")
  '(pos-tip-foreground-color "#272822")
  '(vc-annotate-background nil)
