@@ -1,3 +1,5 @@
+
+
 ;;;;
 ;; PackageS
 ;;;;
@@ -12,7 +14,7 @@
 
 (setq package-archives '(("tromey" . "http://tromey.com/elpa/")
 			 ("marmalade" . "http://marmalade-repo.org/packages/")
-			 ("melpa" . "http://stable.melpa.org/packages/")))
+			 ("melpa" . "https://melpa.org/packages/")))
 
 ;; Load and activate emacs packages. Do this first so that the
 ;; packages are loaded before you start trying to modify them.
@@ -69,13 +71,15 @@
 
     ;; auto-complete for easy auto-completeing for languages
     ;; auto-complete
-   ;;  ycmd
     company
-    company-irony
-   ;; company-ycmd
-
+    ;; company-irony
+    company-quickhelp
+    ycmd
+    company-ycmd
+    
     ;; add syntax checking
     flycheck
+    ;; flycheck-ycmd
 
     ;; visibile max line length
     fill-column-indicator
@@ -84,7 +88,14 @@
     magit
     
     ;; C++ Auto Complete Support
-    auto-complete-clang
+    ;; auto-complete-clang
+    ;; Powerline and themes
+    powerline
+    airline-themes
+    ;; Eval and replace
+
+    ;; Start up profiler
+    esup
     ))
 
 ;; On OS X, an Emacs instance started from the graphical user
@@ -158,16 +169,18 @@
 (load "company-config.el")
 ;; For editing lisps
 (load "elisp-editing.el")
+;; Auto-complete backend
+(load "ycmd-config.el")
 
 ;; Langauage-specific
 (load "setup-clojure.el")
 (load "setup-js.el")
 (load "setup-python.el")
 
-
 ;; Enable FCI as a global minor mode
 (define-globalized-minor-mode global-fci-mode fci-mode (lambda () (fci-mode 1)))
 (global-fci-mode 1)
+(global-flycheck-mode)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -177,12 +190,13 @@
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
  '(ansi-color-names-vector ["white" "#303030" "#b3b3b3" "#606060"])
+ '(blink-cursor-mode nil)
  '(coffee-tab-width 2)
  '(compilation-message-face (quote default))
  '(custom-enabled-themes (quote (material)))
  '(custom-safe-themes
    (quote
-    ("9e54a6ac0051987b4296e9276eecc5dfb67fdcd620191ee553f40a9b6d943e78" "3a53f98f4354d66ffaec1edce1bc54a3c622c8a73a583e90fde456b311b889f2" "341a1f149c8ab55893e5a065e96235e43ee9f82423f4c018bf31a430e1dc1b0f" "5b29f90eb304b440c908de31caf7d730db451b5909e8a84a2e7cd8d60f6d5c1f" "d4e9f95acd51433b776f1127143bbc7d0f1d41112d547e5b7a9a506be369dc39" "cab317d0125d7aab145bc7ee03a1e16804d5abdfa2aa8738198ac30dc5f7b569" "39dd7106e6387e0c45dfce8ed44351078f6acd29a345d8b22e7b8e54ac25bac4" "38ba6a938d67a452aeb1dada9d7cdeca4d9f18114e9fc8ed2b972573138d4664" default)))
+    ("946e871c780b159c4bb9f580537e5d2f7dba1411143194447604ecbaf01bd90c" "962dacd99e5a99801ca7257f25be7be0cebc333ad07be97efd6ff59755e6148f" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "9e54a6ac0051987b4296e9276eecc5dfb67fdcd620191ee553f40a9b6d943e78" "3a53f98f4354d66ffaec1edce1bc54a3c622c8a73a583e90fde456b311b889f2" "341a1f149c8ab55893e5a065e96235e43ee9f82423f4c018bf31a430e1dc1b0f" "5b29f90eb304b440c908de31caf7d730db451b5909e8a84a2e7cd8d60f6d5c1f" "d4e9f95acd51433b776f1127143bbc7d0f1d41112d547e5b7a9a506be369dc39" "cab317d0125d7aab145bc7ee03a1e16804d5abdfa2aa8738198ac30dc5f7b569" "39dd7106e6387e0c45dfce8ed44351078f6acd29a345d8b22e7b8e54ac25bac4" "38ba6a938d67a452aeb1dada9d7cdeca4d9f18114e9fc8ed2b972573138d4664" default)))
  '(fci-rule-color "#3E3D31")
  '(highlight-changes-colors (quote ("#FD5FF0" "#AE81FF")))
  '(highlight-tail-colors
@@ -197,11 +211,14 @@
      ("#3E3D31" . 100))))
  '(hl-sexp-background-color "#1c1f26")
  '(magit-diff-use-overlays nil)
+ '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (company-anaconda ycmd auto-complete-clang tagedit smex rainbow-delimiters projectile paredit multiple-cursors monokai-theme monochrome-theme material-theme majapahit-theme magit look-dired jedi ido-ubiquitous flycheck fill-column-indicator exec-path-from-shell cparen company clojure-mode-extra-font-locking cider auto-package-update auto-complete-chunk auto-complete-c-headers achievements ac-python ac-c-headers)))
+    (tron-theme company-anaconda ycmd auto-complete-clang tagedit smex rainbow-delimiters projectile paredit multiple-cursors monokai-theme monochrome-theme material-theme majapahit-theme magit look-dired jedi ido-ubiquitous flycheck fill-column-indicator exec-path-from-shell cparen company clojure-mode-extra-font-locking cider auto-package-update auto-complete-chunk auto-complete-c-headers achievements ac-python ac-c-headers)))
  '(pos-tip-background-color "#A6E22E")
  '(pos-tip-foreground-color "#272822")
+ '(show-paren-mode t)
+ '(tool-bar-mode nil)
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
    (quote

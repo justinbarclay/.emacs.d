@@ -73,3 +73,12 @@
 (setq fci-rule-color "black")
 (setq fci-rule-column 80)
 
+
+;;; Commentary
+;; Powerline and customizations
+(require 'powerline)
+(require 'airline-themes)
+(powerline-default-theme)
+(load-theme 'airline-badwolf t)
+(provide 'ui)
+;;; ui.el ends here
