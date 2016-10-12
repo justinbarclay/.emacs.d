@@ -26,10 +26,11 @@
 ;; for a more technical explanation.
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 (add-to-list 'load-path "~/.emacs.d/themes")
-(load-theme 'tomorrow-night-bright t)
+(load-theme 'ample t)
 
 ;; increase font size for better readability
-(set-face-attribute 'default nil :height 140)
+(set-face-attribute 'default nil 
+                    :family "Inconsolata" :height 180 :weight 'normal)
 
 ;; Uncomment the lines below by removing semicolons and play with the
 ;; values in order to set the width (in characters wide) and height
@@ -73,12 +74,10 @@
 (setq fci-rule-color "black")
 (setq fci-rule-column 80)
 
-
 ;;; Commentary
 ;; Powerline and customizations
 (require 'powerline)
 (require 'airline-themes)
-(powerline-default-theme)
-(load-theme 'airline-badwolf t)
+(load-theme 'airline-distinguished t)
 (provide 'ui)
 ;;; ui.el ends here
