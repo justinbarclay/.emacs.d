@@ -1,3 +1,4 @@
+
 ;; These customizations change the way emacs looks and disable/enable
 ;; some user interface elements. Some useful customizations are
 ;; commented out, and begin with the line "CUSTOMIZE". These are more
@@ -5,15 +6,15 @@
 ;; preferences
 
 ;; Turn off the menu bar at the top of each frame because it's distracting
-(menu-bar-mode -1)
+;;(menu-bar-mode 1)
 
 ;; Show line numbers
 (global-linum-mode)
 
 ;; You can uncomment this to remove the graphical toolbar at the top. After
 ;; awhile, you won't need the toolbar.
-;; (when (fboundp 'tool-bar-mode)
-;;   (tool-bar-mode -1))
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
 
 ;; Don't show native OS scroll bars for buffers because they're redundant
 (when (fboundp 'scroll-bar-mode)
@@ -77,7 +78,11 @@
 ;;; Commentary
 ;; Powerline and customizations
 (require 'powerline)
-(require 'airline-themes)
-(load-theme 'airline-distinguished t)
+(powerline-center-theme)
+;;(require 'airline-themes)
+;; These two lines are just examples
+(setq powerline-arrow-shape 'curve)
+(setq powerline-default-separator-dir '(right . left))
+;; ;; These two lines you really need.
 (provide 'ui)
 ;;; ui.el ends here

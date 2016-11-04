@@ -1,11 +1,27 @@
 ;;;;
 ;; Packages
 ;;;;
+;; This sets the garbage collection threshold to 100mb
+(setq gc-cons-threshold 100000000)
+;; Reset garbage collection to emacs default after 5s
+(run-with-idle-timer
+ 5 nil
+ (lambda ()
+   (setq gc-cons-threshold 1000000)
+  (message "gc-cons-threshold restored to %S"
+            gc-cons-threshold)))
 (require 'package)
-(setq package-archives '(("tromey" . "http://tromey.com/elpa/")
-			 ("marmalade" . "http://marmalade-repo.org/packages/")
-			 ("melpa" . "https://melpa.org/packages/")))
-
+;;(setq package-archives '(("gnu" . "httpss://elpa.gnu.org/packages/")
+;;			 ("tromey" . "https://tromey.com/elpa/")
+;;			 ("marmalade" . "https://marmalade-repo.org/packages/")
+;;			 ("melpa" . "http://melpa.org/packages/")))
+;; Define package repositories
+(add-to-list 'package-archives
+             '("marmalade" . "http://marmalade-repo.org/packages/") t)
+(add-to-list 'package-archives
+             '("tromey" . "http://tromey.com/elpa/") t)
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.org/packages/") t)
 ;; Load and activate emacs packages. Do this first so that the
 ;; packages are loaded before you start trying to modify them.
 ;; This also sets the load path.
@@ -56,7 +72,7 @@
     ;; edit html tags like sexps
     tagedit
 
-    ;; multiple cursos
+    ;; multiple cursors
     multiple-cursors
 
     ;; auto-complete for easy auto-completeing for languages
@@ -69,7 +85,7 @@
     
     ;; add syntax checking
     flycheck
-    ;; flycheck-ycmd
+    flycheck-ycmd
 
     ;; visibile max line length
     fill-column-indicator
@@ -77,13 +93,12 @@
     ;; git integration
     magit
     
-    ;; C++ Auto Complete Support
-    ;; auto-complete-clang
     ;; Powerline and themes
     powerline
     airline-themes
+    ample-theme
     ;; Eval and replace
-
+    
     ;; Start up profiler
     esup
     ))
@@ -117,7 +132,6 @@
 ;; a .yml file
 (add-to-list 'load-path "~/.emacs.d/vendor")
 
-
 ;;;;
 ;; Customization
 ;;;;
@@ -129,11 +143,13 @@
 (setq-default c-basic-offset 4)
 ;; Starting conditions for Emacs
 ;; Setting Emacs to take focus over terminal
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
-(x-focus-frame nil)
-;;
-;; Add a directory to our load path so that when you `load` things
-;; below, Emacs knows where to look for the corresponding file.
+(when (display-graphic-p)
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+    (x-focus-frame nil))
+  ;;
+  ;; Add a directory to our load path so that when you `load` things
+  ;; below, Emacs knows where to look for the corresponding file.
+
 (add-to-list 'load-path "~/.emacs.d/customizations")
 
 ;; Sets up exec-path-from-shell so that Emacs will use the correct
@@ -144,25 +160,25 @@
 ;; switch buffers, and choose options from the minibuffer.
 (load "navigation.el")
 
-;; These customizations change the way emacs looks and disable/enable
-;; some user interface elements
+;; ;; These customizations change the way emacs looks and disable/enable
+;; ;; some user interface elements
 (load "ui.el")
 
-;; These customizations make editing a bit nicer.
+;; ;; These customizations make editing a bit nicer.
 (load "editing.el")
 
-;; Hard-to-categorize customizations
+;; ;; Hard-to-categorize customizations
 (load "misc.el")
 
-;; Setup for auto complete
-;;  (load "AC-Config.el")
+;; ;; Setup for auto complete
 (load "company-config.el")
-;; For editing lisps
+;; ;; For editing lisps
 (load "elisp-editing.el")
-;; Auto-complete backend
+;; ;; Auto-complete backend
 (load "ycmd-config.el")
 
-;; Langauage-specific
+;; ;; Langauage-specific
+(load "setup-c++.el")
 (load "setup-clojure.el")
 (load "setup-js.el")
 (load "setup-python.el")
@@ -170,21 +186,16 @@
 ;; Enable FCI as a global minor mode
 (define-globalized-minor-mode global-fci-mode fci-mode (lambda () (fci-mode 1)))
 (global-fci-mode 1)
-(global-flycheck-mode)
-
+;;(global-flycheck-mode)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(blink-cursor-mode nil)
  '(coffee-tab-width 2)
- '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (tron-theme tagedit solarized-theme smex rainbow-delimiters projectile paredit multiple-cursors monokai-theme monochrome-theme material-theme majapahit-theme magit look-dired jedi ido-ubiquitous flycheck-ycmd fill-column-indicator exec-path-from-shell esup cparen company-ycmd company-quickhelp company-irony clojure-mode-extra-font-locking cider auto-package-update auto-complete-clang auto-complete-chunk auto-complete-c-headers ample-theme airline-themes achievements ac-python ac-c-headers)))
- '(show-paren-mode t)
- '(tool-bar-mode nil))
+    (tagedit smex rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous flycheck-ycmd fill-column-indicator exec-path-from-shell esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

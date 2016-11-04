@@ -24,3 +24,6 @@
              (current-buffer))
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
+
+(global-unset-key (kbd "C-x C-e"))
+(global-set-key (kbd "C-x C-e") 'eval-and-replace)
