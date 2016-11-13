@@ -82,7 +82,7 @@
     company-quickhelp
     ycmd
     company-ycmd
-    
+
     ;; add syntax checking
     flycheck
     flycheck-ycmd
@@ -97,10 +97,10 @@
     powerline
     airline-themes
     ample-theme
-    ;; Eval and replace
-    
+       
     ;; Start up profiler
     esup
+    use-package
     ))
 
 ;; On OS X, an Emacs instance started from the graphical user
@@ -174,7 +174,7 @@
 (load "company-config.el")
 ;; ;; For editing lisps
 (load "elisp-editing.el")
-;; ;; Auto-complete backend
+;; ;; Auto-complete backend for python, javascript, C, C++, GO, Rust
 (load "ycmd-config.el")
 
 ;; ;; Langauage-specific
@@ -193,9 +193,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(coffee-tab-width 2)
+ '(eclim-eclipse-dirs (quote ("/Applications/Eclipse.app/Contents/Eclipse")))
  '(package-selected-packages
    (quote
-    (tagedit smex rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous flycheck-ycmd fill-column-indicator exec-path-from-shell esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
+    (gradle-mode tagedit smex rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous flycheck-ycmd fill-column-indicator exec-path-from-shell esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

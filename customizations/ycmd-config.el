@@ -1,6 +1,6 @@
 (require 'ycmd)
 
-(set-variable 'ycmd-server-command '("python" "/Users/Justin/ycmd/ycmd"))
+(set-variable 'ycmd-server-command '("/Users/Justin/.pyenv/shims/python" "/Users/Justin/ycmd/ycmd"))
 
 ;;(require 'flycheck-ycmd)
 ;;(flycheck-ycmd-setup)
@@ -13,5 +13,6 @@
 
 (require 'company-ycmd)
 (company-ycmd-setup)
+
 
 (set-variable 'ycmd-extra-conf-whitelist '("~/*"))
