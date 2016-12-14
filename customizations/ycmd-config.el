@@ -2,8 +2,8 @@
 
 (set-variable 'ycmd-server-command '("/Users/Justin/.pyenv/shims/python" "/Users/Justin/ycmd/ycmd"))
 
-;;(require 'flycheck-ycmd)
-;;(flycheck-ycmd-setup)
+(require 'flycheck-ycmd)
+(flycheck-ycmd-setup)
 
 ;; In some cases you may see that company and flycheck interfere with one another.
 ;; You can end up with strange completion artifacts in your buffers.

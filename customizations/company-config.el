@@ -7,12 +7,16 @@
 (eval-after-load 'company
   '(define-key company-active-map (kbd "M-h") #'company-quickhelp-manual-begin))
 
+(eval-after-load 'company
+  '(push 'company-robe company-backends))
+
 (setq company-frontends
       '(company-pseudo-tooltip-unless-just-one-frontend
         company-preview-frontend
         company-echo-metadata-frontend))
 
 (setq company-auto-complete t)
+
 ;; (require 'company-ycmd)
 
 ;; (company-ycmd-setup)
