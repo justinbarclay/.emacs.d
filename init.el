@@ -21,7 +21,7 @@
 (add-to-list 'package-archives
              '("tromey" . "http://tromey.com/elpa/") t)
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/") t)
+             '("melpa" . "http://melpa.org/packages/"))
 ;; Load and activate emacs packages. Do this first so that the
 ;; packages are loaded before you start trying to modify them.
 ;; This also sets the load path.
@@ -76,9 +76,7 @@
     multiple-cursors
 
     ;; auto-complete for easy auto-completeing for languages
-    ;; auto-complete
     company
-    ;; company-irony
     company-quickhelp
     ycmd
     company-ycmd
@@ -100,7 +98,13 @@
        
     ;; Start up profiler
     esup
-    use-package
+
+    ;; Ruby specific packages
+    inf-ruby
+    robe
+    rbenv
+    smartparens
+    yard-mode
     ))
 
 ;; On OS X, an Emacs instance started from the graphical user
@@ -146,6 +150,8 @@
 (when (display-graphic-p)
     (add-to-list 'default-frame-alist '(fullscreen . maximized))
     (x-focus-frame nil))
+
+(setq org-latex-to-pdf-process '("texi2dvi --pdf --clean --verbose --batch %f"))
   ;;
   ;; Add a directory to our load path so that when you `load` things
   ;; below, Emacs knows where to look for the corresponding file.
@@ -182,24 +188,20 @@
 (load "setup-clojure.el")
 (load "setup-js.el")
 (load "setup-python.el")
+(load "setup-ruby.el")
 
-;; Enable FCI as a global minor mode
-(define-globalized-minor-mode global-fci-mode fci-mode (lambda () (fci-mode 1)))
-(global-fci-mode 1)
-;;(global-flycheck-mode)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(coffee-tab-width 2)
- '(eclim-eclipse-dirs (quote ("/Applications/Eclipse.app/Contents/Eclipse")))
- '(package-selected-packages
-   (quote
-    (gradle-mode tagedit smex rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous flycheck-ycmd fill-column-indicator exec-path-from-shell esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(coffee-tab-width 2)
+ '(package-selected-packages
+   (quote
+    (minimap exec-path-from-shell indent-guide yard-mode use-package tagedit smex smartparens robe rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous gradle-mode fontawesome flycheck-ycmd fill-column-indicator esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
