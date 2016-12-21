@@ -34,8 +34,8 @@
 
 (ome-ruby-mode-setup)
 
-(setq rbenv-installation-dir "/usr/local/rbenv")
-(rbenv-use-corresponding)
+;; (setq rbenv-installation-dir "/usr/local/rbenv")
+;; (rbenv-use-corresponding)
 
 (setq ruby-indent-level 4)
 

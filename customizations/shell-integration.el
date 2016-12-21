@@ -7,6 +7,16 @@
    '("PATH")))
 
 
+
+(when (memq system-type '(windows-nt))
+  (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
+  (setq shell-file-name "bash")
+  (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
+  (setenv "SHELL" shell-file-name)
+  (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)
+)
+
+
 (defun xah-run-current-file ()
   "Execute the current file.
 For example, if the current buffer is the file x.py, then it'll call 「python x.py」 in a shell.
