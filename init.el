@@ -126,6 +126,12 @@
     (package-install p)))
 
 
+;; Bootstrap `use-package'
+(unless (package-installed-p 'use-package)
+	(package-refresh-contents)
+	(package-install 'use-package))
+
+
 ;; Place downloaded elisp files in ~/.emacs.d/vendor. You'll then be able
 ;; to load them.
 ;;
