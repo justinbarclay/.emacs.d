@@ -108,6 +108,16 @@
     rbenv
     smartparens
     yard-mode
+
+    ;; Swift Packages
+    swift-mode
+    flycheck-swift
+    company-sourcekit
+
+    ;; Org-mode
+    calfw ;; Support for fancy Calendar
+    calfw-gcal ;; Support for Google Calendar
+    org-gcal ;; Support to Sync Google Calendar with org agenda
     ))
 
 ;; On OS X, an Emacs instance started from the graphical user
