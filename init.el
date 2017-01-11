@@ -225,6 +225,12 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(coffee-tab-width 2)
+ '(org-default-notes-file (concat org-directory "/notes.org"))
+ '(org-directory "~/Dropbox/orgfiles")
+ '(org-export-html-postamble nil)
+ '(org-hide-leading-stars t)
+ '(org-startup-folded (quote overview))
+ '(org-startup-indented t)
  '(package-selected-packages
    (quote
-    (minimap exec-path-from-shell indent-guide yard-mode use-package tagedit smex smartparens robe rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous gradle-mode fontawesome flycheck-ycmd fill-column-indicator esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
+    (yaml-mode minimap exec-path-from-shell indent-guide yard-mode use-package tagedit smex smartparens robe rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous gradle-mode fontawesome flycheck-ycmd fill-column-indicator esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
