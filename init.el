@@ -185,30 +185,34 @@
 ;; switch buffers, and choose options from the minibuffer.
 (load "navigation.el")
 
-;; ;; These customizations change the way emacs looks and disable/enable
-;; ;; some user interface elements
+;; These customizations change the way emacs looks and disable/enable
+;; some user interface elements
 (load "ui.el")
 
-;; ;; These customizations make editing a bit nicer.
+;; These customizations make editing a bit nicer.
 (load "editing.el")
 
-;; ;; Hard-to-categorize customizations
+;; Hard-to-categorize customizations
 (load "misc.el")
 
-;; ;; Setup for auto complete
+;; Setup for auto complete
 (load "company-config.el")
-;; ;; For editing lisps
-(load "elisp-editing.el")
-;; ;; Auto-complete backend for python, javascript, C, C++, GO, Rust
+;; For editing lisps
+(load "lisp-editing.el")
+
+;; Auto-complete backend for python, javascript, C, C++, GO, Rust
 (load "ycmd-config.el")
 
-;; ;; Langauage-specific
+;; Langauage-specific
 (load "setup-c++.el")
 (load "setup-clojure.el")
 (load "setup-js.el")
 (load "setup-python.el")
 (load "setup-ruby.el")
+(load "setup-swift.el")
 
+;; Load org-mode specific config
+(load "setup-org.el")
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
