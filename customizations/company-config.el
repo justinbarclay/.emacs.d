@@ -17,7 +17,10 @@
 
 (setq company-auto-complete t)
 
-;; (require 'company-ycmd)
+
+(global-set-key (kbd "<C-tab>") 'company-capf)
+;;(require 'company-ycmd)
+
 
 ;; (company-ycmd-setup)
 ;; (company-ycmd-enable-comprehensive-automatic-completion)
