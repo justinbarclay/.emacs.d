@@ -1,18 +1,20 @@
-;; Automatically load paredit when editing a lisp file
-;; More at http://www.emacswiki.org/emacs/ParEdit
-;; (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t)
-
-(use-package paredit
+(use-package parinfer
   :ensure t
-  :init (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t)
-  :config
-  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
-  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
-  (add-hook 'ielm-mode-hook             #'enable-paredit-mode)
-  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
-  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
-  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
-  )
+  :bind
+  (("C-," . parinfer-toggle-mode))
+  :init
+  (progn
+    (setq parinfer-extensions
+          '(defaults       ; should be included.
+            pretty-parens  ; different paren styles for different modes.
+            paredit        ; Introduce some paredit commands.
+            smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+            smart-yank))   ; Yank behavior depend on mode.
+    (add-hook 'clojure-mode-hook #'parinfer-mode)
+    (add-hook 'emacs-lisp-mode-hook #'parinfer-mode)
+    (add-hook 'common-lisp-mode-hook #'parinfer-mode)
+    (add-hook 'scheme-mode-hook #'parinfer-mode)
+    (add-hook 'lisp-mode-hook #'parinfer-mode)))
 
 ;; eldoc-mode shows documentation in the minibuffer when writing code
 ;; http://www.emacswiki.org/emacs/ElDoc
@@ -32,14 +34,18 @@
 (setq inferior-lisp-program (executable-find "sbcl"))
 
 (use-package slime
+  :ensure t
+  :init
+  (use-package slime-company
+    :ensure t)
   :config
   (setq slime-contribs '(slime-fancy
                          slime-autodoc
+                         slime-company
                          slime-highlight-edits))
   (add-hook 'lisp-mode-hook 'slime-mode)
   (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
                                          (let (old-window selected-window)
                                            (slime)
                                            (delete-other-windows old-window)
-                                           (window-buffer old-window)))))
-  )
+                                           (window-buffer old-window))))))

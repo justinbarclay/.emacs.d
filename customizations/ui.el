@@ -11,6 +11,26 @@
 ;; Show line numbers
 (global-linum-mode)
 
+;; Colour all brackets based on depth
+;; Currently allows two different bracket colours based level
+
+(use-package rainbow-delimiters
+  :ensure t
+  :config
+  (define-globalized-minor-mode global-rainbow-delimiter-mode rainbow-delimiters-mode
+    (lambda () (rainbow-delimiters-mode 1)))
+  (global-rainbow-delimiter-mode 1)
+  (defvar my-paren-dual-colors
+    '("hot pink" "dodger blue"))
+
+  (setq rainbow-delimiters-outermost-only-face-count 0)
+  (setq rainbow-delimiters-max-face-count 2)
+  
+  (set-face-foreground 'rainbow-delimiters-depth-1-face
+                       (elt my-paren-dual-colors 1))
+  (set-face-foreground 'rainbow-delimiters-depth-2-face
+                       (elt my-paren-dual-colors 0)))
+
 ;; You can uncomment this to remove the graphical toolbar at the top. After
 ;; awhile, you won't need the toolbar.
 (when (fboundp 'tool-bar-mode)
@@ -86,3 +106,4 @@
 ;; ;; These two lines you really need.
 (provide 'ui)
 ;;; ui.el ends here
+

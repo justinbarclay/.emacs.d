@@ -8,7 +8,7 @@
  5 nil
  (lambda ()
    (setq gc-cons-threshold 1000000)
-  (message "gc-cons-threshold restored to %S"
+   (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 (require 'package)
 ;;(setq package-archives '(("gnu" . "httpss://elpa.gnu.org/packages/")
@@ -98,7 +98,7 @@
     powerline
     airline-themes
     ample-theme
-       
+    
     ;; Start up profiler
     esup
 
@@ -120,6 +120,13 @@
     org-gcal ;; Support to Sync Google Calendar with org agenda
     ))
 
+
+
+;; Bootstrap `use-package'
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
 ;; On OS X, an Emacs instance started from the graphical user
 ;; interface will have a different environment than a shell in a
 ;; terminal window, because OS X does not run a shell during the
@@ -129,17 +136,13 @@
 ;; environment variables from the user's shell.
 ;; https://github.com/purcell/exec-path-from-shell
 (when (memq system-type '(darwin))
-    (add-to-list 'my-packages 'exec-path-from-shell))
+  (add-to-list 'my-packages 'exec-path-from-shell))
 
 (dolist (p my-packages)
   (when (not (package-installed-p p))
     (package-install p)))
 
 
-;; Bootstrap `use-package'
-(unless (package-installed-p 'use-package)
-	(package-refresh-contents)
-	(package-install 'use-package))
 
 
 ;; Place downloaded elisp files in ~/.emacs.d/vendor. You'll then be able
@@ -167,13 +170,13 @@
 ;; Starting conditions for Emacs
 ;; Setting Emacs to take focus over terminal
 (when (display-graphic-p)
-    (add-to-list 'default-frame-alist '(fullscreen . maximized))
-    (x-focus-frame nil))
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (x-focus-frame nil))
 
 (setq org-latex-to-pdf-process '("texi2dvi --pdf --clean --verbose --batch %f"))
-  ;;
-  ;; Add a directory to our load path so that when you `load` things
-  ;; below, Emacs knows where to look for the corresponding file.
+
+;; Add a directory to our load path so that when you `load` things
+;; below, Emacs knows where to look for the corresponding file.
 
 (add-to-list 'load-path "~/.emacs.d/customizations")
 
