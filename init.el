@@ -53,10 +53,13 @@
     ;; https://github.com/clojure-emacs/cider
     cider
 
+    ;; Setup for Lisp Development
+    slime-company
+    
     ;; allow ido usage in as many contexts as possible. see
     ;; customizations/navigation.el line 23 for a description
     ;; of ido
-    ido-ubiquitous
+    ;; ido-ubiquitous
 
     ;; Enhances M-x to allow easier execution of commands. Provides
     ;; a filterable list of possible commands in the minibuffer
