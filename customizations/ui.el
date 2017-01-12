@@ -1,4 +1,3 @@
-
 ;; These customizations change the way emacs looks and disable/enable
 ;; some user interface elements. Some useful customizations are
 ;; commented out, and begin with the line "CUSTOMIZE". These are more
@@ -15,21 +14,13 @@
 ;; Currently allows two different bracket colours based level
 
 (use-package rainbow-delimiters
-  :ensure t
-  :config
-  (define-globalized-minor-mode global-rainbow-delimiter-mode rainbow-delimiters-mode
-    (lambda () (rainbow-delimiters-mode 1)))
-  (global-rainbow-delimiter-mode 1)
-  (defvar my-paren-dual-colors
-    '("hot pink" "dodger blue"))
-
-  (setq rainbow-delimiters-outermost-only-face-count 0)
-  (setq rainbow-delimiters-max-face-count 2)
-  
-  (set-face-foreground 'rainbow-delimiters-depth-1-face
-                       (elt my-paren-dual-colors 1))
-  (set-face-foreground 'rainbow-delimiters-depth-2-face
-                       (elt my-paren-dual-colors 0)))
+  :ensure t 
+  :init
+  (list (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+        (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+        (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
+        (add-hook 'parinfer-mode-hook 'rainbow-delimiters-mode)
+        (add-hook 'java-mode 'rainbow-delimiters-mode)))
 
 ;; You can uncomment this to remove the graphical toolbar at the top. After
 ;; awhile, you won't need the toolbar.
@@ -39,7 +30,6 @@
 ;; Don't show native OS scroll bars for buffers because they're redundant
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
-
 ;; Color Themes
 ;; Read http://batsov.com/articles/2012/02/19/color-theming-in-emacs-reloaded/
 ;; for a great explanation of emacs color themes.
@@ -60,23 +50,23 @@
 
 ;; These settings relate to how emacs interacts with your operating system
 (setq ;; makes killing/yanking interact with the clipboard
-      x-select-enable-clipboard t
+ x-select-enable-clipboard t
 
-      ;; I'm actually not sure what this does but it's recommended?
-      x-select-enable-primary t
+ ;; I'm actually not sure what this does but it's recommended?
+ x-select-enable-primary t
 
-      ;; Save clipboard strings into kill ring before replacing them.
-      ;; When one selects something in another program to paste it into Emacs,
-      ;; but kills something in Emacs before actually pasting it,
-      ;; this selection is gone unless this variable is non-nil
-      save-interprogram-paste-before-kill t
+ ;; Save clipboard strings into kill ring before replacing them.
+ ;; When one selects something in another program to paste it into Emacs,
+ ;; but kills something in Emacs before actually pasting it,
+ ;; this selection is gone unless this variable is non-nil
+ save-interprogram-paste-before-kill t
 
-      ;; Shows all options when running apropos. For more info,
-      ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
-      apropos-do-all t
+ ;; Shows all options when running apropos. For more info,
+ ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
+ apropos-do-all t
 
-      ;; Mouse yank commands yank at point instead of at click.
-      mouse-yank-at-point t)
+ ;; Mouse yank commands yank at point instead of at click.
+ mouse-yank-at-point t)
 
 ;; No cursor blinking, it's distracting
 (blink-cursor-mode 0)
@@ -104,6 +94,5 @@
 (setq powerline-arrow-shape 'curve)
 (setq powerline-default-separator-dir '(right . left))
 ;; ;; These two lines you really need.
-(provide 'ui)
+;;(provide 'ui)
 ;;; ui.el ends here
-
