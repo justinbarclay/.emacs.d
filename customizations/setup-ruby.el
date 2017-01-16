@@ -17,6 +17,8 @@
 ;; The builtin ruby-mode in Emacs is quite simple, it just provides some simple 
 ;; functions for font-locking, indentation and code navigation.
 ;; Setup ruby-mode to auto load under any of these circumstances
+
+(add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
 (defun ome-ruby-mode-setup ()
   ;; Ah, this huge auto-mode-alist list comes from emacs prelude
   (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
@@ -30,8 +32,7 @@
   (add-to-list 'auto-mode-alist '("\\.thor\\'" . ruby-mode))
   (add-to-list 'auto-mode-alist '("Thorfile\\'" . ruby-mode))
   (add-to-list 'auto-mode-alist '("Vagrantfile\\'" . ruby-mode))
-  (add-to-list 'auto-mode-alist '("\\.jbuilder\\'" . ruby-mode))
-  )
+  (add-to-list 'auto-mode-alist '("\\.jbuilder\\'" . ruby-mode)))
 
 
 

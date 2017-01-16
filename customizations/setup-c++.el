@@ -1,4 +1,2 @@
-
-(add-hook 'c++-mode-hook 'ycmd-mode)
-;;(flycheck-add-next-checker 'c/c++-clang)
-
+(add-hook 'c-mode-hook 'ycmd-mode)
+(add-hook 'c-mode-hook 'flycheckb)

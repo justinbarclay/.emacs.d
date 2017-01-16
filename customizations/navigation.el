@@ -34,6 +34,11 @@
   (progn
     (ivy-mode 1)
     (setq ivy-use-virtual-buffers t)
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-initial-inputs-alist nil)
+    (setq ivy-re-builders-alist
+          '((ivy-switch-buffer . ivy--regex-plus)
+            (t . ivy--regex-fuzzy)))
     (global-set-key "\C-s" 'swiper)
     (global-set-key (kbd "C-c C-r") 'ivy-resume)
     (global-set-key (kbd "<f6>") 'ivy-resume)
@@ -56,6 +61,12 @@
 (use-package avy
   :ensure t
   :bind ("C-c s" . avy-goto-char))
+
 ;; projectile everywhere!
-(projectile-global-mode)
+(use-package projectile
+  :ensure t
+  :init (progn
+          (projectile-global-mode)
+          (setq projectile-completion-system 'ivy)
+          ))
 

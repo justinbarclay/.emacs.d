@@ -113,6 +113,7 @@
     swift-mode
     flycheck-swift
     company-sourcekit
+    
 
     ;; Org-mode
     calfw ;; Support for fancy Calendar
@@ -216,12 +217,17 @@
 
 ;; Load org-mode specific config
 (load "setup-org.el")
+
+(use-package gitter
+  :ensure t
+  :config
+  (setq gitter-token "da6457f05d130bb85e7f5499796f378ad5ddc3cb"))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- 
  '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
  '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
  '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
@@ -229,8 +235,7 @@
  '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
  '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
  '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
- '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
- )
+ '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1")))))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -245,4 +250,4 @@
  '(org-startup-indented t)
  '(package-selected-packages
    (quote
-    (yaml-mode minimap exec-path-from-shell indent-guide yard-mode use-package tagedit smex smartparens robe rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous gradle-mode fontawesome flycheck-ycmd fill-column-indicator esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
+    (web-mode gitter noflet org-present yaml-mode minimap exec-path-from-shell indent-guide yard-mode use-package tagedit smex smartparens robe rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous gradle-mode fontawesome flycheck-ycmd fill-column-indicator esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
