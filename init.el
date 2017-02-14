@@ -214,7 +214,7 @@
 (load "setup-python.el")
 (load "setup-ruby.el")
 (load "setup-swift.el")
-
+(load "setup-c.el")
 ;; Load org-mode specific config
 (load "setup-org.el")
 
@@ -250,4 +250,4 @@
  '(org-startup-indented t)
  '(package-selected-packages
    (quote
-    (web-mode gitter noflet org-present yaml-mode minimap exec-path-from-shell indent-guide yard-mode use-package tagedit smex smartparens robe rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous gradle-mode fontawesome flycheck-ycmd fill-column-indicator esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
+    (hungry-delete web-mode gitter noflet org-present yaml-mode minimap exec-path-from-shell indent-guide yard-mode use-package tagedit smex smartparens robe rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous gradle-mode fontawesome flycheck-ycmd fill-column-indicator esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))

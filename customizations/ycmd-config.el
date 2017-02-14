@@ -18,10 +18,10 @@
 
 (use-package flycheck-ycmd
   :ensure t
-  :init (flycheck-ycmd-setup)
-  (progn ((add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results)
-          (add-to-list 'flycheck-checkers 'ycmd))))
+  :init (flycheck-ycmd-setup))
 
+(add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results)
+(add-to-list 'flycheck-checkers 'ycmd)
 
 
 ;; Make sure the flycheck cache sees the parse results

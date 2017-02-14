@@ -41,8 +41,8 @@
   :config
   (setq slime-contribs '(slime-fancy
                          slime-autodoc
-                         slime-company
-                         slime-highlight-edits))
+                         slime-company))
+                       
   (add-hook 'lisp-mode-hook 'slime-mode)
   (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
                                          (let (old-window selected-window)

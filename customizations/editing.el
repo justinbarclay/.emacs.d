@@ -75,9 +75,14 @@
               (eval-after-load 'flycheck
                 '(custom-set-variables
                   '(flycheck-display-errors-function #'flycheck-pos-tip-error-messages))))))
-              
 
-;; Key bindings for multiple-cursors
+(use-package undo-tree
+  :ensure t
+  :init
+  (global-undo-tree-mode))
+
+  ;; Key bindings for multiple-cursors
+
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
