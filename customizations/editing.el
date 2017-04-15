@@ -61,7 +61,7 @@
 
 ;; fix weird os x kill error
 (defun ns-get-pasteboard ()
-  "Returns the value of the pasteboard, or nil for unsupported formats."
+  "Returns the value of the pasteboard, or nil for unsupported formats."h
   (condition-case nil
       (ns-get-selection-internal 'CLIPBOARD)
     (quit nil)))
@@ -69,16 +69,17 @@
 (setq electric-indent-mode nil)
 
 (use-package flycheck
-  :commands global-flycheck-mode
-  :init (global-flycheck-mode)
-  :config (progn
-            (setq flycheck-check-syntax-automatically '(save mode-enabled))
-            (setq flycheck-standard-error-navigation nil)
-            ;; flycheck errors on a tooltip (doesnt work on console)
-            (when (display-graphic-p (selected-frame))
-              (eval-after-load 'flycheck
-                '(custom-set-variables
-                  '(flycheck-display-errors-function #'flycheck-pos-tip-error-messages))))))
+  :ensure t
+  :init
+  (global-flycheck-mode)
+  :config
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (setq flycheck-standard-error-navigation nil)
+  (when 'display-graphic-p (selected-frame)
+                           (eval-after-load 'flycheck
+                             (flycheck-pos-tip-mode))))
+;; flycheck errors on a tooltip (doesnt work on console)
+
 
 (use-package undo-tree
   :ensure t
@@ -86,8 +87,12 @@
   (global-undo-tree-mode))
 
   ;; Key bindings for multiple-cursors
+(use-package multiple-cursors
+  :ensure t
+  :command (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+           (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+           (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+           (global-set-key (kbd "<s-mouse-1>") 'mc/add-cursor-on-click))
 
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-(global-set-key (kbd "<s-mouse-1>") 'mc/add-cursor-on-click)
+
+

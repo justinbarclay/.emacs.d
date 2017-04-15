@@ -27,7 +27,6 @@
 (require 'rust-mode)
 (require 'electric)
 (require 'eldoc)
-(require 'flycheck)
 (require 'flycheck-rust)
 
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))

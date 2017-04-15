@@ -215,6 +215,7 @@
 (load "setup-ruby.el")
 (load "setup-swift.el")
 (load "setup-c.el")
+(load "setup-rust.el")
 ;; Load org-mode specific config
 (load "setup-org.el")
 
@@ -222,6 +223,8 @@
   :ensure t
   :config
   (setq gitter-token "da6457f05d130bb85e7f5499796f378ad5ddc3cb"))
+
+(setq font-lock-maximum-decoration t)
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -250,4 +253,4 @@
  '(org-startup-indented t)
  '(package-selected-packages
    (quote
-    (hungry-delete web-mode gitter noflet org-present yaml-mode minimap exec-path-from-shell indent-guide yard-mode use-package tagedit smex smartparens robe rainbow-delimiters projectile paredit multiple-cursors magit ido-ubiquitous gradle-mode fontawesome flycheck-ycmd fill-column-indicator esup eclim company-ycmd company-quickhelp clojure-mode-extra-font-locking cider ample-theme airline-themes))))
+    (cyberpunk-theme yard-mode yaml-mode web-mode use-package undo-tree tagedit swift-mode smex smartparens slime-company robe rbenv rainbow-delimiters racer projectile parinfer paredit org-present org-gcal org-bullets noflet multiple-cursors magit ido-ubiquitous hungry-delete flycheck-ycmd flycheck-swift flycheck-rust flycheck-pos-tip fill-column-indicator exec-path-from-shell esup eclim counsel company-ycmd company-sourcekit company-quickhelp clojure-mode-extra-font-locking cider calfw-gcal calfw avy ample-theme airline-themes))))

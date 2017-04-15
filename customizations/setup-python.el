@@ -3,7 +3,7 @@
 (add-hook 'py-mode-hook 'subword-mode)
 (add-hook 'python-mode-hook 'flycheck-mode)
 (setq py-indent-level 4)
-
+(setq python-shell-interpreter "/Users/Justin/.pyenv/shims/python")
 ;; (add-hook
 ;;  'python-mode
 ;;  (lambda ()
