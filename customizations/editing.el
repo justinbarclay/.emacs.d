@@ -73,7 +73,7 @@
   :init
   (global-flycheck-mode)
   :config
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+;;  (setq flycheck-check-syntax-automatically '(save mode-enabled))
   (setq flycheck-standard-error-navigation nil)
   (when 'display-graphic-p (selected-frame)
                            (eval-after-load 'flycheck
@@ -89,10 +89,9 @@
   ;; Key bindings for multiple-cursors
 (use-package multiple-cursors
   :ensure t
-  :command (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-           (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-           (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-           (global-set-key (kbd "<s-mouse-1>") 'mc/add-cursor-on-click))
+  :commands (mc/mark-next-like-this mc/mark-previous-like-this mc/mark-all-like-this))
 
-
-
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+(global-set-key (kbd "<s-mouse-1>") 'mc/add-cursor-on-click)

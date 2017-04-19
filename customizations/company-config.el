@@ -1,5 +1,6 @@
 (use-package company
   :ensure t
+  :commands (global-company-mode)
   :config
   (progn
     (eval-after-load 'company
@@ -8,7 +9,6 @@
     (eval-after-load 'company
       '(push 'company-robe company-backends))
     (setq company-idle-delay 0.3)
-    (add-hook 'after-init-hook 'global-company-mode)  
     (setq company-frontends
           '(company-pseudo-tooltip-unless-just-one-frontend
             company-preview-frontend
@@ -18,5 +18,4 @@
     (setq company-tooltip-align-annotations t)
     (global-set-key (kbd "<C-tab>") 'company-capf)))
 
-
-
+(add-hook 'after-init-hook 'global-company-mode)
