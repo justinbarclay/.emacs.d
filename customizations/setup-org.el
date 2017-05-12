@@ -5,34 +5,37 @@
   :ensure t
   :init
   (progn
-    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+    (global-company-mode '(not org-mode))
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) 
+    (custom-set-variables
+     '(org-default-notes-file (concat org-directory "/notes.org"))
+     '(org-directory "~/Dropbox/orgfiles")
+     '(org-export-html-postamble nil)
+     '(org-hide-leading-stars t)
+     '(org-startup-folded (quote overview))
+     '(org-startup-indented t))
+    (global-set-key (kbd "C-c a") 'org-agenda)
+    (global-set-key (kbd "C-c c") 'org-capture)
+    :config
+    (setq org-startup-truncated nil)
+    (setq org-capture-templates
+          '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+             "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
+            ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
+             "* %? %^L %^g \n%T" :prepend )))
+    (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org")) 
+    
     ))
 
 (use-package org-eww)
 
-(custom-set-variables
- '(org-default-notes-file (concat org-directory "/notes.org"))
- '(org-directory "~/Dropbox/orgfiles")
- '(org-export-html-postamble nil)
- '(org-hide-leading-stars t)
- '(org-startup-folded (quote overview))
- '(org-startup-indented t))
 
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c c") 'org-capture)
+
+
 (require 'ox-odt)
 
 (use-package org-present
   :ensure t)
-
-(setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
-
-
-(setq org-capture-templates
-      '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
-         "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
-	("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
-         "* %? %^L %^g \n%T" :prepend )))
 
 
 (defadvice org-capture-finalize 

@@ -4,10 +4,6 @@
 ;; http://www.emacswiki.org/emacs/HippieExpand
 (global-set-key (kbd "M-/") 'hippie-expand)
 
-(use-package hungry-delete
-  :init (global-hungry-delete-mode))
-  
-
 (define-key global-map (kbd "RET") 'newline-and-indent)
 ;; Lisp-friendly hippie expand
 (setq hippie-expand-try-functions-list
@@ -22,13 +18,6 @@
 
 ;; Highlight current line
 (global-hl-line-mode 1)
-
-;; Interactive search key bindings. By default, C-s runs
-;; isearch-forward, so this swaps the bindings.
-;; (global-set-key (kbd "C-s") 'isearch-forward-regexp)
-;; (global-set-key (kbd "C-r") 'isearch-backward-regexp)
-;; (global-set-key (kbd "C-M-s") 'isearch-forward)
-;; (global-set-key (kbd "C-M-r") 'isearch-backward)
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
@@ -61,7 +50,7 @@
 
 ;; fix weird os x kill error
 (defun ns-get-pasteboard ()
-  "Returns the value of the pasteboard, or nil for unsupported formats."h
+  "Returns the value of the pasteboard, or nil for unsupported formats."
   (condition-case nil
       (ns-get-selection-internal 'CLIPBOARD)
     (quit nil)))
@@ -73,13 +62,23 @@
   :init
   (global-flycheck-mode)
   :config
-;;  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
   (setq flycheck-standard-error-navigation nil)
   (when 'display-graphic-p (selected-frame)
                            (eval-after-load 'flycheck
                              (flycheck-pos-tip-mode))))
 ;; flycheck errors on a tooltip (doesnt work on console)
 
+
+(use-package yasnippet
+  :ensure t
+  :config
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook #'yas-minor-mode))
+
+(use-package hungry-delete
+  :ensure t
+  :init (global-hungry-delete-mode))
 
 (use-package undo-tree
   :ensure t
@@ -89,9 +88,15 @@
   ;; Key bindings for multiple-cursors
 (use-package multiple-cursors
   :ensure t
+  :bind
+  (("C->" . mc/mark-next-like-this)
+  ("C-<" . mc/mark-previous-like-this)
+  ("C-c C-<" . mc/mark-all-like-this)
+  ("<s-mouse-1>" . mc/add-cursor-on-click))
   :commands (mc/mark-next-like-this mc/mark-previous-like-this mc/mark-all-like-this))
 
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-(global-set-key (kbd "<s-mouse-1>") 'mc/add-cursor-on-click)
+
+;; (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+;; (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+;; (global-set-key (kbd "<s-mouse-1>") 'mc/add-cursor-on-click)

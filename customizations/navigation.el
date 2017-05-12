@@ -17,7 +17,9 @@
 ;; recently edited files when you first start emacs
 
 (use-package recentf
-  :init (setq recentf-save-file (concat user-emacs-directory ".recentf"))
+  :ensure t
+  :init
+  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
   :config
   (recentf-mode 1)
   (setq recentf-max-menu-items 40))
@@ -67,6 +69,5 @@
   :ensure t
   :init (progn
           (projectile-global-mode)
-          (setq projectile-completion-system 'ivy)
-          ))
+          (setq projectile-completion-system 'ivy)))
 

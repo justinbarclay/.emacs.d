@@ -19,6 +19,7 @@
 ;; eldoc-mode shows documentation in the minibuffer when writing code
 ;; http://www.emacswiki.org/emacs/ElDoc
 (use-package eldoc
+  :ensure t
   :config
   (eldoc-add-command
      'paredit-backward-delete
