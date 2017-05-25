@@ -37,7 +37,7 @@
 ;; for a more technical explanation.
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 (add-to-list 'load-path "~/.emacs.d/themes")
-(load-theme 'ample t)
+(load-theme 'dracula t)
 
 ;; increase font size for better readability
 (set-face-attribute 'default nil
@@ -82,7 +82,7 @@
 
 ;; Style fil column indicator
 (setq fci-rule-width 2)
-(setq fci-rule-color "black")
+(setq fci-rule-color "green")
 (setq fci-rule-column 80)
 
 ;;; Commentary
@@ -93,6 +93,6 @@
 ;; These two lines are just examples
 (setq powerline-arrow-shape 'curve)
 (setq powerline-default-separator-dir '(right . left))
-;; ;; These two lines you really need.
-;;(provide 'ui)
+;; These two lines you really need.
+(provide 'ui)
 ;;; ui.el ends here

@@ -10,7 +10,7 @@
 (add-hook 'clojure-mode-hook 'subword-mode)
 
 ;; A little more syntax highlighting
-(use-package 'clojure-mode-extra-font-locking
+(use-package clojure-mode-extra-font-locking
   :ensure t)
 
 ;; syntax hilighting for midje

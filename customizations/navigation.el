@@ -36,7 +36,6 @@
   (progn
     (ivy-mode 1)
     (setq ivy-use-virtual-buffers t)
-    (setq ivy-use-virtual-buffers t)
     (setq ivy-initial-inputs-alist nil)
     (setq ivy-re-builders-alist
           '((ivy-switch-buffer . ivy--regex-plus)
@@ -70,4 +69,3 @@
   :init (progn
           (projectile-global-mode)
           (setq projectile-completion-system 'ivy)))
-
