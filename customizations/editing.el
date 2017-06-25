@@ -57,6 +57,9 @@
 
 (setq electric-indent-mode nil)
 
+(use-package flycheck-pos-tip
+  :ensure t
+  :defer t)
 (use-package flycheck
   :ensure t
   :init
@@ -65,8 +68,8 @@
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
   (setq flycheck-standard-error-navigation nil)
   (when 'display-graphic-p (selected-frame)
-                           (eval-after-load 'flycheck
-                             (flycheck-pos-tip-mode))))
+        (eval-after-load 'flycheck
+          (flycheck-pos-tip-mode))))
 ;; flycheck errors on a tooltip (doesnt work on console)
 
 

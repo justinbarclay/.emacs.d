@@ -20,3 +20,22 @@
             (setq coffee-cleanup-whitespace nil)))
 (custom-set-variables
  '(coffee-tab-width 2))
+
+
+(use-package rjsx-mode
+  :ensure t
+  :mode "\\.js$"
+  :config
+  (add-to-list 'auto-mode-alist '("components\\/.*\\.js\\'" . rjsx-mode))
+  (add-hook 'rjsx-mode 'indium-interaction-mode)
+  (add-hook 'rjsx-mode 'ycmd-mode))
+
+(use-package indium
+  :ensure t
+  :mode "\\.js$"
+  :config
+  (add-hook 'indium-update-script-source-hook
+        (lambda (url)
+          (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
+                               url))))
+  (indium-interaction-mode 1))

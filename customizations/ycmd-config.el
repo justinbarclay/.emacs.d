@@ -1,3 +1,10 @@
+(use-package flycheck-ycmd
+  :ensure t
+  :commands (global-flycheck-mode)
+  :init
+  (flycheck-ycmd-setup)
+  (add-to-list 'flycheck-checkers 'ycmd))
+
 (use-package ycmd
   :ensure t
   :commands (ycmd-mode)
@@ -23,12 +30,6 @@
   :config
   (company-ycmd-setup))
 
-(use-package flycheck-ycmd
-  :ensure t
-  :commands (global-flycheck-mode)
-  :init
-  (flycheck-ycmd-setup)
-  (add-to-list 'flycheck-checkers 'ycmd))
 ;; Make sure the flycheck cache sees the parse results
 
 ;; Add the ycmd checker to the list of available checkers
