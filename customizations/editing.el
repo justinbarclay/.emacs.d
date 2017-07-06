@@ -4,6 +4,7 @@
 ;; http://www.emacswiki.org/emacs/HippieExpand
 (global-set-key (kbd "M-/") 'hippie-expand)
 
+(set-default 'truncate-lines t)
 (define-key global-map (kbd "RET") 'newline-and-indent)
 ;; Lisp-friendly hippie expand
 (setq hippie-expand-try-functions-list

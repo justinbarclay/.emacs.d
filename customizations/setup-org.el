@@ -1,6 +1,8 @@
 ;; Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69cb9320811c5ec63409880eadd
 
-(require 'org)
+(use-package org
+  :init
+  (setq truncate-lines t))
 (use-package org-bullets
   :ensure t
   :init
@@ -66,7 +68,7 @@
   :ensure t
   :config
   (setq org-gcal-client-id "681014132158-pht7365idrlknvon718pb7cu6oerjcrc.apps.googleusercontent.com"
-        org-gcal-client-secret "BseYqKeFiL58XpkE8XlzpjY4"
+        org-gcal-client-secret ""
         org-gcal-file-alist '(("justincbarclay@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
 
 (add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync)))
