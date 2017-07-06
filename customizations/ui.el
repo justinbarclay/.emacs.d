@@ -8,8 +8,11 @@
 ;;(menu-bar-mode 1)
 
 ;; Show line numbers
-(global-linum-mode)
+(set-default 'display-line-numbers 'visual)
+(set-default 'display-line-numbers-current-absolute 1)
 
+(setq display-line-numbers (quote visual))
+;;(setq display-line-numbers-current-absolute nil)
 ;; Colour all brackets based on depth
 ;; Currently allows two different bracket colours based level
 
@@ -37,11 +40,14 @@
 ;; for a more technical explanation.
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 (add-to-list 'load-path "~/.emacs.d/themes")
-(load-theme 'dracula t)
 
+(use-package dracula-theme
+  :config
+  (load-theme 'dracula t))
+ 
 ;; increase font size for better readability
 (set-face-attribute 'default nil
-                    :family "Inconsolata" :height 180 :weight 'normal)
+                    :family "Inconsolata for Powerline" :height 180 :weight 'normal)
 
 ;; Uncomment the lines below by removing semicolons and play with the
 ;; values in order to set the width (in characters wide) and height
@@ -80,19 +86,59 @@
 ;; no bell
 (setq ring-bell-function 'ignore)
 
-;; Style fil column indicator
-(setq fci-rule-width 2)
-(setq fci-rule-color "green")
-(setq fci-rule-column 80)
+;; Style fill column indicator
+;; (setq fci-rule-width 2)
+;; (setq fci-rule-color "green")
+;; (setq fci-rule-column 80)
 
 ;;; Commentary
 ;; Powerline and customizations
 (require 'powerline)
 (powerline-center-theme)
-;;(require 'airline-themes)
-;; These two lines are just examples
-(setq powerline-arrow-shape 'curve)
-(setq powerline-default-separator-dir '(right . left))
-;; These two lines you really need.
+(setq powerline-default-separator 'wave)
+(use-package all-the-icons		
+  :ensure t)
+             
+(use-package spaceline
+  :ensure t
+  :config
+  (require 'spaceline-config))
+  ;; (spaceline-emacs-theme))
+
+(use-package spaceline-all-the-icons
+  :ensure t
+  :after spaceline
+  :config (spaceline-all-the-icons-theme)
+  (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
+                                                    :foreground "#f8f8f2"
+                                                    :inherit 'mode-line))))
+                  '(powerline-active2 ((t (:background "#44475a"
+                                            :foregound "#50fa7b"
+                                            :inherit 'mode-line))))
+                  '(mode-line ((t (:background "#282a36"
+                                            :foregound "#50fa7b"
+                                            :inherit 'mode-line))))
+                  '(powerline-active1 ((t (:background "#6272a4"
+                                            :foregound "#50fa7b"
+                                            :inherit 'mode-line)))))
+  (setq spaceline-all-the-icons-separator-type 'wave))
+  
+  
+
 (provide 'ui)
 ;;; ui.el ends here
+
+;;(:inherit 'mode-line :foreground "thistle4" :background "DarkOrchid4")
+
+;; (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
+;;                                                     :foreground "#f8f8f2"
+;;                                                     :inherit 'mode-line))))
+;;                   '(powerline-active2 ((t (:background "#44475a"
+;;                                             :foregound "#50fa7b"
+;;                                             :inherit 'mode-line))))
+;;                   '(mode-line ((t (:background "#282a36"
+;;                                             :foregound "#50fa7b"
+;;                                             :inherit 'mode-line))))
+;;                   '(powerline-active1 ((t (:background "#6272a4"
+;;                                             :foregound "#50fa7b"
+;;                                             :inherit 'mode-line)))))
