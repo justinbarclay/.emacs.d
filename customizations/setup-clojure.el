@@ -3,7 +3,7 @@
 ;;;;
 
 ;; Enable paredit for Clojure
-(add-hook 'clojure-mode-hook 'enable-paredit-mode)
+(add-hook 'clojure-mode-hook 'parinfer-mode-enable)
 
 ;; This is useful for working with camel-case tokens, like names of
 ;; Java classes (e.g. JavaClassName)
@@ -24,6 +24,7 @@
                ("(\\(background?\\)"
                 (1 font-lock-keyword-face))))
             (define-clojure-indent (fact 1))
+            (electric-pair-mode)
             (define-clojure-indent (facts 1))))
 
 ;;;;
@@ -31,10 +32,10 @@
 ;;;;
 
 ;; provides minibuffer documentation for the code you're typing into the repl
-(add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
+(add-hook 'cider-mode-hook 'eldoc-mode)
 
 ;; go right to the REPL buffer when it's finished connecting
-(setq cider-repl-pop-to-buffer-on-connect t)
+(setq cider-repl-pop-to-buffer-on-connect nil)
 
 ;; When there's a cider error, show its buffer and switch to it
 (setq cider-show-error-buffer t)
@@ -47,7 +48,7 @@
 (setq cider-repl-wrap-history t)
 
 ;; enable paredit in your REPL
-(add-hook 'cider-repl-mode-hook 'paredit-mode)
+(add-hook 'cider-repl-mode-hook 'parinfer-mode)
 
 ;; Use clojure mode for other extensions
 (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))

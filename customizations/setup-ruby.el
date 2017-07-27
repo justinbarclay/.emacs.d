@@ -1,5 +1,8 @@
-(require 'smartparens-config)
-(require 'rbenv)
+(use-package smartparens-config
+  :defer t)
+(use-package rbenv
+  :ensure t
+  :defer t)
 
 (add-hook 'ruby-mode-hook (lambda ()
                             (robe-mode)

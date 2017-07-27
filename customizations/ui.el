@@ -42,6 +42,8 @@
 (add-to-list 'load-path "~/.emacs.d/themes")
 
 (use-package dracula-theme
+  :ensure t
+  :demand t
   :config
   (load-theme 'dracula t))
  
@@ -93,52 +95,41 @@
 
 ;;; Commentary
 ;; Powerline and customizations
-(require 'powerline)
-(powerline-center-theme)
+(use-package powerline
+  :ensure t
+  :config
+  (powerline-center-theme))
 (setq powerline-default-separator 'wave)
 (use-package all-the-icons		
   :ensure t)
              
 (use-package spaceline
   :ensure t
+  :demand t
   :config
   (require 'spaceline-config))
   ;; (spaceline-emacs-theme))
 
 (use-package spaceline-all-the-icons
-  :ensure t
+  :ensure t 
   :after spaceline
+  :defer t
   :config (spaceline-all-the-icons-theme)
   (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
-                                                    :foreground "#f8f8f2"
-                                                    :inherit 'mode-line))))
-                  '(powerline-active2 ((t (:background "#44475a"
-                                            :foregound "#50fa7b"
-                                            :inherit 'mode-line))))
-                  '(mode-line ((t (:background "#282a36"
-                                            :foregound "#50fa7b"
-                                            :inherit 'mode-line))))
-                  '(powerline-active1 ((t (:background "#6272a4"
-                                            :foregound "#50fa7b"
-                                            :inherit 'mode-line)))))
+                                                                :foreground "#f8f8f2"
+                                                                :inherit 'mode-line))))
+                    '(powerline-active2 ((t (:background "#44475a"
+                                                         :foregound "#50fa7b"
+                                                         :inherit 'mode-line))))
+                    '(mode-line ((t (:background "#282a36"
+                                                 :foregound "#50fa7b"
+                                                 :inherit 'mode-line))))
+                    '(powerline-active1 ((t (:background "#6272a4"
+                                                         :foregound "#50fa7b"
+                                                         :inherit 'mode-line)))))
   (setq spaceline-all-the-icons-separator-type 'wave))
-  
-  
+
+
 
 (provide 'ui)
 ;;; ui.el ends here
-
-;;(:inherit 'mode-line :foreground "thistle4" :background "DarkOrchid4")
-
-;; (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
-;;                                                     :foreground "#f8f8f2"
-;;                                                     :inherit 'mode-line))))
-;;                   '(powerline-active2 ((t (:background "#44475a"
-;;                                             :foregound "#50fa7b"
-;;                                             :inherit 'mode-line))))
-;;                   '(mode-line ((t (:background "#282a36"
-;;                                             :foregound "#50fa7b"
-;;                                             :inherit 'mode-line))))
-;;                   '(powerline-active1 ((t (:background "#6272a4"
-;;                                             :foregound "#50fa7b"
-;;                                             :inherit 'mode-line)))))

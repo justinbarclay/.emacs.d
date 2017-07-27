@@ -1,18 +1,28 @@
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
 
-  
-(when (memq system-type '(darwin))
-  (use-package exec-path-from-shell
-    :config
-    (exec-path-from-shell-initialize)
-    (exec-path-from-shell-copy-envs
-     '("PATH" "RUST_SRC_PATH"))))
-  
+(use-package exec-path-from-shell
+  :ensure t
+  :demand t
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-envs
+   '("PATH" "RUST_SRC_PATH")))
 
+(use-package diminish
+  :demand t
+  :config (progn
+;;            (diminish 'auto-revert-mode)
+;;            (diminish 'outline-minor-mode)
+;;            (diminish 'amd-mode)
+            (diminish 'js2-refactor-mode)
+            (diminish 'tern-mode)))
+;;            (diminish 'eslintd-fix-mode)))
+;;            (diminish 'widgetjs-mode)))
 
 
 (when (memq system-type '(windows-nt))
+  (exec-path-from-shell-initialize)
   (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
   (setq shell-file-name "bash")
   (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
@@ -81,3 +91,30 @@ version 2016-01-28"
           (message "No recognized program file suffix for this file."))))))
 
 (global-set-key (kbd "s-r") 'xah-run-current-file)
+
+(use-package eshell
+  :config (progn
+            (eval-after-load 'esh-opt
+              '(progn
+                 (require 'em-prompt)
+                 (require 'em-term)
+                 (require 'em-cmpl)
+                 (setenv "PAGER" "cat")
+                 (add-hook 'eshell-mode-hook
+                           #'company-mode)
+
+                 (add-to-list 'eshell-visual-commands "ssh")
+                 (add-to-list 'eshell-visual-commands "htop")
+                 (add-to-list 'eshell-visual-commands "top")
+                 (add-to-list 'eshell-visual-commands "tail")
+                 (add-to-list 'eshell-visual-commands "vim")
+                 (add-to-list 'eshell-visual-commands "bower")
+                 (add-to-list 'eshell-visual-commands "npm")
+
+                 (add-to-list 'eshell-command-completions-alist
+                              '("gunzip" "gz\\'"))
+                 (add-to-list 'eshell-command-completions-alist
+                              '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
+
+(use-package eldoc
+  :config (global-eldoc-mode))

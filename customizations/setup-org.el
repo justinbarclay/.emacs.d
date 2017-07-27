@@ -24,16 +24,17 @@
           '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
              "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
             ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
-             "* %? %^L %^g \n%T" :prepend )))
-    (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org")) 
+             "* %? %^L %^g \n%T" :prepend)))
+    (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org")))) 
     
-    ))
+    
 
+;; Do not need to require this, it's built into org
 (use-package org-eww)
 
 
 
-
+;; ??
 (require 'ox-odt)
 
 (use-package org-present
@@ -53,7 +54,8 @@
       (delete-frame)))
 
 (use-package noflet
-  :ensure t )
+  :ensure t)
+
 (defun make-capture-frame ()
   "Create a new frame and run 'org-capture'."
   (interactive)
@@ -61,36 +63,36 @@
   (select-frame-by-name "capture")
   (delete-other-windows)
   (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
-	  (org-capture)))
+    (org-capture)))
 
+;; No longer use org mode to handle calendar, thats too much kool-aid
+;; (use-package org-gcal
+;;   :ensure t
+;;   :config
+;;   (setq org-gcal-client-id "681014132158-pht7365idrlknvon718pb7cu6oerjcrc.apps.googleusercontent.com"
+;;         org-gcal-client-secret ""
+;;         org-gcal-file-alist '(("justincbarclay@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
 
-(use-package org-gcal
-  :ensure t
-  :config
-  (setq org-gcal-client-id "681014132158-pht7365idrlknvon718pb7cu6oerjcrc.apps.googleusercontent.com"
-        org-gcal-client-secret ""
-        org-gcal-file-alist '(("justincbarclay@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
+;; (add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync)))
+;; (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
 
-(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync)))
-(add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+;; (defun mycalendar ()
+;;   (interactive)
+;;   (cfw:open-calendar-buffer
+;;    :contents-sources
+;;    (list
+;;     ;; (cfw:org-create-source "Green")  ; orgmode source
+;;     (cfw:ical-create-source "gcal" "https://calendar.google.com/calendar/ical/justincbarclay%40gmail.com/private-5dd5c123e5f8f2bf66c9a03347dcb2bb/basic.ics" "IndianRed")))) ; google calendar ICS
 
-(defun mycalendar ()
-  (interactive)
-  (cfw:open-calendar-buffer
-   :contents-sources
-   (list
-    ;; (cfw:org-create-source "Green")  ; orgmode source
-    (cfw:ical-create-source "gcal" "https://calendar.google.com/calendar/ical/justincbarclay%40gmail.com/private-5dd5c123e5f8f2bf66c9a03347dcb2bb/basic.ics" "IndianRed")))) ; google calendar ICS
+;; (use-package calfw
+;;   :ensure t
+;;   :config
+;;   (require 'calfw) 
+;;   (require 'calfw-org)
+;;   (setq cfw:org-overwrite-default-keybinding t)
+;;   (require 'calfw-ical))
 
-(use-package calfw
-  :ensure t
-  :config
-  (require 'calfw) 
-  (require 'calfw-org)
-  (setq cfw:org-overwrite-default-keybinding t)
-  (require 'calfw-ical))
-
-(use-package calfw-gcal
-  :ensure t
-  :config
-  (require 'calfw-gcal))
+;; (use-package calfw-gcal
+;;   :ensure t
+;;   :config
+;;   (require 'calfw-gcal))

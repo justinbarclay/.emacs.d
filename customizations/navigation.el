@@ -27,11 +27,16 @@
 ;; As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017)
 ;; it looks like counsel is a requirement for swiper
 (use-package counsel
+  :demand t
   :ensure t
   )
 
+(use-package counsel-projectile
+  :ensure t)
+
 (use-package swiper
   :ensure t
+  :demand t
   :config
   (progn
     (ivy-mode 1)
@@ -68,4 +73,5 @@
   :ensure t
   :init (progn
           (projectile-global-mode)
+          (require 'counsel-projectile)
           (setq projectile-completion-system 'ivy)))

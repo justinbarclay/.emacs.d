@@ -56,11 +56,19 @@
       (ns-get-selection-internal 'CLIPBOARD)
     (quit nil)))
 
-(setq electric-indent-mode nil)
+;;(setq electric-indent-mode nil)
+;;(use-package electric-indent-mode)
+
+(use-package electric
+  :demand t
+  :config (electric-indent-mode t))
+
+
 
 (use-package flycheck-pos-tip
   :ensure t
   :defer t)
+
 (use-package flycheck
   :ensure t
   :init
@@ -82,7 +90,9 @@
 
 (use-package hungry-delete
   :ensure t
-  :init (global-hungry-delete-mode))
+  :demand t
+  :init
+  (global-hungry-delete-mode))
 
 (use-package undo-tree
   :ensure t
@@ -94,13 +104,13 @@
   :ensure t
   :bind
   (("C->" . mc/mark-next-like-this)
-  ("C-<" . mc/mark-previous-like-this)
-  ("C-c C-<" . mc/mark-all-like-this)
-  ("<s-mouse-1>" . mc/add-cursor-on-click))
+   ("C-<" . mc/mark-previous-like-this)
+   ("C-c C-<" . mc/mark-all-like-this)
+   ("<s-mouse-1>" . mc/add-cursor-on-click))
   :commands (mc/mark-next-like-this mc/mark-previous-like-this mc/mark-all-like-this))
 
-
-;; (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-;; (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-;; (global-set-key (kbd "<s-mouse-1>") 'mc/add-cursor-on-click)
+(use-package rainbow-mode
+  :ensure t
+  :init
+  (add-hook 'css-mode-hook 'rainbow-mode)
+  (add-hook 'less-mode-hook 'rainbow-mode))

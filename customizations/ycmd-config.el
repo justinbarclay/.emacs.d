@@ -12,10 +12,10 @@
    (set-variable 'ycmd-server-command '("python" "/Users/Justin/ycmd/ycmd"))
    (set-variable 'ycmd-extra-conf-whitelist '("~/*"))
    (set-variable 'ycmd-global-config "~/.ycm_extra_conf.py")
-;;   (set-variable 'ycmd-rust-src-path (getenv "RUST_SRC_PATH"))
+   (set-variable 'ycmd-rust-src-path (getenv "RUST_SRC_PATH"))
    (require 'ycmd-eldoc)
    (add-hook 'ycmd-mode-hook 'ycmd-eldoc-setup)
-   (setq ycmd-force-semantic-completion t)
+ ;;  (setq ycmd-force-semantic-completion t)
    (add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results))
 
 ;; In some cases you may see that company and flycheck interfere with one another.
@@ -27,7 +27,7 @@
 (use-package company-ycmd
   :ensure t
   :commands (ycmd-mode)
-  :config
+  :init
   (company-ycmd-setup))
 
 ;; Make sure the flycheck cache sees the parse results

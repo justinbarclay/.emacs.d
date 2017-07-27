@@ -34,116 +34,16 @@
 (when (not package-archive-contents)
   (package-refresh-contents))
 
-;; The packages you want installed. You can also install these
-;; manually with M-x package-install
-;; Add in your own as you wish:
-(defvar my-packages
-  '(;; makes handling lisp expressions much, much easier
-    ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
-    paredit
-
-    ;; key bindings and code colorization for Clojure
-    ;; https://github.com/clojure-emacs/clojure-mode
-    clojure-mode
-
-    ;; extra syntax highlighting for clojure
-    clojure-mode-extra-font-locking
-
-    ;; integration with a Clojure REPL
-    ;; https://github.com/clojure-emacs/cider
-    cider
-
-    ;; Setup for Lisp Development
-    slime-company
-    
-    ;; allow ido usage in as many contexts as possible. see
-    ;; customizations/navigation.el line 23 for a description
-    ;; of ido
-    ;; ido-ubiquitous
-
-    ;; Enhances M-x to allow easier execution of commands. Provides
-    ;; a filterable list of possible commands in the minibuffer
-    ;; http://www.emacswiki.org/emacs/Smex
-    smex
-
-    ;; project navigation
-    projectile
-
-    ;; colorful parenthesis matching
-    rainbow-delimiters
-
-    ;; edit html tags like sexps
-    tagedit
-
-    ;; multiple cursors
-    multiple-cursors
-
-    ;; auto-complete for easy auto-completeing for languages
-    company
-    company-quickhelp
-    ycmd
-    company-ycmd
-
-    ;; add syntax checking
-    flycheck
-
-    ;; visibile max line length
-    fill-column-indicator
-
-    ;; git integration
-    magit
-    
-    ;; Powerline and themes
-    powerline
-    airline-themes
-    ample-theme
-    
-    ;; Start up profiler
-    esup
-
-    ;; Ruby specific packages
-    inf-ruby
-    robe
-    rbenv
-    smartparens
-    yard-mode
-
-    ;; Swift Packages
-    swift-mode
-    flycheck-swift
-    company-sourcekit
-    
-
-    ;; Org-mode
-    calfw ;; Support for fancy Calendar
-    calfw-gcal ;; Support for Google Calendar
-    org-gcal ;; Support to Sync Google Calendar with org agenda
-    ))
-
-
-
 ;; Bootstrap `use-package'
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-
-;; On OS X, an Emacs instance started from the graphical user
-;; interface will have a different environment than a shell in a
-;; terminal window, because OS X does not run a shell during the
-;; login. Obviously this will lead to unexpected results when
-;; calling external utilities like make from Emacs.
-;; This library works around this problem by copying important
-;; environment variables from the user's shell.
-;; https://github.com/purcell/exec-path-from-shell
-(when (memq system-type '(darwin))
-  (add-to-list 'my-packages 'exec-path-from-shell))
-
-(dolist (p my-packages)
-  (when (not (package-installed-p p))
-    (package-install p)))
-
-
-
+;; Set use package options
+(progn ;'use-package'
+  (require  'use-package)
+  (setq use-package-verbose t)
+  ;;(setq use-package-always-defer t)
+  (setq use-package-enable-imenu-support t))
 
 ;; Place downloaded elisp files in ~/.emacs.d/vendor. You'll then be able
 ;; to load them.
@@ -162,21 +62,34 @@
 ;; Customization
 ;;;;
 
+(use-package exec-path-from-shell
+  :ensure t
+  :demand t
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-envs
+   '("PATH" "RUST_SRC_PATH")))
 ;;Turn off tool-bar
 (tool-bar-mode -1)
 
-;; Set C tabs length
-(setq-default c-basic-offset 4)
 ;; Starting conditions for Emacs
 ;; Setting Emacs to take focus over terminal
-(when (display-graphic-p)
+(when (display-graphic-p) ; Start full screen
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
   (x-focus-frame nil))
 
+;;Semantic is a package that provides language-aware editing commands based on source code parsers. Parsing is a process of analyzing source code based on programming language syntax. Emacs understands your source code through this process to provides features such as contextual code completion, code navigation.
+;; Global semantic mode
+(use-package semantic-mode
+  :config
+  (semantic-mode 1)
+  (global-semanticdb-minor-mode 1)
+  (global-semantic-idle-scheduler-mode 1))
+
 (setq org-latex-to-pdf-process '("texi2dvi --pdf --clean --verbose --batch %f"))
 
-;; Add a directory to our load path so that when you `load` things
-;; below, Emacs knows where to look for the corresponding file.
+;; ;; Add a directory to our load path so that when you `load` things
+;; ;; below, Emacs knows where to look for the corresponding file.
 
 (add-to-list 'load-path "~/.emacs.d/customizations")
 
@@ -263,7 +176,7 @@
  '(org-startup-truncated t)
  '(package-selected-packages
    (quote
-    (spaceline ggtags counsel-gtags company-tern tern-context-coloring tern indium rjsx-mode yas-snippet rustfmt c-eldoc dracula-theme cyberpunk-theme yard-mode yaml-mode web-mode use-package undo-tree tagedit swift-mode smex smartparens slime-company robe rbenv rainbow-delimiters racer projectile parinfer paredit org-present org-gcal org-bullets noflet multiple-cursors magit ido-ubiquitous hungry-delete flycheck-ycmd flycheck-swift flycheck-rust flycheck-pos-tip fill-column-indicator exec-path-from-shell esup eclim counsel company-ycmd company-sourcekit company-quickhelp clojure-mode-extra-font-locking cider calfw-gcal calfw avy ample-theme airline-themes)))
+    (xref-js2 spaceline ggtags counsel-gtags company-tern tern-context-coloring tern indium rjsx-mode yas-snippet rustfmt c-eldoc dracula-theme cyberpunk-theme yard-mode yaml-mode web-mode use-package undo-tree tagedit swift-mode smex smartparens slime-company robe rbenv rainbow-delimiters racer projectile parinfer paredit org-present org-gcal org-bullets noflet multiple-cursors magit ido-ubiquitous hungry-delete flycheck-ycmd flycheck-swift flycheck-rust flycheck-pos-tip fill-column-indicator exec-path-from-shell esup eclim counsel company-ycmd company-sourcekit company-quickhelp clojure-mode-extra-font-locking cider calfw-gcal calfw avy ample-theme airline-themes)))
  '(show-paren-mode t)
  '(size-indication-mode t)
  '(spaceline-info-mode nil)

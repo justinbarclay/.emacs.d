@@ -14,8 +14,10 @@
             company-preview-frontend
             company-echo-metadata-frontend))
     
-    ;(setq company-auto-complete t)
+    (setq company-auto-complete t)
     (setq company-tooltip-align-annotations t)
     (global-set-key (kbd "<C-tab>") 'company-capf)))
 
-; (add-hook 'after-init-hook 'global-company-mode)
+(add-hook 'after-init-hook 'global-company-mode)
+" <p>"
+t
