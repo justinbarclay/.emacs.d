@@ -1,5 +1,12 @@
 (use-package smartparens
-  :ensure t)
+  :ensure t
+  :bind ((:smartparens-mode-map
+          ("C-)" . sp-forward-slurp-sexp)
+          ("C-(" . sp-backward-slurp-sexp)
+          ("C-}" . sp-forward-barf-sexp)
+          ("C-{" . sp-backward-barf-sexp)))
+  :config
+  (setq sp-escape-wrapped-region nil))
 (use-package c-eldoc
   :ensure t)
 

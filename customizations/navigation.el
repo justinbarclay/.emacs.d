@@ -33,7 +33,8 @@
 
 (use-package counsel-projectile
   :ensure t)
-
+(use-package flx
+  :ensure t)
 (use-package swiper
   :ensure t
   :demand t

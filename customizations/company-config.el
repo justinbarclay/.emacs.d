@@ -8,7 +8,7 @@
     
     (eval-after-load 'company
       '(push 'company-robe company-backends))
-    (setq company-idle-delay 0.3)
+    (setq company-idle-delay 0.5)
     (setq company-frontends
           '(company-pseudo-tooltip-unless-just-one-frontend
             company-preview-frontend
@@ -19,5 +19,3 @@
     (global-set-key (kbd "<C-tab>") 'company-capf)))
 
 (add-hook 'after-init-hook 'global-company-mode)
-" <p>"
-t
