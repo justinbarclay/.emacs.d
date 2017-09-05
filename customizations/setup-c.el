@@ -1,12 +1,3 @@
-(use-package smartparens
-  :ensure t
-  :bind ((:smartparens-mode-map
-          ("C-)" . sp-forward-slurp-sexp)
-          ("C-(" . sp-backward-slurp-sexp)
-          ("C-}" . sp-forward-barf-sexp)
-          ("C-{" . sp-backward-barf-sexp)))
-  :config
-  (setq sp-escape-wrapped-region nil))
 (use-package c-eldoc
   :ensure t)
 
@@ -17,7 +8,12 @@
   (setq counsel-gtags-auto-update t))
   ;;        ("M-m r" . counsel-gtags-find-reference)
   ;;        ("M-m s" . counsel-gtags-find-symbol)
-  ;;        ("M-," . counsel-gtags-go-backward))
+;;        ("M-," . counsel-gtags-go-backward))
+
+(use-package ggtags
+  :ensure t
+  :config
+  (add-hook 'c-mode-hook 'ggtags-mode))
   
 
 ;; 
@@ -32,8 +28,7 @@
 
 (eval-after-load 'c-mode '(setq-local eldoc-documentation-function #'ggtags-eldoc-function))
 
-(use-package ggtags
-  :ensure t)
+
   ;;:bind)
   ;; (("M-m g s" . ggtags-find-other-symbol)
   ;;  ("M-m g h" . ggtags-view-tag-history)

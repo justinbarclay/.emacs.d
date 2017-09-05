@@ -108,4 +108,4 @@
 ;; (add-hook 'cider-repl-mode-hook 'parinfer-mode)
 
 ;; Use clojure mode for other extensions
-(add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode))
+;; (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode))

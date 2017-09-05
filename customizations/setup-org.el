@@ -30,7 +30,8 @@
     
 
 ;; Do not need to require this, it's built into org
-(use-package org-eww)
+(use-package org-eww
+  :ensure nil )
 
 
 

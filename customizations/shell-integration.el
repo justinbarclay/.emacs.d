@@ -1,20 +1,12 @@
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
 
-(use-package exec-path-from-shell
-  :ensure t
-  :demand t
-  :config
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-envs
-   '("PATH" "RUST_SRC_PATH")))
-
 (use-package diminish
   :demand t
   :config (progn
-;;            (diminish 'auto-revert-mode)
-;;            (diminish 'outline-minor-mode)
-;;            (diminish 'amd-mode)
+            ;;            (diminish 'auto-revert-mode)
+            ;;            (diminish 'outline-minor-mode)
+            ;;            (diminish 'amd-mode)
             (diminish 'js2-refactor-mode)
             (diminish 'tern-mode)))
 ;;            (diminish 'eslintd-fix-mode)))

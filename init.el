@@ -34,16 +34,19 @@
 (when (not package-archive-contents)
   (package-refresh-contents))
 
-;; Bootstrap `use-package'
+;; Bootstrap use-package
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
 ;; Set use package options
 (progn ;'use-package'
   (require  'use-package)
-  (setq use-package-verbose t)
+  (setq use-package-verbose nil)
   ;;(setq use-package-always-defer t)
+  (setq use-package-always-ensure t)
   (setq use-package-enable-imenu-support t))
+
+(use-package counsel)
 
 ;; Place downloaded elisp files in ~/.emacs.d/vendor. You'll then be able
 ;; to load them.
@@ -80,7 +83,7 @@
 
 ;;Semantic is a package that provides language-aware editing commands based on source code parsers. Parsing is a process of analyzing source code based on programming language syntax. Emacs understands your source code through this process to provides features such as contextual code completion, code navigation.
 ;; Global semantic mode
-(use-package semantic-mode
+(use-package semantic 
   :config
   (semantic-mode 1)
   (global-semanticdb-minor-mode 1)
@@ -88,8 +91,8 @@
 
 (setq org-latex-to-pdf-process '("texi2dvi --pdf --clean --verbose --batch %f"))
 
-;; ;; Add a directory to our load path so that when you `load` things
-;; ;; below, Emacs knows where to look for the corresponding file.
+;; Add a directory to our load path so that when you `load` things
+;; below, Emacs knows where to look for the corresponding file.
 
 (add-to-list 'load-path "~/.emacs.d/customizations")
 
@@ -134,8 +137,8 @@
 ;; Load org-mode specific config
 (load "setup-org.el")
 
-;; what does this do?
-;;(setq font-lock-maximum-decoration t)
+;; what does this do?                      
+(setq font-lock-maximum-decoration t)
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -170,6 +173,7 @@
    (quote
     ("3fa07dd06f4aff80df2d820084db9ecbc007541ce7f15474f1d956c846a3238f" "af717ca36fe8b44909c984669ee0de8dd8c43df656be67a50a1cf89ee41bde9a" "d21135150e22e58f8c656ec04530872831baebf5a1c3688030d119c114233c24" "66aea5b7326cf4117d63c6694822deeca10a03b98135aaaddb40af99430ea237" "de0b7245463d92cba3362ec9fe0142f54d2bf929f971a8cdf33c0bf995250bcf" "256a381a0471ad344e1ed33470e4c28b35fb4489a67eb821181e35f080083c36" "cf284fac2a56d242ace50b6d2c438fcc6b4090137f1631e32bedf19495124600" "d61f6c49e5db58533d4543e33203fd1c41a316eddb0b18a44e0ce428da86ef98" "003a9aa9e4acb50001a006cfde61a6c3012d373c4763b48ceb9d523ceba66829" "938d8c186c4cb9ec4a8d8bc159285e0d0f07bad46edf20aa469a89d0d2a586ea" "6de7c03d614033c0403657409313d5f01202361e35490a3404e33e46663c2596" "251348dcb797a6ea63bbfe3be4951728e085ac08eee83def071e4d2e3211acc3" "0cd56f8cd78d12fc6ead32915e1c4963ba2039890700458c13e12038ec40f6f5" "a94f1a015878c5f00afab321e4fef124b2fc3b823c8ddd89d360d710fc2bddfc" "b59d7adea7873d58160d368d42828e7ac670340f11f36f67fa8071dbf957236a" "9b1c580339183a8661a84f5864a6c363260c80136bd20ac9f00d7e1d662e936a" "946e871c780b159c4bb9f580537e5d2f7dba1411143194447604ecbaf01bd90c" "01e067188b0b53325fc0a1c6e06643d7e52bc16b6653de2926a480861ad5aa78" "c79c2eadd3721e92e42d2fefc756eef8c7d248f9edefd57c4887fbf68f0a17af" "158013ec40a6e2844dbda340dbabda6e179a53e0aea04a4d383d69c329fba6e6" "73a13a70fd111a6cd47f3d4be2260b1e4b717dbf635a9caee6442c949fad41cd" "ff7625ad8aa2615eae96d6b4469fcc7d3d20b2e1ebc63b761a349bebbb9d23cb" "38e64ea9b3a5e512ae9547063ee491c20bd717fe59d9c12219a0b1050b439cdd" default)))
  '(fci-rule-color "#383838" t)
+ '(line-number-mode t)
  '(org-default-notes-file (concat org-directory "/notes.org"))
  '(org-directory "~/Dropbox/orgfiles")
  '(org-export-html-postamble nil)
@@ -177,9 +181,10 @@
  '(org-startup-folded (quote overview))
  '(org-startup-indented t)
  '(org-startup-truncated t)
+ '(org-trello-current-prefix-keybinding "C-c o")
  '(package-selected-packages
    (quote
-    (flx robe-mode csharp-mode xref-js2 spaceline ggtags counsel-gtags company-tern tern-context-coloring tern indium rjsx-mode yas-snippet rustfmt c-eldoc dracula-theme cyberpunk-theme yard-mode yaml-mode web-mode use-package undo-tree tagedit swift-mode smex smartparens slime-company robe rbenv rainbow-delimiters racer projectile parinfer paredit org-present org-gcal org-bullets noflet multiple-cursors magit ido-ubiquitous hungry-delete flycheck-ycmd flycheck-swift flycheck-rust flycheck-pos-tip fill-column-indicator exec-path-from-shell esup eclim counsel company-ycmd company-sourcekit company-quickhelp clojure-mode-extra-font-locking cider calfw-gcal calfw avy ample-theme airline-themes)))
+    (md-readme org-trello rebase-mode helm counsel-dash dash-at-point flx robe-mode csharp-mode xref-js2 spaceline ggtags counsel-gtags company-tern tern-context-coloring tern indium rjsx-mode yas-snippet rustfmt c-eldoc dracula-theme cyberpunk-theme yard-mode yaml-mode web-mode use-package undo-tree tagedit swift-mode smex smartparens slime-company robe rbenv rainbow-delimiters racer projectile parinfer paredit org-present org-gcal org-bullets noflet multiple-cursors magit ido-ubiquitous hungry-delete flycheck-ycmd flycheck-swift flycheck-rust flycheck-pos-tip fill-column-indicator exec-path-from-shell esup eclim counsel company-ycmd company-sourcekit company-quickhelp clojure-mode-extra-font-locking cider calfw-gcal calfw avy ample-theme airline-themes)))
  '(show-paren-mode t)
  '(size-indication-mode t)
  '(spaceline-info-mode nil)

@@ -94,6 +94,16 @@
   :init
   (global-hungry-delete-mode))
 
+(use-package smartparens
+  :ensure t
+  :bind (:map smartparens-mode-map
+          ("C-)" . sp-forward-slurp-sexp)
+          ("C-(" . sp-backward-slurp-sexp)
+          ("C-}" . sp-forward-barf-sexp)
+          ("C-{" . sp-backward-barf-sexp))
+  :config
+  (setq sp-escape-wrapped-region nil))
+
 (use-package undo-tree
   :ensure t
   :init
@@ -114,3 +124,10 @@
   :init
   (add-hook 'css-mode-hook 'rainbow-mode)
   (add-hook 'less-mode-hook 'rainbow-mode))
+
+(use-package dash-at-point
+  :ensure t
+  :config
+  (global-set-key "\C-cd" 'dash-at-point)
+  (global-set-key "\C-ce" 'dash-at-point-with-docset)
+  (add-to-list 'dash-at-point-mode-alist '(ruby-mode . "ruby")))

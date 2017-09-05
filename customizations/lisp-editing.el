@@ -1,3 +1,7 @@
+(defun enable-parinfer ()
+  (turn-off-smartparens-mode)
+  (parinfer-mode))
+
 (use-package paredit
   :ensure t)
 
@@ -14,13 +18,14 @@
              smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
              ;;one
              smart-yank))   ; Yank behavior depend on mode.
-    (add-hook 'clojure-mode-hook #'parinfer-mode)
-    (add-hook 'emacs-lisp-mode-hook #'parinfer-mode)
-    (add-hook 'common-lisp-mode-hook #'parinfer-mode)
-    (add-hook 'scheme-mode-hook #'parinfer-mode)
-    (add-hook 'lisp-mode-hook #'parinfer-mode)
+    (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
+    (add-hook 'emacs-lisp-mode-hook (lambda () (enable-parinfer)))
+    (add-hook 'common-lisp-mode-hook (lambda () (enable-parinfer)))
+    (add-hook 'scheme-mode-hook (lambda () (enable-parinfer)))
+    (add-hook 'lisp-mode-hook (lambda () (enable-parinfer)))
     :config
     (setq parinfer-auto-switch-indent-mode nil)))
+
 
 ;; eldoc-mode shows documentation in the minibuffer when writing code
 ;; http://www.emacswiki.org/emacs/ElDoc
@@ -41,14 +46,15 @@
   :ensure t
   :init
   (use-package slime-company
-    :ensure t)
-  :config
-  (setq slime-contribs '(slime-fancy
-                         slime-autodoc
-                         slime-))
+    :ensure t
+    :config
+    (setq slime-contribs '(slime-fancy
+                           slime-autodoc
+                           slime-)))
   (add-hook 'lisp-mode-hook 'slime-mode)
   (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
                                          (let (old-window selected-window)
                                            (slime)
                                            (delete-other-windows old-window)
                                            (window-buffer old-window))))))
+  

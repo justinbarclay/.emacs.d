@@ -8,11 +8,14 @@
 ;;(menu-bar-mode 1)
 
 ;; Show line numbers
-(set-default 'display-line-numbers 'visual)
-(set-default 'display-line-numbers-current-absolute 1)
+(set-default 'display-line-numbers-type 'visual)
 
-(setq display-line-numbers (quote visual))
-;;(setq display-line-numbers-current-absolute nil)
+(setq display-line-numbers-current-absolute nil)
+
+;; (line-number-mode)
+(global-display-line-numbers-mode)
+
+
 ;; Colour all brackets based on depth
 ;; Currently allows two different bracket colours based level
 
@@ -46,7 +49,7 @@
   :demand t
   :config
   (load-theme 'dracula t))
- 
+
 ;; increase font size for better readability
 (set-face-attribute 'default nil
                     :family "Inconsolata for Powerline" :height 180 :weight 'normal)
@@ -102,7 +105,7 @@
 (setq powerline-default-separator 'wave)
 (use-package all-the-icons		
   :ensure t)
-             
+
 (use-package spaceline
   :ensure t
   :demand t
@@ -132,4 +135,4 @@
 
 
 (provide 'ui)
-;;; ui.el ends here
+;; ;;; ui.el ends here

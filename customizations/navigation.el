@@ -10,6 +10,7 @@
 ;; name at the beginning of the buffer name
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
 (use-package uniquify
+  :ensure nil
   :config
   (setq uniquify-buffer-name-style 'forward))
 
@@ -18,16 +19,14 @@
 
 (use-package recentf
   :ensure t
-  :init
-  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
   :config
+  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
   (recentf-mode 1)
   (setq recentf-max-menu-items 40))
 
 ;; As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017)
 ;; it looks like counsel is a requirement for swiper
 (use-package counsel
-  :demand t
   :ensure t
   )
 
@@ -35,6 +34,7 @@
   :ensure t)
 (use-package flx
   :ensure t)
+
 (use-package swiper
   :ensure t
   :demand t
@@ -43,9 +43,6 @@
     (ivy-mode 1)
     (setq ivy-use-virtual-buffers t)
     (setq ivy-initial-inputs-alist nil)
-    (setq ivy-re-builders-alist
-          '((ivy-switch-buffer . ivy--regex-plus)
-            (t . ivy--regex-fuzzy)))
     (global-set-key "\C-s" 'swiper)
     (global-set-key (kbd "C-c C-r") 'ivy-resume)
     (global-set-key (kbd "<f6>") 'ivy-resume)
@@ -57,12 +54,12 @@
     (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
     (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
     (global-set-key (kbd "C-c g") 'counsel-git)
-    (global-set-key (kbd "C-c j") 'counsel-git-grep)
+    ;;    (global-set-key (kbd "C-c j") 'counsel-git-grep) ;; leave git to magit
     (global-set-key (kbd "C-c k") 'counsel-ag)
     (global-set-key (kbd "C-x l") 'counsel-locate)
     (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
-    (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
-    ))
+    (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)))
+    
 
 ;; As Stolen from http://cestlaz.github.io/posts/using-emacs-7-avy/ (January 10, 2017)
 (use-package avy

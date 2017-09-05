@@ -1,6 +1,16 @@
 ;;; Code:
 ;; javascript / html
 ;; Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
+(use-package indium
+  :ensure t
+  :defer t
+  :config
+  (add-hook 'indium-update-script-source-hook
+        (lambda (url)
+          (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
+                               url))))
+  (indium-interaction-mode))
+
 (use-package js2-mode
   :ensure t
   :demand t
@@ -32,6 +42,8 @@
 ;; (add-hook 'js-mode-hook 'subword-mode)
 ;; (add-hook 'html-mode-hook 'subword-mode)
 
+(use-package tagedit
+  :ensure t)
 (use-package sgml-mode
   :config
   (require 'tagedit)
@@ -40,7 +52,7 @@
 
 
 ;; coffeescript
-(use-package coffee-mode-hook
+(use-package coffee-mode
   :mode "\\.coffee$"
   :config
   (add-to-list 'company-backends 'company-tern)
@@ -60,16 +72,6 @@
   :config
   (setq company-tooltip-align-annotations t)
   (setq company-tern-property-marker " <p>"))
-
-(use-package indium
-  :ensure t
-  :defer t
-  :config
-  (add-hook 'indium-update-script-source-hook
-        (lambda (url)
-          (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
-                               url))))
-  (indium-interaction-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.coffee.erb$" . coffee-mode))
 ;; (add-hook 'coffee-mode-hook 'subword-mode)
 ;; (add-hook 'coffee-mode-hook 'highlight-indentation-current-column-mode)
