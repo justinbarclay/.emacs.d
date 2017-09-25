@@ -28,9 +28,14 @@
 (global-unset-key (kbd "C-x C-e"))
 (global-set-key (kbd "C-x C-e") 'eval-and-replace)
 
+(use-package ido-completing-read+
+  :ensure t)
 ;; Magit is an Emacs interface to Git.
 ;; (It's awesome)
 ;; https://github.com/magit/magit
+(use-package magit-blame
+  :ensure nil
+  :bind ("C-c C-g b" . magit-blame-mode))
 
 (use-package magit
   :ensure t
@@ -41,9 +46,6 @@
   :init
   (progn
     ;; magit extensions
-    (use-package magit-blame
-      :ensure nil
-      :bind ("C-c C-g b" . magit-blame-mode))
 
     ;; make magit status go full-screen but remember previous window
     ;; settings
@@ -73,6 +75,8 @@
   :config
   (progn
     ;; restore previously hidden windows
+        ;; major mode for editing `git rebase -i`
+    (require 'rebase-mode)
     (defadvice magit-quit-window (around magit-restore-screen activate)
       (let ((current-mode major-mode))
         ad-do-it
@@ -89,9 +93,6 @@
         (magit-commit)))
 
     (define-key magit-mode-map "c" 'magit-maybe-commit)
-
-    ;; major mode for editing `git rebase -i` files
-    (use-package rebase-mode)
 
     ;; magit settings
     (setq
@@ -111,4 +112,8 @@
      magit-process-popup-time 10
      ;; ask me if I want a tracking upstream
      magit-set-upstream-on-push 'askifnotset)))
-     
+
+(autoload 'woman "woman"
+  "Decode and browse a UN*X man page." t)
+(autoload 'woman-find-file "woman"
+            "Find, decode and browse a specific UN*X man-page file." t)
