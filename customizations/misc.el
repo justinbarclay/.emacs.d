@@ -76,7 +76,6 @@
   (progn
     ;; restore previously hidden windows
         ;; major mode for editing `git rebase -i`
-    (require 'rebase-mode)
     (defadvice magit-quit-window (around magit-restore-screen activate)
       (let ((current-mode major-mode))
         ad-do-it

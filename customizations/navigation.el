@@ -14,6 +14,12 @@
   :config
   (setq uniquify-buffer-name-style 'forward))
 
+(use-package dired+
+  :ensure t
+  :config
+  (setq dired-dwim-target t)
+  (setq dired-recursive-copies `always))
+
 ;; Turn on recent file mode so that you can more easily switch to
 ;; recently edited files when you first start emacs
 
@@ -29,9 +35,9 @@
 (use-package counsel
   :ensure t
   )
-
 (use-package counsel-projectile
   :ensure t)
+
 (use-package flx
   :ensure t)
 
@@ -70,7 +76,7 @@
 (use-package projectile
   :ensure t
   :init (progn
-          (projectile-global-mode)
+          (projectile-mode)
           (require 'counsel-projectile)
           (setq projectile-completion-system 'ivy)))
 
@@ -91,7 +97,6 @@
           treemacs-never-persist              nil
           treemacs-is-never-other-window      nil
           treemacs-goto-tag-strategy          'refetch-index)
-
     (treemacs-follow-mode t)
     (treemacs-filewatch-mode t))
   :bind

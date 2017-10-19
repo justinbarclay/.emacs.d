@@ -7,7 +7,8 @@
 (run-with-idle-timer
  5 nil
  (lambda ()
-   (setq gc-cons-threshold 1000000)
+ ;;     (setq gc-cons-threshold 10000000)
+   (setq gc-cons-threshold 10000000)
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 (require 'package)
@@ -81,7 +82,7 @@
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
   (x-focus-frame nil))
 
-;;Semantic is a package that provides language-aware editing commands based on source code parsers. Parsing is a process of analyzing source code based on programming language syntax. Emacs understands your source code through this process to provides features such as contextual code completion, code navigation.
+;; Semantic is a package that provides language-aware editing commands based on source code parsers. Parsing is a process of analyzing source code based on programming language syntax. Emacs understands your source code through this process to provides features such as contextual code completion, code navigation.
 ;; Global semantic mode
 (use-package semantic 
   :config
@@ -139,6 +140,7 @@
 
 ;; what does this do?                      
 (setq font-lock-maximum-decoration t)
+;;;;;;;;
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -184,7 +186,7 @@
  '(org-trello-current-prefix-keybinding "C-c o")
  '(package-selected-packages
    (quote
-    (treemacs ido-completing-read+ md-readme org-trello rebase-mode helm counsel-dash dash-at-point flx robe-mode csharp-mode xref-js2 spaceline ggtags counsel-gtags company-tern tern-context-coloring tern indium rjsx-mode yas-snippet rustfmt c-eldoc dracula-theme cyberpunk-theme yard-mode yaml-mode web-mode use-package undo-tree tagedit swift-mode smex smartparens slime-company robe rbenv rainbow-delimiters racer projectile parinfer paredit org-present org-gcal org-bullets noflet multiple-cursors magit ido-ubiquitous hungry-delete flycheck-ycmd flycheck-swift flycheck-rust flycheck-pos-tip fill-column-indicator exec-path-from-shell esup eclim counsel company-ycmd company-sourcekit company-quickhelp clojure-mode-extra-font-locking cider calfw-gcal calfw avy ample-theme airline-themes)))
+    (markdown-mode flymd docker-compose-mode origami folding json-mode ido-completing-read+ md-readme org-trello rebase-mode helm counsel-dash dash-at-point flx robe-mode csharp-mode xref-js2 spaceline ggtags counsel-gtags company-tern tern-context-coloring tern indium rjsx-mode yas-snippet rustfmt c-eldoc dracula-theme cyberpunk-theme yard-mode yaml-mode web-mode use-package undo-tree tagedit swift-mode smex slime-company robe rbenv rainbow-delimiters racer parinfer paredit org-present org-gcal org-bullets noflet multiple-cursors magit ido-ubiquitous hungry-delete flycheck-ycmd flycheck-swift flycheck-rust flycheck-pos-tip fill-column-indicator exec-path-from-shell esup eclim counsel company-sourcekit company-quickhelp clojure-mode-extra-font-locking cider calfw-gcal calfw avy ample-theme airline-themes)))
  '(show-paren-mode t)
  '(size-indication-mode t)
  '(spaceline-info-mode nil)

@@ -88,6 +88,11 @@
   (yas-reload-all)
   (add-hook 'prog-mode-hook #'yas-minor-mode))
 
+(use-package origami
+  :ensure t
+  :bind ("C-s-<tab>" . origami-recursively-toggle-node)
+  :init
+  (add-hook 'prog-mode-hook 'origami-mode))
 (use-package hungry-delete
   :ensure t
   :demand t
@@ -130,4 +135,4 @@
   :config
   (global-set-key "\C-cd" 'dash-at-point)
   (global-set-key "\C-ce" 'dash-at-point-with-docset)
-  (add-to-list 'dash-at-point-mode-alist '(ruby-mode . "ruby")))
+  (add-to-list 'dash-at-point-mode-alist '(ruby-mode . ("ruby" "rails"))))
