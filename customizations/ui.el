@@ -23,11 +23,7 @@
 (use-package rainbow-delimiters
   :ensure t
   :init
-  (list (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-        (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
-        (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
-        (add-hook 'parinfer-mode-hook 'rainbow-delimiters-mode)
-        (add-hook 'java-mode 'rainbow-delimiters-mode)))
+  (list (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)))
 
 ;; You can uncomment this to remove the graphical toolbar at the top. After
 ;; awhile, you won't need the toolbar.
@@ -165,8 +161,6 @@ DELTA should be a multiple of 10, in the units used by the
                                                          :foregound "#50fa7b"
                                                          :inherit 'mode-line)))))
   (setq spaceline-all-the-icons-separator-type 'wave))
-
-
 
 (provide 'ui)
 ;; ;;; ui.el ends here

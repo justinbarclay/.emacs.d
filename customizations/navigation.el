@@ -33,8 +33,8 @@
 ;; As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017)
 ;; it looks like counsel is a requirement for swiper
 (use-package counsel
-  :ensure t
-  )
+  :ensure t)
+
 (use-package counsel-projectile
   :ensure t)
 
@@ -65,7 +65,7 @@
     (global-set-key (kbd "C-x l") 'counsel-locate)
     (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
     (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)))
-    
+
 
 ;; As Stolen from http://cestlaz.github.io/posts/using-emacs-7-avy/ (January 10, 2017)
 (use-package avy
@@ -105,7 +105,7 @@
         ("<C-M-tab>" . treemacs-toggle)
         ("M-0"       . treemacs-select-window)
         ("C-c 1"     . treemacs-delete-other-windows)))
-  
+
 (use-package treemacs-projectile
   :defer t
   :ensure t
