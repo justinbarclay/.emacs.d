@@ -72,7 +72,6 @@
   (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
   (setq inferior-lisp-program "lein repl")
   ;; Enable parinfer for Clojure
-  (add-hook 'clojure-mode-hook 'parinfer-mode-enable)
   (add-hook 'clojure-mode-hook 'cider-mode)
   (add-hook 'clojure-mode-hook 'eldoc-mode)
   (add-hook 'clojure-mode-hook 'subword-mode)
@@ -85,7 +84,7 @@
      ("(\\(background?\\)"
       (1 font-lock-keyword-face))))
   (electric-pair-mode)
-  (define-clojure-indent (facts 1)))
+  (define-clojure-indent (facts 2)))
   
 ;; A little more syntax highlighting
 (use-package clojure-mode-extra-font-locking

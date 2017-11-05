@@ -1,30 +1,30 @@
-(defun enable-parinfer ()
-  (turn-off-smartparens-mode)
-  (parinfer-mode))
-
 (use-package paredit
+  :defer t
   :ensure t)
 
 (use-package parinfer
   :ensure t
-  :bind (:parinfer-mode-map
-         ("C-," . parinfer-toggle-mode))
+  :bind
+  ("C-t" . parinfer-toggle-mode)
   :init
+  (defun enable-parinfer ()
+    (turn-off-smartparens-mode)
+    (parinfer-mode))
   (progn
-    (setq parinfer-extensions
-          '(defaults       ; should be included.
-             pretty-parens  ; different paren styles for different modes.
-             paredit        ; Introduce some paredit commands.
-             smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-             ;;one
-             smart-yank))   ; Yank behavior depend on mode.
     (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
     (add-hook 'emacs-lisp-mode-hook (lambda () (enable-parinfer)))
     (add-hook 'common-lisp-mode-hook (lambda () (enable-parinfer)))
     (add-hook 'scheme-mode-hook (lambda () (enable-parinfer)))
-    (add-hook 'lisp-mode-hook (lambda () (enable-parinfer)))
-    :config
-    (setq parinfer-auto-switch-indent-mode nil)))
+    (add-hook 'lisp-mode-hook (lambda () (enable-parinfer))))
+  :config
+  (setq parinfer-auto-switch-indent-mode t)
+  (setq parinfer-extensions
+        '(defaults       ; should be included.
+           pretty-parens  ; different paren styles for different modes.
+           paredit        ; Introduce some paredit commands.
+           smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+           ;;one
+           smart-yank)))   ; Yank behavior depend on mode.mode.
 
 
 ;; eldoc-mode shows documentation in the minibuffer when writing code

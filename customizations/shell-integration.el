@@ -108,5 +108,5 @@ version 2016-01-28"
                  (add-to-list 'eshell-command-completions-alist
                               '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
 
-(use-package eldoc
-  :config (global-eldoc-mode))
+;;(use-package eldoc
+;;  :config (global-eldoc-mode))
