@@ -84,7 +84,7 @@
      ("(\\(background?\\)"
       (1 font-lock-keyword-face))))
   (electric-pair-mode)
-  (define-clojure-indent (facts 2)))
+  (define-clojure-indent 2))
   
 ;; A little more syntax highlighting
 (use-package clojure-mode-extra-font-locking

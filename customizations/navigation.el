@@ -78,24 +78,7 @@
   :init (progn
           (projectile-mode)
           (require 'counsel-projectile)
-          (setq projectile-completion-system 'ivy)
-          (defun application-inventory-dev ()
-            "Action to perform to set-up development environment for Tidal Application Inventory"
-            (let ((default-directory "/Users/Justin/dev/tidal/application-inventory/") (conf (current-window-configuration)))
-              (async-shell-command "docker-osx-dev" "*AI: docker-osx-dev*")
-              (async-shell-command "./dev/run.sh" "*AI: ./dev/run.sh*")
-              (let ((default-directory (concat default-directory "application-inventory/")))
-                (async-shell-command "lein sass auto" "*AI: lein sass auto*"))
-              (set-window-configuration conf)))
-
-          (defun run-dev-startup-script ()
-            (message (concat "Spinning up development environment for " (projectile-project-name)))
-            (if (string= "application-inventory" (projectile-project-name))
-                (progn
-                  (message "Running development environment startup script")
-                  (application-inventory-dev))
-              ()))
-          (add-hook 'projectile-after-switch-project-hook (lambda () (run-dev-startup-script)))))
+          (setq projectile-completion-system 'ivy)))
 
 (use-package treemacs
   :ensure t

@@ -137,7 +137,8 @@
 (load "setup-web.el")
 ;; Load org-mode specific config
 (load "setup-org.el")
-
+;; Load custom functions
+(load "functions.el")
 ;; what does this do?                      
 (setq font-lock-maximum-decoration t)
 ;;;;;;;;
