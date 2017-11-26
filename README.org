@@ -3,6 +3,17 @@ This is an attempt at literate programming as inspired by:
   + "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
   + [[http://pages.sachachua.com/.emacs.d/Sacha.html]] 
   + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
+* Init File
+In order to get started your copy the following into your init file and uncomment:
+#+BEGIN_SRC emacs-lisp
+  ;; (require 'ob-tangle)
+  ;; (org-babel-load-file
+  ;;   (expand-file-name "README.org"
+  ;;                     user-emacs-directory))
+#+END_SRC
+** Note
+NOTE: The name of the Org files is important!  When a file gets tangled, it gets the same base name as the Org file.  Thus, tangling Emacs Lisp from a file `init.org` would generate `init.el`, obliterating this file in the process. So your config org file should not be named "init.org".
+
 * Setup
 ** Turn off garbage collection
 This sets the garbage collection threshold to 100mb
