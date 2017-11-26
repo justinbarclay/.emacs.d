@@ -1,6 +1,7 @@
+* Table of Content                                                      :TOC:
 * About
-This is an attempt at literate programming as inspired by:
-  + "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
+  "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
+  This Config file is inspired by:
   + [[http://pages.sachachua.com/.emacs.d/Sacha.html]] 
   + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
 * Init File
@@ -514,6 +515,24 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
     :init
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 #+END_SRC
+*** Org-toc
+After the installation, every time you’ll be saving an org file, the first headline with a :TOC: tag will be updated with the current table of contents.
+
+To add a TOC tag, you can use the command org-set-tags-command (C-c C-q).
+
+In addition to the simple :TOC: tag, you can also use the following tag formats:
+
+    :TOC_2: - sets the max depth of the headlines in the table of contents to 2 (the default)
+    :TOC_2_gh: - sets the max depth as in above and also uses the GitHub-style hrefs in the table of contents (this style is default). The other supported href style is ‘org’, which is the default org style.
+
+You can also use @ as separator, instead of _.
+#+BEGIN_SRC emacs-lisp
+  (use-package toc-org
+    :config
+    (add-hook 'org-mode-hook 'toc-org-enable))
+
+#+END_SRC
+
 * Misc
 ** Woman
 #+BEGIN_SRC emacs-lisp
