@@ -80,11 +80,11 @@
   (font-lock-add-keywords
    nil
    '(("(\\(facts?\\)"
-      (1 font-lock-keyword-face))
+      (2 font-lock-keyword-face))
      ("(\\(background?\\)"
-      (1 font-lock-keyword-face))))
+      (2 font-lock-keyword-face))))
   (electric-pair-mode)
-  (define-clojure-indent 2))
+  (setq define-clojure-indent 2))
   
 ;; A little more syntax highlighting
 (use-package clojure-mode-extra-font-locking
