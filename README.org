@@ -1,3 +1,4 @@
+[[./spacemacs.svg]]
 * Table of Content                                                      :TOC:
 - [[#about][About]]
 - [[#init-file][Init File]]
@@ -57,10 +58,10 @@
 - [[#setup-1][Setup]]
   - [[#csslesssass][CSS/LESS/SASS]]
 - [[#misc-1][Misc]]
-  - [[#flx][flx]]
+  - [[#fuzzy-matching][Fuzzy matching]]
   - [[#woman][Woman]]
   - [[#ido-completing-read][ido-completing-read]]
-  - [[#deffered][Deffered]]
+  - [[#asynchronous-framework][Asynchronous framework]]
 - [[#custom-functions][Custom Functions]]
   - [[#resize-font-size][Resize font size]]
   - [[#scroll-the-buffer][Scroll the buffer]]
@@ -826,7 +827,7 @@ Major mode customizations
   (add-hook 'less-mode-hook 'rainbow-mode))
 #+END_SRC
 * Misc
-** flx
+** Fuzzy matching
 #+BEGIN_SRC emacs-lisp
   (use-package flx)
 #+END_SRC
@@ -844,7 +845,7 @@ Major mode customizations
 #+BEGIN_SRC emacs-lisp
   (use-package ido-completing-read+)
 #+END_SRC
-** Deffered
+** Asynchronous framework
 #+BEGIN_SRC emacs-lisp
 (use-package deferred)
 #+END_SRC
