@@ -1,0 +1,125 @@
+* About
+This is an attempt at literate programming as inspired by:
+  + "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
+  + [[http://pages.sachachua.com/.emacs.d/Sacha.html]] 
+  + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
+
+* Setup
+** Turn off garbage collection
+This sets the garbage collection threshold to 100mb
+Reset garbage collection to emacs default after 5s
+#+BEGIN_SRC emacs-lisp
+(setq gc-cons-threshold 100000000)
+(run-with-idle-timer
+ 5 nil
+ (lambda ()
+ ;;     (setq gc-cons-threshold 10000000)
+   (setq gc-cons-threshold 10000000)
+   (message "gc-cons-threshold restored to %S"
+            gc-cons-threshold)))
+#+END_SRC
+
+** Package repositories
+Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives
+             '("marmalade" . "http://marmalade-repo.org/packages/") t)
+(add-to-list 'package-archives
+             '("tromey" . "http://tromey.com/elpa/") t)
+(package-initialize)
+#+END_SRC
+
+** Personal information
+#+BEGIN_SRC emacs-lisp
+(setq user-full-name "Justin Barclay"
+      user-mail-address "justinbarclay@gmail.com")
+#+END_SRC
+* use-package
+I use Jon Wiegley's [[https://github.com/jwiegley/use-package][use-package]] to pull in and configure my packages.
+Let's bootstrap use-package so it can download everything else as we need it.
+#+BEGIN_SRC emacs-lisp
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(progn ;'use-package'
+  (require  'use-package)
+  (setq use-package-verbose nil)
+  (setq use-package-always-defer t)
+  (setq use-package-always-ensure t)
+  (setq use-package-enable-imenu-support t))
+#+END_SRC
+
+** Using use-package
+The plan is to use a copious amount of deferral to speed up emacs boot time.
++ Use the :init keyword to execute code before a package is loaded. It accepts one or more forms, up until the next keyword
++ :config can be used to execute code after a package is loaded. 
++ The :ensure keyword causes the package(s) to be installed automatically if not already present on your system (set (setq use-package-always-ensure t)
++ You can override package deferral with the :demand keyword. Thus, even if you use :bind, using :demand will force loading to occur immediately and not establish an autoload for the bound key.
++ In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used. 
+** Debugging
+The :disabled keyword can turn off a module you're having difficulties with, or stop loading something you're not using at the present time:
+
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package ess-site                   
+  ;;   :disabled
+  ;;   :commands R)
+#+END_SRC
+When byte-compiling your .emacs file, disabled declarations are omitted from the output entirely, to accelerate startup times.
+* Look and Feel
+** Window
+#+BEGIN_SRC emacs-lisp
+(tool-bar-mode -1)
+#+END_SRC
+
+Emacs should take focus when it launches
+#+BEGIN_SRC emacs-lisp
+(when (display-graphic-p) ; Start full screen
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (x-focus-frame nil))
+#+END_SRC
+
+** Scroll the buffer
+The exact same functionality VIM has for C-e and C-y in normal mode:
+[[https://github.com/anler/.emacs.d-literate/blob/master/README.org#scroll-the-buffer][stolen from here]]
+#+BEGIN_SRC emacs-lisp
+(defun scroll-up-one-line-command ()
+  "Scroll text of selected window upward 1 line."
+  (interactive)
+  (scroll-up-command 1)
+  (next-line))
+
+(defun scroll-down-one-line-command ()
+  "Scroll text of selected window downward 1 line."
+  (interactive)
+  (scroll-down-command 1)
+  (previous-line))
+#+END_SRC
+
+And the same but without leaving the current window:
+#+BEGIN_SRC emacs-lisp
+(defun scroll-up-one-line-other-window ()
+  "Scroll other window one line up"
+  (interactive)
+  (scroll-other-window 1))
+
+(defun scroll-down-one-line-other-window ()
+  "Scroll other window one line down"
+  (interactive)
+  (scroll-other-window -1))
+#+END_SRC
+
+* OS Specific
+In OS X, when Emacs is started from the GUI it inherits a default set of environment variables, let's fix that.
+#+BEGIN_SRC emacs-lisp
+(use-package exec-path-from-shell
+  :if (eq system-type 'darwin)
+  :demand t
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-envs
+   '("PATH" "RUST_SRC_PATH")))
+#+END_SRC
