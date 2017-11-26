@@ -44,6 +44,9 @@
 (use-package swiper
   :ensure t
   :demand t
+  :init
+  (setq counsel-grep-base-command
+        "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
   :config
   (progn
     (ivy-mode 1)
@@ -61,7 +64,7 @@
     (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
     (global-set-key (kbd "C-c g") 'counsel-git)
     ;;    (global-set-key (kbd "C-c j") 'counsel-git-grep) ;; leave git to magit
-    (global-set-key (kbd "C-c k") 'counsel-ag)
+    (global-set-key (kbd "C-c k") 'counsel-rg)
     (global-set-key (kbd "C-x l") 'counsel-locate)
     (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
     (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)))
