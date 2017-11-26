@@ -143,6 +143,14 @@ Formatting window title
 #+BEGIN_SRC emacs-lisp
 (setq-default frame-title-format "%b (%f)")
 #+END_SRC
+** Smooth scrolling
+
+#+BEGIN_SRC emacs-lisp
+(use-package smooth-scroll
+  :config
+  (smooth-scroll-mode 1)
+  (setq smooth-scroll/vscroll-step-size 5))
+#+END_SRC
 
 ** Theme
 *** Dracula
