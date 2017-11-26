@@ -4,7 +4,7 @@ This is an attempt at literate programming as inspired by:
   + [[http://pages.sachachua.com/.emacs.d/Sacha.html]] 
   + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
 * Init File
-  In order to get started your copy the following into your init file and uncomment:
+  In order to get started, uncomment and copy the following code into your init file:
   #+BEGIN_SRC emacs-lisp
   ;; (require 'ob-tangle)
   ;; (org-babel-load-file
