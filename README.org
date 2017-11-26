@@ -3,7 +3,6 @@ This is an attempt at literate programming as inspired by:
   + "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
   + [[http://pages.sachachua.com/.emacs.d/Sacha.html]] 
   + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
-
 * Setup
 ** Turn off garbage collection
 This sets the garbage collection threshold to 100mb
@@ -13,7 +12,6 @@ Reset garbage collection to emacs default after 5s
 (run-with-idle-timer
  5 nil
  (lambda ()
- ;;     (setq gc-cons-threshold 10000000)
    (setq gc-cons-threshold 10000000)
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
@@ -70,6 +68,48 @@ The :disabled keyword can turn off a module you're having difficulties with, or 
 #+END_SRC
 When byte-compiling your .emacs file, disabled declarations are omitted from the output entirely, to accelerate startup times.
 * Look and Feel
+** Font
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'default nil
+                    :family "Inconsolata for Powerline" :height 180 :weight 'normal)
+#+END_SRC
+** Misc
+Don't pop up font menu
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "s-t") '(lambda () (interactive)))
+#+END_SRC
+
+No cursor blinking, it's distracting
+#+BEGIN_SRC emacs-lisp
+(blink-cursor-mode 0)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+;; These settings relate to how emacs interacts with your operating system
+(setq ;; makes killing/yanking interact with the clipboard
+ select-enable-clipboard t
+
+ ;; I'm actually not sure what this does but it's recommended?
+ select-enable-primary t
+
+ ;; Save clipboard strings into kill ring before replacing them.
+ ;; When one selects something in another program to paste it into Emacs,
+ ;; but kills something in Emacs before actually pasting it,
+ ;; this selection is gone unless this variable is non-nil
+ save-interprogram-paste-before-kill t
+
+ ;; Shows all options when running apropos. For more info,
+ ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
+ apropos-do-all t
+
+ ;; Mouse yank commands yank at point instead of at click.
+ mouse-yank-at-point t)
+#+END_SRC
+
+My name isn't "Tinker", so I don't need a bell.
+#+BEGIN_SRC emacs-lisp
+(setq ring-bell-function 'ignore)
+#+END_SRC
 ** Window
 #+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
@@ -82,6 +122,139 @@ Emacs should take focus when it launches
   (x-focus-frame nil))
 #+END_SRC
 
+Don't show native OS scroll bars for buffers because they're redundant
+#+BEGIN_SRC emacs-lisp
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+#+END_SRC
+
+Formatting window title
+#+BEGIN_SRC emacs-lisp
+(setq-default frame-title-format "%b (%f)")
+#+END_SRC
+
+** Theme
+*** Dracula
+#+BEGIN_SRC emacs-lisp
+(use-package dracula-theme
+  :demand t
+  :config
+  (load-theme 'dracula t))
+#+END_SRC
+*** Powerline
+#+BEGIN_SRC emacs-lisp
+(use-package powerline
+  :config
+  (powerline-center-theme))
+(setq powerline-default-separator 'wave)
+#+END_SRC
+*** Spaceline
+#+BEGIN_SRC emacs-lisp
+(use-package spaceline
+  :ensure t
+  :demand t
+  :config
+  (require 'spaceline-config))
+#+END_SRC
+
+*** all-the-icons
+#+BEGIN_SRC emacs-lisp
+(use-package all-the-icons		
+  :ensure t)
+#+END_SRC
+*** Spaceline + All the Icons
+#+BEGIN_SRC emacs-lisp
+(use-package spaceline-all-the-icons
+  :ensure t 
+  :after spaceline
+  :defer t
+  :config (spaceline-all-the-icons-theme)
+  (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
+                                                                :foreground "#f8f8f2"
+                                                                :inherit 'mode-line))))
+                    '(powerline-active2 ((t (:background "#44475a"
+                                                         :foregound "#50fa7b"
+                                                         :inherit 'mode-line))))
+                    '(mode-line ((t (:background "#282a36"
+                                                 :foregound "#50fa7b"
+                                                 :inherit 'mode-line))))
+                    '(powerline-active1 ((t (:background "#6272a4"
+                                                         :foregound "#50fa7b"
+                                                         :inherit 'mode-line)))))
+  (setq spaceline-all-the-icons-separator-type 'wave))
+#+END_SRC
+
+** Line Numbers
+As of Emacs 26.0 we have native, perfomant support for line numebrs
+#+BEGIN_SRC emacs-lisp
+(global-display-line-numbers-mode)
+(set-default 'display-line-numbers-type 'visual)
+(setq display-line-numbers-current-absolute t)
+#+END_SRC
+** Rainbow delimiters
+#+BEGIN_SRC emacs-lisp
+(use-package rainbow-delimiters
+  :init
+  (list (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+  :config
+   (setq 
+    (rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
+    (rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
+    (rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
+    (rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
+    (rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
+    (rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
+    (rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
+    (rainbow-delimiters-depth-8-face ((t (:foreground "sienna1")))))))
+#+END_SRC
+* OS Specific
+In OS X, when Emacs is started from the GUI it inherits a default set of environment variables. Let's fix that.
+#+BEGIN_SRC emacs-lisp
+(use-package exec-path-from-shell
+  :if (eq system-type 'darwin)
+  :demand t
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-envs
+   '("PATH" "RUST_SRC_PATH")))
+#+END_SRC
+* Custom Functions
+** Resize font size
+Increases the fonts size across all buffers
+#+BEGIN_SRC emacs-lisp
+(defun font-name-replace-size (font-name new-size)
+  (let ((parts (split-string font-name "-")))
+    (setcar (nthcdr 7 parts) (format "%d" new-size))
+    (mapconcat 'identity parts "-")))
+
+(defun increment-default-font-height (delta)
+  "Adjust the default font height by DELTA on every frame.
+The pixel size of the frame is kept (approximately) the same.
+DELTA should be a multiple of 10, in the units used by the
+:height face attribute."
+  (let* ((new-height (+ (face-attribute 'default :height) delta))
+         (new-point-height (/ new-height 10)))
+    (dolist (f (frame-list))
+      (with-selected-frame f
+        ;; Latest 'set-frame-font supports a "frames" arg, but
+        ;; we cater to Emacs 23 by looping instead.
+        (set-frame-font (font-name-replace-size (face-font 'default)
+                                                new-point-height)
+                        t)))
+    (set-face-attribute 'default nil :height new-height)
+    (message "default font size is now %d" new-point-height)))
+
+(defun increase-default-font-height ()
+  (interactive)
+  (increment-default-font-height 10))
+
+(defun decrease-default-font-height ()
+  (interactive)
+  (increment-default-font-height -10))
+
+(global-set-key (kbd "C-M-=") 'increase-default-font-height)
+(global-set-key (kbd "C-M--") 'decrease-default-font-height)
+#+END_SRC
 ** Scroll the buffer
 The exact same functionality VIM has for C-e and C-y in normal mode:
 [[https://github.com/anler/.emacs.d-literate/blob/master/README.org#scroll-the-buffer][stolen from here]]
@@ -110,16 +283,4 @@ And the same but without leaving the current window:
   "Scroll other window one line down"
   (interactive)
   (scroll-other-window -1))
-#+END_SRC
-
-* OS Specific
-In OS X, when Emacs is started from the GUI it inherits a default set of environment variables, let's fix that.
-#+BEGIN_SRC emacs-lisp
-(use-package exec-path-from-shell
-  :if (eq system-type 'darwin)
-  :demand t
-  :config
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-envs
-   '("PATH" "RUST_SRC_PATH")))
 #+END_SRC
