@@ -57,6 +57,12 @@
   - [[#company-ycmd][Company-YCMD]]
 - [[#setup-1][Setup]]
   - [[#csslesssass][CSS/LESS/SASS]]
+  - [[#cc][C/C++]]
+  - [[#lisp][Lisp]]
+  - [[#clojure][Clojure]]
+  - [[#javascript][JavaScript]]
+  - [[#html][HTML]]
+  - [[#ruby][Ruby]]
 - [[#misc-1][Misc]]
   - [[#fuzzy-matching][Fuzzy matching]]
   - [[#woman][Woman]]
@@ -69,6 +75,7 @@
   - [[#run-current-file][Run Current File]]
   - [[#eval-and-replace][Eval and Replace]]
   - [[#replace-tabs][Replace tabs]]
+  - [[#find-unused-functions-in-javascript][Find unused functions in JavaScript]]
 
 * About
   "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
@@ -103,15 +110,15 @@ Reset garbage collection to emacs default after 5s
 ** Package repositories
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
 #+BEGIN_SRC emacs-lisp
-(require 'package)
-(message "Loading packages")
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/") t)
-(add-to-list 'package-archives
-             '("tromey" . "http://tromey.com/elpa/") t)
-(package-initialize)
+  (require 'package)
+  (message "Loading packages")
+  (add-to-list 'package-archives
+               '("melpa" . "http://melpa.org/packages/"))
+  (add-to-list 'package-archives
+               '("marmalade" . "http://marmalade-repo.org/packages/") t)
+  (add-to-list 'package-archives
+               '("tromey" . "http://tromey.com/elpa/") t)
+  (package-initialize)
 #+END_SRC
 
 ** Personal information
@@ -295,7 +302,7 @@ You can also use @ as separator, instead of _.
       ;; magit settings
       (setq
        ;; use ido to look for branches
-       magit-completing-read-function  ''ivy-completing-read
+       magit-completing-read-function  'ivy-completing-read
        ;; don't put "origin-" in front of new branch names by default
        magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
        ;; open magit status in same window as current buffer
@@ -573,7 +580,6 @@ it looks like counsel is a requirement for swiper
      ("<f1> l" . counsel-load-library)
      ("<f2> i" . counsel-info-lookup-symbol)
      ("<f2> u" . counsel-unicode-char)
-     ("C-c g" . counsel-git)
      ("C-c k" . counsel-rg)
      ("C-x l" . counsel-locate)
      ("C-S-o" . counsel-rhythmbox)))
@@ -591,7 +597,7 @@ it looks like counsel is a requirement for swiper
 ** Projectile
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
-    :command
+    :commands
     (projectile-find-file projectile-switch-project)
     :diminish
     (projectile-mode)
@@ -689,23 +695,23 @@ Remember where point was when I come back to a file
 #+END_SRC
 ** Parens Balancing
 #+BEGIN_SRC emacs-lisp
-(use-package smartparens
-  :ensure t
-  :bind (:map smartparens-mode-map
-          ("C-)" . sp-forward-slurp-sexp)
-          ("C-(" . sp-backward-slurp-sexp)
-          ("C-}" . sp-forward-barf-sexp)
-          ("C-{" . sp-backward-barf-sexp))
-  :config
-  (setq sp-escape-wrapped-region nil))
+  (use-package smartparens
+    :init
+    (add-hook 'prog-mode-hook #'smartparens-mode)
+    :bind (:map smartparens-mode-map
+            ("C-)" . sp-forward-slurp-sexp)
+            ("C-(" . sp-backward-slurp-sexp)
+            ("C-}" . sp-forward-barf-sexp)
+            ("C-{" . sp-backward-barf-sexp))
+    :config
+    (setq sp-escape-wrapped-region nil))
 #+END_SRC
 ** Hungry Delete
 #+BEGIN_SRC emacs-lisp
-(use-package hungry-delete
-  :ensure t
-  :demand t
-  :init
-  (global-hungry-delete-mode))
+  (use-package hungry-delete
+    :demand t
+    :init
+    (global-hungry-delete-mode))
 #+END_SRC
 
 ** Code Folding
@@ -826,6 +832,242 @@ Major mode customizations
   (add-hook 'css-mode-hook 'rainbow-mode)
   (add-hook 'less-mode-hook 'rainbow-mode))
 #+END_SRC
+** C/C++
+*** Add hooks and customizations
+#+BEGIN_SRC emacs-lisp
+  (progn ; C mode hook
+    (add-hook 'c-mode-hook 'flycheck-mode)
+    (add-hook 'c-mode-hook 'semantic-mode)
+    (add-hook 'c-mode-hook 'ycmd-mode)
+    (add-hook 'c-mode-hook 'counsel-gtags-mode)
+    (add-hook 'c++-mode-hook 'counsel-gtags-mode)
+    (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
+
+  (eval-after-load 'c-mode '(setq-local eldoc-documentation-function #'ggtags-eldoc-function))
+
+  (setq-default c-basic-offset 2)
+#+END_SRC
+
+*** c-eldoc
+#+BEGIN_SRC emacs-lisp
+(use-package c-eldoc)
+#+END_SRC
+
+*** counsel-gtags
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel-gtags
+    :bind (("M-," . counsel-gtags-find-definition))
+    :config
+    (setq counsel-gtags-auto-update t))
+#+END_SRC
+*** ggtags
+#+BEGIN_SRC emacs-lisp
+(use-package ggtags
+  :config
+  (add-hook 'c-common-mode-hook 'ggtags-mode))
+#+END_SRC
+** Lisp
+** Clojure
+*** clojure-mode
+#+BEGIN_SRC emacs-lisp
+  (use-package clojure-mode
+    :config
+    (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
+    (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
+    (setq inferior-lisp-program "lein repl")
+    ;; Enable parinfer for Clojure
+    (add-hook 'clojure-mode-hook 'cider-mode)
+    (add-hook 'clojure-mode-hook 'eldoc-mode)
+    (add-hook 'clojure-mode-hook 'subword-mode)
+    ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
+    (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
+    (require 'clojure-mode-extra-font-locking)
+    (font-lock-add-keywords
+     nil
+     '(("(\\(facts?\\)"
+        (2 font-lock-keyword-face))
+       ("(\\(background?\\)"
+        (2 font-lock-keyword-face))))
+    (electric-pair-mode)
+    (setq define-clojure-indent 2))
+
+#+END_SRC
+*** Cider
+A REPL for Clojure and nrepl for ClojureScript
+#+BEGIN_SRC emacs-lisp
+  (use-package cider
+    :ensure t
+    :config
+    ;; REPL related stuff
+
+    ;; REPL history file
+    (setq cider-repl-history-file "~/.emacs.d/cider-history")
+
+    ;; nice pretty printing
+    (setq cider-repl-use-pretty-printing t)
+
+    ;; nicer font lock in REPL
+    (setq cider-repl-use-clojure-font-lock t)
+
+    ;; result prefix for the REPL
+    (setq cider-repl-result-prefix ";; => ")
+
+    ;; never ending REPL history
+    (setq cider-repl-wrap-history t)
+
+    ;; looong history
+    (setq cider-repl-history-size 3000)
+
+    ;; eldoc for clojure
+    (add-hook 'cider-mode-hook #'eldoc-mode)
+
+    ;; error buffer not popping up
+    (setq cider-show-error-buffer nil)
+
+    ;; go right to the REPL buffer when it's finished connecting
+    (setq cider-repl-pop-to-buffer-on-connect nil)
+    ;; company mode for completion
+    (add-hook 'cider-repl-mode-hook #'company-mode)
+    (add-hook 'cider-mode-hook #'company-mode)
+
+    (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
+    ;; key bindings
+    ;; these help me out with the way I usually develop web apps
+    (defun cider-start-http-server ()
+      (interactive)
+      (cider-load-current-buffer)
+      (let ((ns (cider-current-ns)))
+        (cider-repl-set-ns ns)
+        (cider-interactive-eval (format "(println '(def server (%s/start))) (println 'server)" ns))
+        (cider-interactive-eval (format "(def server (%s/start)) (println server)" ns))))
+    (defun cider-refresh ()
+      (interactive)
+      (cider-interactive-eval (format "(user/reset)")))
+    (defun cider-user-ns ()
+      (interactive)
+      (cider-repl-set-ns "user"))
+    (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
+    (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
+    (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
+    (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns))
+#+END_SRC
+
+** JavaScript
+Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
+*** Tern
+#+BEGIN_SRC emacs-lisp
+  (use-package company-tern
+    :bind
+    ("M-." . nil)
+    ("M-," . nil)
+    :config
+    (setq company-tooltip-align-annotations t)
+    (setq company-tern-property-marker " <p>"))
+#+END_SRC
+
+*** REPL
+#+BEGIN_SRC emacs-lisp
+  (use-package indium
+    :config
+    (add-hook 'indium-update-script-source-hook
+              (lambda (url)
+                (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
+                                     url))))
+    (indium-interaction-mode))
+#+END_SRC
+*** js2-Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package js2-mode
+    :after indium
+    :mode "\\.js\\'"
+    :config
+    (add-hook 'js-mode-hook 'subword-mode)
+    (add-hook 'html-mode-hook 'subword-mode)
+    (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+    (add-hook 'js2-mode-hook #'js2-refactor-mode)
+    (add-to-list 'company-backends 'company-tern)
+    (add-hook 'js2-mode-hook (lambda ()
+                               (tern-mode)))
+    (setq js-indent-level 4)
+    (require 'indium)
+    (add-hook 'js-mode-hook #'indium-interaction-mode))
+#+END_SRC
+*** js2-refactor
+#+BEGIN_SRC emacs-lisp
+  (use-package js2-refactor
+    :bind
+    (:map js2-mode-map
+          ("C-k" . js2r-kill))
+    :config
+    (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
+    (js2r-add-keybindings-with-prefix "C-c C-r"))
+#+END_SRC
+*** CoffeeScript
+#+BEGIN_SRC emacs-lisp
+  (use-package coffee-mode
+    :mode "\\.coffee$"
+    :config
+    (add-to-list 'company-backends 'company-tern)
+    (custom-set-variables '(coffee-tab-width 2))
+    (add-hook 'coffee-mode-hook 'subword-mode)
+    (add-hook 'coffee-mode-hook 'highlight-indentation-current-column-mode)
+    (add-hook 'coffee-mode-hook
+              (defun coffee-mode-newline-and-indent ()
+                (define-key coffee-mode-map "\C-j" 'coffee-newline-and-indent)
+                (setq coffee-cleanup-whitespace nil))))
+#+END_SRC
+** HTML
+*** tagedit
+#+BEGIN_SRC emacs-lisp
+  (use-package tagedit)
+#+END_SRC
+*** sgml-mode
+#+BEGIN_SRC emacs-lisp
+  (use-package sgml-mode
+    :after tagedit
+    :config
+    (require 'tagedit)
+    (tagedit-add-paredit-like-keybindings)
+    (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
+#+END_SRC
+** Ruby
+*** rbenv
+#+BEGIN_SRC emacs-lisp
+  (use-package rbenv
+    :config
+    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
+#+END_SRC
+*** roby
+#+BEGIN_SRC emacs-lisp
+(use-package robe)
+#+END_SRC
+
+*** inf-ruby
+#+BEGIN_SRC emacs-lisp
+  (use-package inf-ruby
+    :bind
+    (:map inf-ruby-minor-mode-map
+          (("C-c C-z" . run-ruby)
+           ("C-c C-b" . ruby-send-buffer)))
+    :config
+    (when (executable-find "pry")
+      (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
+      (setq inf-ruby-default-implementation "pry")))
+#+END_SRC
+*** enhanced-ruby-mode
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
+  (use-package enh-ruby-mode
+    :after inf-ruby
+    :mode ("\\(?:\\.rb\\|ru\\|rake\\|thor\\|jbuilder\\|gemspec\\|podspec\\|/\\(?:Gem\\|Rake\\|Cap\\|Thor\\|Vagrant\\|Guard\\|Pod\\)file\\)\\'" . enh-ruby-mode)
+    :config
+    (setq ruby-indent-level 2)
+    (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)
+    (add-hook 'compilation-filter-hook 'inf-ruby-auto-enter)
+    (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode)))
+#+END_SRC
+
+
 * Misc
 ** Fuzzy matching
 #+BEGIN_SRC emacs-lisp
@@ -924,7 +1166,7 @@ And the same but without leaving the current window:
        (org-babel-tangle nil "~/.emacs.d/init.el")
        (byte-compile-file "~/.emacs.d/init.el")))
 
-  (add-hook 'after-save-hook #'my/tangle-dotfiles) ;
+  (add-hook 'after-save-hook #'my/tangle-dotfiles)
 #+END_SRC
 ** Run Current File
 #+BEGIN_SRC emacs-lisp
@@ -1016,3 +1258,50 @@ And the same but without leaving the current window:
     (keyboard-quit))
 #+END_SRC
 
+** Find unused functions in JavaScript
+#+BEGIN_SRC emacs-lisp
+(defun js2-unused--find-definitions ()
+  ;; Reset the value before visiting the AST
+  (setq js2-unused-definitions nil)
+  (js2-visit-ast js2-mode-ast
+                 #'js2-unused-visitor))
+(defun js2-unused--unqualified-name (name)
+  "Return the local name of NAME.
+foo.bar.baz => baz"
+  (save-match-data
+    (if (string-match "\\.\\([^.]+\\)$" name)
+        (match-string 1 name)
+      name)))
+
+(defun js2-unused-visitor (node end-p)
+  "Add NODE's name to `js2-unused-definitions` if it is a function."
+  (unless end-p
+    (cond
+     ;; assignment to a function
+     ((and (js2-assign-node-p node)
+           (js2-function-node-p (js2-assign-node-right node)))
+      (push (js2-node-string (js2-assign-node-left node)) js2-unused-definitions))
+     ;; function declaration (skipping anonymous ones)
+     ((js2-function-node-p node)
+      (if-let ((name (js2-function-name node)))
+          (push name js2-unused-definitions))))
+    t))
+(defun js2-unused-functions ()
+  (interactive)
+  ;; Make sure that JS2 has finished parsing the buffer
+  (js2-mode-wait-for-parse
+   (lambda ()
+     ;; Walk the AST tree to find all function definitions
+     (js2-unused--find-definitions)
+     ;; Use xref-js2 to filter the ones that are not referenced anywhere
+     (let ((unused (seq-filter (lambda (name)
+                                 (null (xref-js2--find-references
+                                        (js2-unused--unqualified-name name))))
+                               js2-unused-definitions)))
+       ;; If there are unreferenced function, display a message
+       (apply #'message (if unused
+                            `("Unused functions in %s: %s "
+                              ,(file-name-nondirectory buffer-file-name)
+                              ,(mapconcat #'identity unused " "))
+                          '("No unused function found")))))))
+#+END_SRC
