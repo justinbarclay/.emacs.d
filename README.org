@@ -13,11 +13,12 @@
   - [[#eshell][EShell]]
   - [[#magit][Magit]]
 - [[#look-and-feel][Look and Feel]]
+  - [[#window][Window]]
   - [[#font][Font]]
   - [[#misc][Misc]]
-  - [[#window][Window]]
   - [[#smooth-scrolling][Smooth scrolling]]
   - [[#theme][Theme]]
+  - [[#modeline][Modeline]]
   - [[#line-numbers][Line Numbers]]
   - [[#rainbow-delimiters][Rainbow delimiters]]
   - [[#diminish][Diminish]]
@@ -40,6 +41,7 @@
   - [[#highlight-current-line][Highlight current line]]
   - [[#highlight-matching-parens][Highlight matching parens]]
   - [[#no-tabs][No tabs]]
+  - [[#set-base-indent][Set base indent]]
   - [[#save-place-in-file][Save place in file]]
   - [[#parens-balancing][Parens Balancing]]
   - [[#hungry-delete][Hungry Delete]]
@@ -55,19 +57,27 @@
   - [[#company][Company]]
   - [[#ycmd][YCMD]]
   - [[#company-ycmd][Company-YCMD]]
+  - [[#lsp-mode][LSP-Mode]]
 - [[#setup-1][Setup]]
   - [[#csslesssass][CSS/LESS/SASS]]
   - [[#cc][C/C++]]
   - [[#lisp][Lisp]]
+  - [[#elisp][Elisp]]
   - [[#clojure][Clojure]]
   - [[#javascript][JavaScript]]
   - [[#html][HTML]]
   - [[#ruby][Ruby]]
+  - [[#rust][Rust]]
+  - [[#json][JSON]]
+  - [[#docker][Docker]]
+- [[#communication][Communication]]
+  - [[#slack][Slack]]
 - [[#misc-1][Misc]]
   - [[#fuzzy-matching][Fuzzy matching]]
   - [[#woman][Woman]]
   - [[#ido-completing-read][ido-completing-read]]
   - [[#asynchronous-framework][Asynchronous framework]]
+  - [[#profiling][Profiling]]
 - [[#custom-functions][Custom Functions]]
   - [[#resize-font-size][Resize font size]]
   - [[#scroll-the-buffer][Scroll the buffer]]
@@ -76,6 +86,7 @@
   - [[#eval-and-replace][Eval and Replace]]
   - [[#replace-tabs][Replace tabs]]
   - [[#find-unused-functions-in-javascript][Find unused functions in JavaScript]]
+  - [[#enable-paredit-or-parinfer][Enable Paredit or Parinfer]]
 
 * About
   "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
@@ -161,6 +172,17 @@ The :disabled keyword can turn off a module you're having difficulties with, or 
   ;;   :commands R)
 #+END_SRC
 When byte-compiling your .emacs file, disabled declarations are omitted from the output entirely, to accelerate startup times.
+*** Benchmark-init
+This is hidden here to load right after we have use-package to be able to benchmark startup
+#+BEGIN_SRC emacs-lisp :tangle nil
+  (use-package benchmark-init
+    :demand t
+    :init
+    (benchmark-init/activate)
+    :config
+    ;; To disable collection of benchmark data after init is done.
+    (add-hook 'after-init-hook 'benchmark-init/deactivate))
+#+END_SRC
 ** Org Mode
 Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69cb9320811c5ec63409880eadd
 *** Org
@@ -215,6 +237,9 @@ You can also use @ as separator, instead of _.
 ** EShell
 #+BEGIN_SRC emacs-lisp
 (use-package eshell
+  :init
+  (add-hook 'eshell-mode-hook
+                   #'company-mode)
   :config
   (progn
     (eval-after-load 'esh-opt
@@ -223,9 +248,6 @@ You can also use @ as separator, instead of _.
          (require 'em-term)
          (require 'em-cmpl)
          (setenv "PAGER" "cat")
-         (add-hook 'eshell-mode-hook
-                   #'company-mode)
-
          (add-to-list 'eshell-visual-commands "ssh")
          (add-to-list 'eshell-visual-commands "htop")
          (add-to-list 'eshell-visual-commands "top")
@@ -326,6 +348,28 @@ You can also use @ as separator, instead of _.
 #+END_SRC
 
 * Look and Feel
+** Window
+#+BEGIN_SRC emacs-lisp
+(tool-bar-mode -1)
+#+END_SRC
+
+Emacs should take focus when it launches
+#+BEGIN_SRC emacs-lisp
+(when (display-graphic-p) ; Start full screen
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (x-focus-frame nil))
+#+END_SRC
+
+Don't show native OS scroll bars for buffers because they're redundant
+#+BEGIN_SRC emacs-lisp
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+#+END_SRC
+
+Formatting window title
+#+BEGIN_SRC emacs-lisp
+(setq-default frame-title-format "%b (%f)")
+#+END_SRC
 ** Font
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute 'default nil
@@ -383,28 +427,6 @@ My name isn't "Tinker", so I don't need a bell.
 ;; Go straight to scratch buffer on startup
 (setq inhibit-startup-message t)
 #+END_SRC
-** Window
-#+BEGIN_SRC emacs-lisp
-(tool-bar-mode -1)
-#+END_SRC
-
-Emacs should take focus when it launches
-#+BEGIN_SRC emacs-lisp
-(when (display-graphic-p) ; Start full screen
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
-  (x-focus-frame nil))
-#+END_SRC
-
-Don't show native OS scroll bars for buffers because they're redundant
-#+BEGIN_SRC emacs-lisp
-(when (fboundp 'scroll-bar-mode)
-  (scroll-bar-mode -1))
-#+END_SRC
-
-Formatting window title
-#+BEGIN_SRC emacs-lisp
-(setq-default frame-title-format "%b (%f)")
-#+END_SRC
 ** Smooth scrolling
 
 #+BEGIN_SRC emacs-lisp
@@ -422,45 +444,47 @@ Formatting window title
   :config
   (load-theme 'dracula t))
 #+END_SRC
+** Modeline
 *** Powerline
 #+BEGIN_SRC emacs-lisp
-(use-package powerline
-  :config
-  (powerline-center-theme)
-  (setq powerline-default-separator 'wave))
+  (use-package powerline
+    :config
+    (powerline-center-theme)
+    (setq powerline-default-separator 'wave))
 #+END_SRC
 *** Spaceline
 #+BEGIN_SRC emacs-lisp
 (use-package spaceline
-  :demand t
   :config
-  (require 'spaceline-config)
-  (setq spaceline-byte-compile t))
+  ;;(require 'spaceline-config)
+  (setq spaceline-byte-compile nil))
 #+END_SRC
 *** all-the-icons
 #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons)
 #+END_SRC
 *** Spaceline + All the Icons
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle nil
   (use-package spaceline-all-the-icons
     :after spaceline
-    :config 
-    ;;(spaceline-all-the-icons-theme)
-    (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
-                                                                  :foreground "#f8f8f2"
-                                                                  :inherit 'mode-line))))
-                      '(powerline-active2 ((t (:background "#44475a"
-                                                           :foregound "#50fa7b"
-                                                           :inherit 'mode-line))))
-                      '(mode-line ((t (:background "#282a36"
-                                                   :foregound "#50fa7b"
-                                                   :inherit 'mode-line))))
-                      '(powerline-active1 ((t (:background "#6272a4"
-                                                           :foregound "#50fa7b"
-                                                           :inherit 'mode-line)))))
-    (setq mode-line-format spaceline-all-the-icons-theme)
-    (setq spaceline-all-the-icons-separator-type 'wave))
+    :init
+    (spaceline-all-the-icons-theme)
+    :config
+    (progn
+      (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
+                                                                    :foreground "#f8f8f2"
+                                                                    :inherit 'mode-line))))
+                        '(powerline-active2 ((t (:background "#44475a"
+                                                             :foregound "#50fa7b"
+                                                             :inherit 'mode-line))))
+                        '(mode-line ((t (:background "#282a36"
+                                                     :foregound "#50fa7b"
+                                                     :inherit 'mode-line))))
+                        '(powerline-active1 ((t (:background "#6272a4"
+                                                             :foregound "#50fa7b"
+                                                             :inherit 'mode-line)))))
+      (setq spaceline-all-the-icons-separator-type 'wave)
+      (setq mode-line-format spaceline-all-the-icons-theme)))
 #+END_SRC
 
 ** Line Numbers
@@ -506,12 +530,10 @@ As of Emacs 26.0 we have native, perfomant support for line numebrs
 In OS X, when Emacs is started from the GUI it inherits a default set of environment variables. Let's fix that.
 Currently turned off due to debugging issues
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package exec-path-from-shell
-  ;;   :defer t
-  ;;   :if (eq system-type 'darwin)
-  ;;   :demand t
-  ;;   :config
-  ;;   (exec-path-from-shell-initialize))
+  (use-package exec-path-from-shell
+    :if (eq system-type 'darwin)
+    :config
+    (exec-path-from-shell-initialize))
   ;;   ;; (exec-path-from-shell-copy-envs
   ;;   ;;  '("PATH" "RUST_SRC_PATH")))
 #+END_SRC
@@ -575,6 +597,9 @@ it looks like counsel is a requirement for swiper
     :bind
     (("M-x" . counsel-M-x)
      ("C-x C-f" . counsel-find-file)
+     ("C-c p f" . counsel-projectile-find-file)
+     ("C-c p d" . counsel-projectile-find-dir)
+     ("C-c p s" . counsel-projectile-switch-project)
      ("<f1> f" . counsel-describe-function)
      ("<f1> v" . counsel-describe-variable)
      ("<f1> l" . counsel-load-library)
@@ -681,6 +706,11 @@ I've put this at the top, because I use this almost everyday and wish it existed
 #+BEGIN_SRC emacs-lisp
 (setq-default indent-tabs-mode nil)
 #+END_SRC
+** Set base indent
+#+BEGIN_SRC emacs-lisp
+(setq tab-width 2)
+#+END_SRC
+
 ** Save place in file
 Remember where point was when I come back to a file
 #+BEGIN_SRC emacs-lisp
@@ -781,13 +811,14 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package company
     :commands (global-company-mode)
+    :bind
+    (;;("C-<tab>" . company-capf)
+     :map company-mode-map
+     (("M-h" . company-quickhelp-manual-begin)))
     :init
     (add-hook 'after-init-hook 'global-company-mode)
     :config
     (progn
-      (eval-after-load 'company
-        '(define-key company-active-map (kbd "M-h") #'company-quickhelp-manual-begin))
-    
       (eval-after-load 'company
         '(push 'company-robe company-backends))
       (setq company-idle-delay 0.5)
@@ -795,33 +826,37 @@ Load this before we load Flycheck
             '(company-pseudo-tooltip-unless-just-one-frontend
               company-preview-frontend
               company-echo-metadata-frontend))
-    
       (setq company-auto-complete t)
-      (setq company-tooltip-align-annotations t)
-      (global-set-key (kbd "<C-tab>") 'company-capf)))
+      (setq company-tooltip-align-annotations t)))
 #+END_SRC
 ** YCMD
 #+BEGIN_SRC emacs-lisp
   (use-package ycmd
     :commands (ycmd-mode)
     :config
-    (set-variable 'ycmd-server-command '("python" "/Users/Justin/ycmd/ycmd"))
-    (set-variable 'ycmd-extra-conf-whitelist '("~/*"))
-    (set-variable 'ycmd-global-config "~/.ycm_extra_conf.py")
-    (require 'ycmd-eldoc)
-    (add-hook 'ycmd-mode-hook 'ycmd-eldoc-setup)
-    ;;  (setq ycmd-force-semantic-completion t)
-    (add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results))
+    (progn
+      (set-variable 'ycmd-server-command '("python" "/Users/Justin/ycmd/ycmd"))
+      (set-variable 'ycmd-extra-conf-whitelist '("~/*"))
+      (set-variable 'ycmd-global-config "~/.ycm_extra_conf.py")
+      (require 'ycmd-eldoc)
+      (add-hook 'ycmd-mode-hook 'ycmd-eldoc-setup)
+      ;;  (setq ycmd-force-semantic-completion t)
+      (add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results)))
 #+END_SRC
 
 ** Company-YCMD
 #+BEGIN_SRC emacs-lisp
   (use-package company-ycmd
-    :commands 
-    (ycmd-mode)
-    :init
+    :after ycmd
+    :defer 1
+    :config
     (company-ycmd-setup))
 #+END_SRC
+** LSP-Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package lsp-mode)
+#+END_SRC
+
 * Setup
 Major mode customizations
 ** CSS/LESS/SASS
@@ -867,29 +902,105 @@ Major mode customizations
   (add-hook 'c-common-mode-hook 'ggtags-mode))
 #+END_SRC
 ** Lisp
+*** paredit
+#+BEGIN_SRC emacs-lisp
+  (use-package paredit
+    :init
+    (progn
+      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit)))
+      (add-hook 'common-lisp-mode-hook (lambda () (enable-paredit)))
+      (add-hook 'scheme-mode-hook (lambda () (enable-paredit)))
+      (add-hook 'lisp-mode-hook (lambda () (enable-paredit)))))
+#+END_SRC
+*** parinfer
+#+BEGIN_SRC emacs-lisp
+  (use-package parinfer
+    :bind
+    (:map parinfer-mode-map
+          ("C-t" . parinfer-toggle-mode))
+    :config
+    (setq parinfer-auto-switch-indent-mode t)
+    (setq parinfer-extensions
+          '(defaults       ; should be included.
+             pretty-parens  ; different paren styles for different modes.
+             paredit        ; Introduce some paredit commands.
+             smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+             ;;one
+             smart-yank)))   ; Yank behavior depend on mode
+#+END_SRC
+*** eldoc
+#+BEGIN_SRC emacs-lisp
+  (use-package eldoc
+    :ensure t
+    :config
+    (eldoc-add-command
+     'paredit-backward-delete
+     'paredit-close-round)
+    (global-eldoc-mode))
+#+END_SRC
+*** Slime 
+#+BEGIN_SRC emacs-lisp
+  (use-package slime
+    :ensure t
+    :init
+    (add-hook 'lisp-mode-hook 'slime-mode)
+    (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
+                                           (let (old-window selected-window)
+                                             (slime)
+                                             (delete-other-windows old-window)
+                                             (window-buffer old-window))))))
+#+END_SRC
+*** slime-company
+#+BEGIN_SRC emacs-lisp
+  (use-package slime-company
+    :after slime
+    :ensure t
+    :config
+    (setq slime-contribs '(slime-fancy
+                           slime-autodoc)))
+#+END_SRC
+*** lisp-mode
+#+BEGIN_SRC emacs-lisp
+  (use-package lisp-mode
+    :ensure nil
+    :config
+    (setq inferior-lisp-program (executable-find "sbcl")))
+#+END_SRC
+** Elisp
+*** elisp-mode
+#+BEGIN_SRC emacs-lisp
+    (use-package elisp-mode
+      :ensure nil
+      :init
+      (add-hook 'clojure-mode-hook (lambda () (enable-paredit))))
+#+END_SRC
+
 ** Clojure
 *** clojure-mode
 #+BEGIN_SRC emacs-lisp
   (use-package clojure-mode
+    :init
+    (progn
+      (add-hook 'clojure-mode-hook (lambda () (enable-paredit)))
+      (add-hook 'clojure-mode-hook 'cider-mode)
+      (add-hook 'clojure-mode-hook 'eldoc-mode)
+      (add-hook 'clojure-mode-hook 'subword-mode))
     :config
-    (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
-    (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
-    (setq inferior-lisp-program "lein repl")
-    ;; Enable parinfer for Clojure
-    (add-hook 'clojure-mode-hook 'cider-mode)
-    (add-hook 'clojure-mode-hook 'eldoc-mode)
-    (add-hook 'clojure-mode-hook 'subword-mode)
-    ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
-    (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
-    (require 'clojure-mode-extra-font-locking)
-    (font-lock-add-keywords
-     nil
-     '(("(\\(facts?\\)"
-        (2 font-lock-keyword-face))
-       ("(\\(background?\\)"
-        (2 font-lock-keyword-face))))
-    (electric-pair-mode)
-    (setq define-clojure-indent 2))
+    (progn
+      (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
+      (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
+      (setq inferior-lisp-program "lein repl")
+      ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
+      (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
+      (require 'clojure-mode-extra-font-locking)
+      (font-lock-add-keywords
+       nil
+       '(("(\\(facts?\\)"
+          (2 font-lock-keyword-face))
+         ("(\\(background?\\)"
+          (2 font-lock-keyword-face))))
+      (electric-pair-mode)
+      (setq define-clojure-indent 2)))
 
 #+END_SRC
 *** Cider
@@ -1031,20 +1142,31 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 #+END_SRC
 ** Ruby
+*** Yard
+#+BEGIN_SRC emacs-lisp
+  (use-package yard-mode
+    :init (add-hook 'enh-ruby-mode-hook 'yard-mode))
+#+END_SRC
 *** rbenv
 #+BEGIN_SRC emacs-lisp
-  (use-package rbenv
-    :config
-    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
+    (use-package rbenv
+      :init
+      (add-hook 'enh-ruby-mode-hook 'rbenv-mode)
+      :config
+      (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 #+END_SRC
-*** roby
+*** Robe
 #+BEGIN_SRC emacs-lisp
-(use-package robe)
+  (use-package robe
+    :init
+    (add-hook 'enh-ruby-mode-hook 'robe-mode))
 #+END_SRC
 
 *** inf-ruby
 #+BEGIN_SRC emacs-lisp
   (use-package inf-ruby
+    :init
+    (add-hook 'enh-ruby-mode-hook 'inf-ruby-mode)
     :bind
     (:map inf-ruby-minor-mode-map
           (("C-c C-z" . run-ruby)
@@ -1056,18 +1178,82 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+END_SRC
 *** enhanced-ruby-mode
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
   (use-package enh-ruby-mode
     :after inf-ruby
-    :mode ("\\(?:\\.rb\\|ru\\|rake\\|thor\\|jbuilder\\|gemspec\\|podspec\\|/\\(?:Gem\\|Rake\\|Cap\\|Thor\\|Vagrant\\|Guard\\|Pod\\)file\\)\\'" . enh-ruby-mode)
+    :mode "\\(?:\\.rb\\|ru\\|rake\\|thor\\|jbuilder\\|gemspec\\|podspec\\|/\\(?:Gem\\|Rake\\|Cap\\|Thor\\|Vagrant\\|Guard\\|Pod\\)file\\)\\'"
+    :init
+    (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
     :config
-    (setq ruby-indent-level 2)
-    (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)
-    (add-hook 'compilation-filter-hook 'inf-ruby-auto-enter)
-    (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode)))
+    (progn
+      (setq ruby-indent-level 2)
+      (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)
+      (add-hook 'compilation-filter-hook 'inf-ruby-auto-enter)
+      (robe-start)))
 #+END_SRC
+** Rust
+*** Flycheck-rust
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck-rust
+    :commands (flycheck-rust-setup))
+#+END_SRC
+*** lsp-rust
+#+BEGIN_SRC emacs-lisp
+  (use-package lsp-rust)
+#+END_SRC
+*** Rust-mode
+#+BEGIN_SRC emacs-lisp
+  (use-package rust-mode
+    :mode "\\.rs\\'"
+    :bind
+    (:map rust-mode-map
+          (([tab] . company-indent-or-complete-common)
+           ("C-c <tab>" . rust-format-buffer)))
+    :ensure t
+    :init
+    (add-hook 'rust-mode-hook 'company-mode)
+    ;; (add-hook 'rust-mode-hook 'racer-mode)
+    ;; (add-hook 'rust-mode-hook 'ycmd-mode)
+    (add-hook 'rust-mode-hook 'flycheck-rust-setup)
+    :config
+    (electric-pair-mode 1)
+    (lsp-mode)
+    (lsp-rust-enable))
+#+END_SRC
+** JSON
+#+BEGIN_SRC emacs-lisp
+  (use-package json-mode
+    :mode "\\.json\\'")
+#+END_SRC
+** Docker
+* Communication
+** Slack
+#+BEGIN_SRC emacs-lisp
+  (use-package slack
+    :commands (slack-start)
+    :init
+    (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
+    (setq slack-prefer-current-team t)
+    :config)
+    ;; (slack-register-team
+    ;;  :name "emacs-slack"
+    ;;  :default t
+    ;;  :client-id "aaaaaaaaaaa.00000000000"
+    ;;  :client-secret "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    ;;  :token "aaaa-sssssssssss-88888888888-hhhhhhhhhhh-jjjjjjjjjj"
+    ;;  :subscribed-channels '(test-rename rrrrr))
 
+    ;; (slack-register-team
+    ;;  :name "test"
+    ;;  :client-id "3333333333.77777777777"
+    ;;  :client-secret "cccccccccccccccccccccccccccccccc"
+    ;;  :token "xxxx-yyyyyyyyyy-zzzzzzzzzzz-hhhhhhhhhhh-llllllllll"
+    ;;  :subscribed-channels '(hoge fuga)))
 
+    (use-package alert
+      :commands (alert)
+      :init
+      (setq alert-default-style 'notifier))
+#+END_SRC
 * Misc
 ** Fuzzy matching
 #+BEGIN_SRC emacs-lisp
@@ -1091,7 +1277,18 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp
 (use-package deferred)
 #+END_SRC
-
+** Profiling
+*** Esup
+#+BEGIN_SRC emacs-lisp
+  (use-package esup)
+#+END_SRC
+*** profiler
+#+BEGIN_SRC emacs-lisp
+  (use-package profiler
+    :bind
+    (("s-l" . profiler-start)
+     ("s-r" . profiler-report)))
+#+END_SRC
 * Custom Functions
 ** Resize font size
 Increases the fonts size across all buffers
@@ -1171,65 +1368,66 @@ And the same but without leaving the current window:
 ** Run Current File
 #+BEGIN_SRC emacs-lisp
   (defun xah-run-current-file ()
-    "Execute the current file.
-  For example, if the current buffer is the file x.py, then it'll call 「python x.py」 in a shell.
-  The file can be Emacs Lisp, PHP, Perl, Python, Ruby, JavaScript, Bash, Ocaml, Visual Basic, TeX, Java, Clojure.
-  File suffix is used to determine what program to run.
+      "Execute the current file.
+    For example, if the current buffer is the file x.py, then it'll call 「python x.py」 in a shell.
+    The file can be Emacs Lisp, PHP, Perl, Python, Ruby, JavaScript, Bash, Ocaml, Visual Basic, TeX, Java, Clojure.
+    File suffix is used to determine what program to run.
 
-  If the file is modified or not saved, save it automatically before run.
+    If the file is modified or not saved, save it automatically before run.
 
-  URL `http://ergoemacs.org/emacs/elisp_run_current_file.html'
-  version 2016-01-28"
-    (interactive)
-    (let (
-          (-suffix-map
-           ;; (‹extension› . ‹shell program name›)
-           `(
-             ("php" . "php")
-             ("pl" . "perl")
-             ("py" . "python")
-             ("py3" . ,(if (string-equal system-type "windows-nt") "c:/Python32/python.exe" "python3"))
-             ("rb" . "ruby")
-             ("go" . "go run")
-             ("js" . "node") ; node.js
-             ("sh" . "bash")
-             ("clj" . "java -cp /home/xah/apps/clojure-1.6.0/clojure-1.6.0.jar clojure.main")
-             ("rkt" . "racket")
-             ("ml" . "ocaml")
-             ("vbs" . "cscript")
-             ("tex" . "pdflatex")
-             ("latex" . "pdflatex")
-             ("java" . "javac")
-             ;; ("pov" . "/usr/local/bin/povray +R2 +A0.1 +J1.2 +Am2 +Q9 +H480 +W640")
-             ))
+    URL `http://ergoemacs.org/emacs/elisp_run_current_file.html'
+    version 2016-01-28"
+      (interactive)
+      (let (
+            (-suffix-map
+             ;; (‹extension› . ‹shell program name›)
+             `(
+               ("php" . "php")
+               ("pl" . "perl")
+               ("py" . "python")
+               ("py3" . ,(if (string-equal system-type "windows-nt") "c:/Python32/python.exe" "python3"))
+               ("rb" . "ruby")
+               ("go" . "go run")
+               ("js" . "node") ; node.js
+               ("sh" . "bash")
+               ("clj" . "java -cp /home/xah/apps/clojure-1.6.0/clojure-1.6.0.jar clojure.main")
+               ("rkt" . "racket")
+               ("ml" . "ocaml")
+               ("vbs" . "cscript")
+               ("tex" . "pdflatex")
+               ("latex" . "pdflatex")
+               ("java" . "javac")
+               ;; ("pov" . "/usr/local/bin/povray +R2 +A0.1 +J1.2 +Am2 +Q9 +H480 +W640")
+               ))
 
-          -fname
-          -fSuffix
-          -prog-name
-          -cmd-str)
+            -fname
+            -fSuffix
+            -prog-name
+            -cmd-str)
 
-      (when (null (buffer-file-name)) (save-buffer))
-      (when (buffer-modified-p) (save-buffer))
+        (when (null (buffer-file-name)) (save-buffer))
+        (when (buffer-modified-p) (save-buffer))
 
-      (setq -fname (buffer-file-name))
-      (setq -fSuffix (file-name-extension -fname))
-      (setq -prog-name (cdr (assoc -fSuffix -suffix-map)))
-      (setq -cmd-str (concat -prog-name " \""   -fname "\""))
+        (setq -fname (buffer-file-name))
+        (setq -fSuffix (file-name-extension -fname))
+        (setq -prog-name (cdr (assoc -fSuffix -suffix-map)))
+        (setq -cmd-str (concat -prog-name " \""   -fname "\""))
 
-      (cond
-       ((string-equal -fSuffix "el") (load -fname))
-       ((string-equal -fSuffix "java")
-        (progn
-          (shell-command -cmd-str "*xah-run-current-file output*" )
-          (shell-command
-           (format "java %s" (file-name-sans-extension (file-name-nondirectory -fname))))))
-       (t (if -prog-name
-              (progn
-                (message "Running…")
-                (shell-command -cmd-str "*xah-run-current-file output*" ))
-            (message "No recognized program file suffix for this file."))))))
+        (cond
+         ((string-equal -fSuffix "el") (load -fname))
+         ((string-equal -fSuffix "java")
+          (progn
+            (shell-command -cmd-str "*xah-run-current-file output*" )
+            (shell-command
+             (format "java %s" (file-name-sans-extension (file-name-nondirectory -fname))))))
+         (t (if -prog-name
+                (progn
+                  (message "Running…")
+                  (shell-command -cmd-str "*xah-run-current-file output*" ))
+              (message "No recognized program file suffix for this file."))))))
 
-  (global-set-key (kbd "s-r") 'xah-run-current-file)
+  ;;  (global-set-key (kbd "s-r") 'xah-run-current-file)
+
 
 #+END_SRC
 ** Eval and Replace
@@ -1283,7 +1481,7 @@ foo.bar.baz => baz"
       (push (js2-node-string (js2-assign-node-left node)) js2-unused-definitions))
      ;; function declaration (skipping anonymous ones)
      ((js2-function-node-p node)
-      (if-let ((name (js2-function-name node)))
+      (if-let* ((name (js2-function-name node)))
           (push name js2-unused-definitions))))
     t))
 (defun js2-unused-functions ()
@@ -1305,3 +1503,14 @@ foo.bar.baz => baz"
                               ,(mapconcat #'identity unused " "))
                           '("No unused function found")))))))
 #+END_SRC
+** Enable Paredit or Parinfer
+#+BEGIN_SRC emacs-lisp
+  (defun enable-paredit ()
+    (turn-off-smartparens-mode)
+    (paredit-mode))
+
+  (defun enable-parinfer ()
+    (turn-off-smartparens-mode)
+    (parinfer-mode))
+#+END_SRC
+
