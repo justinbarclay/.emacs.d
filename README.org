@@ -6,7 +6,6 @@
 - [[#setup][Setup]]
   - [[#turn-off-garbage-collection][Turn off garbage collection]]
   - [[#package-repositories][Package repositories]]
-  - [[#thing][thing]]
   - [[#personal-information][Personal information]]
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
@@ -29,7 +28,7 @@
   - [[#windows][Windows]]
 - [[#navigating][Navigating]]
   - [[#uniquify][Uniquify]]
-  - [[#dired-1][Dired+]]
+  - [[#dired][Dired+]]
   - [[#recentf][Recentf]]
   - [[#minibuffer-completion][Minibuffer completion]]
   - [[#projectile][Projectile]]
@@ -60,7 +59,7 @@
   - [[#ycmd][YCMD]]
   - [[#company-ycmd][Company-YCMD]]
   - [[#lsp-mode][LSP-Mode]]
-- [[#setup-1][Setup]]
+- [[#setup][Setup]]
   - [[#csslesssass][CSS/LESS/SASS]]
   - [[#cc][C/C++]]
   - [[#lisp][Lisp]]
@@ -76,13 +75,13 @@
   - [[#lua][Lua]]
 - [[#communication][Communication]]
   - [[#slack][Slack]]
-- [[#misc-1][Misc]]
+- [[#misc][Misc]]
   - [[#fuzzy-matching][Fuzzy matching]]
   - [[#woman][Woman]]
   - [[#ido-completing-read][ido-completing-read]]
   - [[#asynchronous-framework][Asynchronous framework]]
   - [[#profiling][Profiling]]
-  - [[#dired-2][dired+]]
+  - [[#dired][dired+]]
 - [[#custom-functions][Custom Functions]]
   - [[#resize-font-size][Resize font size]]
   - [[#scroll-the-buffer][Scroll the buffer]]
@@ -92,7 +91,6 @@
   - [[#replace-tabs][Replace tabs]]
   - [[#find-unused-functions-in-javascript][Find unused functions in JavaScript]]
   - [[#enable-paredit-or-parinfer][Enable Paredit or Parinfer]]
-
 * About
   "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
   This Config file is inspired by:
@@ -129,28 +127,30 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (require 'package)
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq package-archives
-               (("melpa" . "http://melpa.org/packages/")
-                ("marmalade" . "http://marmalade-repo.org/packages/")
-                ("tromey" . "http://tromey.com/elpa/"))
+        '(("melpa" . "http://melpa.org/packages/")
+          ("marmalade" . "http://marmalade-repo.org/packages/")
+          ("tromey" . "http://tromey.com/elpa/"))
   (package-initialize)
+  #+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (setq package-user-dir "~/.emacs.d/elpa")
+  (setq package-archives
+               '(("melpa" . "http://melpa.org/packages/")
+                ("marmalade" . "http://marmalade-repo.org/packages/")
+                ("tromey" . "http://tromey.com/elpa/")))
   #+END_SRC
 
 ** Personal information
 #+BEGIN_SRC emacs-lisp
-(setq user-full-name "Justin Barclay"
-      user-mail-address "justinbarclay@gmail.com")
+  (setq user-full-name "Justin Barclay"
+        user-mail-address "justinbarclay@gmail.com")
 #+END_SRC
 * Tent Pole
 For big emacs packages, that help define the experience of Emacs itself
 ** use-package
 I use Jon Wiegley's [[https://github.com/jwiegley/use-package][use-package]] for dependency management.
 Let's bootstrap use-package so it can download everything else as we need it.
-#+BEGIN_SRC emacs-lisp :tangle
-   (unless (package-installed-p 'use-package)
-     (package-refresh-contents)
-     (package-install 'use-package))
-#+END_SRC
-
 #+BEGIN_SRC emacs-lisp
   (eval-when-compile
     (package-initialize)
@@ -158,7 +158,7 @@ Let's bootstrap use-package so it can download everything else as we need it.
       (package-refresh-contents)
       (package-install 'use-package)))
 #+END_SRC
-
+*** TODO Make better consolidate and explain what is going on in use-package
 *** A macro to increase emacs load times
 This macro is pulled off this commit
 https://github.com/jwiegley/use-package/pull/487/commits
@@ -208,7 +208,6 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
     (setq use-package-enable-imenu-support t))
 #+END_SRC
 
-
 *** Using use-package
 The plan is to use a copious amount of deferral to speed up emacs boot time.
 + Use the :init keyword to execute code before a package is loaded. It accepts one or more forms, up until the next keyword
@@ -218,7 +217,6 @@ The plan is to use a copious amount of deferral to speed up emacs boot time.
 + In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used. 
 *** Debugging
 The :disabled keyword can turn off a module you're having difficulties with, or stop loading something you're not using at the present time:
-
 #+BEGIN_SRC emacs-lisp
   ;; (use-package ess-site                   
   ;;   :disabled
@@ -587,14 +585,14 @@ As of Emacs 26.0 we have native, perfomant support for line numebrs
 In OS X, when Emacs is started from the GUI it inherits a default set of environment variables. Let's fix that.
 Currently turned off due to debugging issues
 #+BEGIN_SRC emacs-lisp
-    (use-package exec-path-from-shell
-      :if (eq system-type 'darwin)
-      :init
-      (setq exec-path-from-shell-arguments '("-l"))
-      :config
-      (exec-path-from-shell-initialize))
-    ;;   ;; (exec-path-from-shell-copy-envs
-    ;;   ;;  '("PATH" "RUST_SRC_PATH")))
+  (use-package exec-path-from-shell
+    :if (eq system-type 'darwin)
+    :init
+    (setq exec-path-from-shell-arguments "-l")
+    :config
+    (exec-path-from-shell-initialize))
+  ;;   ;; (exec-path-from-shell-copy-envs
+  ;;   ;;  '("PATH" "RUST_SRC_PATH")))
 #+END_SRC
 ** Windows
 #+BEGIN_SRC emacs-lisp
@@ -623,6 +621,7 @@ Ensure that buffers have unique file names
   :config
   (setq dired-dwim-target t)
   (setq dired-recursive-copies `always))
+
 #+END_SRC
 ** Recentf
 Turn on recent file mode so that you can more easily switch to recently edited files when you first start emacs
@@ -793,9 +792,7 @@ Remember where point was when I come back to a file
 ** Hungry Delete
 #+BEGIN_SRC emacs-lisp
   (use-package hungry-delete
-    :demand t
-    :config
-    (global-hungry-delete-mode))
+    :hook (prog-mode . global-hungry-delete-mode))
 #+END_SRC
 
 ** Code Folding
@@ -902,7 +899,6 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package company-ycmd
     :after ycmd
-    :defer 1
     :config
     (company-ycmd-setup))
 #+END_SRC
@@ -1055,60 +1051,60 @@ Major mode customizations
 A REPL for Clojure and nrepl for ClojureScript
 #+BEGIN_SRC emacs-lisp
   (use-package cider
-    :ensure t
     :config
-    ;; REPL related stuff
+    (progn
+      ;; REPL related stuff
 
-    ;; REPL history file
-    (setq cider-repl-history-file "~/.emacs.d/cider-history")
+      ;; REPL history file
+      (setq cider-repl-history-file "~/.emacs.d/cider-history")
 
-    ;; nice pretty printing
-    (setq cider-repl-use-pretty-printing t)
+      ;; nice pretty printing
+      (setq cider-repl-use-pretty-printing t)
+    
+      ;; nicer font lock in REPL
+      (setq cider-repl-use-clojure-font-lock t)
 
-    ;; nicer font lock in REPL
-    (setq cider-repl-use-clojure-font-lock t)
+      ;; result prefix for the REPL
+      (setq cider-repl-result-prefix ";; => ")
 
-    ;; result prefix for the REPL
-    (setq cider-repl-result-prefix ";; => ")
+      ;; never ending REPL history
+      (setq cider-repl-wrap-history t)
 
-    ;; never ending REPL history
-    (setq cider-repl-wrap-history t)
+      ;; looong history
+      (setq cider-repl-history-size 3000)
 
-    ;; looong history
-    (setq cider-repl-history-size 3000)
+      ;; eldoc for clojure
+      (add-hook 'cider-mode-hook #'eldoc-mode)
 
-    ;; eldoc for clojure
-    (add-hook 'cider-mode-hook #'eldoc-mode)
+      ;; error buffer not popping up
+      (setq cider-show-error-buffer nil)
 
-    ;; error buffer not popping up
-    (setq cider-show-error-buffer nil)
+      ;; go right to the REPL buffer when it's finished connecting
+      (setq cider-repl-pop-to-buffer-on-connect nil)
+      ;; company mode for completion
+      (add-hook 'cider-repl-mode-hook #'company-mode)
+      (add-hook 'cider-mode-hook #'company-mode)
 
-    ;; go right to the REPL buffer when it's finished connecting
-    (setq cider-repl-pop-to-buffer-on-connect nil)
-    ;; company mode for completion
-    (add-hook 'cider-repl-mode-hook #'company-mode)
-    (add-hook 'cider-mode-hook #'company-mode)
-
-    (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
-    ;; key bindings
-    ;; these help me out with the way I usually develop web apps
-    (defun cider-start-http-server ()
-      (interactive)
-      (cider-load-current-buffer)
-      (let ((ns (cider-current-ns)))
-        (cider-repl-set-ns ns)
-        (cider-interactive-eval (format "(println '(def server (%s/start))) (println 'server)" ns))
-        (cider-interactive-eval (format "(def server (%s/start)) (println server)" ns))))
-    (defun cider-refresh ()
-      (interactive)
-      (cider-interactive-eval (format "(user/reset)")))
-    (defun cider-user-ns ()
-      (interactive)
-      (cider-repl-set-ns "user"))
-    (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
-    (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
-    (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
-    (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns))
+      (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
+      ;; key bindings
+      ;; these help me out with the way I usually develop web apps
+      (defun cider-start-http-server ()
+        (interactive)
+        (cider-load-current-buffer)
+        (let ((ns (cider-current-ns)))
+          (cider-repl-set-ns ns)
+          (cider-interactive-eval (format "(println '(def server (%s/start))) (println 'server)" ns))
+          (cider-interactive-eval (format "(def server (%s/start)) (println server)" ns))))
+      (defun cider-refresh ()
+        (interactive)
+        (cider-interactive-eval (format "(user/reset)")))
+      (defun cider-user-ns ()
+        (interactive)
+        (cider-repl-set-ns "user"))
+      (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
+      (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
+      (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
+      (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)))
 #+END_SRC
 
 ** JavaScript
@@ -1206,7 +1202,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Robe
 #+BEGIN_SRC emacs-lisp
   (use-package robe
-    :after inf-ruby
     :hook (enh-ruby-mode-hook . robe-mode)
     :config
     (progn 
@@ -1216,8 +1211,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** inf-ruby
 #+BEGIN_SRC emacs-lisp
   (use-package inf-ruby
-    :init
-    (add-hook 'enh-ruby-mode-hook 'inf-ruby-mode)
+    :hook (enh-ruby-mode . inf-ruby-mode)
     :bind
     (:map inf-ruby-minor-mode-map
           (("C-c C-z" . run-ruby)
@@ -1289,14 +1283,15 @@ Live preview of MarkDown
    :commands (flymd-flyit))
 #+END_SRC
 ** Lua
+*** lua-mode
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package lua-mode
-  ;;   :mode ("\\.lua\\'")
-  ;;   :defer t
-  ;;   :config
-  ;;   (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
+  (use-package lua-mode
+    :mode ("\\.lua\\'")
+    :defer t
+    :config
+    (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
 #+END_SRC
-
+*** company-lua
 Get limited autocompletion in Lua
 #+BEGIN_SRC emacs-lisp :tangle
   (use-package company-lua)
