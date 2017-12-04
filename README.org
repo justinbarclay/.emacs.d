@@ -127,77 +127,13 @@ Reset garbage collection to emacs default after 5s
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
 #+BEGIN_SRC emacs-lisp :tangle
   (require 'package)
-  (add-to-list 'package-archives
-               '("melpa" . "http://melpa.org/packages/"))
-  (add-to-list 'package-archives
-               '("marmalade" . "http://marmalade-repo.org/packages/") t)
-  (add-to-list 'package-archives
-               '("tromey" . "http://tromey.com/elpa/") t)
+  (setq package-user-dir "~/.emacs.d/elpa")
+  (setq package-archives
+               (("melpa" . "http://melpa.org/packages/")
+                ("marmalade" . "http://marmalade-repo.org/packages/")
+                ("tromey" . "http://tromey.com/elpa/"))
   (package-initialize)
   #+END_SRC
-
-  #+BEGIN_SRC emacs-lisp
-  (setq package-user-dir "~/docs/emacs/elpa"
-        package-archives '(("melpa" . "http://melpa.milkbox.net/packages/")
-                           ("gnu" . "http://elpa.gnu.org/packages/")))
-
-  ;; Disable package initialize after us.  We either initialize it
-  ;; anyway in case of interpreted .emacs, or we don't want slow
-  ;; initizlization in case of byte-compiled .emacs.elc.
-  (setq package-enable-at-startup nil)
-  ;; Ask package.el to not add (package-initialize) to .emacs.
-  (setq package--init-file-ensured t)
-  ;; set use-package-verbose to t for interpreted .emacs,
-  ;; and to nil for byte-compiled .emacs.elc
-;;  (eval-and-compile
-  ;;  (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
-#+END_SRC
-** thing
-#+BEGIN_SRC emacs-lisp
-(setq package-user-dir "~/docs/emacs/elpa"
-      package-archives '(("melpa" . "http://melpa.milkbox.net/packages/")
-                         ("gnu" . "http://elpa.gnu.org/packages/")))
-
-;; Disable package initialize after us.  We either initialize it
-;; anyway in case of interpreted .emacs, or we don't want slow
-;; initizlization in case of byte-compiled .emacs.elc.
-(setq package-enable-at-startup nil)
-;; Ask package.el to not add (package-initialize) to .emacs.
-(setq package--init-file-ensured t)
-;; set use-package-verbose to t for interpreted .emacs,
-;; and to nil for byte-compiled .emacs.elc
-(eval-and-compile
-  (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
-;; Add the macro generated list of package.el loadpaths to load-path.
-(mapc #'(lambda (add) (add-to-list 'load-path add))
-      (eval-when-compile
-        ;; (require 'package)
-        (package-initialize)
-        ;; Install use-package if not installed yet.
-        (unless (package-installed-p 'use-package)
-          (package-refresh-contents)
-          (package-install 'use-package))
-        ;; (require 'use-package)
-        (setq use-package-always-ensure t)
-        (let ((package-user-dir-real (file-truename package-user-dir)))
-          ;; The reverse is necessary, because outside we mapc
-          ;; add-to-list element-by-element, which reverses.
-          (nreverse (apply #'nconc
-                           ;; Only keep package.el provided loadpaths.
-                           (mapcar #'(lambda (path)
-                                       (if (string-prefix-p package-user-dir-real path)
-                                           (list path)
-                                         nil))
-                                   load-path))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; real .emacs starts here
-
-;; use-package for the case when init.el is byte-compiled
-(use-package diminish)
-(use-package bind-key)
-(use-package use-package :commands use-package-autoload-keymap)
-;; so we can (require 'use-package) even in compiled emacs to e.g. read 
-#+END_SRC
 
 ** Personal information
 #+BEGIN_SRC emacs-lisp
@@ -215,7 +151,7 @@ Let's bootstrap use-package so it can download everything else as we need it.
      (package-install 'use-package))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp
   (eval-when-compile
     (package-initialize)
     (unless (package-installed-p 'use-package)
@@ -227,7 +163,7 @@ Let's bootstrap use-package so it can download everything else as we need it.
 This macro is pulled off this commit
 https://github.com/jwiegley/use-package/pull/487/commits
 Further reading: https://github.com/nilcons/emacs-use-package-fast
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp
   (defmacro use-package-with-elpa ()
     "Set up use-package to optimal usage with package.el.
 
@@ -260,7 +196,7 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
 #+END_SRC
 
 *** byte compile emacs and ignore package-initialize
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp
   (use-package-with-elpa)
 #+END_SRC
 
@@ -347,8 +283,7 @@ In addition to the simple :TOC: tag, you can also use the following tag formats:
 You can also use @ as separator, instead of _.
 #+BEGIN_SRC emacs-lisp
   (use-package toc-org
-    :init
-    (add-hook 'org-mode-hook 'toc-org-enable))
+    :hook (org-mode-hook . toc-org-enable))
 
 #+END_SRC
 
@@ -1022,14 +957,9 @@ Major mode customizations
 *** paredit
 #+BEGIN_SRC emacs-lisp
   (use-package paredit
-    :hook
-      (emacs-lisp-mode . '(lambda () (enable-paredit)))
-      (common-lisp-mode . '(lambda () (enable-paredit)))
-      (scheme-mode . '(lambda () (enable-paredit)))
-      (lisp-mode . '(lambda () (enable-paredit)))
-    :config
-;;    (smartparents-monde-offset
-)
+    :hook ((common-lisp-mode . (lambda () (enable-paredit)))
+           (scheme-mode . (lambda () (enable-paredit)))
+           (lisp-mode . (lambda () (enable-paredit)))))
 #+END_SRC
 *** parinfer
 #+BEGIN_SRC emacs-lisp
@@ -1277,8 +1207,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp
   (use-package robe
     :after inf-ruby
-    :init
-    (add-hook 'enh-ruby-mode-hook 'robe-mode)
+    :hook (enh-ruby-mode-hook . robe-mode)
     :config
     (progn 
       (robe-start)))
@@ -1578,8 +1507,6 @@ And the same but without leaving the current window:
               (message "No recognized program file suffix for this file."))))))
 
   ;;  (global-set-key (kbd "s-r") 'xah-run-current-file)
-
-
 #+END_SRC
 ** Eval and Replace
 #+BEGIN_SRC emacs-lisp
