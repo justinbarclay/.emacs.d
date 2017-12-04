@@ -1310,7 +1310,6 @@ Get limited autocompletion in Lua
      :default t
      :client-id "279636748417.280206506404"
      :client-secret "faca05501140fc54d2113f47335ad0cd"
-     :token "xoxp-279636748417-281227765863-279548432240-775f405378057f8041af895c10b8f875"
      :subscribed-channels '(general)))
 
     ;; (slack-register-team
