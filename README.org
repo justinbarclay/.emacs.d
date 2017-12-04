@@ -6,6 +6,7 @@
 - [[#setup][Setup]]
   - [[#turn-off-garbage-collection][Turn off garbage collection]]
   - [[#package-repositories][Package repositories]]
+  - [[#thing][thing]]
   - [[#personal-information][Personal information]]
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
@@ -21,13 +22,14 @@
   - [[#modeline][Modeline]]
   - [[#line-numbers][Line Numbers]]
   - [[#rainbow-delimiters][Rainbow delimiters]]
+  - [[#dired][dired]]
   - [[#diminish][Diminish]]
 - [[#os-specific][OS Specific]]
   - [[#macos][MacOS]]
   - [[#windows][Windows]]
 - [[#navigating][Navigating]]
   - [[#uniquify][Uniquify]]
-  - [[#dired][Dired+]]
+  - [[#dired-1][Dired+]]
   - [[#recentf][Recentf]]
   - [[#minibuffer-completion][Minibuffer completion]]
   - [[#projectile][Projectile]]
@@ -70,6 +72,8 @@
   - [[#rust][Rust]]
   - [[#json][JSON]]
   - [[#docker][Docker]]
+  - [[#markdown][Markdown]]
+  - [[#lua][Lua]]
 - [[#communication][Communication]]
   - [[#slack][Slack]]
 - [[#misc-1][Misc]]
@@ -78,6 +82,7 @@
   - [[#ido-completing-read][ido-completing-read]]
   - [[#asynchronous-framework][Asynchronous framework]]
   - [[#profiling][Profiling]]
+  - [[#dired-2][dired+]]
 - [[#custom-functions][Custom Functions]]
   - [[#resize-font-size][Resize font size]]
   - [[#scroll-the-buffer][Scroll the buffer]]
@@ -120,9 +125,8 @@ Reset garbage collection to emacs default after 5s
 
 ** Package repositories
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (require 'package)
-  (message "Loading packages")
   (add-to-list 'package-archives
                '("melpa" . "http://melpa.org/packages/"))
   (add-to-list 'package-archives
@@ -130,6 +134,69 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (add-to-list 'package-archives
                '("tromey" . "http://tromey.com/elpa/") t)
   (package-initialize)
+  #+END_SRC
+
+  #+BEGIN_SRC emacs-lisp
+  (setq package-user-dir "~/docs/emacs/elpa"
+        package-archives '(("melpa" . "http://melpa.milkbox.net/packages/")
+                           ("gnu" . "http://elpa.gnu.org/packages/")))
+
+  ;; Disable package initialize after us.  We either initialize it
+  ;; anyway in case of interpreted .emacs, or we don't want slow
+  ;; initizlization in case of byte-compiled .emacs.elc.
+  (setq package-enable-at-startup nil)
+  ;; Ask package.el to not add (package-initialize) to .emacs.
+  (setq package--init-file-ensured t)
+  ;; set use-package-verbose to t for interpreted .emacs,
+  ;; and to nil for byte-compiled .emacs.elc
+;;  (eval-and-compile
+  ;;  (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
+#+END_SRC
+** thing
+#+BEGIN_SRC emacs-lisp
+(setq package-user-dir "~/docs/emacs/elpa"
+      package-archives '(("melpa" . "http://melpa.milkbox.net/packages/")
+                         ("gnu" . "http://elpa.gnu.org/packages/")))
+
+;; Disable package initialize after us.  We either initialize it
+;; anyway in case of interpreted .emacs, or we don't want slow
+;; initizlization in case of byte-compiled .emacs.elc.
+(setq package-enable-at-startup nil)
+;; Ask package.el to not add (package-initialize) to .emacs.
+(setq package--init-file-ensured t)
+;; set use-package-verbose to t for interpreted .emacs,
+;; and to nil for byte-compiled .emacs.elc
+(eval-and-compile
+  (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
+;; Add the macro generated list of package.el loadpaths to load-path.
+(mapc #'(lambda (add) (add-to-list 'load-path add))
+      (eval-when-compile
+        ;; (require 'package)
+        (package-initialize)
+        ;; Install use-package if not installed yet.
+        (unless (package-installed-p 'use-package)
+          (package-refresh-contents)
+          (package-install 'use-package))
+        ;; (require 'use-package)
+        (setq use-package-always-ensure t)
+        (let ((package-user-dir-real (file-truename package-user-dir)))
+          ;; The reverse is necessary, because outside we mapc
+          ;; add-to-list element-by-element, which reverses.
+          (nreverse (apply #'nconc
+                           ;; Only keep package.el provided loadpaths.
+                           (mapcar #'(lambda (path)
+                                       (if (string-prefix-p package-user-dir-real path)
+                                           (list path)
+                                         nil))
+                                   load-path))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; real .emacs starts here
+
+;; use-package for the case when init.el is byte-compiled
+(use-package diminish)
+(use-package bind-key)
+(use-package use-package :commands use-package-autoload-keymap)
+;; so we can (require 'use-package) even in compiled emacs to e.g. read 
 #+END_SRC
 
 ** Personal information
@@ -142,19 +209,69 @@ For big emacs packages, that help define the experience of Emacs itself
 ** use-package
 I use Jon Wiegley's [[https://github.com/jwiegley/use-package][use-package]] for dependency management.
 Let's bootstrap use-package so it can download everything else as we need it.
-#+BEGIN_SRC emacs-lisp
-(message "loading use package")
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(progn ;'use-package'
-  (require  'use-package)
-  (setq use-package-verbose nil)
-  (setq use-package-always-defer t)
-  (setq use-package-always-ensure t)
-  (setq use-package-enable-imenu-support t))
+#+BEGIN_SRC emacs-lisp :tangle
+   (unless (package-installed-p 'use-package)
+     (package-refresh-contents)
+     (package-install 'use-package))
 #+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle
+  (eval-when-compile
+    (package-initialize)
+    (unless (package-installed-p 'use-package)
+      (package-refresh-contents)
+      (package-install 'use-package)))
+#+END_SRC
+
+*** A macro to increase emacs load times
+This macro is pulled off this commit
+https://github.com/jwiegley/use-package/pull/487/commits
+Further reading: https://github.com/nilcons/emacs-use-package-fast
+#+BEGIN_SRC emacs-lisp :tangle
+  (defmacro use-package-with-elpa ()
+    "Set up use-package to optimal usage with package.el.
+
+  For full documentation on the meaning and usage of this, please
+  consult the README file that came with this file at the section
+  called `Byte-compiling with Package.el'."
+    '(progn
+       ;; Disable package initialize after us.  We either initialize it
+       ;; anyway in case of interpreted .emacs, or we don't want slow
+       ;; initizlization in case of byte-compiled .emacs.elc.
+       (setq package-enable-at-startup nil)
+       ;; Set use-package-verbose to t for interpreted .emacs,
+       ;; and to nil for byte-compiled .emacs.elc.
+       (eval-and-compile
+         (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
+       ;; Add the macro generated list of package.el loadpaths to load-path.
+       (mapc (lambda (add) (add-to-list 'load-path add))
+             (eval-when-compile
+               (setq use-package-always-ensure t)
+               (let ((package-user-dir-real (file-truename package-user-dir)))
+                 ;; The reverse is necessary, because outside we mapc
+                 ;; add-to-list element-by-element, which reverses.
+                 (nreverse (apply #'nconc
+                                  ;; Only keep package.el provided loadpaths.
+                                  (mapcar (lambda (path)
+                                            (if (string-prefix-p package-user-dir-real path)
+                                                (list path)
+                                              nil))
+                                          load-path))))))))
+#+END_SRC
+
+*** byte compile emacs and ignore package-initialize
+#+BEGIN_SRC emacs-lisp :tangle
+  (use-package-with-elpa)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (progn ;'use-package
+    (require 'use-package)
+    (setq use-package-always-ensure t)
+    (setq use-package-always-defer t)
+    (setq use-package-enable-imenu-support t))
+#+END_SRC
+
 
 *** Using use-package
 The plan is to use a copious amount of deferral to speed up emacs boot time.
@@ -174,7 +291,7 @@ The :disabled keyword can turn off a module you're having difficulties with, or 
 When byte-compiling your .emacs file, disabled declarations are omitted from the output entirely, to accelerate startup times.
 *** Benchmark-init
 This is hidden here to load right after we have use-package to be able to benchmark startup
-#+BEGIN_SRC emacs-lisp :tangle nil
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package benchmark-init
     :demand t
     :init
@@ -193,22 +310,23 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
      ("C-c c" . org-capture))
     :init
     (setq truncate-lines t
-	  global-company-modes '(not org-mode))
+          global-company-modes '(not org-mode))
     :config
-    (setq org-startup-truncated nil)
-    (setq org-capture-templates
-	  '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
-	     "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
-	    ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
-	     "* %? %^L %^g \n%T" :prepend)))
-    (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
-    (custom-set-variables
-     '(org-default-notes-file (concat org-directory "/notes.org"))
-     '(org-directory "~/Dropbox/orgfiles")
-     '(org-export-html-postamble nil)
-     '(org-hide-leading-stars t)
-     '(org-startup-folded (quote overview))
-     '(org-startup-indented t)))
+    (progn
+      (setq org-startup-truncated nil)
+      (setq org-capture-templates
+            '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+               "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
+              ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
+               "* %? %^L %^g \n%T" :prepend)))
+      (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
+      (custom-set-variables
+       '(org-directory "~/Dropbox/orgfiles")
+       '(org-default-notes-file (concat org-directory "/notes.org"))
+       '(org-export-html-postamble nil)
+       '(org-hide-leading-stars t)
+       '(org-startup-folded (quote overview))
+       '(org-startup-indented t))))
 #+END_SRC
 *** Org-bullets
 #+BEGIN_SRC emacs-lisp
@@ -429,7 +547,7 @@ My name isn't "Tinker", so I don't need a bell.
 #+END_SRC
 ** Smooth scrolling
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
 (use-package smooth-scroll
   :config
   (smooth-scroll-mode 1)
@@ -449,14 +567,14 @@ My name isn't "Tinker", so I don't need a bell.
 #+BEGIN_SRC emacs-lisp
   (use-package powerline
     :config
-    (powerline-center-theme)
+    ;;(powerline-center-theme)
     (setq powerline-default-separator 'wave))
 #+END_SRC
 *** Spaceline
 #+BEGIN_SRC emacs-lisp
 (use-package spaceline
   :config
-  ;;(require 'spaceline-config)
+  (require 'spaceline-config)
   (setq spaceline-byte-compile nil))
 #+END_SRC
 *** all-the-icons
@@ -464,11 +582,9 @@ My name isn't "Tinker", so I don't need a bell.
 (use-package all-the-icons)
 #+END_SRC
 *** Spaceline + All the Icons
-#+BEGIN_SRC emacs-lisp :tangle nil
+#+BEGIN_SRC emacs-lisp
   (use-package spaceline-all-the-icons
-    :after spaceline
-    :init
-    (spaceline-all-the-icons-theme)
+    :hook (emacs-startup . spaceline-all-the-icons-theme)
     :config
     (progn
       (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
@@ -483,8 +599,7 @@ My name isn't "Tinker", so I don't need a bell.
                         '(powerline-active1 ((t (:background "#6272a4"
                                                              :foregound "#50fa7b"
                                                              :inherit 'mode-line)))))
-      (setq spaceline-all-the-icons-separator-type 'wave)
-      (setq mode-line-format spaceline-all-the-icons-theme)))
+      (setq spaceline-all-the-icons-separator-type 'wave)))
 #+END_SRC
 
 ** Line Numbers
@@ -497,9 +612,7 @@ As of Emacs 26.0 we have native, perfomant support for line numebrs
 ** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
-    :mode 
-    :init
-    (list (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+    :hook (prog-mode-hook . rainbow-delimiters-mode)
     :config
      (custom-set-faces 
       '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
@@ -513,6 +626,15 @@ As of Emacs 26.0 we have native, perfomant support for line numebrs
       '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
       '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
 #+END_SRC
+** dired
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :ensure nil
+    :bind (:map dired-mode-map
+                ("RET" . dired-find-alternate-file)
+                ("a" . dired-find-file)))
+#+END_SRC
+
 ** Diminish
 #+BEGIN_SRC emacs-lisp
   (use-package diminish
@@ -530,12 +652,14 @@ As of Emacs 26.0 we have native, perfomant support for line numebrs
 In OS X, when Emacs is started from the GUI it inherits a default set of environment variables. Let's fix that.
 Currently turned off due to debugging issues
 #+BEGIN_SRC emacs-lisp
-  (use-package exec-path-from-shell
-    :if (eq system-type 'darwin)
-    :config
-    (exec-path-from-shell-initialize))
-  ;;   ;; (exec-path-from-shell-copy-envs
-  ;;   ;;  '("PATH" "RUST_SRC_PATH")))
+    (use-package exec-path-from-shell
+      :if (eq system-type 'darwin)
+      :init
+      (setq exec-path-from-shell-arguments '("-l"))
+      :config
+      (exec-path-from-shell-initialize))
+    ;;   ;; (exec-path-from-shell-copy-envs
+    ;;   ;;  '("PATH" "RUST_SRC_PATH")))
 #+END_SRC
 ** Windows
 #+BEGIN_SRC emacs-lisp
@@ -580,34 +704,31 @@ it looks like counsel is a requirement for swiper
 *** Ivy
 #+BEGIN_SRC emacs-lisp
   (use-package ivy
-    :bind
-    (("C-c C-r" . ivy-resume)
-     ([f6] . ivy-resume))
+    :hook (emacs-startup . ivy-mode)
     :config
     (setq ivy-use-virtual-buffers t)
-    (setq ivy-initial-inputs-alist nil)
-    (ivy-mode 1))
+    (setq ivy-initial-inputs-alist nil))
 #+END_SRC
 *** Counsel
 #+BEGIN_SRC emacs-lisp
-(use-package counsel
+  (use-package counsel
+    :after ivy
     :init
-    (setq counsel-grep-base-command
-          "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
+    (progn
+      (setq counsel-grep-base-command
+            "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
     :bind
     (("M-x" . counsel-M-x)
-     ("C-x C-f" . counsel-find-file)
-     ("C-c p f" . counsel-projectile-find-file)
-     ("C-c p d" . counsel-projectile-find-dir)
-     ("C-c p s" . counsel-projectile-switch-project)
-     ("<f1> f" . counsel-describe-function)
-     ("<f1> v" . counsel-describe-variable)
-     ("<f1> l" . counsel-load-library)
-     ("<f2> i" . counsel-info-lookup-symbol)
-     ("<f2> u" . counsel-unicode-char)
-     ("C-c k" . counsel-rg)
-     ("C-x l" . counsel-locate)
-     ("C-S-o" . counsel-rhythmbox)))
+      ("C-x C-f" . counsel-find-file)
+      ("C-c p f" . counsel-projectile-find-file)
+      ("C-c p d" . counsel-projectile-find-dir)
+      ("C-c p s" . counsel-projectile-switch-project)
+      ("<f1> f" . counsel-describe-function)
+      ("<f1> v" . counsel-describe-variable)
+      ("<f1> l" . counsel-load-library)
+      ("<f2> i" . counsel-info-lookup-symbol)
+      ("<f2> u" . counsel-unicode-char)
+      ("C-c k" . counsel-rg)))
 #+END_SRC
 *** Counsel-projectile
 #+BEGIN_SRC emacs-lisp
@@ -714,8 +835,7 @@ I've put this at the top, because I use this almost everyday and wish it existed
 ** Save place in file
 Remember where point was when I come back to a file
 #+BEGIN_SRC emacs-lisp
-(require 'saveplace)
-(setq-default save-place t)
+(save-place-mode 1)
 ;; keep track of saved places in ~/.emacs.d/places
 (setq save-place-file (concat user-emacs-directory "places"))
 #+END_SRC
@@ -726,8 +846,7 @@ Remember where point was when I come back to a file
 ** Parens Balancing
 #+BEGIN_SRC emacs-lisp
   (use-package smartparens
-    :init
-    (add-hook 'prog-mode-hook #'smartparens-mode)
+    :hook (prog-mode . smartparens-mode)
     :bind (:map smartparens-mode-map
             ("C-)" . sp-forward-slurp-sexp)
             ("C-(" . sp-backward-slurp-sexp)
@@ -740,17 +859,15 @@ Remember where point was when I come back to a file
 #+BEGIN_SRC emacs-lisp
   (use-package hungry-delete
     :demand t
-    :init
+    :config
     (global-hungry-delete-mode))
 #+END_SRC
 
 ** Code Folding
 #+BEGIN_SRC emacs-lisp
 (use-package origami
-  :ensure t
   :bind ("C-s-<tab>" . origami-recursively-toggle-node)
-  :init
-  (add-hook 'prog-mode-hook 'origami-mode))
+  :hook (prog-mode . origami-mode))
 #+END_SRC
 ** Dash At Point
 Open up the program dash
@@ -766,8 +883,8 @@ Open up the program dash
 Easily navigate buffer state through a UI helper
 #+BEGIN_SRC emacs-lisp
 (use-package undo-tree
-  :ensure t
-  :init
+  :demand t
+  :config
   (global-undo-tree-mode))
 #+END_SRC
 
@@ -788,14 +905,16 @@ Load this before we load Flycheck
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
-  :init
-  (global-flycheck-mode)
+  :after flycheck-pos-tip
+  :demand t
   :config
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (setq flycheck-standard-error-navigation nil)
-  (when 'display-graphic-p (selected-frame)
-        (eval-after-load 'flycheck
-          (flycheck-pos-tip-mode))))
+  (progn
+    (global-flycheck-mode)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (setq flycheck-standard-error-navigation nil)
+    (when 'display-graphic-p (selected-frame)
+      (eval-after-load 'flycheck
+      (flycheck-pos-tip-mode)))))
 #+END_SRC
 
 * Code Completion
@@ -862,10 +981,8 @@ Major mode customizations
 ** CSS/LESS/SASS
 #+BEGIN_SRC emacs-lisp
 (use-package rainbow-mode
-  :ensure t
-  :init
-  (add-hook 'css-mode-hook 'rainbow-mode)
-  (add-hook 'less-mode-hook 'rainbow-mode))
+  :hook ((css-mode . rainbow-mode)
+         (less-mode . rainbow-mode)))
 #+END_SRC
 ** C/C++
 *** Add hooks and customizations
@@ -905,12 +1022,14 @@ Major mode customizations
 *** paredit
 #+BEGIN_SRC emacs-lisp
   (use-package paredit
-    :init
-    (progn
-      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit)))
-      (add-hook 'common-lisp-mode-hook (lambda () (enable-paredit)))
-      (add-hook 'scheme-mode-hook (lambda () (enable-paredit)))
-      (add-hook 'lisp-mode-hook (lambda () (enable-paredit)))))
+    :hook
+      (emacs-lisp-mode . '(lambda () (enable-paredit)))
+      (common-lisp-mode . '(lambda () (enable-paredit)))
+      (scheme-mode . '(lambda () (enable-paredit)))
+      (lisp-mode . '(lambda () (enable-paredit)))
+    :config
+;;    (smartparents-monde-offset
+)
 #+END_SRC
 *** parinfer
 #+BEGIN_SRC emacs-lisp
@@ -954,7 +1073,6 @@ Major mode customizations
 #+BEGIN_SRC emacs-lisp
   (use-package slime-company
     :after slime
-    :ensure t
     :config
     (setq slime-contribs '(slime-fancy
                            slime-autodoc)))
@@ -1158,8 +1276,12 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Robe
 #+BEGIN_SRC emacs-lisp
   (use-package robe
+    :after inf-ruby
     :init
-    (add-hook 'enh-ruby-mode-hook 'robe-mode))
+    (add-hook 'enh-ruby-mode-hook 'robe-mode)
+    :config
+    (progn 
+      (robe-start)))
 #+END_SRC
 
 *** inf-ruby
@@ -1179,16 +1301,13 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** enhanced-ruby-mode
 #+BEGIN_SRC emacs-lisp
   (use-package enh-ruby-mode
-    :after inf-ruby
-    :mode "\\(?:\\.rb\\|ru\\|rake\\|thor\\|jbuilder\\|gemspec\\|podspec\\|/\\(?:Gem\\|Rake\\|Cap\\|Thor\\|Vagrant\\|Guard\\|Pod\\)file\\)\\'"
+    :mode "\\(?:\\.rb\\|ru\\|rake\\|gemspec\\)|\\(?:Gem\\|Rake\\)\\'"
     :init
     (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
     :config
     (progn
       (setq ruby-indent-level 2)
-      (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)
-      (add-hook 'compilation-filter-hook 'inf-ruby-auto-enter)
-      (robe-start)))
+      (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
 #+END_SRC
 ** Rust
 *** Flycheck-rust
@@ -1225,22 +1344,50 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     :mode "\\.json\\'")
 #+END_SRC
 ** Docker
+** Markdown
+#+BEGIN_SRC emacs-lisp
+(use-package markdown-mode
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+#+END_SRC
+*** Flymd
+Live preview of MarkDown
+#+BEGIN_SRC emacs-lisp
+  (use-package flymd
+   :commands (flymd-flyit))
+#+END_SRC
+** Lua
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package lua-mode
+  ;;   :mode ("\\.lua\\'")
+  ;;   :defer t
+  ;;   :config
+  ;;   (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
+#+END_SRC
+
+Get limited autocompletion in Lua
+#+BEGIN_SRC emacs-lisp :tangle
+  (use-package company-lua)
+#+END_SRC
 * Communication
 ** Slack
 #+BEGIN_SRC emacs-lisp
   (use-package slack
-    :commands (slack-start)
+    :commands (slack-start slack-register-team)
     :init
     (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
     (setq slack-prefer-current-team t)
-    :config)
-    ;; (slack-register-team
-    ;;  :name "emacs-slack"
-    ;;  :default t
-    ;;  :client-id "aaaaaaaaaaa.00000000000"
-    ;;  :client-secret "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    ;;  :token "aaaa-sssssssssss-88888888888-hhhhhhhhhhh-jjjjjjjjjj"
-    ;;  :subscribed-channels '(test-rename rrrrr))
+    :config
+    (slack-register-team
+     :name "personal"
+     :default t
+     :client-id "279636748417.280206506404"
+     :client-secret "faca05501140fc54d2113f47335ad0cd"
+     :token "xoxp-279636748417-281227765863-279548432240-775f405378057f8041af895c10b8f875"
+     :subscribed-channels '(general)))
 
     ;; (slack-register-team
     ;;  :name "test"
@@ -1280,7 +1427,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 ** Profiling
 *** Esup
 #+BEGIN_SRC emacs-lisp
-  (use-package esup)
+(use-package esup)
 #+END_SRC
 *** profiler
 #+BEGIN_SRC emacs-lisp
@@ -1289,6 +1436,11 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (("s-l" . profiler-start)
      ("s-r" . profiler-report)))
 #+END_SRC
+** dired+
+#+BEGIN_SRC emacs-lisp
+(use-package dired+)
+#+END_SRC
+
 * Custom Functions
 ** Resize font size
 Increases the fonts size across all buffers
@@ -1329,7 +1481,7 @@ DELTA should be a multiple of 10, in the units used by the
 ** Scroll the buffer
 The exact same functionality VIM has for C-e and C-y in normal mode:
 [[https://github.com/anler/.emacs.d-literate/blob/master/README.org#scroll-the-buffer][stolen from here]]
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
 (defun scroll-up-one-line-command ()
   "Scroll text of selected window upward 1 line."
   (interactive)
@@ -1344,7 +1496,7 @@ The exact same functionality VIM has for C-e and C-y in normal mode:
 #+END_SRC
 
 And the same but without leaving the current window:
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp tangle
 (defun scroll-up-one-line-other-window ()
   "Scroll other window one line up"
   (interactive)
@@ -1362,7 +1514,6 @@ And the same but without leaving the current window:
      (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
        (org-babel-tangle nil "~/.emacs.d/init.el")
        (byte-compile-file "~/.emacs.d/init.el")))
-
   (add-hook 'after-save-hook #'my/tangle-dotfiles)
 #+END_SRC
 ** Run Current File
@@ -1458,50 +1609,50 @@ And the same but without leaving the current window:
 
 ** Find unused functions in JavaScript
 #+BEGIN_SRC emacs-lisp
-(defun js2-unused--find-definitions ()
-  ;; Reset the value before visiting the AST
-  (setq js2-unused-definitions nil)
-  (js2-visit-ast js2-mode-ast
-                 #'js2-unused-visitor))
-(defun js2-unused--unqualified-name (name)
-  "Return the local name of NAME.
-foo.bar.baz => baz"
-  (save-match-data
-    (if (string-match "\\.\\([^.]+\\)$" name)
-        (match-string 1 name)
-      name)))
+  (defun js2-unused--find-definitions ()
+    ;; Reset the value before visiting the AST
+    (setq js2-unused-definitions nil)
+    (js2-visit-ast js2-mode-ast
+                   #'js2-unused-visitor))
+  (defun js2-unused--unqualified-name (name)
+    "Return the local name of NAME.
+  foo.bar.baz => baz"
+    (save-match-data
+      (if (string-match "\\.\\([^.]+\\)$" name)
+          (match-string 1 name)
+        name)))
 
-(defun js2-unused-visitor (node end-p)
-  "Add NODE's name to `js2-unused-definitions` if it is a function."
-  (unless end-p
-    (cond
-     ;; assignment to a function
-     ((and (js2-assign-node-p node)
-           (js2-function-node-p (js2-assign-node-right node)))
-      (push (js2-node-string (js2-assign-node-left node)) js2-unused-definitions))
-     ;; function declaration (skipping anonymous ones)
-     ((js2-function-node-p node)
-      (if-let* ((name (js2-function-name node)))
-          (push name js2-unused-definitions))))
-    t))
-(defun js2-unused-functions ()
-  (interactive)
-  ;; Make sure that JS2 has finished parsing the buffer
-  (js2-mode-wait-for-parse
-   (lambda ()
-     ;; Walk the AST tree to find all function definitions
-     (js2-unused--find-definitions)
-     ;; Use xref-js2 to filter the ones that are not referenced anywhere
-     (let ((unused (seq-filter (lambda (name)
-                                 (null (xref-js2--find-references
-                                        (js2-unused--unqualified-name name))))
-                               js2-unused-definitions)))
-       ;; If there are unreferenced function, display a message
-       (apply #'message (if unused
-                            `("Unused functions in %s: %s "
-                              ,(file-name-nondirectory buffer-file-name)
-                              ,(mapconcat #'identity unused " "))
-                          '("No unused function found")))))))
+  (defun js2-unused-visitor (node end-p)
+    "Add NODE's name to `js2-unused-definitions` if it is a function."
+    (unless end-p
+      (cond
+       ;; assignment to a function
+       ((and (js2-assign-node-p node)
+             (js2-function-node-p (js2-assign-node-right node)))
+        (push (js2-node-string (js2-assign-node-left node)) js2-unused-definitions))
+       ;; function declaration (skipping anonymous ones)
+       ((js2-function-node-p node)
+        (if-let* ((name (js2-function-name node)))
+            (push name js2-unused-definitions))))
+      t))
+  (defun js2-unused-functions ()
+    (interactive)
+    ;; Make sure that JS2 has finished parsing the buffer
+    (js2-mode-wait-for-parse
+     (lambda ()
+       ;; Walk the AST tree to find all function definitions
+       (js2-unused--find-definitions)
+       ;; Use xref-js2 to filter the ones that are not referenced anywhere
+       (let ((unused (seq-filter (lambda (name)
+                                   (null (xref-js2--find-references
+                                          (js2-unused--unqualified-name name))))
+                                 js2-unused-definitions)))
+         ;; If there are unreferenced function, display a message
+         (apply #'message (if unused
+                              `("Unused functions in %s: %s "
+                                ,(file-name-nondirectory buffer-file-name)
+                                ,(mapconcat #'identity unused " "))
+                            '("No unused function found")))))))
 #+END_SRC
 ** Enable Paredit or Parinfer
 #+BEGIN_SRC emacs-lisp
@@ -1513,4 +1664,3 @@ foo.bar.baz => baz"
     (turn-off-smartparens-mode)
     (parinfer-mode))
 #+END_SRC
-
