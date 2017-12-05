@@ -545,7 +545,7 @@ As of Emacs 26.0 we have native, perfomant support for line numebrs
 ** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
-    :hook (prog-mode-hook . rainbow-delimiters-mode)
+    :hook (prog-mode . rainbow-delimiters-mode)
     :config
      (custom-set-faces 
       '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
