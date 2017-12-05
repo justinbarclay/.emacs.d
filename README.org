@@ -1,5 +1,5 @@
 [[./spacemacs.svg]]
-* Table of Content                                                      :TOC:
+* Table of Contents                                                      :TOC:
 - [[#about][About]]
 - [[#init-file][Init File]]
   - [[#note][Note]]
