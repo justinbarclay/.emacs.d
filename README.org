@@ -1327,6 +1327,7 @@ Get limited autocompletion in Lua
      :default t
      :client-id "279636748417.280206506404"
      :client-secret "faca05501140fc54d2113f47335ad0cd"
+     :token "tx" ; this is here to shush emacs on compiles
      :subscribed-channels '(general)))
 
     ;; (slack-register-team
