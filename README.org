@@ -666,7 +666,8 @@ it looks like counsel is a requirement for swiper
 #+END_SRC
 *** Counsel-projectile
 #+BEGIN_SRC emacs-lisp
-  (use-package counsel-projectile)
+  (use-package counsel-projectile
+    :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
 #+END_SRC
 *** swiper
 #+BEGIN_SRC emacs-lisp
