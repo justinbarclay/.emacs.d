@@ -1,8 +1,3 @@
-;; (require 'ob-tangle)
-;; (org-babel-load-file
-;;   (expand-file-name "README.org"
-;;                     user-emacs-directory))
-
 (setq gc-cons-threshold 1000000000)
 (run-with-idle-timer
  5 nil
