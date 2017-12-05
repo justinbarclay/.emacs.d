@@ -1,195 +1,1095 @@
-;;;;
-;; Packages
-;;;;
-;; This sets the garbage collection threshold to 100mb
-(setq gc-cons-threshold 100000000)
-;; Reset garbage collection to emacs default after 5s
+;; (require 'ob-tangle)
+;; (org-babel-load-file
+;;   (expand-file-name "README.org"
+;;                     user-emacs-directory))
+
+(setq gc-cons-threshold 1000000000)
 (run-with-idle-timer
  5 nil
  (lambda ()
- ;;     (setq gc-cons-threshold 10000000)
    (setq gc-cons-threshold 10000000)
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
-(require 'package)
-;;(setq package-archives '(("gnu" . "httpss://elpa.gnu.org/packages/")
-;;			 ("tromey" . "https://tromey.com/elpa/")
-;;			 ("marmalade" . "https://marmalade-repo.org/packages/")
-;;			 ("melpa" . "http://melpa.org/packages/")))
-;; Define package repositories
-(add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/") t)
-(add-to-list 'package-archives
-             '("tromey" . "http://tromey.com/elpa/") t)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/"))
-;; Load and activate emacs packages. Do this first so that the
-;; packages are loaded before you start trying to modify them.
-;; This also sets the load path.
-;;(require 'package)
-(package-initialize)
 
-;; Download the ELPA archive description if needed.
-;; This informs Emacs about the latest versions of all packages, and
-;; makes them available for download.
-(when (not package-archive-contents)
-  (package-refresh-contents))
+(setq package-user-dir "~/.emacs.d/elpa")
+(setq package-archives
+             '(("melpa" . "http://melpa.org/packages/")
+              ("marmalade" . "http://marmalade-repo.org/packages/")
+              ("tromey" . "http://tromey.com/elpa/")))
 
-;; Bootstrap use-package
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-;; Set use package options
-(progn ;'use-package'
-  (require  'use-package)
-  (setq use-package-verbose nil)
-  ;;(setq use-package-always-defer t)
+(setq user-full-name "Justin Barclay"
+      user-mail-address "justinbarclay@gmail.com")
+
+(eval-when-compile
+  (package-initialize)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package)))
+
+(defmacro use-package-with-elpa ()
+  "Set up use-package to optimal usage with package.el.
+
+For full documentation on the meaning and usage of this, please
+consult the README file that came with this file at the section
+called `Byte-compiling with Package.el'."
+  '(progn
+     ;; Disable package initialize after us.  We either initialize it
+     ;; anyway in case of interpreted .emacs, or we don't want slow
+     ;; initizlization in case of byte-compiled .emacs.elc.
+     (setq package-enable-at-startup nil)
+     ;; Set use-package-verbose to t for interpreted .emacs,
+     ;; and to nil for byte-compiled .emacs.elc.
+     (eval-and-compile
+       (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
+     ;; Add the macro generated list of package.el loadpaths to load-path.
+     (mapc (lambda (add) (add-to-list 'load-path add))
+           (eval-when-compile
+             (setq use-package-always-ensure t)
+             (let ((package-user-dir-real (file-truename package-user-dir)))
+               ;; The reverse is necessary, because outside we mapc
+               ;; add-to-list element-by-element, which reverses.
+               (nreverse (apply #'nconc
+                                ;; Only keep package.el provided loadpaths.
+                                (mapcar (lambda (path)
+                                          (if (string-prefix-p package-user-dir-real path)
+                                              (list path)
+                                            nil))
+                                        load-path))))))))
+
+(use-package-with-elpa)
+
+(progn ;'use-package
+  (require 'use-package)
   (setq use-package-always-ensure t)
+  (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t))
 
-(use-package counsel)
+;; (use-package ess-site                   
+;;   :disabled
+;;   :commands R)
 
-;; Place downloaded elisp files in ~/.emacs.d/vendor. You'll then be able
-;; to load them.
-;;
-;; For example, if you download yaml-mode.el to ~/.emacs.d/vendor,
-;; then you can add the following code to this file:
-;;
-;; (require 'yaml-mode)
-;; (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
-;;
-;; Adding this code will make Emacs enter yaml mode whenever you open
-;; a .yml file
-(add-to-list 'load-path "~/.emacs.d/vendor")
-
-;;;;
-;; Customization
-;;;;
-
-(use-package exec-path-from-shell
-  :ensure t
-  :demand t
+(use-package org
+  :bind
+  (("C-c a" . org-agenda)
+   ("C-c c" . org-capture))
+  :init
+  (setq truncate-lines t
+        global-company-modes '(not org-mode))
   :config
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-envs
-   '("PATH" "RUST_SRC_PATH")))
-;;Turn off tool-bar
+  (progn
+    (setq org-startup-truncated nil)
+    (setq org-capture-templates
+          '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+             "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
+            ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
+             "* %? %^L %^g \n%T" :prepend)))
+    (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
+    (custom-set-variables
+     '(org-directory "~/Dropbox/orgfiles")
+     '(org-default-notes-file (concat org-directory "/notes.org"))
+     '(org-export-html-postamble nil)
+     '(org-hide-leading-stars t)
+     '(org-startup-folded (quote overview))
+     '(org-startup-indented t))))
+
+(use-package org-bullets
+  :init
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+(use-package toc-org
+  :hook (org-mode-hook . toc-org-enable))
+
+(use-package eshell
+  :init
+  (add-hook 'eshell-mode-hook
+                   #'company-mode)
+  :config
+  (progn
+    (eval-after-load 'esh-opt
+      '(progn
+         (require 'em-prompt)
+         (require 'em-term)
+         (require 'em-cmpl)
+         (setenv "PAGER" "cat")
+         (add-to-list 'eshell-visual-commands "ssh")
+         (add-to-list 'eshell-visual-commands "htop")
+         (add-to-list 'eshell-visual-commands "top")
+         (add-to-list 'eshell-visual-commands "tail")
+         (add-to-list 'eshell-visual-commands "vim")
+         (add-to-list 'eshell-visual-commands "bower")
+         (add-to-list 'eshell-visual-commands "npm")
+
+         (add-to-list 'eshell-command-completions-alist
+                      '("gunzip" "gz\\'"))
+         (add-to-list 'eshell-command-completions-alist
+                      '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
+
+;; Magit is an Emacs interface to Git.
+;; (It's awesome)
+;; https://github.com/magit/magit
+(use-package magit
+  :commands magit-get-top-dir
+  :bind (("C-c g" . magit-status)
+         ("C-c C-g l" . magit-file-log)
+         ("C-c f" . magit-grep))
+  :init
+  (progn
+    ;; magit extensions
+
+    ;; make magit status go full-screen but remember previous window
+    ;; settings
+    ;; from: http://whattheemacsd.com/setup-magit.el-01.html
+    (defadvice magit-status (around magit-fullscreen activate)
+      (window-configuration-to-register :magit-fullscreen)
+      ad-do-it
+      (delete-other-windows))
+
+    ;; Close popup when commiting - this stops the commit window
+    ;; hanging around
+    ;; From: http://git.io/rPBE0Q
+    (defadvice git-commit-commit (after delete-window activate)
+      (delete-window))
+
+    (defadvice git-commit-abort (after delete-window activate)
+      (delete-window))
+
+    ;; these two force a new line to be inserted into a commit window,
+    ;; which stops the invalid style showing up.
+    ;; From: http://git.io/rPBE0Q
+    (defun magit-commit-mode-init ()
+      (when (looking-at "\n")
+        (open-line 1)))
+
+    (add-hook 'git-commit-mode-hook 'magit-commit-mode-init))
+  :config
+  (progn
+    ;; restore previously hidden windows
+        ;; major mode for editing `git rebase -i`
+    (defadvice magit-quit-window (around magit-restore-screen activate)
+      (let ((current-mode major-mode))
+        ad-do-it
+        ;; we only want to jump to register when the last seen buffer
+        ;; was a magit-status buffer.
+        (when (eq 'magit-status-mode current-mode)
+          (jump-to-register :magit-fullscreen))))
+
+    (defun magit-maybe-commit (&optional show-options)
+      "Runs magit-commit unless prefix is passed"
+      (interactive "P")
+      (if show-options
+          (magit-key-mode-popup-committing)
+        (magit-commit)))
+
+    (define-key magit-mode-map "c" 'magit-maybe-commit)
+
+    ;; magit settings
+    (setq
+     ;; use ido to look for branches
+     magit-completing-read-function  'ivy-completing-read
+     ;; don't put "origin-" in front of new branch names by default
+     magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
+     ;; open magit status in same window as current buffer
+     magit-status-buffer-switch-function 'switch-to-buffer
+     ;; highlight word/letter changes in hunk diffs
+     magit-diff-refine-hunk t
+     ;; ask me if I want to include a revision when rewriting
+     magit-rewrite-inclusive 'ask
+     ;; ask me to save buffers
+     magit-save-some-buffers nil
+     ;; pop the process buffer if we're taking a while to complete
+     magit-process-popup-time 10
+     ;; ask me if I want a tracking upstream
+     magit-set-upstream-on-push 'askifnotset)))
+
+(use-package magit-blame
+  :ensure nil
+  :bind ("C-c C-g b" . magit-blame-mode))
+
 (tool-bar-mode -1)
 
-;; Starting conditions for Emacs
-;; Setting Emacs to take focus over terminal
 (when (display-graphic-p) ; Start full screen
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
   (x-focus-frame nil))
 
-;; Semantic is a package that provides language-aware editing commands based on source code parsers. Parsing is a process of analyzing source code based on programming language syntax. Emacs understands your source code through this process to provides features such as contextual code completion, code navigation.
-;; Global semantic mode
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+
+(setq-default frame-title-format "%b (%f)")
+
+(set-face-attribute 'default nil
+                    :family "Inconsolata for Powerline" :height 180 :weight 'normal)
+
+(global-set-key (kbd "s-t") '(lambda () (interactive)))
+
+(blink-cursor-mode 0)
+
+;; These settings relate to how emacs interacts with your operating system
+(setq ;; makes killing/yanking interact with the clipboard
+ select-enable-clipboard t
+
+ ;; I'm actually not sure what this does but it's recommended?
+ select-enable-primary t
+
+ ;; Save clipboard strings into kill ring before replacing them.
+ ;; When one selects something in another program to paste it into Emacs,
+ ;; but kills something in Emacs before actually pasting it,
+ ;; this selection is gone unless this variable is non-nil
+ save-interprogram-paste-before-kill t
+
+ ;; Shows all options when running apropos. For more info,
+ ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
+ apropos-do-all t
+
+ ;; Mouse yank commands yank at point instead of at click.
+ mouse-yank-at-point t)
+
+(setq ring-bell-function 'ignore)
+
+;; Changes all yes/no questions to y/n type
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; shell scripts
+(setq-default sh-basic-offset 2)
+(setq-default sh-indentation 2)
+
+;; No need for ~ files when editing
+(setq create-lockfiles nil)
+
+;; Go straight to scratch buffer on startup
+(setq inhibit-startup-message t)
+
+(use-package dracula-theme
+  :demand t
+  :config
+  (load-theme 'dracula t))
+
+(use-package powerline
+  :config
+  ;;(powerline-center-theme)
+  (setq powerline-default-separator 'wave))
+
+(use-package spaceline
+  :config
+  (require 'spaceline-config)
+  (setq spaceline-byte-compile nil))
+
+(use-package all-the-icons)
+
+(use-package spaceline-all-the-icons
+  :hook (emacs-startup . spaceline-all-the-icons-theme)
+  :config
+  (progn
+    (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
+                                                                  :foreground "#f8f8f2"
+                                                                  :inherit 'mode-line))))
+                      '(powerline-active2 ((t (:background "#44475a"
+                                                           :foregound "#50fa7b"
+                                                           :inherit 'mode-line))))
+                      '(mode-line ((t (:background "#282a36"
+                                                   :foregound "#50fa7b"
+                                                   :inherit 'mode-line))))
+                      '(powerline-active1 ((t (:background "#6272a4"
+                                                           :foregound "#50fa7b"
+                                                           :inherit 'mode-line)))))
+    (setq spaceline-all-the-icons-separator-type 'wave)))
+
+(global-display-line-numbers-mode)
+(set-default 'display-line-numbers-type 'visual)
+(setq display-line-numbers-current-absolute t)
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode)
+  :config
+   (custom-set-faces 
+    '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
+    '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
+    '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
+    '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
+    '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
+    '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
+    '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
+    '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
+    '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
+    '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
+
+(use-package dired
+  :ensure nil
+  :bind (:map dired-mode-map
+              ("RET" . dired-find-alternate-file)
+              ("a" . dired-find-file)))
+
+(use-package diminish
+  :demand t
+  :config (progn
+            ;;            (diminish 'auto-revert-mode)
+            ;;            (diminish 'outline-minor-mode)
+            ;;            (diminish 'amd-mode)
+            (diminish 'js2-refactor-mode)
+            (diminish 'tern-mode)))
+
+(use-package exec-path-from-shell
+  :if (eq system-type 'darwin)
+  :init
+  (setq exec-path-from-shell-arguments "-l")
+  :config
+  (exec-path-from-shell-initialize))
+;;   ;; (exec-path-from-shell-copy-envs
+;;   ;;  '("PATH" "RUST_SRC_PATH")))
+
+(when (memq system-type '(windows-nt))
+  (exec-path-from-shell-initialize)
+  (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
+  (setq shell-file-name "bash")
+  (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
+  (setenv "SHELL" shell-file-name)
+  (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)
+)
+
+(use-package uniquify
+  :ensure nil
+  :config
+  (setq uniquify-buffer-name-style 'forward))
+
+(use-package dired+
+  :config
+  (setq dired-dwim-target t)
+  (setq dired-recursive-copies `always))
+
+(use-package recentf
+  :config
+  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
+  (recentf-mode 1)
+  (setq recentf-max-menu-items 40))
+
+(use-package ivy
+  :hook (emacs-startup . ivy-mode)
+  :config
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-initial-inputs-alist nil))
+
+(use-package counsel
+  :after ivy
+  :init
+  (progn
+    (setq counsel-grep-base-command
+          "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+  :bind
+  (("M-x" . counsel-M-x)
+    ("C-x C-f" . counsel-find-file)
+    ("C-c p f" . counsel-projectile-find-file)
+    ("C-c p d" . counsel-projectile-find-dir)
+    ("C-c p s" . counsel-projectile-switch-project)
+    ("<f1> f" . counsel-describe-function)
+    ("<f1> v" . counsel-describe-variable)
+    ("<f1> l" . counsel-load-library)
+    ("<f2> i" . counsel-info-lookup-symbol)
+    ("<f2> u" . counsel-unicode-char)
+    ("C-c k" . counsel-rg)))
+
+(use-package counsel-projectile
+  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
+
+(use-package swiper
+  :after ivy
+  :bind ("C-s" . swiper))
+
+(use-package projectile
+  :commands
+  (projectile-find-file projectile-switch-project)
+  :diminish
+  (projectile-mode)
+  :config 
+  (progn
+    (require 'counsel-projectile)
+    (setq projectile-completion-system 'ivy)))
+
+(use-package treemacs
+  :config
+  (progn
+    (setq treemacs-follow-after-init          t
+          treemacs-width                      35
+          treemacs-indentation                2
+          treemacs-git-integration            t
+          treemacs-collapse-dirs              3
+          treemacs-silent-refresh             nil
+          treemacs-change-root-without-asking nil
+          treemacs-sorting                    'alphabetic-desc
+          treemacs-show-hidden-files          t
+          treemacs-never-persist              nil
+          treemacs-is-never-other-window      nil
+          treemacs-goto-tag-strategy          'refetch-index)
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t))
+  :bind
+  (:map global-map
+        ([f8]        . treemacs-toggle)
+        ("<C-M-tab>" . treemacs-toggle)
+        ("M-0"       . treemacs-select-window)
+        ("C-c 1"     . treemacs-delete-other-windows)))
+
+(use-package treemacs-projectile
+  :config
+  (setq treemacs-header-function #'treemacs-projectile-create-header))
+
+(use-package avy
+  :ensure t
+  :bind ("C-c s" . avy-goto-char))
+
+(use-package multiple-cursors
+  :bind
+  (("C->" . mc/mark-next-like-this)
+   ("C-<" . mc/mark-previous-like-this)
+   ("C-c C-<" . mc/mark-all-like-this)
+   ("<s-mouse-1>" . mc/add-cursor-on-click))
+  :commands (mc/mark-next-like-this mc/mark-previous-like-this mc/mark-all-like-this))
+
+(define-key global-map (kbd "RET") 'newline-and-indent)
+
+(set-default 'truncate-lines t)
+
+(global-hl-line-mode 1)
+
+(show-paren-mode 1)
+
+(setq-default indent-tabs-mode nil)
+
+(setq tab-width 2)
+
+(save-place-mode 1)
+;; keep track of saved places in ~/.emacs.d/places
+(setq save-place-file (concat user-emacs-directory "places"))
+
+(global-set-key (kbd "C-;") 'comment-or-uncomment-region)
+
+(use-package smartparens
+  :hook (prog-mode . smartparens-mode)
+  :bind (:map smartparens-mode-map
+          ("C-)" . sp-forward-slurp-sexp)
+          ("C-(" . sp-backward-slurp-sexp)
+          ("C-}" . sp-forward-barf-sexp)
+          ("C-{" . sp-backward-barf-sexp))
+  :config
+  (setq sp-escape-wrapped-region nil))
+
+(use-package hungry-delete
+  :hook (prog-mode . global-hungry-delete-mode))
+
+(use-package origami
+  :bind ("C-s-<tab>" . origami-recursively-toggle-node)
+  :hook (prog-mode . origami-mode))
+
+(use-package dash-at-point
+  :bind
+  (("C-c d" . dash-at-point)
+   ("C-c e" . dash-at-point-with-docset))
+  :config
+  (add-to-list 'dash-at-point-mode-alist '(ruby-mode . ("ruby" "rails"))))
+
+(use-package undo-tree
+  :demand t
+  :config
+  (global-undo-tree-mode))
+
+(setq backup-directory-alist `(("." . ,(concat user-emacs-directory
+                                               "backups"))))
+(setq auto-save-default nil)
+
+(use-package flycheck-pos-tip)
+
+(use-package flycheck
+  :after flycheck-pos-tip
+  :demand t
+  :config
+  (progn
+    (global-flycheck-mode)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (setq flycheck-standard-error-navigation nil)
+    (when 'display-graphic-p (selected-frame)
+      (eval-after-load 'flycheck
+      (flycheck-pos-tip-mode)))))
+
 (use-package semantic 
   :config
   (semantic-mode 1)
   (global-semanticdb-minor-mode 1)
   (global-semantic-idle-scheduler-mode 1))
 
-(setq org-latex-to-pdf-process '("texi2dvi --pdf --clean --verbose --batch %f"))
+(use-package company
+  :commands (global-company-mode)
+  :bind
+  (;;("C-<tab>" . company-capf)
+   :map company-mode-map
+   (("M-h" . company-quickhelp-manual-begin)))
+  :init
+  (add-hook 'after-init-hook 'global-company-mode)
+  :config
+  (progn
+    (eval-after-load 'company
+      '(push 'company-robe company-backends))
+    (setq company-idle-delay 0.5)
+    (setq company-frontends
+          '(company-pseudo-tooltip-unless-just-one-frontend
+            company-preview-frontend
+            company-echo-metadata-frontend))
+    (setq company-auto-complete t)
+    (setq company-tooltip-align-annotations t)))
 
-;; Add a directory to our load path so that when you `load` things
-;; below, Emacs knows where to look for the corresponding file.
+(use-package ycmd
+  :commands (ycmd-mode)
+  :config
+  (progn
+    (set-variable 'ycmd-server-command '("python" "/Users/Justin/ycmd/ycmd"))
+    (set-variable 'ycmd-extra-conf-whitelist '("~/*"))
+    (set-variable 'ycmd-global-config "~/.ycm_extra_conf.py")
+    (require 'ycmd-eldoc)
+    (add-hook 'ycmd-mode-hook 'ycmd-eldoc-setup)
+    ;;  (setq ycmd-force-semantic-completion t)
+    (add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results)))
 
-(add-to-list 'load-path "~/.emacs.d/customizations")
+(use-package company-ycmd
+  :after ycmd
+  :config
+  (company-ycmd-setup))
 
-;; Sets up exec-path-from-shell so that Emacs will use the correct
-;; environment variables
-(load "shell-integration.el")
+(use-package lsp-mode)
 
-;; These customizations make it easier for you to navigate files,
-;; switch buffers, and choose options from the minibuffer.
-(load "navigation.el")
+(use-package rainbow-mode
+  :hook ((css-mode . rainbow-mode)
+         (less-mode . rainbow-mode)))
 
-;; These customizations change the way emacs looks and disable/enable
-;; some user interface elements
-(load "ui.el")
+(progn ; C mode hook
+  (add-hook 'c-mode-hook 'flycheck-mode)
+  (add-hook 'c-mode-hook 'semantic-mode)
+  (add-hook 'c-mode-hook 'ycmd-mode)
+  (add-hook 'c-mode-hook 'counsel-gtags-mode)
+  (add-hook 'c++-mode-hook 'counsel-gtags-mode)
+  (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
 
-;; These customizations make editing a bit nicer.
-(load "editing.el")
+(eval-after-load 'c-mode '(setq-local eldoc-documentation-function #'ggtags-eldoc-function))
 
-;; Hard-to-categorize customizations
-(load "misc.el")
+(setq-default c-basic-offset 2)
 
-;; Setup for auto complete
-(load "company-config.el")
-;; For editing lisps
-(load "lisp-editing.el")
+(use-package c-eldoc)
 
-;; Auto-complete backend for python, javascript, C, C++, GO, Rust
-(load "ycmd-config.el")
+(use-package counsel-gtags
+  :bind (("M-," . counsel-gtags-find-definition))
+  :config
+  (setq counsel-gtags-auto-update t))
 
-;; Langauage-specific
-(load "setup-c++.el")
-(load "setup-clojure.el")
-(load "setup-js.el")
-(load "setup-python.el")
-(load "setup-ruby.el")
-(load "setup-swift.el")
-(load "setup-c.el")
-(load "setup-rust.el")
+(use-package ggtags
+  :config
+  (add-hook 'c-common-mode-hook 'ggtags-mode))
 
-;; Config and packages for web based files
-(load "setup-web.el")
-;; Load org-mode specific config
-(load "setup-org.el")
-;; Load custom functions
-(load "functions.el")
-;; what does this do?                      
-(setq font-lock-maximum-decoration t)
-;;;;;;;;
+(use-package paredit
+  :hook ((common-lisp-mode . (lambda () (enable-paredit)))
+         (scheme-mode . (lambda () (enable-paredit)))
+         (lisp-mode . (lambda () (enable-paredit)))))
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(mode-line ((t (:background "#282a36" :foregound "#50fa7b" :inherit (quote mode-line)))))
- '(powerline-active1 ((t (:background "#6272a4" :foregound "#50fa7b" :inherit (quote mode-line)))))
- '(powerline-active2 ((t (:background "#44475a" :foregound "#50fa7b" :inherit (quote mode-line)))))
- '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
- '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
- '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
- '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
- '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
- '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
- '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
- '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
- '(spaceline-highlight-face ((t (:background "#cb619e" :foreground "#f8f8f2" :inherit (quote mode-line))))))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ansi-color-faces-vector
-   [default default default italic underline success warning error])
- '(ansi-color-names-vector
-   ["black" "red3" "ForestGreen" "yellow3" "blue" "magenta3" "DeepSkyBlue" "gray50"])
- '(blink-cursor-mode nil)
- '(coffee-tab-width 2)
- '(custom-enabled-themes (quote (dracula)))
- '(custom-safe-themes
-   (quote
-    ("3fa07dd06f4aff80df2d820084db9ecbc007541ce7f15474f1d956c846a3238f" "af717ca36fe8b44909c984669ee0de8dd8c43df656be67a50a1cf89ee41bde9a" "d21135150e22e58f8c656ec04530872831baebf5a1c3688030d119c114233c24" "66aea5b7326cf4117d63c6694822deeca10a03b98135aaaddb40af99430ea237" "de0b7245463d92cba3362ec9fe0142f54d2bf929f971a8cdf33c0bf995250bcf" "256a381a0471ad344e1ed33470e4c28b35fb4489a67eb821181e35f080083c36" "cf284fac2a56d242ace50b6d2c438fcc6b4090137f1631e32bedf19495124600" "d61f6c49e5db58533d4543e33203fd1c41a316eddb0b18a44e0ce428da86ef98" "003a9aa9e4acb50001a006cfde61a6c3012d373c4763b48ceb9d523ceba66829" "938d8c186c4cb9ec4a8d8bc159285e0d0f07bad46edf20aa469a89d0d2a586ea" "6de7c03d614033c0403657409313d5f01202361e35490a3404e33e46663c2596" "251348dcb797a6ea63bbfe3be4951728e085ac08eee83def071e4d2e3211acc3" "0cd56f8cd78d12fc6ead32915e1c4963ba2039890700458c13e12038ec40f6f5" "a94f1a015878c5f00afab321e4fef124b2fc3b823c8ddd89d360d710fc2bddfc" "b59d7adea7873d58160d368d42828e7ac670340f11f36f67fa8071dbf957236a" "9b1c580339183a8661a84f5864a6c363260c80136bd20ac9f00d7e1d662e936a" "946e871c780b159c4bb9f580537e5d2f7dba1411143194447604ecbaf01bd90c" "01e067188b0b53325fc0a1c6e06643d7e52bc16b6653de2926a480861ad5aa78" "c79c2eadd3721e92e42d2fefc756eef8c7d248f9edefd57c4887fbf68f0a17af" "158013ec40a6e2844dbda340dbabda6e179a53e0aea04a4d383d69c329fba6e6" "73a13a70fd111a6cd47f3d4be2260b1e4b717dbf635a9caee6442c949fad41cd" "ff7625ad8aa2615eae96d6b4469fcc7d3d20b2e1ebc63b761a349bebbb9d23cb" "38e64ea9b3a5e512ae9547063ee491c20bd717fe59d9c12219a0b1050b439cdd" default)))
- '(fci-rule-color "#383838" t)
- '(line-number-mode t)
- '(org-default-notes-file (concat org-directory "/notes.org"))
- '(org-directory "~/Dropbox/orgfiles")
- '(org-export-html-postamble nil)
- '(org-hide-leading-stars t)
- '(org-startup-folded (quote overview))
- '(org-startup-indented t)
- '(org-startup-truncated t)
- '(org-trello-current-prefix-keybinding "C-c o")
- '(package-selected-packages
-   (quote
-    (markdown-mode flymd docker-compose-mode origami folding json-mode ido-completing-read+ md-readme org-trello rebase-mode helm counsel-dash dash-at-point flx robe-mode csharp-mode xref-js2 spaceline ggtags counsel-gtags company-tern tern-context-coloring tern indium rjsx-mode yas-snippet rustfmt c-eldoc dracula-theme cyberpunk-theme yard-mode yaml-mode web-mode use-package undo-tree tagedit swift-mode smex slime-company robe rbenv rainbow-delimiters racer parinfer paredit org-present org-gcal org-bullets noflet multiple-cursors magit ido-ubiquitous hungry-delete flycheck-ycmd flycheck-swift flycheck-rust flycheck-pos-tip fill-column-indicator exec-path-from-shell esup eclim counsel company-sourcekit company-quickhelp clojure-mode-extra-font-locking cider calfw-gcal calfw avy ample-theme airline-themes)))
- '(show-paren-mode t)
- '(size-indication-mode t)
- '(spaceline-info-mode nil)
- '(tool-bar-mode nil)
- '(tramp-syntax (quote default) nil (tramp)))
+(use-package parinfer
+  :bind
+  (:map parinfer-mode-map
+        ("C-t" . parinfer-toggle-mode))
+  :config
+  (setq parinfer-auto-switch-indent-mode t)
+  (setq parinfer-extensions
+        '(defaults       ; should be included.
+           pretty-parens  ; different paren styles for different modes.
+           paredit        ; Introduce some paredit commands.
+           smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+           ;;one
+           smart-yank)))   ; Yank behavior depend on mode
+
+(use-package eldoc
+  :ensure t
+  :config
+  (eldoc-add-command
+   'paredit-backward-delete
+   'paredit-close-round)
+  (global-eldoc-mode))
+
+(use-package slime
+  :ensure t
+  :init
+  (add-hook 'lisp-mode-hook 'slime-mode)
+  (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
+                                         (let (old-window selected-window)
+                                           (slime)
+                                           (delete-other-windows old-window)
+                                           (window-buffer old-window))))))
+
+(use-package slime-company
+  :after slime
+  :config
+  (setq slime-contribs '(slime-fancy
+                         slime-autodoc)))
+
+(use-package lisp-mode
+  :ensure nil
+  :config
+  (setq inferior-lisp-program (executable-find "sbcl")))
+
+(use-package elisp-mode
+  :ensure nil
+  :init
+  (add-hook 'clojure-mode-hook (lambda () (enable-paredit))))
+
+(use-package clojure-mode
+  :init
+  (progn
+    (add-hook 'clojure-mode-hook (lambda () (enable-paredit)))
+    (add-hook 'clojure-mode-hook 'cider-mode)
+    (add-hook 'clojure-mode-hook 'eldoc-mode)
+    (add-hook 'clojure-mode-hook 'subword-mode))
+  :config
+  (progn
+    (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
+    (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
+    (setq inferior-lisp-program "lein repl")
+    ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
+    (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
+    (require 'clojure-mode-extra-font-locking)
+    (font-lock-add-keywords
+     nil
+     '(("(\\(facts?\\)"
+        (2 font-lock-keyword-face))
+       ("(\\(background?\\)"
+        (2 font-lock-keyword-face))))
+    (electric-pair-mode)
+    (setq define-clojure-indent 2)))
+
+(use-package cider
+  :config
+  (progn
+    ;; REPL related stuff
+
+    ;; REPL history file
+    (setq cider-repl-history-file "~/.emacs.d/cider-history")
+
+    ;; nice pretty printing
+    (setq cider-repl-use-pretty-printing t)
+
+    ;; nicer font lock in REPL
+    (setq cider-repl-use-clojure-font-lock t)
+
+    ;; result prefix for the REPL
+    (setq cider-repl-result-prefix ";; => ")
+
+    ;; never ending REPL history
+    (setq cider-repl-wrap-history t)
+
+    ;; looong history
+    (setq cider-repl-history-size 3000)
+
+    ;; eldoc for clojure
+    (add-hook 'cider-mode-hook #'eldoc-mode)
+
+    ;; error buffer not popping up
+    (setq cider-show-error-buffer nil)
+
+    ;; go right to the REPL buffer when it's finished connecting
+    (setq cider-repl-pop-to-buffer-on-connect nil)
+    ;; company mode for completion
+    (add-hook 'cider-repl-mode-hook #'company-mode)
+    (add-hook 'cider-mode-hook #'company-mode)
+
+    (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
+    ;; key bindings
+    ;; these help me out with the way I usually develop web apps
+    (defun cider-start-http-server ()
+      (interactive)
+      (cider-load-current-buffer)
+      (let ((ns (cider-current-ns)))
+        (cider-repl-set-ns ns)
+        (cider-interactive-eval (format "(println '(def server (%s/start))) (println 'server)" ns))
+        (cider-interactive-eval (format "(def server (%s/start)) (println server)" ns))))
+    (defun cider-refresh ()
+      (interactive)
+      (cider-interactive-eval (format "(user/reset)")))
+    (defun cider-user-ns ()
+      (interactive)
+      (cider-repl-set-ns "user"))
+    (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
+    (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
+    (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
+    (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)))
+
+(use-package company-tern
+  :bind
+  ("M-." . nil)
+  ("M-," . nil)
+  :config
+  (setq company-tooltip-align-annotations t)
+  (setq company-tern-property-marker " <p>"))
+
+(use-package indium
+  :config
+  (add-hook 'indium-update-script-source-hook
+            (lambda (url)
+              (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
+                                   url))))
+  (indium-interaction-mode))
+
+(use-package js2-mode
+  :after indium
+  :mode "\\.js\\'"
+  :config
+  (add-hook 'js-mode-hook 'subword-mode)
+  (add-hook 'html-mode-hook 'subword-mode)
+  (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+  (add-hook 'js2-mode-hook #'js2-refactor-mode)
+  (add-to-list 'company-backends 'company-tern)
+  (add-hook 'js2-mode-hook (lambda ()
+                             (tern-mode)))
+  (setq js-indent-level 4)
+  (require 'indium)
+  (add-hook 'js-mode-hook #'indium-interaction-mode))
+
+(use-package js2-refactor
+  :bind
+  (:map js2-mode-map
+        ("C-k" . js2r-kill))
+  :config
+  (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
+  (js2r-add-keybindings-with-prefix "C-c C-r"))
+
+(use-package coffee-mode
+  :mode "\\.coffee$"
+  :config
+  (add-to-list 'company-backends 'company-tern)
+  (custom-set-variables '(coffee-tab-width 2))
+  (add-hook 'coffee-mode-hook 'subword-mode)
+  (add-hook 'coffee-mode-hook 'highlight-indentation-current-column-mode)
+  (add-hook 'coffee-mode-hook
+            (defun coffee-mode-newline-and-indent ()
+              (define-key coffee-mode-map "\C-j" 'coffee-newline-and-indent)
+              (setq coffee-cleanup-whitespace nil))))
+
+(use-package tagedit)
+
+(use-package sgml-mode
+  :after tagedit
+  :config
+  (require 'tagedit)
+  (tagedit-add-paredit-like-keybindings)
+  (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
+
+(use-package yard-mode
+  :init (add-hook 'enh-ruby-mode-hook 'yard-mode))
+
+(use-package rbenv
+  :init
+  (add-hook 'enh-ruby-mode-hook 'rbenv-mode)
+  :config
+  (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
+
+(use-package robe
+  :hook (enh-ruby-mode-hook . robe-mode)
+  :config
+  (progn 
+    (robe-start)))
+
+(use-package inf-ruby
+  :hook (enh-ruby-mode . inf-ruby-mode)
+  :bind
+  (:map inf-ruby-minor-mode-map
+        (("C-c C-z" . run-ruby)
+         ("C-c C-b" . ruby-send-buffer)))
+  :config
+  (when (executable-find "pry")
+    (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
+    (setq inf-ruby-default-implementation "pry")))
+
+(use-package enh-ruby-mode
+  :mode "\\(?:\\.rb\\|ru\\|rake\\|gemspec\\)|\\(?:Gem\\|Rake\\)\\'"
+  :init
+  (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
+  :config
+  (progn
+    (setq ruby-indent-level 2)
+    (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
+
+(use-package flycheck-rust
+  :commands (flycheck-rust-setup))
+
+(use-package lsp-rust)
+
+(use-package rust-mode
+  :mode "\\.rs\\'"
+  :bind
+  (:map rust-mode-map
+        (([tab] . company-indent-or-complete-common)
+         ("C-c <tab>" . rust-format-buffer)))
+  :ensure t
+  :init
+  (add-hook 'rust-mode-hook 'company-mode)
+  ;; (add-hook 'rust-mode-hook 'racer-mode)
+  ;; (add-hook 'rust-mode-hook 'ycmd-mode)
+  (add-hook 'rust-mode-hook 'flycheck-rust-setup)
+  :config
+  (electric-pair-mode 1)
+  (lsp-mode)
+  (lsp-rust-enable))
+
+(use-package json-mode
+  :mode "\\.json\\'")
+
+(use-package dockerfile-mode
+  :mode "\\Dockerfile\\'")
+
+(use-package docker
+  :config
+  (progn
+    (setenv "DOCKER_TLS_VERIFY" "1")
+    (setenv "DOCKER_HOST" "tcp://10.11.12.13:2376")
+    (setenv "DOCKER_CERT_PATH" "/Users/justin/.docker/machine/machines/box")
+    (setenv "DOCKER_MACHINE_NAME" "box")))
+
+(use-package markdown-mode
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+
+(use-package flymd
+ :commands (flymd-flyit))
+
+(use-package lua-mode
+  :mode ("\\.lua\\'")
+  :defer t
+  :config
+  (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
+
+(use-package slack
+  :commands (slack-start slack-register-team)
+  :init
+  (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
+  (setq slack-prefer-current-team t)
+  :config
+  (slack-register-team
+   :name "personal"
+   :default t
+   :client-id "279636748417.280206506404"
+   :client-secret "faca05501140fc54d2113f47335ad0cd"
+   :token "tx" ; this is here to shush emacs on compiles
+   :subscribed-channels '(general)))
+
+  ;; (slack-register-team
+  ;;  :name "test"
+  ;;  :client-id "3333333333.77777777777"
+  ;;  :client-secret "cccccccccccccccccccccccccccccccc"
+  ;;  :token "xxxx-yyyyyyyyyy-zzzzzzzzzzz-hhhhhhhhhhh-llllllllll"
+  ;;  :subscribed-channels '(hoge fuga)))
+
+  (use-package alert
+    :commands (alert)
+    :init
+    (setq alert-default-style 'notifier))
+
+(use-package flx)
+
+(use-package woman
+  :ensure nil
+  :config
+  (autoload 'woman "woman"
+    "Decode and browse a UN*X man page." t)
+  (autoload 'woman-find-file "woman"
+    "Find, decode and browse a specific UN*X man-page file." t))
+
+(use-package ido-completing-read+)
+
+(use-package deferred)
+
+(use-package esup)
+
+(use-package profiler
+  :bind
+  (("s-l" . profiler-start)
+   ("s-r" . profiler-report)))
+
+(use-package dired+)
+
+(defun font-name-replace-size (font-name new-size)
+  (let ((parts (split-string font-name "-")))
+    (setcar (nthcdr 7 parts) (format "%d" new-size))
+    (mapconcat 'identity parts "-")))
+
+(defun increment-default-font-height (delta)
+  "Adjust the default font height by DELTA on every frame.
+The pixel size of the frame is kept (approximately) the same.
+DELTA should be a multiple of 10, in the units used by the
+:height face attribute."
+  (let* ((new-height (+ (face-attribute 'default :height) delta))
+         (new-point-height (/ new-height 10)))
+    (dolist (f (frame-list))
+      (with-selected-frame f
+        ;; Latest 'set-frame-font supports a "frames" arg, but
+        ;; we cater to Emacs 23 by looping instead.
+        (set-frame-font (font-name-replace-size (face-font 'default)
+                                                new-point-height)
+                        t)))
+    (set-face-attribute 'default nil :height new-height)
+    (message "default font size is now %d" new-point-height)))
+
+(defun increase-default-font-height ()
+  (interactive)
+  (increment-default-font-height 10))
+
+(defun decrease-default-font-height ()
+  (interactive)
+  (increment-default-font-height -10))
+
+(global-set-key (kbd "C-M-=") 'increase-default-font-height)
+(global-set-key (kbd "C-M--") 'decrease-default-font-height)
+
+(defun scroll-up-one-line-other-window ()
+  "Scroll other window one line up"
+  (interactive)
+  (scroll-other-window 1))
+
+(defun scroll-down-one-line-other-window ()
+  "Scroll other window one line down"
+  (interactive)
+  (scroll-other-window -1))
+
+(defun my/tangle-dotfiles ()
+   "If the current file is this file, the code blocks are tangled"
+   (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
+     (org-babel-tangle nil "~/.emacs.d/init.el")
+     (byte-compile-file "~/.emacs.d/init.el")))
+(add-hook 'after-save-hook #'my/tangle-dotfiles)
+
+(defun xah-run-current-file ()
+    "Execute the current file.
+  For example, if the current buffer is the file x.py, then it'll call 「python x.py」 in a shell.
+  The file can be Emacs Lisp, PHP, Perl, Python, Ruby, JavaScript, Bash, Ocaml, Visual Basic, TeX, Java, Clojure.
+  File suffix is used to determine what program to run.
+
+  If the file is modified or not saved, save it automatically before run.
+
+  URL `http://ergoemacs.org/emacs/elisp_run_current_file.html'
+  version 2016-01-28"
+    (interactive)
+    (let (
+          (-suffix-map
+           ;; (‹extension› . ‹shell program name›)
+           `(
+             ("php" . "php")
+             ("pl" . "perl")
+             ("py" . "python")
+             ("py3" . ,(if (string-equal system-type "windows-nt") "c:/Python32/python.exe" "python3"))
+             ("rb" . "ruby")
+             ("go" . "go run")
+             ("js" . "node") ; node.js
+             ("sh" . "bash")
+             ("clj" . "java -cp /home/xah/apps/clojure-1.6.0/clojure-1.6.0.jar clojure.main")
+             ("rkt" . "racket")
+             ("ml" . "ocaml")
+             ("vbs" . "cscript")
+             ("tex" . "pdflatex")
+             ("latex" . "pdflatex")
+             ("java" . "javac")
+             ;; ("pov" . "/usr/local/bin/povray +R2 +A0.1 +J1.2 +Am2 +Q9 +H480 +W640")
+             ))
+
+          -fname
+          -fSuffix
+          -prog-name
+          -cmd-str)
+
+      (when (null (buffer-file-name)) (save-buffer))
+      (when (buffer-modified-p) (save-buffer))
+
+      (setq -fname (buffer-file-name))
+      (setq -fSuffix (file-name-extension -fname))
+      (setq -prog-name (cdr (assoc -fSuffix -suffix-map)))
+      (setq -cmd-str (concat -prog-name " \""   -fname "\""))
+
+      (cond
+       ((string-equal -fSuffix "el") (load -fname))
+       ((string-equal -fSuffix "java")
+        (progn
+          (shell-command -cmd-str "*xah-run-current-file output*" )
+          (shell-command
+           (format "java %s" (file-name-sans-extension (file-name-nondirectory -fname))))))
+       (t (if -prog-name
+              (progn
+                (message "Running…")
+                (shell-command -cmd-str "*xah-run-current-file output*" ))
+            (message "No recognized program file suffix for this file."))))))
+
+;;  (global-set-key (kbd "s-r") 'xah-run-current-file)
+
+(defun eval-and-replace ()
+  "Replace the preceding sexp with its value."
+  (interactive)
+  (backward-kill-sexp)
+  (condition-case nil
+      (prin1 (eval (read (current-kill 0)))
+             (current-buffer))
+    (error (message "Invalid expression")
+           (insert (current-kill 0)))))
+
+(global-unset-key (kbd "C-x C-e"))
+(global-set-key (kbd "C-x C-e") 'eval-and-replace)
+
+;; use 4 spaces for tabs
+(defun die-tabs ()
+  (interactive)
+  (set-variable 'tab-width 2)
+  (mark-whole-buffer)
+  (untabify (region-beginning) (region-end))
+  (keyboard-quit))
+
+(defun js2-unused--find-definitions ()
+  ;; Reset the value before visiting the AST
+  (setq js2-unused-definitions nil)
+  (js2-visit-ast js2-mode-ast
+                 #'js2-unused-visitor))
+(defun js2-unused--unqualified-name (name)
+  "Return the local name of NAME.
+foo.bar.baz => baz"
+  (save-match-data
+    (if (string-match "\\.\\([^.]+\\)$" name)
+        (match-string 1 name)
+      name)))
+
+(defun js2-unused-visitor (node end-p)
+  "Add NODE's name to `js2-unused-definitions` if it is a function."
+  (unless end-p
+    (cond
+     ;; assignment to a function
+     ((and (js2-assign-node-p node)
+           (js2-function-node-p (js2-assign-node-right node)))
+      (push (js2-node-string (js2-assign-node-left node)) js2-unused-definitions))
+     ;; function declaration (skipping anonymous ones)
+     ((js2-function-node-p node)
+      (if-let* ((name (js2-function-name node)))
+          (push name js2-unused-definitions))))
+    t))
+(defun js2-unused-functions ()
+  (interactive)
+  ;; Make sure that JS2 has finished parsing the buffer
+  (js2-mode-wait-for-parse
+   (lambda ()
+     ;; Walk the AST tree to find all function definitions
+     (js2-unused--find-definitions)
+     ;; Use xref-js2 to filter the ones that are not referenced anywhere
+     (let ((unused (seq-filter (lambda (name)
+                                 (null (xref-js2--find-references
+                                        (js2-unused--unqualified-name name))))
+                               js2-unused-definitions)))
+       ;; If there are unreferenced function, display a message
+       (apply #'message (if unused
+                            `("Unused functions in %s: %s "
+                              ,(file-name-nondirectory buffer-file-name)
+                              ,(mapconcat #'identity unused " "))
+                          '("No unused function found")))))))
+
+(defun enable-paredit ()
+  (turn-off-smartparens-mode)
+  (paredit-mode))
+
+(defun enable-parinfer ()
+  (turn-off-smartparens-mode)
+  (parinfer-mode))
