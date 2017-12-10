@@ -221,7 +221,7 @@ This is hidden here to load right after we have use-package to be able to benchm
     (benchmark-init/activate)
     :config
     ;; To disable collection of benchmark data after init is done.
-    (add-hook 'after-init-hook 'benchmark-init/deactivate))
+    (add-hook 'window-setup-hook 'benchmark-init/deactivate))
 #+END_SRC
 ** Org Mode
 Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69cb9320811c5ec63409880eadd
@@ -412,7 +412,7 @@ You can also use @ as separator, instead of _.
   (scroll-bar-mode -1))
 #+END_SRC
 
-Formatting window title
+*** Formatting window title
 #+BEGIN_SRC emacs-lisp
 (setq-default frame-title-format "%b (%f)")
 #+END_SRC
@@ -512,7 +512,7 @@ My name isn't "Tinker", so I don't need a bell.
 *** Spaceline + All the Icons
 #+BEGIN_SRC emacs-lisp
   (use-package spaceline-all-the-icons
-    :hook (emacs-startup . spaceline-all-the-icons-theme)
+    :hook (after-init . spaceline-all-the-icons-theme)
     :config
     (progn
       (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
@@ -579,15 +579,17 @@ As of Emacs 26.0 we have native, perfomant support for line numebrs
 ** MacOS
 In OS X, when Emacs is started from the GUI it inherits a default set of environment variables. Let's fix that.
 Currently turned off due to debugging issues
-#+BEGIN_SRC emacs-lisp
-  (use-package exec-path-from-shell
-    :if (eq system-type 'darwin)
-    :init
-    (setq exec-path-from-shell-arguments "-l")
-    :config
-    (exec-path-from-shell-initialize))
-  ;;   ;; (exec-path-from-shell-copy-envs
-  ;;   ;;  '("PATH" "RUST_SRC_PATH")))
+#+BEGIN_SRC emacs-lisp :tangle
+    (use-package exec-path-from-shell
+      :if (eq system-type 'darwin)
+      :demand t
+      :init
+      (progn
+        (setq exec-path-from-shell-debug t))
+      :config
+      (exec-path-from-shell-initialize))
+    ;;   ;; (exec-path-from-shell-copy-envs
+    ;;   ;;  '("PATH" "RUST_SRC_PATH")))
 #+END_SRC
 ** Windows
 #+BEGIN_SRC emacs-lisp
@@ -597,8 +599,7 @@ Currently turned off due to debugging issues
   (setq shell-file-name "bash")
   (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
   (setenv "SHELL" shell-file-name)
-  (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)
-)
+  (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 #+END_SRC
 
 * Navigating
@@ -633,7 +634,7 @@ it looks like counsel is a requirement for swiper
 *** Ivy
 #+BEGIN_SRC emacs-lisp
   (use-package ivy
-    :hook (emacs-startup . ivy-mode)
+    :hook (after-init . ivy-mode)
     :config
     (setq ivy-use-virtual-buffers t)
     (setq ivy-initial-inputs-alist nil))
@@ -1056,7 +1057,7 @@ A REPL for Clojure and nrepl for ClojureScript
 
       ;; nice pretty printing
       (setq cider-repl-use-pretty-printing t)
-    
+
       ;; nicer font lock in REPL
       (setq cider-repl-use-clojure-font-lock t)
 
@@ -1507,7 +1508,6 @@ And the same but without leaving the current window:
                     (message "Running…")
                     (shell-command -cmd-str "*xah-run-current-file output*" ))
                 (message "No recognized program file suffix for this file."))))))
-
     ;;  (global-set-key (kbd "s-r") 'xah-run-current-file)
 #+END_SRC
 ** Eval and Replace
