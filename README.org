@@ -120,7 +120,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
           ("marmalade" . "http://marmalade-repo.org/packages/")
           ("tromey" . "http://tromey.com/elpa/"))
   (package-initialize)
-  #+END_SRC
+#+END_SRC
 
 #+BEGIN_SRC emacs-lisp
   (setq package-user-dir "~/.emacs.d/elpa")
@@ -128,7 +128,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
                '(("melpa" . "http://melpa.org/packages/")
                 ("marmalade" . "http://marmalade-repo.org/packages/")
                 ("tromey" . "http://tromey.com/elpa/")))
-  #+END_SRC
+#+END_SRC
 
 ** Personal information
 #+BEGIN_SRC emacs-lisp
