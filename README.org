@@ -1384,7 +1384,8 @@ Get limited autocompletion in Lua
 ** Profiling
 *** Esup
 #+BEGIN_SRC emacs-lisp
-(use-package esup)
+(use-package esup
+  :commands (esup))
 #+END_SRC
 *** profiler
 #+BEGIN_SRC emacs-lisp
