@@ -203,7 +203,7 @@ called `Byte-compiling with Package.el'."
 (tool-bar-mode -1)
 
 (when (display-graphic-p) ; Start full screen
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (add-to-list 'default-frame-alist '(fullscreen . t))
   (x-focus-frame nil))
 
 (when (fboundp 'scroll-bar-mode)
@@ -271,7 +271,7 @@ called `Byte-compiling with Package.el'."
 (use-package all-the-icons)
 
 (use-package spaceline-all-the-icons
-  :hook (emacs-startup . spaceline-all-the-icons-theme)
+  :hook (after-init . spaceline-all-the-icons-theme)
   :config
   (progn
     (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
@@ -322,23 +322,13 @@ called `Byte-compiling with Package.el'."
             (diminish 'js2-refactor-mode)
             (diminish 'tern-mode)))
 
-(use-package exec-path-from-shell
-  :if (eq system-type 'darwin)
-  :init
-  (setq exec-path-from-shell-arguments "-l")
-  :config
-  (exec-path-from-shell-initialize))
-;;   ;; (exec-path-from-shell-copy-envs
-;;   ;;  '("PATH" "RUST_SRC_PATH")))
-
 (when (memq system-type '(windows-nt))
   (exec-path-from-shell-initialize)
   (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
   (setq shell-file-name "bash")
   (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
   (setenv "SHELL" shell-file-name)
-  (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)
-)
+  (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 
 (use-package uniquify
   :ensure nil
@@ -357,7 +347,7 @@ called `Byte-compiling with Package.el'."
   (setq recentf-max-menu-items 40))
 
 (use-package ivy
-  :hook (emacs-startup . ivy-mode)
+  :hook (after-init . ivy-mode)
   :config
   (setq ivy-use-virtual-buffers t)
   (setq ivy-initial-inputs-alist nil))
@@ -552,6 +542,9 @@ called `Byte-compiling with Package.el'."
   :hook ((css-mode . rainbow-mode)
          (less-mode . rainbow-mode)))
 
+(use-package sass-mode
+  :mode "\\.sass\\'")
+
 (progn ; C mode hook
   (add-hook 'c-mode-hook 'flycheck-mode)
   (add-hook 'c-mode-hook 'semantic-mode)
@@ -576,23 +569,27 @@ called `Byte-compiling with Package.el'."
   (add-hook 'c-common-mode-hook 'ggtags-mode))
 
 (use-package paredit
+  :commands (paredit-mode)
   :hook ((common-lisp-mode . (lambda () (enable-paredit)))
          (scheme-mode . (lambda () (enable-paredit)))
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package parinfer
-  :bind
-  (:map parinfer-mode-map
-        ("C-t" . parinfer-toggle-mode))
-  :config
-  (setq parinfer-auto-switch-indent-mode t)
-  (setq parinfer-extensions
-        '(defaults       ; should be included.
-           pretty-parens  ; different paren styles for different modes.
-           paredit        ; Introduce some paredit commands.
-           smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-           ;;one
-           smart-yank)))   ; Yank behavior depend on mode
+  :commands (parinfer-mode)
+  :bind (:map parinfer-mode-map
+              (("C-t" . parinfer-toggle-mode)))
+  :config (progn
+            (setq parinfer-delay-invoke-threshold 12000)
+            (setq parinfer-auto-switch-indent-mode t)
+            (setq parinfer-extensions
+                  '(defaults       ; should be included.
+                     pretty-parens  ; different paren styles for different modes.
+                     ;;paredit        ; Introduce some paredit commands.
+                     smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+                     ;;one
+                     smart-yank))))   ; Yank behavior depend on mode
+
+(use-package lispy)
 
 (use-package eldoc
   :ensure t
@@ -629,6 +626,8 @@ called `Byte-compiling with Package.el'."
   (add-hook 'clojure-mode-hook (lambda () (enable-paredit))))
 
 (use-package clojure-mode
+  :mode (("\\.clj\\'" . clojure-mode)
+         ( "\\.cljs\\'" . clojurescript-mode))
   :init
   (progn
     (add-hook 'clojure-mode-hook (lambda () (enable-paredit)))
@@ -653,6 +652,9 @@ called `Byte-compiling with Package.el'."
     (setq define-clojure-indent 2)))
 
 (use-package cider
+  :hook ((clojure-mode . cider-mode)
+         (clojurescript-mode . cider-mode))
+  :commands (cider-jack-in cider-jack-in-clojurescript)
   :config
   (progn
     ;; REPL related stuff
@@ -851,7 +853,6 @@ called `Byte-compiling with Package.el'."
 
 (use-package lua-mode
   :mode ("\\.lua\\'")
-  :defer t
   :config
   (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
 
@@ -886,16 +887,19 @@ called `Byte-compiling with Package.el'."
 (use-package woman
   :ensure nil
   :config
-  (autoload 'woman "woman"
-    "Decode and browse a UN*X man page." t)
-  (autoload 'woman-find-file "woman"
-    "Find, decode and browse a specific UN*X man-page file." t))
+  (progn (setq woman-manpath
+              (split-string (shell-command-to-string "man --path") ":" t "\n"))
+        (autoload 'woman "woman"
+          "Decode and browse a UN*X man page." t)
+        (autoload 'woman-find-file "woman"
+          "Find, decode and browse a specific UN*X man-page file." t)))
 
 (use-package ido-completing-read+)
 
 (use-package deferred)
 
-(use-package esup)
+(use-package esup
+  :commands (esup))
 
 (use-package profiler
   :bind
@@ -955,65 +959,59 @@ DELTA should be a multiple of 10, in the units used by the
 (add-hook 'after-save-hook #'my/tangle-dotfiles)
 
 (defun xah-run-current-file ()
-    "Execute the current file.
-  For example, if the current buffer is the file x.py, then it'll call 「python x.py」 in a shell.
-  The file can be Emacs Lisp, PHP, Perl, Python, Ruby, JavaScript, Bash, Ocaml, Visual Basic, TeX, Java, Clojure.
-  File suffix is used to determine what program to run.
+      "Execute the current file.
+    For example, if the current buffer is the file x.py, then it'll call 「python x.py」 in a shell.
+    The file can be Emacs Lisp, PHP, Perl, Python, Ruby, JavaScript, Bash, Ocaml, Visual Basic, TeX, Java, Clojure.
+    File suffix is used to determine what program to run.
 
-  If the file is modified or not saved, save it automatically before run.
+    If the file is modified or not saved, save it automatically before run.
 
-  URL `http://ergoemacs.org/emacs/elisp_run_current_file.html'
-  version 2016-01-28"
-    (interactive)
-    (let (
-          (-suffix-map
-           ;; (‹extension› . ‹shell program name›)
-           `(
-             ("php" . "php")
-             ("pl" . "perl")
-             ("py" . "python")
-             ("py3" . ,(if (string-equal system-type "windows-nt") "c:/Python32/python.exe" "python3"))
-             ("rb" . "ruby")
-             ("go" . "go run")
-             ("js" . "node") ; node.js
-             ("sh" . "bash")
-             ("clj" . "java -cp /home/xah/apps/clojure-1.6.0/clojure-1.6.0.jar clojure.main")
-             ("rkt" . "racket")
-             ("ml" . "ocaml")
-             ("vbs" . "cscript")
-             ("tex" . "pdflatex")
-             ("latex" . "pdflatex")
-             ("java" . "javac")
-             ;; ("pov" . "/usr/local/bin/povray +R2 +A0.1 +J1.2 +Am2 +Q9 +H480 +W640")
-             ))
+    URL `http://ergoemacs.org/emacs/elisp_run_current_file.html'
+    version 2016-01-28"
+      (interactive)
+      (let* ((-suffix-map
+             ;; (‹extension› . ‹shell program name›)
+             `(("php" . "php")
+               ("pl" . "perl")
+               ("py" . "python")
+               ("py3" . ,(if (string-equal system-type "windows-nt") "c:/Python32/python.exe" "python3"))
+               ("rb" . "ruby")
+               ("go" . "go run")
+               ("js" . "node") ; node.js
+               ("sh" . "bash")
+               ("clj" . "java -cp /home/xah/apps/clojure-1.6.0/clojure-1.6.0.jar clojure.main")
+               ("rkt" . "racket")
+               ("ml" . "ocaml")
+               ("vbs" . "cscript")
+               ("tex" . "pdflatex")
+               ("latex" . "pdflatex")
+               ("java" . "javac")))
+            -fname
+            -fSuffix
+            -prog-name
+            -cmd-str)
 
-          -fname
-          -fSuffix
-          -prog-name
-          -cmd-str)
+        (when (null (buffer-file-name)) (save-buffer))
+        (when (buffer-modified-p) (save-buffer))
 
-      (when (null (buffer-file-name)) (save-buffer))
-      (when (buffer-modified-p) (save-buffer))
+        (setq -fname (buffer-file-name))
+        (setq -fSuffix (file-name-extension -fname))
+        (setq -prog-name (cdr (assoc -fSuffix -suffix-map)))
+        (setq -cmd-str (concat -prog-name " \""   -fname "\""))
 
-      (setq -fname (buffer-file-name))
-      (setq -fSuffix (file-name-extension -fname))
-      (setq -prog-name (cdr (assoc -fSuffix -suffix-map)))
-      (setq -cmd-str (concat -prog-name " \""   -fname "\""))
-
-      (cond
-       ((string-equal -fSuffix "el") (load -fname))
-       ((string-equal -fSuffix "java")
-        (progn
-          (shell-command -cmd-str "*xah-run-current-file output*" )
-          (shell-command
-           (format "java %s" (file-name-sans-extension (file-name-nondirectory -fname))))))
-       (t (if -prog-name
-              (progn
-                (message "Running…")
-                (shell-command -cmd-str "*xah-run-current-file output*" ))
-            (message "No recognized program file suffix for this file."))))))
-
-;;  (global-set-key (kbd "s-r") 'xah-run-current-file)
+        (cond
+         ((string-equal -fSuffix "el") (load -fname))
+         ((string-equal -fSuffix "java")
+          (progn
+            (shell-command -cmd-str "*xah-run-current-file output*" )
+            (shell-command
+             (format "java %s" (file-name-sans-extension (file-name-nondirectory -fname))))))
+         (t (if -prog-name
+                (progn
+                  (message "Running…")
+                  (shell-command -cmd-str "*xah-run-current-file output*" ))
+              (message "No recognized program file suffix for this file."))))))
+  ;;  (global-set-key (kbd "s-r") 'xah-run-current-file)
 
 (defun eval-and-replace ()
   "Replace the preceding sexp with its value."
