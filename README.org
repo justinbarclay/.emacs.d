@@ -907,11 +907,18 @@ Load this before we load Flycheck
 * Setup
 Major mode customizations
 ** CSS/LESS/SASS
+*** Rainbow mode
 #+BEGIN_SRC emacs-lisp
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
          (less-mode . rainbow-mode)))
 #+END_SRC
+*** Sass mode
+#+BEGIN_SRC emacs-lisp
+  (use-package sass-mode
+    :mode "\\.sass\\'")
+#+END_SRC
+
 ** C/C++
 *** Add hooks and customizations
 #+BEGIN_SRC emacs-lisp
@@ -950,6 +957,7 @@ Major mode customizations
 *** paredit
 #+BEGIN_SRC emacs-lisp
   (use-package paredit
+    :commands (paredit-mode)
     :hook ((common-lisp-mode . (lambda () (enable-paredit)))
            (scheme-mode . (lambda () (enable-paredit)))
            (lisp-mode . (lambda () (enable-paredit)))))
@@ -957,19 +965,25 @@ Major mode customizations
 *** parinfer
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer
-    :bind
-    (:map parinfer-mode-map
-          ("C-t" . parinfer-toggle-mode))
-    :config
-    (setq parinfer-auto-switch-indent-mode t)
-    (setq parinfer-extensions
-          '(defaults       ; should be included.
-             pretty-parens  ; different paren styles for different modes.
-             paredit        ; Introduce some paredit commands.
-             smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-             ;;one
-             smart-yank)))   ; Yank behavior depend on mode
+    :commands (parinfer-mode)
+    :bind (:map parinfer-mode-map
+                (("C-t" . parinfer-toggle-mode)))
+    :config (progn
+              (setq parinfer-delay-invoke-threshold 12000)
+              (setq parinfer-auto-switch-indent-mode t)
+              (setq parinfer-extensions
+                    '(defaults       ; should be included.
+                       pretty-parens  ; different paren styles for different modes.
+                       ;;paredit        ; Introduce some paredit commands.
+                       smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+                       ;;one
+                       smart-yank))))   ; Yank behavior depend on mode
 #+END_SRC
+*** lispy
+#+BEGIN_SRC emacs-lisp
+  (use-package lispy)
+#+END_SRC
+
 *** eldoc
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
@@ -1020,6 +1034,8 @@ Major mode customizations
 *** clojure-mode
 #+BEGIN_SRC emacs-lisp
   (use-package clojure-mode
+    :mode (("\\.clj\\'" . clojure-mode)
+           ( "\\.cljs\\'" . clojurescript-mode))
     :init
     (progn
       (add-hook 'clojure-mode-hook (lambda () (enable-paredit)))
@@ -1048,6 +1064,9 @@ Major mode customizations
 A REPL for Clojure and nrepl for ClojureScript
 #+BEGIN_SRC emacs-lisp
   (use-package cider
+    :hook ((clojure-mode . cider-mode)
+           (clojurescript-mode . cider-mode))
+    :commands (cider-jack-in cider-jack-in-clojurescript)
     :config
     (progn
       ;; REPL related stuff
@@ -1300,7 +1319,6 @@ Live preview of MarkDown
 #+BEGIN_SRC emacs-lisp
   (use-package lua-mode
     :mode ("\\.lua\\'")
-    :defer t
     :config
     (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
 #+END_SRC
@@ -1348,10 +1366,12 @@ Get limited autocompletion in Lua
   (use-package woman
     :ensure nil
     :config
-    (autoload 'woman "woman"
-      "Decode and browse a UN*X man page." t)
-    (autoload 'woman-find-file "woman"
-      "Find, decode and browse a specific UN*X man-page file." t))
+    (progn (setq woman-manpath
+                (split-string (shell-command-to-string "man --path") ":" t "\n"))
+          (autoload 'woman "woman"
+            "Decode and browse a UN*X man page." t)
+          (autoload 'woman-find-file "woman"
+            "Find, decode and browse a specific UN*X man-page file." t)))
 #+END_SRC
 ** ido-completing-read
 #+BEGIN_SRC emacs-lisp
