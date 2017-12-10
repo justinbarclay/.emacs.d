@@ -389,18 +389,24 @@ You can also use @ as separator, instead of _.
 
 * Look and Feel
 ** Window
+*** Remove toolbar
 #+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
 #+END_SRC
+*** Remove title-barclay
+#+BEGIN_SRC emacs-lisp :tangle
+(setq default-frame-alist '((undecorated . t)))
+#+END_SRC
 
-Emacs should take focus when it launches
+
+*** Emacs should take focus when it launches
 #+BEGIN_SRC emacs-lisp
 (when (display-graphic-p) ; Start full screen
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (add-to-list 'default-frame-alist '(fullscreen . t))
   (x-focus-frame nil))
 #+END_SRC
 
-Don't show native OS scroll bars for buffers because they're redundant
+*** Don't show native OS scroll bars for buffers because they're redundant
 #+BEGIN_SRC emacs-lisp
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
