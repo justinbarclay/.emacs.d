@@ -986,20 +986,23 @@ Major mode customizations
     :commands (parinfer-mode)
     :bind (:map parinfer-mode-map
                 (("C-t" . parinfer-toggle-mode)))
-    :config (progn
+    :init (progn
               (setq parinfer-delay-invoke-threshold 12000)
               (setq parinfer-auto-switch-indent-mode t)
               (setq parinfer-extensions
                     '(defaults       ; should be included.
                        pretty-parens  ; different paren styles for different modes.
-                       ;;paredit        ; Introduce some paredit commands.
+                       paredit        ; Introduce some paredit commands.
                        smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+                       lispy
                        ;;one
                        smart-yank))))   ; Yank behavior depend on mode
 #+END_SRC
 *** lispy
+We're going to give lispy a chance. Parinfer is way too slow in large files.
 #+BEGIN_SRC emacs-lisp
-  (use-package lispy)
+    (use-package lispy
+      :commands (lispy-mode))
 #+END_SRC
 
 *** eldoc
@@ -1045,7 +1048,7 @@ Major mode customizations
     (use-package elisp-mode
       :ensure nil
       :init
-      (add-hook 'clojure-mode-hook (lambda () (enable-paredit))))
+      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 #+END_SRC
 
 ** Clojure
@@ -1056,7 +1059,7 @@ Major mode customizations
            ( "\\.cljs\\'" . clojurescript-mode))
     :init
     (progn
-      (add-hook 'clojure-mode-hook (lambda () (enable-paredit)))
+      (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
       (add-hook 'clojure-mode-hook 'cider-mode)
       (add-hook 'clojure-mode-hook 'eldoc-mode)
       (add-hook 'clojure-mode-hook 'subword-mode))
@@ -1067,7 +1070,6 @@ Major mode customizations
       (setq inferior-lisp-program "lein repl")
       ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
       (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
-      (require 'clojure-mode-extra-font-locking)
       (font-lock-add-keywords
        nil
        '(("(\\(facts?\\)"
@@ -1076,8 +1078,13 @@ Major mode customizations
           (2 font-lock-keyword-face))))
       (electric-pair-mode)
       (setq define-clojure-indent 2)))
-
 #+END_SRC
+
+Clojure mode also supports extra font locking(for syntax highlighting), but I have noticed that this causes performance issues in large and complicated clojure files (which I have been playing a lot with lately), so I have turned this feature off.
+#+BEGIN_SRC emacs-lisp :tangle
+(require 'clojure-mode-extra-font-locking)
+#+END_SRC
+
 *** Cider
 A REPL for Clojure and nrepl for ClojureScript
 #+BEGIN_SRC emacs-lisp
@@ -1489,8 +1496,9 @@ And the same but without leaving the current window:
      "If the current file is this file, the code blocks are tangled"
      (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
        (org-babel-tangle nil "~/.emacs.d/init.el")
-       (byte-compile-file "~/.emacs.d/init.el")))
-  (add-hook 'after-save-hook #'my/tangle-dotfiles)
+       ;;(byte-compile-file "~/.emacs.d/init.el")
+))
+(add-hook 'after-save-hook #'my/tangle-dotfiles)
 #+END_SRC
 ** Run Current File
 #+BEGIN_SRC emacs-lisp
@@ -1631,4 +1639,8 @@ And the same but without leaving the current window:
   (defun enable-parinfer ()
     (turn-off-smartparens-mode)
     (parinfer-mode))
+
+(defun enable-lispy ()
+    (turn-off-smartparens-mode)
+    (lispy-mode))
 #+END_SRC
