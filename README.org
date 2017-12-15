@@ -835,6 +835,13 @@ Emacs can automatically create backup files. This tells Emacs to put all backups
                                                  "backups"))))
   (setq auto-save-default nil)
 #+END_SRC
+** Whitespace
+Emacs doesn’t handle trailing spaces or anything like that very well by default, it’s far too aggressive for my tastes, so we’ll use ws-butler to fix this.
+#+BEGIN_SRC emacs-lisp
+  (use-package ws-butler
+    :commands (ws-butler-global-mode)
+    :hook (after-init . (lambda () (ws-butler-global-mode 1))))
+#+END_SRC
 
 * Syntax and Error checking
 ** Flycheck pos-tip
