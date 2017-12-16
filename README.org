@@ -150,7 +150,7 @@ Let's bootstrap use-package so it can download everything else as we need it.
       (package-install 'use-package)))
 #+END_SRC
 *** Don't byte compile init file
-Boot strap use-package
+Boot strap use-package. Because we're running package initalize ourselves, we can turn it off when emacs wants to run it later in the startup process
 #+BEGIN_SRC emacs-lisp
   (setq package-enable-at-startup nil)
   (package-initialize)
@@ -652,24 +652,27 @@ it looks like counsel is a requirement for swiper
 #+END_SRC
 *** Counsel
 #+BEGIN_SRC emacs-lisp
-  (use-package counsel
-    :after ivy
-    :init
-    (progn
-      (setq counsel-grep-base-command
-            "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
-    :bind
-    (("M-x" . counsel-M-x)
-      ("C-x C-f" . counsel-find-file)
-      ("C-c p f" . counsel-projectile-find-file)
-      ("C-c p d" . counsel-projectile-find-dir)
-      ("C-c p s" . counsel-projectile-switch-project)
-      ("<f1> f" . counsel-describe-function)
-      ("<f1> v" . counsel-describe-variable)
-      ("<f1> l" . counsel-load-library)
-      ("<f2> i" . counsel-info-lookup-symbol)
-      ("<f2> u" . counsel-unicode-char)
-      ("C-c k" . counsel-rg)))
+    (use-package counsel
+      :after ivy
+      :init
+      (progn
+        (setq counsel-grep-base-command
+              "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+      :bind
+      (("M-x" . counsel-M-x)
+        ("C-x C-f" . counsel-find-file)
+        ("C-c p f" . counsel-projectile-find-file)
+        ("C-c p d" . counsel-projectile-find-dir)
+        ("C-c p s" . counsel-projectile-switch-project)
+        ("<f1> f" . counsel-describe-function)
+        ("<f1> v" . counsel-describe-variable)
+        ("<f1> l" . counsel-load-library)
+        ("<f2> i" . counsel-info-lookup-symbol)
+        ("<f2> u" . counsel-unicode-char)
+        ("C-c k" . counsel-rg))
+      :config
+      ;; Fix projectile issue: https://github.com/bbatsov/projectile/issues/496
+      (projectile-global-mode))
 #+END_SRC
 *** Counsel-projectile
 #+BEGIN_SRC emacs-lisp
@@ -692,7 +695,8 @@ it looks like counsel is a requirement for swiper
     :config 
     (progn
       (require 'counsel-projectile)
-      (setq projectile-completion-system 'ivy)))
+      (setq projectile-completion-system 'ivy)
+      (setq projectile-enable-caching t)))
 #+END_SRC
 ** Treemacs
 #+BEGIN_SRC emacs-lisp
@@ -987,7 +991,7 @@ Major mode customizations
     :bind (:map parinfer-mode-map
                 (("C-t" . parinfer-toggle-mode)))
     :init (progn
-              (setq parinfer-delay-invoke-threshold 12000)
+              (setq parinfer-delay-invoke-threshold 30000)
               (setq parinfer-auto-switch-indent-mode t)
               (setq parinfer-extensions
                     '(defaults       ; should be included.

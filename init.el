@@ -15,11 +15,11 @@
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
 
-(eval-when-compile
-  (package-initialize)
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package)))
+(setq package-enable-at-startup nil)
+(package-initialize)
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
 (defmacro use-package-with-elpa ()
   "Set up use-package to optimal usage with package.el.
@@ -369,7 +369,10 @@ called `Byte-compiling with Package.el'."
     ("<f1> l" . counsel-load-library)
     ("<f2> i" . counsel-info-lookup-symbol)
     ("<f2> u" . counsel-unicode-char)
-    ("C-c k" . counsel-rg)))
+    ("C-c k" . counsel-rg))
+  :config
+  ;; Fix projectile issue: https://github.com/bbatsov/projectile/issues/496
+  (projectile-global-mode))
 
 (use-package counsel-projectile
   :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
@@ -386,7 +389,8 @@ called `Byte-compiling with Package.el'."
   :config 
   (progn
     (require 'counsel-projectile)
-    (setq projectile-completion-system 'ivy)))
+    (setq projectile-completion-system 'ivy)
+    (setq projectile-enable-caching t)))
 
 (use-package treemacs
   :config
@@ -478,6 +482,10 @@ called `Byte-compiling with Package.el'."
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
 (setq auto-save-default nil)
+
+(use-package ws-butler
+  :commands (ws-butler-global-mode)
+  :hook (after-init . (lambda () (ws-butler-global-mode 1))))
 
 (use-package flycheck-pos-tip)
 
@@ -578,18 +586,20 @@ called `Byte-compiling with Package.el'."
   :commands (parinfer-mode)
   :bind (:map parinfer-mode-map
               (("C-t" . parinfer-toggle-mode)))
-  :config (progn
-            (setq parinfer-delay-invoke-threshold 12000)
+  :init (progn
+            (setq parinfer-delay-invoke-threshold 30000)
             (setq parinfer-auto-switch-indent-mode t)
             (setq parinfer-extensions
                   '(defaults       ; should be included.
                      pretty-parens  ; different paren styles for different modes.
-                     ;;paredit        ; Introduce some paredit commands.
+                     paredit        ; Introduce some paredit commands.
                      smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+                     lispy
                      ;;one
                      smart-yank))))   ; Yank behavior depend on mode
 
-(use-package lispy)
+(use-package lispy
+  :commands (lispy-mode))
 
 (use-package eldoc
   :ensure t
@@ -623,14 +633,14 @@ called `Byte-compiling with Package.el'."
 (use-package elisp-mode
   :ensure nil
   :init
-  (add-hook 'clojure-mode-hook (lambda () (enable-paredit))))
+  (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 
 (use-package clojure-mode
   :mode (("\\.clj\\'" . clojure-mode)
          ( "\\.cljs\\'" . clojurescript-mode))
   :init
   (progn
-    (add-hook 'clojure-mode-hook (lambda () (enable-paredit)))
+    (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
     (add-hook 'clojure-mode-hook 'cider-mode)
     (add-hook 'clojure-mode-hook 'eldoc-mode)
     (add-hook 'clojure-mode-hook 'subword-mode))
@@ -641,7 +651,6 @@ called `Byte-compiling with Package.el'."
     (setq inferior-lisp-program "lein repl")
     ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
     (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
-    (require 'clojure-mode-extra-font-locking)
     (font-lock-add-keywords
      nil
      '(("(\\(facts?\\)"
@@ -952,10 +961,11 @@ DELTA should be a multiple of 10, in the units used by the
   (scroll-other-window -1))
 
 (defun my/tangle-dotfiles ()
-   "If the current file is this file, the code blocks are tangled"
-   (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
-     (org-babel-tangle nil "~/.emacs.d/init.el")
-     (byte-compile-file "~/.emacs.d/init.el")))
+     "If the current file is this file, the code blocks are tangled"
+     (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
+       (org-babel-tangle nil "~/.emacs.d/init.el")
+       ;;(byte-compile-file "~/.emacs.d/init.el")
+))
 (add-hook 'after-save-hook #'my/tangle-dotfiles)
 
 (defun xah-run-current-file ()
@@ -1080,9 +1090,13 @@ foo.bar.baz => baz"
                           '("No unused function found")))))))
 
 (defun enable-paredit ()
-  (turn-off-smartparens-mode)
-  (paredit-mode))
+    (turn-off-smartparens-mode)
+    (paredit-mode))
 
-(defun enable-parinfer ()
-  (turn-off-smartparens-mode)
-  (parinfer-mode))
+  (defun enable-parinfer ()
+    (turn-off-smartparens-mode)
+    (parinfer-mode))
+
+(defun enable-lispy ()
+    (turn-off-smartparens-mode)
+    (lispy-mode))
