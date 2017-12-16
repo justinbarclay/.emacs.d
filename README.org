@@ -593,13 +593,14 @@ Currently turned off due to debugging issues
 #+END_SRC
 ** Windows
 #+BEGIN_SRC emacs-lisp
-(when (memq system-type '(windows-nt))
-  (exec-path-from-shell-initialize)
-  (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
-  (setq shell-file-name "bash")
-  (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
-  (setenv "SHELL" shell-file-name)
-  (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
+  (when (memq system-type '(windows-nt))
+    (add-to-list gnutls-trustfile ((expand-file-name "~/.cert/cacert.pm")))
+    (exec-path-from-shell-initialize)
+    (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
+    (setq shell-file-name "bash")
+    (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
+    (setenv "SHELL" shell-file-name)
+    (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 #+END_SRC
 
 * Navigating
