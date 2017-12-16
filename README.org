@@ -140,12 +140,23 @@ For big emacs packages, that help define the experience of Emacs itself
 ** use-package
 I use Jon Wiegley's [[https://github.com/jwiegley/use-package][use-package]] for dependency management.
 Let's bootstrap use-package so it can download everything else as we need it.
-#+BEGIN_SRC emacs-lisp
+*** Byte Compile Init file
+#+BEGIN_SRC emacs-lisp :tangle
+(setq package-enable-at-startup nil)
   (eval-when-compile
     (package-initialize)
     (unless (package-installed-p 'use-package)
       (package-refresh-contents)
       (package-install 'use-package)))
+#+END_SRC
+*** Don't byte compile init file
+Boot strap use-package. Because we're running package initalize ourselves, we can turn it off when emacs wants to run it later in the startup process
+#+BEGIN_SRC emacs-lisp
+  (setq package-enable-at-startup nil)
+  (package-initialize)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
 #+END_SRC
 *** TODO Make better consolidate and explain what is going on in use-package
 *** A macro to increase emacs load times
@@ -642,24 +653,27 @@ it looks like counsel is a requirement for swiper
 #+END_SRC
 *** Counsel
 #+BEGIN_SRC emacs-lisp
-  (use-package counsel
-    :after ivy
-    :init
-    (progn
-      (setq counsel-grep-base-command
-            "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
-    :bind
-    (("M-x" . counsel-M-x)
-      ("C-x C-f" . counsel-find-file)
-      ("C-c p f" . counsel-projectile-find-file)
-      ("C-c p d" . counsel-projectile-find-dir)
-      ("C-c p s" . counsel-projectile-switch-project)
-      ("<f1> f" . counsel-describe-function)
-      ("<f1> v" . counsel-describe-variable)
-      ("<f1> l" . counsel-load-library)
-      ("<f2> i" . counsel-info-lookup-symbol)
-      ("<f2> u" . counsel-unicode-char)
-      ("C-c k" . counsel-rg)))
+    (use-package counsel
+      :after ivy
+      :init
+      (progn
+        (setq counsel-grep-base-command
+              "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+      :bind
+      (("M-x" . counsel-M-x)
+        ("C-x C-f" . counsel-find-file)
+        ("C-c p f" . counsel-projectile-find-file)
+        ("C-c p d" . counsel-projectile-find-dir)
+        ("C-c p s" . counsel-projectile-switch-project)
+        ("<f1> f" . counsel-describe-function)
+        ("<f1> v" . counsel-describe-variable)
+        ("<f1> l" . counsel-load-library)
+        ("<f2> i" . counsel-info-lookup-symbol)
+        ("<f2> u" . counsel-unicode-char)
+        ("C-c k" . counsel-rg))
+      :config
+      ;; Fix projectile issue: https://github.com/bbatsov/projectile/issues/496
+      (projectile-global-mode))
 #+END_SRC
 *** Counsel-projectile
 #+BEGIN_SRC emacs-lisp
@@ -682,7 +696,8 @@ it looks like counsel is a requirement for swiper
     :config 
     (progn
       (require 'counsel-projectile)
-      (setq projectile-completion-system 'ivy)))
+      (setq projectile-completion-system 'ivy)
+      (setq projectile-enable-caching t)))
 #+END_SRC
 ** Treemacs
 #+BEGIN_SRC emacs-lisp
@@ -824,6 +839,13 @@ Emacs can automatically create backup files. This tells Emacs to put all backups
   (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                  "backups"))))
   (setq auto-save-default nil)
+#+END_SRC
+** Whitespace
+Emacs doesn’t handle trailing spaces or anything like that very well by default, it’s far too aggressive for my tastes, so we’ll use ws-butler to fix this.
+#+BEGIN_SRC emacs-lisp
+  (use-package ws-butler
+    :commands (ws-butler-global-mode)
+    :hook (after-init . (lambda () (ws-butler-global-mode 1))))
 #+END_SRC
 
 * Syntax and Error checking
@@ -969,20 +991,23 @@ Major mode customizations
     :commands (parinfer-mode)
     :bind (:map parinfer-mode-map
                 (("C-t" . parinfer-toggle-mode)))
-    :config (progn
-              (setq parinfer-delay-invoke-threshold 12000)
+    :init (progn
+              (setq parinfer-delay-invoke-threshold 30000)
               (setq parinfer-auto-switch-indent-mode t)
               (setq parinfer-extensions
                     '(defaults       ; should be included.
                        pretty-parens  ; different paren styles for different modes.
-                       ;;paredit        ; Introduce some paredit commands.
+                       paredit        ; Introduce some paredit commands.
                        smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+                       lispy
                        ;;one
                        smart-yank))))   ; Yank behavior depend on mode
 #+END_SRC
 *** lispy
+We're going to give lispy a chance. Parinfer is way too slow in large files.
 #+BEGIN_SRC emacs-lisp
-  (use-package lispy)
+    (use-package lispy
+      :commands (lispy-mode))
 #+END_SRC
 
 *** eldoc
@@ -1028,7 +1053,7 @@ Major mode customizations
     (use-package elisp-mode
       :ensure nil
       :init
-      (add-hook 'clojure-mode-hook (lambda () (enable-paredit))))
+      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 #+END_SRC
 
 ** Clojure
@@ -1039,7 +1064,7 @@ Major mode customizations
            ( "\\.cljs\\'" . clojurescript-mode))
     :init
     (progn
-      (add-hook 'clojure-mode-hook (lambda () (enable-paredit)))
+      (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
       (add-hook 'clojure-mode-hook 'cider-mode)
       (add-hook 'clojure-mode-hook 'eldoc-mode)
       (add-hook 'clojure-mode-hook 'subword-mode))
@@ -1050,7 +1075,6 @@ Major mode customizations
       (setq inferior-lisp-program "lein repl")
       ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
       (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
-      (require 'clojure-mode-extra-font-locking)
       (font-lock-add-keywords
        nil
        '(("(\\(facts?\\)"
@@ -1059,8 +1083,13 @@ Major mode customizations
           (2 font-lock-keyword-face))))
       (electric-pair-mode)
       (setq define-clojure-indent 2)))
-
 #+END_SRC
+
+Clojure mode also supports extra font locking(for syntax highlighting), but I have noticed that this causes performance issues in large and complicated clojure files (which I have been playing a lot with lately), so I have turned this feature off.
+#+BEGIN_SRC emacs-lisp :tangle
+(require 'clojure-mode-extra-font-locking)
+#+END_SRC
+
 *** Cider
 A REPL for Clojure and nrepl for ClojureScript
 #+BEGIN_SRC emacs-lisp
@@ -1472,8 +1501,9 @@ And the same but without leaving the current window:
      "If the current file is this file, the code blocks are tangled"
      (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
        (org-babel-tangle nil "~/.emacs.d/init.el")
-       (byte-compile-file "~/.emacs.d/init.el")))
-  (add-hook 'after-save-hook #'my/tangle-dotfiles)
+       ;;(byte-compile-file "~/.emacs.d/init.el")
+))
+(add-hook 'after-save-hook #'my/tangle-dotfiles)
 #+END_SRC
 ** Run Current File
 #+BEGIN_SRC emacs-lisp
@@ -1614,4 +1644,8 @@ And the same but without leaving the current window:
   (defun enable-parinfer ()
     (turn-off-smartparens-mode)
     (parinfer-mode))
+
+(defun enable-lispy ()
+    (turn-off-smartparens-mode)
+    (lispy-mode))
 #+END_SRC
