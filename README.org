@@ -126,7 +126,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq package-archives
                '(("melpa" . "http://melpa.org/packages/")
-                ("marmalade" . "http://marmalade-repo.org/packages/")
+                ("org" . "https://orgmode.org/elpa/")
                 ("tromey" . "http://tromey.com/elpa/")))
 #+END_SRC
 
