@@ -1391,9 +1391,9 @@ Get limited autocompletion in Lua
     (slack-register-team
      :name "personal"
      :default t
-     :client-id "279636748417.280206506404"
-     :client-secret "faca05501140fc54d2113f47335ad0cd"
-     :token "tx" ; this is here to shush emacs on compiles
+     :client-id (getenv "SLACK_CLIENT_ID")
+     :client-secret (getenv "SLACK_CLIENT_SECRET")
+     :token "xoxs-279636748417-281227765863-305626024932-428ae1d750"
      :subscribed-channels '(general)))
 
     ;; (slack-register-team
