@@ -1297,7 +1297,12 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+END_SRC
 *** lsp-rust
 #+BEGIN_SRC emacs-lisp
-  (use-package lsp-rust)
+      (use-package lsp-rust
+        :hook (rust-mode . lsp-rust-enable)
+        :init
+        (progn
+           (setq RUSTC "~/.cargo/bin/rustc")
+           (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))))
 #+END_SRC
 *** Rust-mode
 #+BEGIN_SRC emacs-lisp
@@ -1316,7 +1321,8 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     :config
     (electric-pair-mode 1)
     (lsp-mode)
-    (lsp-rust-enable))
+    ;(lsp-rust-enable)
+    )
 #+END_SRC
 ** JSON
 #+BEGIN_SRC emacs-lisp
@@ -1329,7 +1335,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
   (use-package dockerfile-mode
     :mode "\\Dockerfile\\'")
 #+END_SRC
-
 *** Docker
 #+BEGIN_SRC emacs-lisp
   (use-package docker
@@ -1367,6 +1372,12 @@ Live preview of MarkDown
 Get limited autocompletion in Lua
 #+BEGIN_SRC emacs-lisp :tangle
   (use-package company-lua)
+#+END_SRC
+** Terraform
+*** Terraform mode
+#+BEGIN_SRC emacs-lisp
+  (use-package terraform-mode
+  :mode "\\.tf\\'" )
 #+END_SRC
 * Communication
 ** Slack
@@ -1509,12 +1520,11 @@ And the same but without leaving the current window:
 ** Tangle and Compile init file
 #+BEGIN_SRC emacs-lisp
   (defun my/tangle-dotfiles ()
-     "If the current file is this file, the code blocks are tangled"
-     (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
-       (org-babel-tangle nil "~/.emacs.d/init.el")
-       ;;(byte-compile-file "~/.emacs.d/init.el")
-))
-(add-hook 'after-save-hook #'my/tangle-dotfiles)
+    "If the current file is this file, the code blocks are tangled"
+    (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
+      (org-babel-tangle nil "~/.emacs.d/init.el")))
+      ;;(byte-compile-file "~/.emacs.d/init.el")
+  (add-hook 'after-save-hook #'my/tangle-dotfiles)
 #+END_SRC
 ** Run Current File
 #+BEGIN_SRC emacs-lisp
