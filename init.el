@@ -323,6 +323,7 @@ called `Byte-compiling with Package.el'."
             (diminish 'tern-mode)))
 
 (when (memq system-type '(windows-nt))
+  (add-to-list gnutls-trustfile ((expand-file-name "~/.cert/cacert.pm")))
   (exec-path-from-shell-initialize)
   (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
   (setq shell-file-name "bash")
@@ -895,7 +896,7 @@ called `Byte-compiling with Package.el'."
    :default t
    :client-id (getenv "SLACK_CLIENT_ID")
    :client-secret (getenv "SLACK_CLIENT_SECRET")
-   :token "xoxs-279636748417-281227765863-305626024932-428ae1d750"
+   :token (getenv "SLACK_TOKEN")
    :subscribed-channels '(general)))
 
   ;; (slack-register-team
