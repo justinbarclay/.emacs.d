@@ -1058,6 +1058,13 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
 #+END_SRC
 
 ** Clojure
+*** Flycheck-joker
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck-joker
+    :after (clojure-mode)
+    :config
+    (require 'flycheck-joker))
+#+END_SRC
 *** clojure-mode
 #+BEGIN_SRC emacs-lisp
   (use-package clojure-mode
@@ -1066,6 +1073,7 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
     :init
     (progn
       (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
+      (add-hook 'clojure-mode-hook 'flycheck-mode)
       (add-hook 'clojure-mode-hook 'cider-mode)
       (add-hook 'clojure-mode-hook 'eldoc-mode)
       (add-hook 'clojure-mode-hook 'subword-mode))
