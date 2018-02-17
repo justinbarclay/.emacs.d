@@ -640,6 +640,18 @@ Turn on recent file mode so that you can more easily switch to recently edited f
   (recentf-mode 1)
   (setq recentf-max-menu-items 40))
 #+END_SRC
+** Projectile
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :commands
+    (projectile-find-file projectile-switch-project)
+    :diminish
+    (projectile-mode)
+    :config
+    (progn
+      (setq projectile-completion-system 'ivy)
+      (setq projectile-enable-caching t)))
+#+END_SRC
 ** Minibuffer completion
 As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017) 
 it looks like counsel is a requirement for swiper
@@ -648,56 +660,45 @@ it looks like counsel is a requirement for swiper
   (use-package ivy
     :hook (after-init . ivy-mode)
     :config
-    (setq ivy-use-virtual-buffers t)
-    (setq ivy-initial-inputs-alist nil))
+    (progn
+      (setq ivy-use-virtual-buffers t)
+      (setq ivy-initial-inputs-alist nil)
+      (projectile-global-mode)
+      (counsel-mode)))
 #+END_SRC
 *** Counsel
 #+BEGIN_SRC emacs-lisp
-    (use-package counsel
-      :after ivy
-      :init
-      (progn
-        (setq counsel-grep-base-command
-              "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
-      :bind
-      (("M-x" . counsel-M-x)
-        ("C-x C-f" . counsel-find-file)
-        ("C-c p f" . counsel-projectile-find-file)
-        ("C-c p d" . counsel-projectile-find-dir)
-        ("C-c p s" . counsel-projectile-switch-project)
-        ("<f1> f" . counsel-describe-function)
-        ("<f1> v" . counsel-describe-variable)
-        ("<f1> l" . counsel-load-library)
-        ("<f2> i" . counsel-info-lookup-symbol)
-        ("<f2> u" . counsel-unicode-char)
-        ("C-c k" . counsel-rg))
-      :config
-      ;; Fix projectile issue: https://github.com/bbatsov/projectile/issues/496
-      (projectile-global-mode))
+  (use-package counsel
+    :after ivy
+    :init
+    (progn
+      (setq counsel-grep-base-command
+            "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+    :bind
+    (("M-x" . counsel-M-x)
+      ("C-x C-f" . counsel-find-file)
+      ("C-c p f" . counsel-projectile-find-file)
+      ("C-c p d" . counsel-projectile-find-dir)
+      ("C-c p p" . counsel-projectile-switch-project)
+      ("<f1> f" . counsel-describe-function)
+      ("<f1> v" . counsel-describe-variable)
+      ("<f1> l" . counsel-load-library)
+      ("<f2> i" . counsel-info-lookup-symbol)
+      ("<f2> u" . counsel-unicode-char)
+      ("C-c k" . counsel-rg)))
 #+END_SRC
 *** Counsel-projectile
 #+BEGIN_SRC emacs-lisp
-  (use-package counsel-projectile
-    :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
+    (use-package counsel-projectile
+      :after projectile
+      :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir)
+      :bind)
 #+END_SRC
 *** swiper
 #+BEGIN_SRC emacs-lisp
   (use-package swiper
     :after ivy
     :bind ("C-s" . swiper))
-#+END_SRC
-** Projectile
-#+BEGIN_SRC emacs-lisp
-  (use-package projectile
-    :commands
-    (projectile-find-file projectile-switch-project)
-    :diminish
-    (projectile-mode)
-    :config 
-    (progn
-      (require 'counsel-projectile)
-      (setq projectile-completion-system 'ivy)
-      (setq projectile-enable-caching t)))
 #+END_SRC
 ** Treemacs
 #+BEGIN_SRC emacs-lisp
