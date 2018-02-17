@@ -9,7 +9,7 @@
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq package-archives
              '(("melpa" . "http://melpa.org/packages/")
-              ("marmalade" . "http://marmalade-repo.org/packages/")
+              ("org" . "https://orgmode.org/elpa/")
               ("tromey" . "http://tromey.com/elpa/")))
 
 (setq user-full-name "Justin Barclay"
@@ -346,11 +346,24 @@ called `Byte-compiling with Package.el'."
   (recentf-mode 1)
   (setq recentf-max-menu-items 40))
 
+(use-package projectile
+  :commands
+  (projectile-find-file projectile-switch-project)
+  :diminish
+  (projectile-mode)
+  :config
+  (progn
+    (setq projectile-completion-system 'ivy)
+    (setq projectile-enable-caching t)))
+
 (use-package ivy
   :hook (after-init . ivy-mode)
   :config
-  (setq ivy-use-virtual-buffers t)
-  (setq ivy-initial-inputs-alist nil))
+  (progn
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-initial-inputs-alist nil)
+    (projectile-global-mode)
+    (counsel-mode)))
 
 (use-package counsel
   :after ivy
@@ -363,34 +376,22 @@ called `Byte-compiling with Package.el'."
     ("C-x C-f" . counsel-find-file)
     ("C-c p f" . counsel-projectile-find-file)
     ("C-c p d" . counsel-projectile-find-dir)
-    ("C-c p s" . counsel-projectile-switch-project)
+    ("C-c p p" . counsel-projectile-switch-project)
     ("<f1> f" . counsel-describe-function)
     ("<f1> v" . counsel-describe-variable)
     ("<f1> l" . counsel-load-library)
     ("<f2> i" . counsel-info-lookup-symbol)
     ("<f2> u" . counsel-unicode-char)
-    ("C-c k" . counsel-rg))
-  :config
-  ;; Fix projectile issue: https://github.com/bbatsov/projectile/issues/496
-  (projectile-global-mode))
+    ("C-c k" . counsel-rg)))
 
 (use-package counsel-projectile
-  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
+  :after projectile
+  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir)
+  :bind)
 
 (use-package swiper
   :after ivy
   :bind ("C-s" . swiper))
-
-(use-package projectile
-  :commands
-  (projectile-find-file projectile-switch-project)
-  :diminish
-  (projectile-mode)
-  :config 
-  (progn
-    (require 'counsel-projectile)
-    (setq projectile-completion-system 'ivy)
-    (setq projectile-enable-caching t)))
 
 (use-package treemacs
   :config
@@ -635,12 +636,18 @@ called `Byte-compiling with Package.el'."
   :init
   (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 
+(use-package flycheck-joker
+  :after (clojure-mode)
+  :config
+  (require 'flycheck-joker))
+
 (use-package clojure-mode
   :mode (("\\.clj\\'" . clojure-mode)
          ( "\\.cljs\\'" . clojurescript-mode))
   :init
   (progn
     (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
+    (add-hook 'clojure-mode-hook 'flycheck-mode)
     (add-hook 'clojure-mode-hook 'cider-mode)
     (add-hook 'clojure-mode-hook 'eldoc-mode)
     (add-hook 'clojure-mode-hook 'subword-mode))
@@ -780,44 +787,52 @@ called `Byte-compiling with Package.el'."
   (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 
 (use-package yard-mode
-  :init (add-hook 'enh-ruby-mode-hook 'yard-mode))
+  :hook (ruby-mode . yard-mode))
 
 (use-package rbenv
-  :init
-  (add-hook 'enh-ruby-mode-hook 'rbenv-mode)
+  :hook (ruby-mode . global-rbenv-mode)
   :config
-  (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
+   (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
 (use-package robe
-  :hook (enh-ruby-mode-hook . robe-mode)
+  :hook (ruby-mode . robe-mode)
   :config
   (progn 
     (robe-start)))
 
 (use-package inf-ruby
-  :hook (enh-ruby-mode . inf-ruby-mode)
   :bind
   (:map inf-ruby-minor-mode-map
         (("C-c C-z" . run-ruby)
          ("C-c C-b" . ruby-send-buffer)))
   :config
-  (when (executable-find "pry")
-    (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
-    (setq inf-ruby-default-implementation "pry")))
-
-(use-package enh-ruby-mode
-  :mode "\\(?:\\.rb\\|ru\\|rake\\|gemspec\\)|\\(?:Gem\\|Rake\\)\\'"
-  :init
-  (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
-  :config
   (progn
-    (setq ruby-indent-level 2)
-    (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
+      (when (executable-find "pry")
+        (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
+        (setq inf-ruby-default-implementation "pry"))))
+
+(use-package ruby-mode
+  :mode "\\.rb\\'"
+  :mode "Rakefile\\'"
+  :mode "Gemfile\\'"
+  :mode "Berksfile\\'"
+  :mode "Vagrantfile\\'"
+  :interpreter "ruby"
+  :init
+  (setq ruby-indent-level 2
+        ruby-indent-tabs-mode nil)
+  (add-hook 'ruby-mode 'superword-mode))
+      ;;(autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
 
 (use-package flycheck-rust
   :commands (flycheck-rust-setup))
 
-(use-package lsp-rust)
+(use-package lsp-rust
+  :hook (rust-mode . lsp-rust-enable)
+  :init
+  (progn
+     (setq RUSTC "~/.cargo/bin/rustc")
+     (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))))
 
 (use-package rust-mode
   :mode "\\.rs\\'"
@@ -834,7 +849,8 @@ called `Byte-compiling with Package.el'."
   :config
   (electric-pair-mode 1)
   (lsp-mode)
-  (lsp-rust-enable))
+  ;(lsp-rust-enable)
+  )
 
 (use-package json-mode
   :mode "\\.json\\'")
@@ -865,6 +881,9 @@ called `Byte-compiling with Package.el'."
   :config
   (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
 
+(use-package terraform-mode
+:mode "\\.tf\\'" )
+
 (use-package slack
   :commands (slack-start slack-register-team)
   :init
@@ -874,9 +893,9 @@ called `Byte-compiling with Package.el'."
   (slack-register-team
    :name "personal"
    :default t
-   :client-id "279636748417.280206506404"
-   :client-secret "faca05501140fc54d2113f47335ad0cd"
-   :token "tx" ; this is here to shush emacs on compiles
+   :client-id (getenv "SLACK_CLIENT_ID")
+   :client-secret (getenv "SLACK_CLIENT_SECRET")
+   :token "xoxs-279636748417-281227765863-305626024932-428ae1d750"
    :subscribed-channels '(general)))
 
   ;; (slack-register-team
@@ -961,11 +980,10 @@ DELTA should be a multiple of 10, in the units used by the
   (scroll-other-window -1))
 
 (defun my/tangle-dotfiles ()
-     "If the current file is this file, the code blocks are tangled"
-     (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
-       (org-babel-tangle nil "~/.emacs.d/init.el")
-       ;;(byte-compile-file "~/.emacs.d/init.el")
-))
+  "If the current file is this file, the code blocks are tangled"
+  (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
+    (org-babel-tangle nil "~/.emacs.d/init.el")))
+    ;;(byte-compile-file "~/.emacs.d/init.el")
 (add-hook 'after-save-hook #'my/tangle-dotfiles)
 
 (defun xah-run-current-file ()
