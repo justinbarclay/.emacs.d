@@ -675,37 +675,39 @@ called `Byte-compiling with Package.el'."
   :config
   (progn
     ;; REPL related stuff
-
     ;; REPL history file
+
+    (defun cider-check-figwheel-requirements ()
+      "Check whether we can start a Figwheel ClojureScript REPL."
+     t)
+
     (setq cider-repl-history-file "~/.emacs.d/cider-history")
-
     ;; nice pretty printing
+
     (setq cider-repl-use-pretty-printing t)
-
     ;; nicer font lock in REPL
+
     (setq cider-repl-use-clojure-font-lock t)
-
     ;; result prefix for the REPL
+
     (setq cider-repl-result-prefix ";; => ")
-
     ;; never ending REPL history
+
     (setq cider-repl-wrap-history t)
-
     ;; looong history
+
     (setq cider-repl-history-size 3000)
-
     ;; eldoc for clojure
+
     (add-hook 'cider-mode-hook #'eldoc-mode)
-
     ;; error buffer not popping up
-    (setq cider-show-error-buffer nil)
 
+    (setq cider-show-error-buffer nil)
     ;; go right to the REPL buffer when it's finished connecting
     (setq cider-repl-pop-to-buffer-on-connect nil)
     ;; company mode for completion
     (add-hook 'cider-repl-mode-hook #'company-mode)
     (add-hook 'cider-mode-hook #'company-mode)
-
     (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
     ;; key bindings
     ;; these help me out with the way I usually develop web apps
@@ -796,10 +798,7 @@ called `Byte-compiling with Package.el'."
    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
 (use-package robe
-  :hook (ruby-mode . robe-mode)
-  :config
-  (progn 
-    (robe-start)))
+  :hook (ruby-mode . robe-mode))
 
 (use-package inf-ruby
   :bind
@@ -813,6 +812,7 @@ called `Byte-compiling with Package.el'."
         (setq inf-ruby-default-implementation "pry"))))
 
 (use-package ruby-mode
+  :after robe
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
@@ -820,9 +820,11 @@ called `Byte-compiling with Package.el'."
   :mode "Vagrantfile\\'"
   :interpreter "ruby"
   :init
-  (setq ruby-indent-level 2
-        ruby-indent-tabs-mode nil)
-  (add-hook 'ruby-mode 'superword-mode))
+  (progn
+    (setq ruby-indent-level 2
+          ruby-indent-tabs-mode nil)
+    (add-hook 'ruby-mode 'superword-mode)
+    (robe-start)))
       ;;(autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
 
 (use-package flycheck-rust
@@ -1119,3 +1121,36 @@ foo.bar.baz => baz"
 (defun enable-lispy ()
     (turn-off-smartparens-mode)
     (lispy-mode))
+
+(defun jb/send-region-to-slack-code ()
+  (interactive)
+  (let* ((team (slack-team-select))  ;; Get all rooms from selected team
+         (room (slack-room-select
+                (cl-loop for team in (list team)
+                         append (with-slots (groups ims channels) team
+                                  (append ims groups channels))))))
+    (slack-message-send-internal (concat "```" (filter-buffer-substring (region-beginning) (region-end)) "```")
+                                 (oref room id)
+                                 team)))
+
+(defun jb/send-region-to-slack-quoted ()
+  (interactive)
+  (let ((teams (slack-team-select ())) ;; Select team
+        (room (slack-room-select
+               (cl-loop for team in (list teams)
+                        for channels = (oref team channels)
+                        nconc channels)))) ;; Get all rooms from selected team
+    (slack-message-send-internal (concat ">" (filter-buffer-substring (region-beginning) (region-end)))
+                                 (oref room id)
+                                 team)))
+
+(defun jb/send-region-to-slack ()
+  (interactive)
+  (let ((team (slack-team-select)) ;; Select team
+        (room (slack-room-select
+               (cl-loop for team in (list team)
+                        for channels = (oref team channels)
+                        nconc channels)))) ;; Get all rooms from selected team
+    (slack-message-send-internal (filter-buffer-substring (region-beginning) (region-end))
+                                 (oref room id)
+                                 team)))
