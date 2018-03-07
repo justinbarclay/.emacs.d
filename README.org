@@ -1672,3 +1672,38 @@ And the same but without leaving the current window:
     (turn-off-smartparens-mode)
     (lispy-mode))
 #+END_SRC
+** Post from any buffer to Slack with Emacs
+#+BEGIN_SRC emacs-lisp
+  (defun jb/send-region-to-slack-code ()
+    (interactive)
+    (let* ((team (slack-team-select))  ;; Get all rooms from selected team
+           (room (slack-room-select
+                  (cl-loop for team in (list team)
+                           append (with-slots (groups ims channels) team
+                                    (append ims groups channels))))))
+      (slack-message-send-internal (concat "```" (filter-buffer-substring (region-beginning) (region-end)) "```")
+                                   (oref room id)
+                                   team)))
+
+  (defun jb/send-region-to-slack-quoted ()
+    (interactive)
+    (let ((teams (slack-team-select ())) ;; Select team
+          (room (slack-room-select
+                 (cl-loop for team in (list teams)
+                          for channels = (oref team channels)
+                          nconc channels)))) ;; Get all rooms from selected team
+      (slack-message-send-internal (concat ">" (filter-buffer-substring (region-beginning) (region-end)))
+                                   (oref room id)
+                                   team)))
+
+  (defun jb/send-region-to-slack ()
+    (interactive)
+    (let ((team (slack-team-select)) ;; Select team
+          (room (slack-room-select
+                 (cl-loop for team in (list team)
+                          for channels = (oref team channels)
+                          nconc channels)))) ;; Get all rooms from selected team
+      (slack-message-send-internal (filter-buffer-substring (region-beginning) (region-end))
+                                   (oref room id)
+                                   team)))
+#+END_SRC
