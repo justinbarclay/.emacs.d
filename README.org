@@ -1257,10 +1257,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Robe
 #+BEGIN_SRC emacs-lisp
   (use-package robe
-    :hook (ruby-mode . robe-mode)
-    :config
-    (progn 
-      (robe-start)))
+    :hook (ruby-mode . robe-mode))
 #+END_SRC
 
 *** inf-ruby
@@ -1278,18 +1275,21 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+END_SRC
 *** ruby-mode
 #+BEGIN_SRC emacs-lisp
-(use-package ruby-mode
-  :mode "\\.rb\\'"
-  :mode "Rakefile\\'"
-  :mode "Gemfile\\'"
-  :mode "Berksfile\\'"
-  :mode "Vagrantfile\\'"
-  :interpreter "ruby"
-  :init
-  (setq ruby-indent-level 2
-        ruby-indent-tabs-mode nil)
-  (add-hook 'ruby-mode 'superword-mode))
-      ;;(autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
+  (use-package ruby-mode
+    :after robe
+    :mode "\\.rb\\'"
+    :mode "Rakefile\\'"
+    :mode "Gemfile\\'"
+    :mode "Berksfile\\'"
+    :mode "Vagrantfile\\'"
+    :interpreter "ruby"
+    :init
+    (progn
+      (setq ruby-indent-level 2
+            ruby-indent-tabs-mode nil)
+      (add-hook 'ruby-mode 'superword-mode)
+      (robe-start)))
+        ;;(autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
 #+END_SRC
 ** Rust
 *** Flycheck-rust
