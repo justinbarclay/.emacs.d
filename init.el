@@ -10,6 +10,9 @@
  lexical-binding t
  load-prefer-newer t)
 
+(defvar doom--file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
+
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq package-archives
              '(("melpa" . "http://melpa.org/packages/")
@@ -19,7 +22,8 @@
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
 
-(setq package-enable-at-startup nil)
+(setq package-enable-at-startup nil
+      package--init-file-ensured t)
 (package-initialize)
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -1158,3 +1162,5 @@ foo.bar.baz => baz"
     (slack-message-send-internal (filter-buffer-substring (region-beginning) (region-end))
                                  (oref room id)
                                  team)))
+
+(setq file-name-handler-alist doom--file-name-handler-alist)

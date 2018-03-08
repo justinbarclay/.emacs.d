@@ -96,6 +96,8 @@
   This Config file is inspired by:
   + [[http://pages.sachachua.com/.emacs.d/Sacha.html]] 
   + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
+** Note for making Elisp Blocks
+I've forgotten this before so this seems like the perfect place to put it but ~C-c C-v d~ or ~org-babel-demarcate-block~ creates a code-block for the language of your choice
 * Setup
 ** Turn off garbage collection
 This sets the garbage collection threshold to 100mb
@@ -115,6 +117,12 @@ Reset garbage collection to emacs default after 5s
 (setq
  lexical-binding t
  load-prefer-newer t)
+#+END_SRC
+
+Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-dooms-startup-so-fast
+#+BEGIN_SRC emacs-lisp
+(defvar doom--file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
 #+END_SRC
 
 ** Package repositories
@@ -159,11 +167,12 @@ Let's bootstrap use-package so it can download everything else as we need it.
 *** Don't byte compile init file
 Boot strap use-package. Because we're running package initalize ourselves, we can turn it off when emacs wants to run it later in the startup process
 #+BEGIN_SRC emacs-lisp
-  (setq package-enable-at-startup nil)
-  (package-initialize)
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
+    (setq package-enable-at-startup nil
+          package--init-file-ensured t)
+    (package-initialize)
+    (unless (package-installed-p 'use-package)
+      (package-refresh-contents)
+      (package-install 'use-package))
 #+END_SRC
 *** TODO Make better consolidate and explain what is going on in use-package
 *** A macro to increase emacs load times
@@ -1713,4 +1722,9 @@ And the same but without leaving the current window:
       (slack-message-send-internal (filter-buffer-substring (region-beginning) (region-end))
                                    (oref room id)
                                    team)))
+#+END_SRC
+
+** Turn back on file-name-handler-alist
+#+BEGIN_SRC emacs-lisp
+(setq file-name-handler-alist doom--file-name-handler-alist)
 #+END_SRC
