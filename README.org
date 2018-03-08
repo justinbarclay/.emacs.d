@@ -110,6 +110,13 @@ Reset garbage collection to emacs default after 5s
             gc-cons-threshold)))
 #+END_SRC
 
+** Let's make the Emacs start up run fast
+#+BEGIN_SRC emacs-lisp
+(setq
+ lexical-binding t
+ load-prefer-newer t)
+#+END_SRC
+
 ** Package repositories
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
 #+BEGIN_SRC emacs-lisp :tangle

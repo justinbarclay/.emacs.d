@@ -6,6 +6,10 @@
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 
+(setq
+ lexical-binding t
+ load-prefer-newer t)
+
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq package-archives
              '(("melpa" . "http://melpa.org/packages/")
