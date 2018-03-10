@@ -1130,36 +1130,35 @@ foo.bar.baz => baz"
     (turn-off-smartparens-mode)
     (lispy-mode))
 
-(defun jb/send-region-to-slack-code ()
+(defun jb/slack-quote-region ()
+    (with-temp-buffer
+      (insert region)
+      (goto-char 1)
+      (while (> (point-max) (point))
+        (beginning-of-line)
+        (insert "> ")
+        (forward-line 1))
+      (buffer-string)))
+
+(defun jb/decorate-text (text)
+  (let* ((decorators '(("None" . (lambda (text) text))
+                       ("Code"  . (lambda (text) (concat "```" text "```")))
+                       ("Quote"  . (lambda (text) (jb/slack-quote-region text)))))
+         (decoration (completing-read "Select decoration: "
+                                      decorators
+                                      nil
+                                      t)))
+    (funcall (cdr (assoc decoration decorators)) text)))
+
+(defun jb/send-region-to-slack ()
   (interactive)
-  (let* ((team (slack-team-select))  ;; Get all rooms from selected team
+  (let* ((team (slack-team-select))
          (room (slack-room-select
                 (cl-loop for team in (list team)
                          append (with-slots (groups ims channels) team
                                   (append ims groups channels))))))
-    (slack-message-send-internal (concat "```" (filter-buffer-substring (region-beginning) (region-end)) "```")
-                                 (oref room id)
-                                 team)))
-
-(defun jb/send-region-to-slack-quoted ()
-  (interactive)
-  (let ((teams (slack-team-select ())) ;; Select team
-        (room (slack-room-select
-               (cl-loop for team in (list teams)
-                        for channels = (oref team channels)
-                        nconc channels)))) ;; Get all rooms from selected team
-    (slack-message-send-internal (concat ">" (filter-buffer-substring (region-beginning) (region-end)))
-                                 (oref room id)
-                                 team)))
-
-(defun jb/send-region-to-slack ()
-  (interactive)
-  (let ((team (slack-team-select)) ;; Select team
-        (room (slack-room-select
-               (cl-loop for team in (list team)
-                        for channels = (oref team channels)
-                        nconc channels)))) ;; Get all rooms from selected team
-    (slack-message-send-internal (filter-buffer-substring (region-beginning) (region-end))
+    (slack-message-send-internal (jb/decorate-text (filter-buffer-substring
+                                                    (region-beginning) (region-end)))
                                  (oref room id)
                                  team)))
 
