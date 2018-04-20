@@ -1279,7 +1279,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Robe
 #+BEGIN_SRC emacs-lisp
   (use-package robe
-    :hook (ruby-mode . robe-mode))
+  :init (add-hook 'ruby-mode-hook 'robe-mode))
 #+END_SRC
 
 *** inf-ruby
