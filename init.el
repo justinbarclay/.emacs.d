@@ -24,7 +24,7 @@
 
 (setq package-enable-at-startup nil
       package--init-file-ensured t)
-(package-initialize)
+;; (package-initialize)
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -64,6 +64,7 @@ called `Byte-compiling with Package.el'."
 (progn ;'use-package
   (require 'use-package)
   (setq use-package-always-ensure t)
+  (setq use-package-verbose t)
   (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t))
 
@@ -207,6 +208,9 @@ called `Byte-compiling with Package.el'."
 (use-package magit-blame
   :ensure nil
   :bind ("C-c C-g b" . magit-blame-mode))
+
+(setq default-frame-alist '((ns-transparent-titlebar . t) (ns-appearance . 'nil)))
+(add-to-list 'default-frame-alist '(ns-appearance . dark))
 
 (tool-bar-mode -1)
 
@@ -556,6 +560,17 @@ called `Byte-compiling with Package.el'."
 
 (use-package lsp-mode)
 
+(use-package company-lsp
+ :after (company lsp-mode)
+ :init (push 'company-lsp company-backends)
+ :config
+ (setq company-lsp-cache-candidates 'auto)
+ (setq company-lsp-async 't))
+
+(use-package lsp-ui
+:init
+(add-hook 'lsp-mode-hook #'lsp-ui-mode))
+
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
          (less-mode . rainbow-mode)))
@@ -646,8 +661,7 @@ called `Byte-compiling with Package.el'."
   (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 
 (use-package flycheck-joker
-  :after (clojure-mode)
-  :config
+  :init
   (require 'flycheck-joker))
 
 (use-package clojure-mode
@@ -665,7 +679,6 @@ called `Byte-compiling with Package.el'."
     (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
     (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
     (setq inferior-lisp-program "lein repl")
-    ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
     (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
     (font-lock-add-keywords
      nil
@@ -746,17 +759,19 @@ called `Byte-compiling with Package.el'."
   (setq company-tern-property-marker " <p>"))
 
 (use-package indium
+  :after js2-mode
   :config
-  (add-hook 'indium-update-script-source-hook
-            (lambda (url)
-              (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
-                                   url))))
-  (indium-interaction-mode))
+  (progn
+    (add-hook 'indium-update-script-source-hook
+              (lambda (url)
+                (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
+                                     url))))
+    (indium-interaction-mode)))
 
 (use-package js2-mode
-  :after indium
   :mode "\\.js\\'"
   :config
+  (require 'indium)
   (add-hook 'js-mode-hook 'subword-mode)
   (add-hook 'html-mode-hook 'subword-mode)
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
@@ -764,8 +779,7 @@ called `Byte-compiling with Package.el'."
   (add-to-list 'company-backends 'company-tern)
   (add-hook 'js2-mode-hook (lambda ()
                              (tern-mode)))
-  (setq js-indent-level 4)
-  (require 'indium)
+  (setq js-indent-level 2)
   (add-hook 'js-mode-hook #'indium-interaction-mode))
 
 (use-package js2-refactor
@@ -806,7 +820,7 @@ called `Byte-compiling with Package.el'."
    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
 (use-package robe
-  :hook (ruby-mode . robe-mode))
+:init (add-hook 'ruby-mode-hook 'robe-mode))
 
 (use-package inf-ruby
   :bind
@@ -815,12 +829,12 @@ called `Byte-compiling with Package.el'."
          ("C-c C-b" . ruby-send-buffer)))
   :config
   (progn
+      (company-mode 0)
       (when (executable-find "pry")
         (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
         (setq inf-ruby-default-implementation "pry"))))
 
 (use-package ruby-mode
-  :after robe
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
@@ -831,37 +845,38 @@ called `Byte-compiling with Package.el'."
   (progn
     (setq ruby-indent-level 2
           ruby-indent-tabs-mode nil)
-    (add-hook 'ruby-mode 'superword-mode)
-    (robe-start)))
-      ;;(autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
+    (add-hook 'ruby-mode 'superword-mode))
+  :config
+  (robe-start))
 
 (use-package flycheck-rust
-  :commands (flycheck-rust-setup))
+  :commands (flycheck-rust-setup)
+  :init
+  (add-hook 'rust-mode-hook 'flycheck-rust-setup))
 
 (use-package lsp-rust
-  :hook (rust-mode . lsp-rust-enable)
   :init
   (progn
-     (setq RUSTC "~/.cargo/bin/rustc")
-     (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))))
+    (require 'lsp-rust)
+    (setq RUSTC "~/.cargo/bin/rustc")
+    (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))))
+;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 
 (use-package rust-mode
-  :mode "\\.rs\\'"
-  :bind
-  (:map rust-mode-map
-        (([tab] . company-indent-or-complete-common)
-         ("C-c <tab>" . rust-format-buffer)))
-  :ensure t
-  :init
-  (add-hook 'rust-mode-hook 'company-mode)
-  ;; (add-hook 'rust-mode-hook 'racer-mode)
-  ;; (add-hook 'rust-mode-hook 'ycmd-mode)
-  (add-hook 'rust-mode-hook 'flycheck-rust-setup)
-  :config
-  (electric-pair-mode 1)
-  (lsp-mode)
-  ;(lsp-rust-enable)
-  )
+    :mode "\\.rs\\'"
+    :bind
+    (:map rust-mode-map
+          (([tab] . company-indent-or-complete-common)
+           ("C-c <tab>" . rust-format-buffer)))
+    :config
+    (progn
+      (setq rust-indent-offset 2)
+      (electric-pair-mode 1)
+      (lsp-rust-enable)))
+
+(use-package cargo)
+
+(use-package rust-playground)
 
 (use-package json-mode
   :mode "\\.json\\'")
@@ -895,6 +910,11 @@ called `Byte-compiling with Package.el'."
 (use-package terraform-mode
 :mode "\\.tf\\'" )
 
+(use-package yaml-mode
+  :defer t)
+
+(use-package ssh-config-mode)
+
 (use-package slack
   :commands (slack-start slack-register-team)
   :init
@@ -907,7 +927,14 @@ called `Byte-compiling with Package.el'."
    :client-id (getenv "SLACK_CLIENT_ID")
    :client-secret (getenv "SLACK_CLIENT_SECRET")
    :token (getenv "SLACK_TOKEN")
-   :subscribed-channels '(general)))
+   :subscribed-channels '(general))
+  (slack-register-team
+     :name "work"
+     :default nil
+     :client-id (getenv "SLACK_CLIENT_ID")
+     :client-secret (getenv "SLACK_CLIENT_SECRET")
+     :token (getenv "WORK_SLACK_TOKEN")
+     :subscribed-channels '(general)))
 
   ;; (slack-register-team
   ;;  :name "test"
@@ -919,7 +946,7 @@ called `Byte-compiling with Package.el'."
   (use-package alert
     :commands (alert)
     :init
-    (setq alert-default-style 'notifier))
+    (setq alert-default-style 'osx-notifier))
 
 (use-package flx)
 
@@ -946,6 +973,8 @@ called `Byte-compiling with Package.el'."
    ("s-r" . profiler-report)))
 
 (use-package dired+)
+
+(use-package restclient)
 
 (defun font-name-replace-size (font-name new-size)
   (let ((parts (split-string font-name "-")))
