@@ -1200,19 +1200,21 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** REPL
 #+BEGIN_SRC emacs-lisp
   (use-package indium
+    :after js2-mode
     :config
-    (add-hook 'indium-update-script-source-hook
-              (lambda (url)
-                (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
-                                     url))))
-    (indium-interaction-mode))
+    (progn
+      (add-hook 'indium-update-script-source-hook
+                (lambda (url)
+                  (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
+                                       url))))
+      (indium-interaction-mode)))
 #+END_SRC
 *** js2-Mode
 #+BEGIN_SRC emacs-lisp
   (use-package js2-mode
-    :after indium
     :mode "\\.js\\'"
     :config
+    (require 'indium)
     (add-hook 'js-mode-hook 'subword-mode)
     (add-hook 'html-mode-hook 'subword-mode)
     (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
@@ -1220,8 +1222,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (add-to-list 'company-backends 'company-tern)
     (add-hook 'js2-mode-hook (lambda ()
                                (tern-mode)))
-    (setq js-indent-level 4)
-    (require 'indium)
+    (setq js-indent-level 2)
     (add-hook 'js-mode-hook #'indium-interaction-mode))
 #+END_SRC
 *** js2-refactor
