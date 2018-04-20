@@ -1291,27 +1291,27 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
            ("C-c C-b" . ruby-send-buffer)))
     :config
     (progn
+        (company-mode 0)
         (when (executable-find "pry")
           (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
           (setq inf-ruby-default-implementation "pry"))))
 #+END_SRC
 *** ruby-mode
 #+BEGIN_SRC emacs-lisp
-  (use-package ruby-mode
-    :after robe
-    :mode "\\.rb\\'"
-    :mode "Rakefile\\'"
-    :mode "Gemfile\\'"
-    :mode "Berksfile\\'"
-    :mode "Vagrantfile\\'"
-    :interpreter "ruby"
-    :init
-    (progn
-      (setq ruby-indent-level 2
-            ruby-indent-tabs-mode nil)
-      (add-hook 'ruby-mode 'superword-mode)
-      (robe-start)))
-        ;;(autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
+    (use-package ruby-mode
+      :mode "\\.rb\\'"
+      :mode "Rakefile\\'"
+      :mode "Gemfile\\'"
+      :mode "Berksfile\\'"
+      :mode "Vagrantfile\\'"
+      :interpreter "ruby"
+      :init
+      (progn
+        (setq ruby-indent-level 2
+              ruby-indent-tabs-mode nil)
+        (add-hook 'ruby-mode 'superword-mode))
+      :config
+      (robe-start))
 #+END_SRC
 ** Rust
 *** Flycheck-rust
