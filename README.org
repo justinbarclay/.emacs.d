@@ -1468,7 +1468,7 @@ Get limited autocompletion in Lua
     (use-package alert
       :commands (alert)
       :init
-      (setq alert-default-style 'notifier))
+      (setq alert-default-style 'osx-notifier))
 #+END_SRC
 * Misc
 ** Fuzzy matching
