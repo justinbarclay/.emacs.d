@@ -167,12 +167,12 @@ Let's bootstrap use-package so it can download everything else as we need it.
 *** Don't byte compile init file
 Boot strap use-package. Because we're running package initalize ourselves, we can turn it off when emacs wants to run it later in the startup process
 #+BEGIN_SRC emacs-lisp
-    (setq package-enable-at-startup nil
-          package--init-file-ensured t)
-    (package-initialize)
-    (unless (package-installed-p 'use-package)
-      (package-refresh-contents)
-      (package-install 'use-package))
+  (setq package-enable-at-startup nil
+        package--init-file-ensured t)
+  ;; (package-initialize)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
 #+END_SRC
 *** TODO Make better consolidate and explain what is going on in use-package
 *** A macro to increase emacs load times
