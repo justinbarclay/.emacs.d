@@ -1084,8 +1084,7 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
 *** Flycheck-joker
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck-joker
-    :after (clojure-mode)
-    :config
+    :init
     (require 'flycheck-joker))
 #+END_SRC
 *** clojure-mode
