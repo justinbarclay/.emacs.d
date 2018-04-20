@@ -1423,6 +1423,17 @@ Get limited autocompletion in Lua
   (use-package terraform-mode
   :mode "\\.tf\\'" )
 #+END_SRC
+** YAML
+#+BEGIN_SRC emacs-lisp
+  (use-package yaml-mode
+    :defer t)
+#+END_SRC
+
+** SSH
+#+BEGIN_SRC emacs-lisp
+(use-package ssh-config-mode)
+#+END_SRC
+
 * Communication
 ** Slack
 #+BEGIN_SRC emacs-lisp
