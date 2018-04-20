@@ -1438,7 +1438,14 @@ Get limited autocompletion in Lua
      :client-id (getenv "SLACK_CLIENT_ID")
      :client-secret (getenv "SLACK_CLIENT_SECRET")
      :token (getenv "SLACK_TOKEN")
-     :subscribed-channels '(general)))
+     :subscribed-channels '(general))
+    (slack-register-team
+       :name "work"
+       :default nil
+       :client-id (getenv "SLACK_CLIENT_ID")
+       :client-secret (getenv "SLACK_CLIENT_SECRET")
+       :token (getenv "WORK_SLACK_TOKEN")
+       :subscribed-channels '(general)))
 
     ;; (slack-register-team
     ;;  :name "test"
@@ -1718,6 +1725,7 @@ And the same but without leaving the current window:
     (lispy-mode))
 #+END_SRC
 ** Post from any buffer to Slack with Emacs
+
 #+BEGIN_SRC emacs-lisp
 (defun jb/slack-quote-region ()
     (with-temp-buffer
