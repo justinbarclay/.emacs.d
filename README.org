@@ -950,7 +950,21 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode)
 #+END_SRC
-
+*** Company-LSP
+#+BEGIN_SRC emacs-lisp
+  (use-package company-lsp
+   :after (company lsp-mode)
+   :init (push 'company-lsp company-backends)
+   :config
+   (setq company-lsp-cache-candidates 'auto)
+   (setq company-lsp-async 't))
+#+END_SRC
+*** lsp-ui
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-ui
+:init
+(add-hook 'lsp-mode-hook #'lsp-ui-mode))
+#+END_SRC
 * Setup
 Major mode customizations
 ** CSS/LESS/SASS
@@ -1317,37 +1331,43 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Flycheck-rust
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck-rust
-    :commands (flycheck-rust-setup))
+    :commands (flycheck-rust-setup)
+    :init
+    (add-hook 'rust-mode-hook 'flycheck-rust-setup))
 #+END_SRC
 *** lsp-rust
 #+BEGIN_SRC emacs-lisp
-      (use-package lsp-rust
-        :hook (rust-mode . lsp-rust-enable)
-        :init
-        (progn
-           (setq RUSTC "~/.cargo/bin/rustc")
-           (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))))
+  (use-package lsp-rust
+    :init
+    (progn
+      (require 'lsp-rust)
+      (setq RUSTC "~/.cargo/bin/rustc")
+      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))))
+  ;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 #+END_SRC
 *** Rust-mode
 #+BEGIN_SRC emacs-lisp
   (use-package rust-mode
-    :mode "\\.rs\\'"
-    :bind
-    (:map rust-mode-map
-          (([tab] . company-indent-or-complete-common)
-           ("C-c <tab>" . rust-format-buffer)))
-    :ensure t
-    :init
-    (add-hook 'rust-mode-hook 'company-mode)
-    ;; (add-hook 'rust-mode-hook 'racer-mode)
-    ;; (add-hook 'rust-mode-hook 'ycmd-mode)
-    (add-hook 'rust-mode-hook 'flycheck-rust-setup)
-    :config
-    (electric-pair-mode 1)
-    (lsp-mode)
-    ;(lsp-rust-enable)
-    )
+      :mode "\\.rs\\'"
+      :bind
+      (:map rust-mode-map
+            (([tab] . company-indent-or-complete-common)
+             ("C-c <tab>" . rust-format-buffer)))
+      :config
+      (progn
+        (setq rust-indent-offset 2)
+        (electric-pair-mode 1)
+        (lsp-rust-enable)))
 #+END_SRC
+*** Cargo
+#+BEGIN_SRC emacs-lisp
+(use-package cargo)
+#+END_SRC
+*** rust-playground
+#+BEGIN_SRC emacs-lisp
+  (use-package rust-playground)
+#+END_SRC
+
 ** JSON
 #+BEGIN_SRC emacs-lisp
   (use-package json-mode
