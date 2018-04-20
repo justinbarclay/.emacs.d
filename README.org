@@ -220,6 +220,7 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
   (progn ;'use-package
     (require 'use-package)
     (setq use-package-always-ensure t)
+    (setq use-package-verbose t)
     (setq use-package-always-defer t)
     (setq use-package-enable-imenu-support t))
 #+END_SRC
@@ -416,6 +417,12 @@ You can also use @ as separator, instead of _.
 
 * Look and Feel
 ** Window
+*** Natural colouring from emacs chrome
+#+BEGIN_SRC emacs-lisp
+  (setq default-frame-alist '((ns-transparent-titlebar . t) (ns-appearance . 'nil)))
+  (add-to-list 'default-frame-alist '(ns-appearance . dark))
+#+END_SRC
+
 *** Remove toolbar
 #+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
