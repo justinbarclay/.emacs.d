@@ -1101,6 +1101,22 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
     :init
     (require 'flycheck-joker))
 #+END_SRC
+*** clj-refactor
+#+BEGIN_SRC emacs-lisp
+
+  ;; clojure refactor library
+  ;; https://github.com/clojure-emacs/clj-refactor.el
+  (use-package clj-refactor
+    :after clojure-mode
+    :config (progn (setq cljr-suppress-middleware-warnings t)
+                   (add-hook 'clojure-mode-hook (lambda ()
+                                                  (clj-refactor-mode 1)
+                                                  (cljr-add-keybindings-with-prefix "C-c C-m")))))
+#+END_SRC
+*** Kibit
+#+BEGIN_SRC emacs-lisp
+(use-package kibit-helper)
+#+END_SRC
 *** clojure-mode
 #+BEGIN_SRC emacs-lisp
   (use-package clojure-mode
