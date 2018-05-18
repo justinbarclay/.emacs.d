@@ -533,7 +533,7 @@ called `Byte-compiling with Package.el'."
   (progn
     (eval-after-load 'company
       '(push 'company-robe company-backends))
-    (setq company-idle-delay 0.5)
+    (setq company-idle-delay 0.3)
     (setq company-frontends
           '(company-pseudo-tooltip-unless-just-one-frontend
             company-preview-frontend
@@ -541,31 +541,15 @@ called `Byte-compiling with Package.el'."
     (setq company-auto-complete t)
     (setq company-tooltip-align-annotations t)))
 
-(use-package ycmd
-  :commands (ycmd-mode)
-  :config
-  (progn
-    (set-variable 'ycmd-server-command '("python" "/Users/Justin/ycmd/ycmd"))
-    (set-variable 'ycmd-extra-conf-whitelist '("~/*"))
-    (set-variable 'ycmd-global-config "~/.ycm_extra_conf.py")
-    (require 'ycmd-eldoc)
-    (add-hook 'ycmd-mode-hook 'ycmd-eldoc-setup)
-    ;;  (setq ycmd-force-semantic-completion t)
-    (add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results)))
-
-(use-package company-ycmd
-  :after ycmd
-  :config
-  (company-ycmd-setup))
-
 (use-package lsp-mode)
 
 (use-package company-lsp
- :after (company lsp-mode)
- :init (push 'company-lsp company-backends)
- :config
- (setq company-lsp-cache-candidates 'auto)
- (setq company-lsp-async 't))
+  :after (company lsp-mode)
+  :init (push 'company-lsp company-backends)
+  :config
+  (setq company-lsp-cache-candidates 'auto)
+  ;;(setq company-lsp-async t)
+  )
 
 (use-package lsp-ui
 :init
@@ -663,6 +647,17 @@ called `Byte-compiling with Package.el'."
 (use-package flycheck-joker
   :init
   (require 'flycheck-joker))
+
+;; clojure refactor library
+;; https://github.com/clojure-emacs/clj-refactor.el
+(use-package clj-refactor
+  :after clojure-mode
+  :config (progn (setq cljr-suppress-middleware-warnings t)
+                 (add-hook 'clojure-mode-hook (lambda ()
+                                                (clj-refactor-mode 1)
+                                                (cljr-add-keybindings-with-prefix "C-c C-m")))))
+
+(use-package kibit-helper)
 
 (use-package clojure-mode
   :mode (("\\.clj\\'" . clojure-mode)
@@ -859,7 +854,8 @@ called `Byte-compiling with Package.el'."
   (progn
     (require 'lsp-rust)
     (setq RUSTC "~/.cargo/bin/rustc")
-    (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))))
+    (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
+    (add-hook 'rust-mode-hook #'lsp-rust-enable)))
 ;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 
 (use-package rust-mode
@@ -871,8 +867,7 @@ called `Byte-compiling with Package.el'."
     :config
     (progn
       (setq rust-indent-offset 2)
-      (electric-pair-mode 1)
-      (lsp-rust-enable)))
+      (electric-pair-mode 1)))
 
 (use-package cargo)
 
@@ -933,7 +928,7 @@ called `Byte-compiling with Package.el'."
      :default nil
      :client-id (getenv "SLACK_CLIENT_ID")
      :client-secret (getenv "SLACK_CLIENT_SECRET")
-     :token (getenv "WORK_SLACK_TOKEN")
+     :token (getenv "TIDAL_SLACK_TOKEN")
      :subscribed-channels '(general)))
 
   ;; (slack-register-team
