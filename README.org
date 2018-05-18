@@ -1472,7 +1472,7 @@ Get limited autocompletion in Lua
        :default nil
        :client-id (getenv "SLACK_CLIENT_ID")
        :client-secret (getenv "SLACK_CLIENT_SECRET")
-       :token (getenv "WORK_SLACK_TOKEN")
+       :token (getenv "TIDAL_SLACK_TOKEN")
        :subscribed-channels '(general)))
 
     ;; (slack-register-team
