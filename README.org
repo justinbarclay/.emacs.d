@@ -953,11 +953,12 @@ Load this before we load Flycheck
 *** Company-LSP
 #+BEGIN_SRC emacs-lisp
   (use-package company-lsp
-   :after (company lsp-mode)
-   :init (push 'company-lsp company-backends)
-   :config
-   (setq company-lsp-cache-candidates 'auto)
-   (setq company-lsp-async 't))
+    :after (company lsp-mode)
+    :init (push 'company-lsp company-backends)
+    :config
+    (setq company-lsp-cache-candidates 'auto)
+    ;;(setq company-lsp-async t)
+    )
 #+END_SRC
 *** lsp-ui
 #+BEGIN_SRC emacs-lisp
