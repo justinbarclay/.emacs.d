@@ -925,7 +925,7 @@ Load this before we load Flycheck
       (setq company-tooltip-align-annotations t)))
 #+END_SRC
 ** YCMD
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package ycmd
     :commands (ycmd-mode)
     :config
@@ -940,8 +940,8 @@ Load this before we load Flycheck
 #+END_SRC
 
 ** Company-YCMD
-#+BEGIN_SRC emacs-lisp
-  (use-package company-ycmd
+#+BEGIN_SRC emacs-lisp :tangle
+(use-package company-ycmd
     :after ycmd
     :config
     (company-ycmd-setup))
