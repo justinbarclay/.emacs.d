@@ -1359,7 +1359,8 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (progn
       (require 'lsp-rust)
       (setq RUSTC "~/.cargo/bin/rustc")
-      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))))
+      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
+      (add-hook 'rust-mode-hook #'lsp-rust-enable)))
   ;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 #+END_SRC
 *** Rust-mode
@@ -1373,8 +1374,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
       :config
       (progn
         (setq rust-indent-offset 2)
-        (electric-pair-mode 1)
-        (lsp-rust-enable)))
+        (electric-pair-mode 1)))
 #+END_SRC
 *** Cargo
 #+BEGIN_SRC emacs-lisp
