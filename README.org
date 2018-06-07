@@ -1794,7 +1794,6 @@ And the same but without leaving the current window:
 
 #+END_SRC
 
-
 ** Turn back on file-name-handler-alist
 #+BEGIN_SRC emacs-lisp
 (setq file-name-handler-alist doom--file-name-handler-alist)
