@@ -1357,6 +1357,12 @@ Get limited autocompletion in Lua
 #+BEGIN_SRC emacs-lisp :tangle
   (use-package company-lua)
 #+END_SRC
+** Powershell
+#+BEGIN_SRC emacs-lisp
+  (use-package powershell
+    :mode "\\.ps\\'")
+#+END_SRC
+
 * Communication
 ** Slack
 #+BEGIN_SRC emacs-lisp
