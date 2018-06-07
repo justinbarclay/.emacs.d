@@ -6,17 +6,26 @@
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 
+(setq
+ lexical-binding t
+ load-prefer-newer t)
+
+(defvar doom--file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
+
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq package-archives
              '(("melpa" . "http://melpa.org/packages/")
-              ("marmalade" . "http://marmalade-repo.org/packages/")
+              ("org" . "https://orgmode.org/elpa/")
               ("tromey" . "http://tromey.com/elpa/")))
 
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
 
-(setq package-enable-at-startup nil)
+(setq package-enable-at-startup nil
+      package--init-file-ensured t)
 (package-initialize)
+;; (package-initialize)
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -56,6 +65,7 @@ called `Byte-compiling with Package.el'."
 (progn ;'use-package
   (require 'use-package)
   (setq use-package-always-ensure t)
+  (setq use-package-verbose t)
   (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t))
 
@@ -200,6 +210,9 @@ called `Byte-compiling with Package.el'."
   :ensure nil
   :bind ("C-c C-g b" . magit-blame-mode))
 
+(setq default-frame-alist '((ns-transparent-titlebar . t) (ns-appearance . 'nil)))
+(add-to-list 'default-frame-alist '(ns-appearance . dark))
+
 (tool-bar-mode -1)
 
 (when (display-graphic-p) ; Start full screen
@@ -323,6 +336,7 @@ called `Byte-compiling with Package.el'."
             (diminish 'tern-mode)))
 
 (when (memq system-type '(windows-nt))
+  (add-to-list gnutls-trustfile ((expand-file-name "~/.cert/cacert.pm")))
   (exec-path-from-shell-initialize)
   (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
   (setq shell-file-name "bash")
@@ -346,11 +360,24 @@ called `Byte-compiling with Package.el'."
   (recentf-mode 1)
   (setq recentf-max-menu-items 40))
 
+(use-package projectile
+  :commands
+  (projectile-find-file projectile-switch-project)
+  :diminish
+  (projectile-mode)
+  :config
+  (progn
+    (setq projectile-completion-system 'ivy)
+    (setq projectile-enable-caching t)))
+
 (use-package ivy
   :hook (after-init . ivy-mode)
   :config
-  (setq ivy-use-virtual-buffers t)
-  (setq ivy-initial-inputs-alist nil))
+  (progn
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-initial-inputs-alist nil)
+    (projectile-global-mode)
+    (counsel-mode)))
 
 (use-package counsel
   :after ivy
@@ -363,34 +390,22 @@ called `Byte-compiling with Package.el'."
     ("C-x C-f" . counsel-find-file)
     ("C-c p f" . counsel-projectile-find-file)
     ("C-c p d" . counsel-projectile-find-dir)
-    ("C-c p s" . counsel-projectile-switch-project)
+    ("C-c p p" . counsel-projectile-switch-project)
     ("<f1> f" . counsel-describe-function)
     ("<f1> v" . counsel-describe-variable)
     ("<f1> l" . counsel-load-library)
     ("<f2> i" . counsel-info-lookup-symbol)
     ("<f2> u" . counsel-unicode-char)
-    ("C-c k" . counsel-rg))
-  :config
-  ;; Fix projectile issue: https://github.com/bbatsov/projectile/issues/496
-  (projectile-global-mode))
+    ("C-c k" . counsel-rg)))
 
 (use-package counsel-projectile
-  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
+  :after projectile
+  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir)
+  :bind)
 
 (use-package swiper
   :after ivy
   :bind ("C-s" . swiper))
-
-(use-package projectile
-  :commands
-  (projectile-find-file projectile-switch-project)
-  :diminish
-  (projectile-mode)
-  :config 
-  (progn
-    (require 'counsel-projectile)
-    (setq projectile-completion-system 'ivy)
-    (setq projectile-enable-caching t)))
 
 (use-package treemacs
   :config
@@ -519,7 +534,7 @@ called `Byte-compiling with Package.el'."
   (progn
     (eval-after-load 'company
       '(push 'company-robe company-backends))
-    (setq company-idle-delay 0.5)
+    (setq company-idle-delay 0.3)
     (setq company-frontends
           '(company-pseudo-tooltip-unless-just-one-frontend
             company-preview-frontend
@@ -527,24 +542,19 @@ called `Byte-compiling with Package.el'."
     (setq company-auto-complete t)
     (setq company-tooltip-align-annotations t)))
 
-(use-package ycmd
-  :commands (ycmd-mode)
-  :config
-  (progn
-    (set-variable 'ycmd-server-command '("python" "/Users/Justin/ycmd/ycmd"))
-    (set-variable 'ycmd-extra-conf-whitelist '("~/*"))
-    (set-variable 'ycmd-global-config "~/.ycm_extra_conf.py")
-    (require 'ycmd-eldoc)
-    (add-hook 'ycmd-mode-hook 'ycmd-eldoc-setup)
-    ;;  (setq ycmd-force-semantic-completion t)
-    (add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results)))
-
-(use-package company-ycmd
-  :after ycmd
-  :config
-  (company-ycmd-setup))
-
 (use-package lsp-mode)
+
+(use-package company-lsp
+  :after (company lsp-mode)
+  :init (push 'company-lsp company-backends)
+  :config
+  (setq company-lsp-cache-candidates 'auto)
+  ;;(setq company-lsp-async t)
+  )
+
+(use-package lsp-ui
+:init
+(add-hook 'lsp-mode-hook #'lsp-ui-mode))
 
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
@@ -635,12 +645,28 @@ called `Byte-compiling with Package.el'."
   :init
   (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 
+(use-package flycheck-joker
+  :init
+  (require 'flycheck-joker))
+
+;; clojure refactor library
+;; https://github.com/clojure-emacs/clj-refactor.el
+(use-package clj-refactor
+  :after clojure-mode
+  :config (progn (setq cljr-suppress-middleware-warnings t)
+                 (add-hook 'clojure-mode-hook (lambda ()
+                                                (clj-refactor-mode 1)
+                                                (cljr-add-keybindings-with-prefix "C-c C-m")))))
+
+(use-package kibit-helper)
+
 (use-package clojure-mode
   :mode (("\\.clj\\'" . clojure-mode)
          ( "\\.cljs\\'" . clojurescript-mode))
   :init
   (progn
     (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
+    (add-hook 'clojure-mode-hook 'flycheck-mode)
     (add-hook 'clojure-mode-hook 'cider-mode)
     (add-hook 'clojure-mode-hook 'eldoc-mode)
     (add-hook 'clojure-mode-hook 'subword-mode))
@@ -649,7 +675,6 @@ called `Byte-compiling with Package.el'."
     (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
     (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
     (setq inferior-lisp-program "lein repl")
-    ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
     (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
     (font-lock-add-keywords
      nil
@@ -667,37 +692,39 @@ called `Byte-compiling with Package.el'."
   :config
   (progn
     ;; REPL related stuff
-
     ;; REPL history file
+
+    (defun cider-check-figwheel-requirements ()
+      "Check whether we can start a Figwheel ClojureScript REPL."
+     t)
+
     (setq cider-repl-history-file "~/.emacs.d/cider-history")
-
     ;; nice pretty printing
+
     (setq cider-repl-use-pretty-printing t)
-
     ;; nicer font lock in REPL
+
     (setq cider-repl-use-clojure-font-lock t)
-
     ;; result prefix for the REPL
+
     (setq cider-repl-result-prefix ";; => ")
-
     ;; never ending REPL history
+
     (setq cider-repl-wrap-history t)
-
     ;; looong history
+
     (setq cider-repl-history-size 3000)
-
     ;; eldoc for clojure
+
     (add-hook 'cider-mode-hook #'eldoc-mode)
-
     ;; error buffer not popping up
-    (setq cider-show-error-buffer nil)
 
+    (setq cider-show-error-buffer nil)
     ;; go right to the REPL buffer when it's finished connecting
     (setq cider-repl-pop-to-buffer-on-connect nil)
     ;; company mode for completion
     (add-hook 'cider-repl-mode-hook #'company-mode)
     (add-hook 'cider-mode-hook #'company-mode)
-
     (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
     ;; key bindings
     ;; these help me out with the way I usually develop web apps
@@ -728,17 +755,19 @@ called `Byte-compiling with Package.el'."
   (setq company-tern-property-marker " <p>"))
 
 (use-package indium
+  :after js2-mode
   :config
-  (add-hook 'indium-update-script-source-hook
-            (lambda (url)
-              (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
-                                   url))))
-  (indium-interaction-mode))
+  (progn
+    (add-hook 'indium-update-script-source-hook
+              (lambda (url)
+                (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
+                                     url))))
+    (indium-interaction-mode)))
 
 (use-package js2-mode
-  :after indium
   :mode "\\.js\\'"
   :config
+  (require 'indium)
   (add-hook 'js-mode-hook 'subword-mode)
   (add-hook 'html-mode-hook 'subword-mode)
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
@@ -746,8 +775,7 @@ called `Byte-compiling with Package.el'."
   (add-to-list 'company-backends 'company-tern)
   (add-hook 'js2-mode-hook (lambda ()
                              (tern-mode)))
-  (setq js-indent-level 4)
-  (require 'indium)
+  (setq js-indent-level 2)
   (add-hook 'js-mode-hook #'indium-interaction-mode))
 
 (use-package js2-refactor
@@ -780,61 +808,71 @@ called `Byte-compiling with Package.el'."
   (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 
 (use-package yard-mode
-  :init (add-hook 'enh-ruby-mode-hook 'yard-mode))
+  :hook (ruby-mode . yard-mode))
 
 (use-package rbenv
-  :init
-  (add-hook 'enh-ruby-mode-hook 'rbenv-mode)
+  :hook (ruby-mode . global-rbenv-mode)
   :config
-  (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
+   (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
 (use-package robe
-  :hook (enh-ruby-mode-hook . robe-mode)
-  :config
-  (progn 
-    (robe-start)))
+:init (add-hook 'ruby-mode-hook 'robe-mode))
 
 (use-package inf-ruby
-  :hook (enh-ruby-mode . inf-ruby-mode)
   :bind
   (:map inf-ruby-minor-mode-map
         (("C-c C-z" . run-ruby)
          ("C-c C-b" . ruby-send-buffer)))
   :config
-  (when (executable-find "pry")
-    (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
-    (setq inf-ruby-default-implementation "pry")))
-
-(use-package enh-ruby-mode
-  :mode "\\(?:\\.rb\\|ru\\|rake\\|gemspec\\)|\\(?:Gem\\|Rake\\)\\'"
-  :init
-  (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
-  :config
   (progn
-    (setq ruby-indent-level 2)
-    (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
+      (company-mode 0)
+      (when (executable-find "pry")
+        (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
+        (setq inf-ruby-default-implementation "pry"))))
+
+(use-package ruby-mode
+  :mode "\\.rb\\'"
+  :mode "Rakefile\\'"
+  :mode "Gemfile\\'"
+  :mode "Berksfile\\'"
+  :mode "Vagrantfile\\'"
+  :interpreter "ruby"
+  :init
+  (progn
+    (setq ruby-indent-level 2
+          ruby-indent-tabs-mode nil)
+    (add-hook 'ruby-mode 'superword-mode))
+  :config
+  (robe-start))
 
 (use-package flycheck-rust
-  :commands (flycheck-rust-setup))
+  :commands (flycheck-rust-setup)
+  :init
+  (add-hook 'rust-mode-hook 'flycheck-rust-setup))
 
-(use-package lsp-rust)
+(use-package lsp-rust
+  :init
+  (progn
+    (require 'lsp-rust)
+    (setq RUSTC "~/.cargo/bin/rustc")
+    (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
+    (add-hook 'rust-mode-hook #'lsp-rust-enable)))
+;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 
 (use-package rust-mode
-  :mode "\\.rs\\'"
-  :bind
-  (:map rust-mode-map
-        (([tab] . company-indent-or-complete-common)
-         ("C-c <tab>" . rust-format-buffer)))
-  :ensure t
-  :init
-  (add-hook 'rust-mode-hook 'company-mode)
-  ;; (add-hook 'rust-mode-hook 'racer-mode)
-  ;; (add-hook 'rust-mode-hook 'ycmd-mode)
-  (add-hook 'rust-mode-hook 'flycheck-rust-setup)
-  :config
-  (electric-pair-mode 1)
-  (lsp-mode)
-  (lsp-rust-enable))
+    :mode "\\.rs\\'"
+    :bind
+    (:map rust-mode-map
+          (([tab] . company-indent-or-complete-common)
+           ("C-c <tab>" . rust-format-buffer)))
+    :config
+    (progn
+      (setq rust-indent-offset 2)
+      (electric-pair-mode 1)))
+
+(use-package cargo)
+
+(use-package rust-playground)
 
 (use-package json-mode
   :mode "\\.json\\'")
@@ -865,6 +903,14 @@ called `Byte-compiling with Package.el'."
   :config
   (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
 
+(use-package terraform-mode
+:mode "\\.tf\\'" )
+
+(use-package yaml-mode
+  :defer t)
+
+(use-package ssh-config-mode)
+
 (use-package slack
   :commands (slack-start slack-register-team)
   :init
@@ -874,10 +920,17 @@ called `Byte-compiling with Package.el'."
   (slack-register-team
    :name "personal"
    :default t
-   :client-id "279636748417.280206506404"
-   :client-secret "faca05501140fc54d2113f47335ad0cd"
-   :token "tx" ; this is here to shush emacs on compiles
-   :subscribed-channels '(general)))
+   :client-id (getenv "SLACK_CLIENT_ID")
+   :client-secret (getenv "SLACK_CLIENT_SECRET")
+   :token (getenv "SLACK_TOKEN")
+   :subscribed-channels '(general))
+  (slack-register-team
+     :name "work"
+     :default nil
+     :client-id (getenv "SLACK_CLIENT_ID")
+     :client-secret (getenv "SLACK_CLIENT_SECRET")
+     :token (getenv "TIDAL_SLACK_TOKEN")
+     :subscribed-channels '(general)))
 
   ;; (slack-register-team
   ;;  :name "test"
@@ -889,7 +942,7 @@ called `Byte-compiling with Package.el'."
   (use-package alert
     :commands (alert)
     :init
-    (setq alert-default-style 'notifier))
+    (setq alert-default-style 'osx-notifier))
 
 (use-package flx)
 
@@ -916,6 +969,8 @@ called `Byte-compiling with Package.el'."
    ("s-r" . profiler-report)))
 
 (use-package dired+)
+
+(use-package restclient)
 
 (defun font-name-replace-size (font-name new-size)
   (let ((parts (split-string font-name "-")))
@@ -961,11 +1016,10 @@ DELTA should be a multiple of 10, in the units used by the
   (scroll-other-window -1))
 
 (defun my/tangle-dotfiles ()
-     "If the current file is this file, the code blocks are tangled"
-     (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
-       (org-babel-tangle nil "~/.emacs.d/init.el")
-       ;;(byte-compile-file "~/.emacs.d/init.el")
-))
+  "If the current file is this file, the code blocks are tangled"
+  (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
+    (org-babel-tangle nil "~/.emacs.d/init.el")))
+    ;;(byte-compile-file "~/.emacs.d/init.el")
 (add-hook 'after-save-hook #'my/tangle-dotfiles)
 
 (defun xah-run-current-file ()
@@ -1100,3 +1154,37 @@ foo.bar.baz => baz"
 (defun enable-lispy ()
     (turn-off-smartparens-mode)
     (lispy-mode))
+
+(defun jb/slack-quote-region ()
+    (with-temp-buffer
+      (insert region)
+      (goto-char 1)
+      (while (> (point-max) (point))
+        (beginning-of-line)
+        (insert "> ")
+        (forward-line 1))
+      (buffer-string)))
+
+(defun jb/decorate-text (text)
+  (let* ((decorators '(("None" . (lambda (text) text))
+                       ("Code"  . (lambda (text) (concat "```" text "```")))
+                       ("Quote"  . (lambda (text) (jb/slack-quote-region text)))))
+         (decoration (completing-read "Select decoration: "
+                                      decorators
+                                      nil
+                                      t)))
+    (funcall (cdr (assoc decoration decorators)) text)))
+
+(defun jb/send-region-to-slack ()
+  (interactive)
+  (let* ((team (slack-team-select))
+         (room (slack-room-select
+                (cl-loop for team in (list team)
+                         append (with-slots (groups ims channels) team
+                                  (append ims groups channels))))))
+    (slack-message-send-internal (jb/decorate-text (filter-buffer-substring
+                                                    (region-beginning) (region-end)))
+                                 (oref room id)
+                                 team)))
+
+(setq file-name-handler-alist doom--file-name-handler-alist)

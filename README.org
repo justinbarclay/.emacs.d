@@ -67,7 +67,7 @@
   - [[#clojure][Clojure]]
   - [[#javascript][JavaScript]]
   - [[#html][HTML]]
-  - [[#ruby][Ruby]]
+  - [[#Ruby][Ruby]]
   - [[#rust][Rust]]
   - [[#json][JSON]]
   - [[#docker][Docker]]
@@ -96,6 +96,8 @@
   This Config file is inspired by:
   + [[http://pages.sachachua.com/.emacs.d/Sacha.html]] 
   + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
+** Note for making Elisp Blocks
+I've forgotten this before so this seems like the perfect place to put it but ~C-c C-v d~ or ~org-babel-demarcate-block~ creates a code-block for the language of your choice
 * Setup
 ** Turn off garbage collection
 This sets the garbage collection threshold to 100mb
@@ -108,6 +110,19 @@ Reset garbage collection to emacs default after 5s
    (setq gc-cons-threshold 10000000)
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
+#+END_SRC
+
+** Let's make the Emacs start up run fast
+#+BEGIN_SRC emacs-lisp
+(setq
+ lexical-binding t
+ load-prefer-newer t)
+#+END_SRC
+
+Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-dooms-startup-so-fast
+#+BEGIN_SRC emacs-lisp
+(defvar doom--file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
 #+END_SRC
 
 ** Package repositories
@@ -126,7 +141,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq package-archives
                '(("melpa" . "http://melpa.org/packages/")
-                ("marmalade" . "http://marmalade-repo.org/packages/")
+                ("org" . "https://orgmode.org/elpa/")
                 ("tromey" . "http://tromey.com/elpa/")))
 #+END_SRC
 
@@ -152,8 +167,9 @@ Let's bootstrap use-package so it can download everything else as we need it.
 *** Don't byte compile init file
 Boot strap use-package. Because we're running package initalize ourselves, we can turn it off when emacs wants to run it later in the startup process
 #+BEGIN_SRC emacs-lisp
-  (setq package-enable-at-startup nil)
-  (package-initialize)
+  (setq package-enable-at-startup nil
+        package--init-file-ensured t)
+  ;; (package-initialize)
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
@@ -204,6 +220,7 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
   (progn ;'use-package
     (require 'use-package)
     (setq use-package-always-ensure t)
+    (setq use-package-verbose t)
     (setq use-package-always-defer t)
     (setq use-package-enable-imenu-support t))
 #+END_SRC
@@ -400,6 +417,12 @@ You can also use @ as separator, instead of _.
 
 * Look and Feel
 ** Window
+*** Natural colouring from emacs chrome
+#+BEGIN_SRC emacs-lisp
+  (setq default-frame-alist '((ns-transparent-titlebar . t) (ns-appearance . 'nil)))
+  (add-to-list 'default-frame-alist '(ns-appearance . dark))
+#+END_SRC
+
 *** Remove toolbar
 #+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
@@ -641,6 +664,18 @@ Turn on recent file mode so that you can more easily switch to recently edited f
   (recentf-mode 1)
   (setq recentf-max-menu-items 40))
 #+END_SRC
+** Projectile
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :commands
+    (projectile-find-file projectile-switch-project)
+    :diminish
+    (projectile-mode)
+    :config
+    (progn
+      (setq projectile-completion-system 'ivy)
+      (setq projectile-enable-caching t)))
+#+END_SRC
 ** Minibuffer completion
 As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017) 
 it looks like counsel is a requirement for swiper
@@ -649,56 +684,45 @@ it looks like counsel is a requirement for swiper
   (use-package ivy
     :hook (after-init . ivy-mode)
     :config
-    (setq ivy-use-virtual-buffers t)
-    (setq ivy-initial-inputs-alist nil))
+    (progn
+      (setq ivy-use-virtual-buffers t)
+      (setq ivy-initial-inputs-alist nil)
+      (projectile-global-mode)
+      (counsel-mode)))
 #+END_SRC
 *** Counsel
 #+BEGIN_SRC emacs-lisp
-    (use-package counsel
-      :after ivy
-      :init
-      (progn
-        (setq counsel-grep-base-command
-              "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
-      :bind
-      (("M-x" . counsel-M-x)
-        ("C-x C-f" . counsel-find-file)
-        ("C-c p f" . counsel-projectile-find-file)
-        ("C-c p d" . counsel-projectile-find-dir)
-        ("C-c p s" . counsel-projectile-switch-project)
-        ("<f1> f" . counsel-describe-function)
-        ("<f1> v" . counsel-describe-variable)
-        ("<f1> l" . counsel-load-library)
-        ("<f2> i" . counsel-info-lookup-symbol)
-        ("<f2> u" . counsel-unicode-char)
-        ("C-c k" . counsel-rg))
-      :config
-      ;; Fix projectile issue: https://github.com/bbatsov/projectile/issues/496
-      (projectile-global-mode))
+  (use-package counsel
+    :after ivy
+    :init
+    (progn
+      (setq counsel-grep-base-command
+            "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+    :bind
+    (("M-x" . counsel-M-x)
+      ("C-x C-f" . counsel-find-file)
+      ("C-c p f" . counsel-projectile-find-file)
+      ("C-c p d" . counsel-projectile-find-dir)
+      ("C-c p p" . counsel-projectile-switch-project)
+      ("<f1> f" . counsel-describe-function)
+      ("<f1> v" . counsel-describe-variable)
+      ("<f1> l" . counsel-load-library)
+      ("<f2> i" . counsel-info-lookup-symbol)
+      ("<f2> u" . counsel-unicode-char)
+      ("C-c k" . counsel-rg)))
 #+END_SRC
 *** Counsel-projectile
 #+BEGIN_SRC emacs-lisp
-  (use-package counsel-projectile
-    :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
+    (use-package counsel-projectile
+      :after projectile
+      :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir)
+      :bind)
 #+END_SRC
 *** swiper
 #+BEGIN_SRC emacs-lisp
   (use-package swiper
     :after ivy
     :bind ("C-s" . swiper))
-#+END_SRC
-** Projectile
-#+BEGIN_SRC emacs-lisp
-  (use-package projectile
-    :commands
-    (projectile-find-file projectile-switch-project)
-    :diminish
-    (projectile-mode)
-    :config 
-    (progn
-      (require 'counsel-projectile)
-      (setq projectile-completion-system 'ivy)
-      (setq projectile-enable-caching t)))
 #+END_SRC
 ** Treemacs
 #+BEGIN_SRC emacs-lisp
@@ -893,7 +917,7 @@ Load this before we load Flycheck
     (progn
       (eval-after-load 'company
         '(push 'company-robe company-backends))
-      (setq company-idle-delay 0.5)
+      (setq company-idle-delay 0.3)
       (setq company-frontends
             '(company-pseudo-tooltip-unless-just-one-frontend
               company-preview-frontend
@@ -902,7 +926,7 @@ Load this before we load Flycheck
       (setq company-tooltip-align-annotations t)))
 #+END_SRC
 ** YCMD
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package ycmd
     :commands (ycmd-mode)
     :config
@@ -917,8 +941,8 @@ Load this before we load Flycheck
 #+END_SRC
 
 ** Company-YCMD
-#+BEGIN_SRC emacs-lisp
-  (use-package company-ycmd
+#+BEGIN_SRC emacs-lisp :tangle
+(use-package company-ycmd
     :after ycmd
     :config
     (company-ycmd-setup))
@@ -927,7 +951,22 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode)
 #+END_SRC
-
+*** Company-LSP
+#+BEGIN_SRC emacs-lisp
+  (use-package company-lsp
+    :after (company lsp-mode)
+    :init (push 'company-lsp company-backends)
+    :config
+    (setq company-lsp-cache-candidates 'auto)
+    ;;(setq company-lsp-async t)
+    )
+#+END_SRC
+*** lsp-ui
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-ui
+:init
+(add-hook 'lsp-mode-hook #'lsp-ui-mode))
+#+END_SRC
 * Setup
 Major mode customizations
 ** CSS/LESS/SASS
@@ -1058,6 +1097,28 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
 #+END_SRC
 
 ** Clojure
+*** Flycheck-joker
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck-joker
+    :init
+    (require 'flycheck-joker))
+#+END_SRC
+*** clj-refactor
+#+BEGIN_SRC emacs-lisp
+
+  ;; clojure refactor library
+  ;; https://github.com/clojure-emacs/clj-refactor.el
+  (use-package clj-refactor
+    :after clojure-mode
+    :config (progn (setq cljr-suppress-middleware-warnings t)
+                   (add-hook 'clojure-mode-hook (lambda ()
+                                                  (clj-refactor-mode 1)
+                                                  (cljr-add-keybindings-with-prefix "C-c C-m")))))
+#+END_SRC
+*** Kibit
+#+BEGIN_SRC emacs-lisp
+(use-package kibit-helper)
+#+END_SRC
 *** clojure-mode
 #+BEGIN_SRC emacs-lisp
   (use-package clojure-mode
@@ -1066,6 +1127,7 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
     :init
     (progn
       (add-hook 'clojure-mode-hook (lambda () (enable-parinfer)))
+      (add-hook 'clojure-mode-hook 'flycheck-mode)
       (add-hook 'clojure-mode-hook 'cider-mode)
       (add-hook 'clojure-mode-hook 'eldoc-mode)
       (add-hook 'clojure-mode-hook 'subword-mode))
@@ -1074,7 +1136,6 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
       (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
       (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
       (setq inferior-lisp-program "lein repl")
-      ;;(add-hook 'clojure-mode-hook (lambda () (cider-jack-in)))
       (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
       (font-lock-add-keywords
        nil
@@ -1101,37 +1162,39 @@ A REPL for Clojure and nrepl for ClojureScript
     :config
     (progn
       ;; REPL related stuff
-
       ;; REPL history file
+
+      (defun cider-check-figwheel-requirements ()
+        "Check whether we can start a Figwheel ClojureScript REPL."
+       t)
+
       (setq cider-repl-history-file "~/.emacs.d/cider-history")
-
       ;; nice pretty printing
+
       (setq cider-repl-use-pretty-printing t)
-
       ;; nicer font lock in REPL
+
       (setq cider-repl-use-clojure-font-lock t)
-
       ;; result prefix for the REPL
+
       (setq cider-repl-result-prefix ";; => ")
-
       ;; never ending REPL history
+
       (setq cider-repl-wrap-history t)
-
       ;; looong history
+
       (setq cider-repl-history-size 3000)
-
       ;; eldoc for clojure
+
       (add-hook 'cider-mode-hook #'eldoc-mode)
-
       ;; error buffer not popping up
-      (setq cider-show-error-buffer nil)
 
+      (setq cider-show-error-buffer nil)
       ;; go right to the REPL buffer when it's finished connecting
       (setq cider-repl-pop-to-buffer-on-connect nil)
       ;; company mode for completion
       (add-hook 'cider-repl-mode-hook #'company-mode)
       (add-hook 'cider-mode-hook #'company-mode)
-
       (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
       ;; key bindings
       ;; these help me out with the way I usually develop web apps
@@ -1153,7 +1216,6 @@ A REPL for Clojure and nrepl for ClojureScript
       (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
       (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)))
 #+END_SRC
-
 ** JavaScript
 Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
 *** Tern
@@ -1170,19 +1232,21 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** REPL
 #+BEGIN_SRC emacs-lisp
   (use-package indium
+    :after js2-mode
     :config
-    (add-hook 'indium-update-script-source-hook
-              (lambda (url)
-                (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
-                                     url))))
-    (indium-interaction-mode))
+    (progn
+      (add-hook 'indium-update-script-source-hook
+                (lambda (url)
+                  (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
+                                       url))))
+      (indium-interaction-mode)))
 #+END_SRC
 *** js2-Mode
 #+BEGIN_SRC emacs-lisp
   (use-package js2-mode
-    :after indium
     :mode "\\.js\\'"
     :config
+    (require 'indium)
     (add-hook 'js-mode-hook 'subword-mode)
     (add-hook 'html-mode-hook 'subword-mode)
     (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
@@ -1190,8 +1254,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (add-to-list 'company-backends 'company-tern)
     (add-hook 'js2-mode-hook (lambda ()
                                (tern-mode)))
-    (setq js-indent-level 4)
-    (require 'indium)
+    (setq js-indent-level 2)
     (add-hook 'js-mode-hook #'indium-interaction-mode))
 #+END_SRC
 *** js2-refactor
@@ -1236,78 +1299,93 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Yard
 #+BEGIN_SRC emacs-lisp
   (use-package yard-mode
-    :init (add-hook 'enh-ruby-mode-hook 'yard-mode))
+    :hook (ruby-mode . yard-mode))
 #+END_SRC
 *** rbenv
 #+BEGIN_SRC emacs-lisp
-    (use-package rbenv
-      :init
-      (add-hook 'enh-ruby-mode-hook 'rbenv-mode)
-      :config
-      (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
+  (use-package rbenv
+    :hook (ruby-mode . global-rbenv-mode)
+    :config
+     (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 #+END_SRC
 *** Robe
 #+BEGIN_SRC emacs-lisp
   (use-package robe
-    :hook (enh-ruby-mode-hook . robe-mode)
-    :config
-    (progn 
-      (robe-start)))
+  :init (add-hook 'ruby-mode-hook 'robe-mode))
 #+END_SRC
 
 *** inf-ruby
 #+BEGIN_SRC emacs-lisp
   (use-package inf-ruby
-    :hook (enh-ruby-mode . inf-ruby-mode)
     :bind
     (:map inf-ruby-minor-mode-map
           (("C-c C-z" . run-ruby)
            ("C-c C-b" . ruby-send-buffer)))
     :config
-    (when (executable-find "pry")
-      (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
-      (setq inf-ruby-default-implementation "pry")))
-#+END_SRC
-*** enhanced-ruby-mode
-#+BEGIN_SRC emacs-lisp
-  (use-package enh-ruby-mode
-    :mode "\\(?:\\.rb\\|ru\\|rake\\|gemspec\\)|\\(?:Gem\\|Rake\\)\\'"
-    :init
-    (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
-    :config
     (progn
-      (setq ruby-indent-level 2)
-      (autoload 'inf-ruby-minor-mode "inf-ruby" "Run an inferior Ruby process" t)))
+        (company-mode 0)
+        (when (executable-find "pry")
+          (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
+          (setq inf-ruby-default-implementation "pry"))))
+#+END_SRC
+*** ruby-mode
+#+BEGIN_SRC emacs-lisp
+    (use-package ruby-mode
+      :mode "\\.rb\\'"
+      :mode "Rakefile\\'"
+      :mode "Gemfile\\'"
+      :mode "Berksfile\\'"
+      :mode "Vagrantfile\\'"
+      :interpreter "ruby"
+      :init
+      (progn
+        (setq ruby-indent-level 2
+              ruby-indent-tabs-mode nil)
+        (add-hook 'ruby-mode 'superword-mode))
+      :config
+      (robe-start))
 #+END_SRC
 ** Rust
 *** Flycheck-rust
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck-rust
-    :commands (flycheck-rust-setup))
+    :commands (flycheck-rust-setup)
+    :init
+    (add-hook 'rust-mode-hook 'flycheck-rust-setup))
 #+END_SRC
 *** lsp-rust
 #+BEGIN_SRC emacs-lisp
-  (use-package lsp-rust)
+  (use-package lsp-rust
+    :init
+    (progn
+      (require 'lsp-rust)
+      (setq RUSTC "~/.cargo/bin/rustc")
+      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
+      (add-hook 'rust-mode-hook #'lsp-rust-enable)))
+  ;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 #+END_SRC
 *** Rust-mode
 #+BEGIN_SRC emacs-lisp
   (use-package rust-mode
-    :mode "\\.rs\\'"
-    :bind
-    (:map rust-mode-map
-          (([tab] . company-indent-or-complete-common)
-           ("C-c <tab>" . rust-format-buffer)))
-    :ensure t
-    :init
-    (add-hook 'rust-mode-hook 'company-mode)
-    ;; (add-hook 'rust-mode-hook 'racer-mode)
-    ;; (add-hook 'rust-mode-hook 'ycmd-mode)
-    (add-hook 'rust-mode-hook 'flycheck-rust-setup)
-    :config
-    (electric-pair-mode 1)
-    (lsp-mode)
-    (lsp-rust-enable))
+      :mode "\\.rs\\'"
+      :bind
+      (:map rust-mode-map
+            (([tab] . company-indent-or-complete-common)
+             ("C-c <tab>" . rust-format-buffer)))
+      :config
+      (progn
+        (setq rust-indent-offset 2)
+        (electric-pair-mode 1)))
 #+END_SRC
+*** Cargo
+#+BEGIN_SRC emacs-lisp
+(use-package cargo)
+#+END_SRC
+*** rust-playground
+#+BEGIN_SRC emacs-lisp
+  (use-package rust-playground)
+#+END_SRC
+
 ** JSON
 #+BEGIN_SRC emacs-lisp
   (use-package json-mode
@@ -1319,7 +1397,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
   (use-package dockerfile-mode
     :mode "\\Dockerfile\\'")
 #+END_SRC
-
 *** Docker
 #+BEGIN_SRC emacs-lisp
   (use-package docker
@@ -1362,6 +1439,21 @@ Get limited autocompletion in Lua
 #+BEGIN_SRC emacs-lisp
   (use-package powershell
     :mode "\\.ps\\'")
+** Terraform
+*** Terraform mode
+#+BEGIN_SRC emacs-lisp
+  (use-package terraform-mode
+  :mode "\\.tf\\'" )
+#+END_SRC
+** YAML
+#+BEGIN_SRC emacs-lisp
+  (use-package yaml-mode
+    :defer t)
+#+END_SRC
+
+** SSH
+#+BEGIN_SRC emacs-lisp
+(use-package ssh-config-mode)
 #+END_SRC
 
 * Communication
@@ -1376,10 +1468,17 @@ Get limited autocompletion in Lua
     (slack-register-team
      :name "personal"
      :default t
-     :client-id "279636748417.280206506404"
-     :client-secret "faca05501140fc54d2113f47335ad0cd"
-     :token "tx" ; this is here to shush emacs on compiles
-     :subscribed-channels '(general)))
+     :client-id (getenv "SLACK_CLIENT_ID")
+     :client-secret (getenv "SLACK_CLIENT_SECRET")
+     :token (getenv "SLACK_TOKEN")
+     :subscribed-channels '(general))
+    (slack-register-team
+       :name "work"
+       :default nil
+       :client-id (getenv "SLACK_CLIENT_ID")
+       :client-secret (getenv "SLACK_CLIENT_SECRET")
+       :token (getenv "TIDAL_SLACK_TOKEN")
+       :subscribed-channels '(general)))
 
     ;; (slack-register-team
     ;;  :name "test"
@@ -1391,7 +1490,7 @@ Get limited autocompletion in Lua
     (use-package alert
       :commands (alert)
       :init
-      (setq alert-default-style 'notifier))
+      (setq alert-default-style 'osx-notifier))
 #+END_SRC
 * Misc
 ** Fuzzy matching
@@ -1435,7 +1534,10 @@ Get limited autocompletion in Lua
 #+BEGIN_SRC emacs-lisp
 (use-package dired+)
 #+END_SRC
-
+** http client
+#+BEGIN_SRC emacs-lisp
+  (use-package restclient)
+#+END_SRC
 * Custom Functions
 ** Resize font size
 Increases the fonts size across all buffers
@@ -1505,12 +1607,11 @@ And the same but without leaving the current window:
 ** Tangle and Compile init file
 #+BEGIN_SRC emacs-lisp
   (defun my/tangle-dotfiles ()
-     "If the current file is this file, the code blocks are tangled"
-     (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
-       (org-babel-tangle nil "~/.emacs.d/init.el")
-       ;;(byte-compile-file "~/.emacs.d/init.el")
-))
-(add-hook 'after-save-hook #'my/tangle-dotfiles)
+    "If the current file is this file, the code blocks are tangled"
+    (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
+      (org-babel-tangle nil (expand-file-name "~/.emacs.d/init.el"))))
+      ;;(byte-compile-file "~/.emacs.d/init.el")
+  (add-hook 'after-save-hook #'my/tangle-dotfiles)
 #+END_SRC
 ** Run Current File
 #+BEGIN_SRC emacs-lisp
@@ -1655,4 +1756,46 @@ And the same but without leaving the current window:
 (defun enable-lispy ()
     (turn-off-smartparens-mode)
     (lispy-mode))
+#+END_SRC
+** Post from any buffer to Slack with Emacs
+
+#+BEGIN_SRC emacs-lisp
+(defun jb/slack-quote-region ()
+    (with-temp-buffer
+      (insert region)
+      (goto-char 1)
+      (while (> (point-max) (point))
+        (beginning-of-line)
+        (insert "> ")
+        (forward-line 1))
+      (buffer-string)))
+
+(defun jb/decorate-text (text)
+  (let* ((decorators '(("None" . (lambda (text) text))
+                       ("Code"  . (lambda (text) (concat "```" text "```")))
+                       ("Quote"  . (lambda (text) (jb/slack-quote-region text)))))
+         (decoration (completing-read "Select decoration: "
+                                      decorators
+                                      nil
+                                      t)))
+    (funcall (cdr (assoc decoration decorators)) text)))
+
+(defun jb/send-region-to-slack ()
+  (interactive)
+  (let* ((team (slack-team-select))
+         (room (slack-room-select
+                (cl-loop for team in (list team)
+                         append (with-slots (groups ims channels) team
+                                  (append ims groups channels))))))
+    (slack-message-send-internal (jb/decorate-text (filter-buffer-substring
+                                                    (region-beginning) (region-end)))
+                                 (oref room id)
+                                 team)))
+
+#+END_SRC
+
+
+** Turn back on file-name-handler-alist
+#+BEGIN_SRC emacs-lisp
+(setq file-name-handler-alist doom--file-name-handler-alist)
 #+END_SRC
