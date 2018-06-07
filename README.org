@@ -604,9 +604,10 @@ Currently turned off due to debugging issues
 #+END_SRC
 ** Windows
 #+BEGIN_SRC emacs-lisp
-  (when (memq system-type '(windows-nt))
-    (add-to-list gnutls-trustfile ((expand-file-name "~/.cert/cacert.pm")))
-    (exec-path-from-shell-initialize)
+  (when (eq system-type 'windows-nt)
+    (setq package-check-signature nil)
+    (require 'gnutls)
+    (add-to-list 'gnutls-trustfiles (expand-file-name "~/.cert/cacert.pm"))
     (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
     (setq shell-file-name "bash")
     (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
