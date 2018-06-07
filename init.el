@@ -24,7 +24,6 @@
 
 (setq package-enable-at-startup nil
       package--init-file-ensured t)
-(package-initialize)
 ;; (package-initialize)
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -335,9 +334,10 @@ called `Byte-compiling with Package.el'."
             (diminish 'js2-refactor-mode)
             (diminish 'tern-mode)))
 
-(when (memq system-type '(windows-nt))
-  (add-to-list gnutls-trustfile ((expand-file-name "~/.cert/cacert.pm")))
-  (exec-path-from-shell-initialize)
+(when (eq system-type 'windows-nt)
+  (setq package-check-signature nil)
+  (require 'gnutls)
+  (add-to-list 'gnutls-trustfiles (expand-file-name "~/.cert/cacert.pm"))
   (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
   (setq shell-file-name "bash")
   (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
@@ -903,6 +903,9 @@ called `Byte-compiling with Package.el'."
   :config
   (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
 
+(use-package powershell
+  :mode "\\.ps\\'")
+
 (use-package terraform-mode
 :mode "\\.tf\\'" )
 
@@ -1018,7 +1021,7 @@ DELTA should be a multiple of 10, in the units used by the
 (defun my/tangle-dotfiles ()
   "If the current file is this file, the code blocks are tangled"
   (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
-    (org-babel-tangle nil "~/.emacs.d/init.el")))
+    (org-babel-tangle nil (expand-file-name "~/.emacs.d/init.el"))))
     ;;(byte-compile-file "~/.emacs.d/init.el")
 (add-hook 'after-save-hook #'my/tangle-dotfiles)
 
@@ -1188,29 +1191,3 @@ foo.bar.baz => baz"
                                  team)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(yard-mode yaml-mode xref-js2 ws-butler web-mode web use-package undo-tree treemacs-projectile toc-org terraform-mode tagedit ssh-config-mode spaceline-all-the-icons smooth-scroll smartparens slime-company slack sass-mode rust-playground robe ripgrep restclient rbenv rainbow-mode rainbow-delimiters popup parinfer origami org-present org-bullets oauth noflet magit lsp-ui lsp-rust lispy langtool kibit-helper json-navigator js2-refactor indium ido-completing-read+ hungry-delete htmlize ggtags flymd flycheck-ycmd flycheck-rust flycheck-pos-tip flycheck-joker flx fish-mode exec-path-from-shell esup enh-ruby-mode dracula-theme dockerfile-mode docker dired+ diminish dash-at-point csharp-mode counsel-tramp counsel-projectile counsel-gtags company-ycmd company-tern company-sourcekit company-lua company-lsp coffee-mode clojure-mode-extra-font-locking clj-refactor cargo c-eldoc benchmark-init)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(mode-line ((t (:background "#282a36" :foregound "#50fa7b" :inherit 'mode-line))))
- '(powerline-active1 ((t (:background "#6272a4" :foregound "#50fa7b" :inherit 'mode-line))))
- '(powerline-active2 ((t (:background "#44475a" :foregound "#50fa7b" :inherit 'mode-line))))
- '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
- '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
- '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
- '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
- '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
- '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
- '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
- '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
- '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
- '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))
- '(spaceline-highlight-face ((t (:background "#cb619e" :foreground "#f8f8f2" :inherit 'mode-line)))))
