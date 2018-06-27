@@ -675,7 +675,6 @@ called `Byte-compiling with Package.el'."
     (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
     (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
     (setq inferior-lisp-program "lein repl")
-    (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
     (font-lock-add-keywords
      nil
      '(("(\\(facts?\\)"
@@ -693,11 +692,6 @@ called `Byte-compiling with Package.el'."
   (progn
     ;; REPL related stuff
     ;; REPL history file
-
-    (defun cider-check-figwheel-requirements ()
-      "Check whether we can start a Figwheel ClojureScript REPL."
-     t)
-
     (setq cider-repl-history-file "~/.emacs.d/cider-history")
     ;; nice pretty printing
 

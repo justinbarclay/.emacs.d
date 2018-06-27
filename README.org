@@ -1136,7 +1136,6 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
       (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
       (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
       (setq inferior-lisp-program "lein repl")
-      (add-hook 'clojurescript-mode-hook (lambda () (cider-jack-in-clojurescript)))
       (font-lock-add-keywords
        nil
        '(("(\\(facts?\\)"
@@ -1163,11 +1162,6 @@ A REPL for Clojure and nrepl for ClojureScript
     (progn
       ;; REPL related stuff
       ;; REPL history file
-
-      (defun cider-check-figwheel-requirements ()
-        "Check whether we can start a Figwheel ClojureScript REPL."
-       t)
-
       (setq cider-repl-history-file "~/.emacs.d/cider-history")
       ;; nice pretty printing
 
