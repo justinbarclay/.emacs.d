@@ -1051,15 +1051,9 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
                        pretty-parens  ; different paren styles for different modes.
                        paredit        ; Introduce some paredit commands.
                        smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-                       lispy
+                       ;;lispy
                        ;;one
                        smart-yank))))   ; Yank behavior depend on mode
-#+END_SRC
-*** lispy
-We're going to give lispy a chance. Parinfer is way too slow in large files.
-#+BEGIN_SRC emacs-lisp
-    (use-package lispy
-      :commands (lispy-mode))
 #+END_SRC
 
 *** eldoc
