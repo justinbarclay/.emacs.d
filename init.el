@@ -282,23 +282,27 @@ called `Byte-compiling with Package.el'."
 
 (use-package all-the-icons)
 
-(use-package spaceline-all-the-icons
-  :hook (after-init . spaceline-all-the-icons-theme)
-  :config
-  (progn
-    (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
-                                                                  :foreground "#f8f8f2"
-                                                                  :inherit 'mode-line))))
-                      '(powerline-active2 ((t (:background "#44475a"
-                                                           :foregound "#50fa7b"
-                                                           :inherit 'mode-line))))
-                      '(mode-line ((t (:background "#282a36"
-                                                   :foregound "#50fa7b"
-                                                   :inherit 'mode-line))))
-                      '(powerline-active1 ((t (:background "#6272a4"
-                                                           :foregound "#50fa7b"
-                                                           :inherit 'mode-line)))))
-    (setq spaceline-all-the-icons-separator-type 'wave)))
+(use-package doom-modeline
+  :hook (after-init . doom-modeline-init)
+  :init (setq doom-modeline-buffer-file-name-style 'relative-to-project))
+
+;; (use-package spaceline-all-the-icons
+;;     :hook (after-init . spaceline-all-the-icons-theme)
+;;     :config
+;;     (progn
+;;       (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
+;;                                                                     :foreground "#f8f8f2"
+;;                                                                     :inherit 'mode-line))))
+;;                         '(powerline-active2 ((t (:background "#44475a"
+;;                                                              :foregound "#50fa7b"
+;;                                                              :inherit 'mode-line))))
+;;                         '(mode-line ((t (:background "#282a36"
+;;                                                      :foregound "#50fa7b"
+;;                                                      :inherit 'mode-line))))
+;;                         '(powerline-active1 ((t (:background "#6272a4"
+;;                                                              :foregound "#50fa7b"
+;;                                                              :inherit 'mode-line)))))
+;;       (setq spaceline-all-the-icons-separator-type 'wave)))
 
 (global-display-line-numbers-mode)
 (set-default 'display-line-numbers-type 'visual)
@@ -592,6 +596,9 @@ called `Byte-compiling with Package.el'."
          (scheme-mode . (lambda () (enable-paredit)))
          (lisp-mode . (lambda () (enable-paredit)))))
 
+(use-package lispy
+  :commands (lispy-mode))
+
 (use-package parinfer
   :commands (parinfer-mode)
   :bind (:map parinfer-mode-map
@@ -604,12 +611,9 @@ called `Byte-compiling with Package.el'."
                      pretty-parens  ; different paren styles for different modes.
                      paredit        ; Introduce some paredit commands.
                      smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-                     lispy
+                     ;;lispy
                      ;;one
                      smart-yank))))   ; Yank behavior depend on mode
-
-(use-package lispy
-  :commands (lispy-mode))
 
 (use-package eldoc
   :ensure t
@@ -810,7 +814,8 @@ called `Byte-compiling with Package.el'."
    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
 (use-package robe
-:init (add-hook 'ruby-mode-hook 'robe-mode))
+  :commands (robe-start)
+  :init (add-hook 'ruby-mode-hook 'robe-mode))
 
 (use-package inf-ruby
   :bind
@@ -825,6 +830,7 @@ called `Byte-compiling with Package.el'."
         (setq inf-ruby-default-implementation "pry"))))
 
 (use-package ruby-mode
+  :after robe
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
