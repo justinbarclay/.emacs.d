@@ -1311,7 +1311,8 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Robe
 #+BEGIN_SRC emacs-lisp
   (use-package robe
-  :init (add-hook 'ruby-mode-hook 'robe-mode))
+    :commands (robe-start)
+    :init (add-hook 'ruby-mode-hook 'robe-mode))
 #+END_SRC
 
 *** inf-ruby
@@ -1331,6 +1332,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** ruby-mode
 #+BEGIN_SRC emacs-lisp
     (use-package ruby-mode
+      :after robe
       :mode "\\.rb\\'"
       :mode "Rakefile\\'"
       :mode "Gemfile\\'"
