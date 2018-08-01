@@ -545,23 +545,29 @@ My name isn't "Tinker", so I don't need a bell.
 #+END_SRC
 *** Spaceline + All the Icons
 #+BEGIN_SRC emacs-lisp
-  (use-package spaceline-all-the-icons
-    :hook (after-init . spaceline-all-the-icons-theme)
-    :config
-    (progn
-      (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
-                                                                    :foreground "#f8f8f2"
-                                                                    :inherit 'mode-line))))
-                        '(powerline-active2 ((t (:background "#44475a"
-                                                             :foregound "#50fa7b"
-                                                             :inherit 'mode-line))))
-                        '(mode-line ((t (:background "#282a36"
-                                                     :foregound "#50fa7b"
-                                                     :inherit 'mode-line))))
-                        '(powerline-active1 ((t (:background "#6272a4"
-                                                             :foregound "#50fa7b"
-                                                             :inherit 'mode-line)))))
-      (setq spaceline-all-the-icons-separator-type 'wave)))
+  (use-package doom-modeline
+    :hook (after-init . doom-modeline-init)
+    :init (setq doom-modeline-buffer-file-name-style 'relative-to-project))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package spaceline-all-the-icons
+  ;;     :hook (after-init . spaceline-all-the-icons-theme)
+  ;;     :config
+  ;;     (progn
+  ;;       (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
+  ;;                                                                     :foreground "#f8f8f2"
+  ;;                                                                     :inherit 'mode-line))))
+  ;;                         '(powerline-active2 ((t (:background "#44475a"
+  ;;                                                              :foregound "#50fa7b"
+  ;;                                                              :inherit 'mode-line))))
+  ;;                         '(mode-line ((t (:background "#282a36"
+  ;;                                                      :foregound "#50fa7b"
+  ;;                                                      :inherit 'mode-line))))
+  ;;                         '(powerline-active1 ((t (:background "#6272a4"
+  ;;                                                              :foregound "#50fa7b"
+  ;;                                                              :inherit 'mode-line)))))
+  ;;       (setq spaceline-all-the-icons-separator-type 'wave)))
 #+END_SRC
 
 ** Line Numbers
