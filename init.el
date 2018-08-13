@@ -284,7 +284,13 @@ called `Byte-compiling with Package.el'."
 
 (use-package doom-modeline
   :hook (after-init . doom-modeline-init)
-  :init (setq doom-modeline-buffer-file-name-style 'relative-to-project))
+  :init
+  (progn
+    (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+    (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
+                                                                 :inherit 'mode-line))))
+                      '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
+                      '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 
 ;; (use-package spaceline-all-the-icons
 ;;     :hook (after-init . spaceline-all-the-icons-theme)
@@ -404,8 +410,8 @@ called `Byte-compiling with Package.el'."
 
 (use-package counsel-projectile
   :after projectile
-  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir)
-  :bind)
+  :preface (setq projectile-keymap-prefix (kbd "C-c p"))
+  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
 
 (use-package swiper
   :after ivy
@@ -597,23 +603,23 @@ called `Byte-compiling with Package.el'."
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package lispy
-  :commands (lispy-mode))
+ :ensure t
+ :commands (lispy-mode))
 
 (use-package parinfer
   :commands (parinfer-mode)
   :bind (:map parinfer-mode-map
               (("C-t" . parinfer-toggle-mode)))
   :init (progn
-            (setq parinfer-delay-invoke-threshold 30000)
-            (setq parinfer-auto-switch-indent-mode t)
-            (setq parinfer-extensions
-                  '(defaults       ; should be included.
-                     pretty-parens  ; different paren styles for different modes.
-                     paredit        ; Introduce some paredit commands.
-                     smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-                     ;;lispy
-                     ;;one
-                     smart-yank))))   ; Yank behavior depend on mode
+          (setq parinfer-delay-invoke-threshold 6000)
+          (setq parinfer-auto-switch-indent-mode t)
+          (setq parinfer-extensions
+                '(defaults       ; should be included.
+                   pretty-parens  ; different paren styles for different modes.
+                   paredit        ; Introduce some paredit commands.
+                   smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+                   lispy
+                   smart-yank))))   ; Yank behavior depend on mode
 
 (use-package eldoc
   :ensure t
@@ -824,6 +830,7 @@ called `Byte-compiling with Package.el'."
          ("C-c C-b" . ruby-send-buffer)))
   :config
   (progn
+      (message "disabling company mode")
       (company-mode 0)
       (when (executable-find "pry")
         (add-to-list 'inf-ruby-implementations '("pry" . "pry"))

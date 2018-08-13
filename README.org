@@ -547,7 +547,13 @@ My name isn't "Tinker", so I don't need a bell.
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
     :hook (after-init . doom-modeline-init)
-    :init (setq doom-modeline-buffer-file-name-style 'relative-to-project))
+    :init
+    (progn
+      (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+      (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
+                                                                   :inherit 'mode-line))))
+                        '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
+                        '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -718,11 +724,12 @@ it looks like counsel is a requirement for swiper
       ("C-c k" . counsel-rg)))
 #+END_SRC
 *** Counsel-projectile
+Normally preface should automatically be set by the package, but recently (Mon Aug 13, 2018), I've found projectile has changed their key mapping (https://github.com/bbatsov/projectile/commit/9c6e9813abec6e067c659e9107bf356086a95e04), and I need to handle this myself or until counsel projectile handles this for me ala https://github.com/ericdanan/counsel-projectile/pull/92.
 #+BEGIN_SRC emacs-lisp
-    (use-package counsel-projectile
-      :after projectile
-      :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir)
-      :bind)
+  (use-package counsel-projectile
+    :after projectile
+    :preface (setq projectile-keymap-prefix (kbd "C-c p"))
+    :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
 #+END_SRC
 *** swiper
 #+BEGIN_SRC emacs-lisp
@@ -1032,10 +1039,11 @@ Major mode customizations
            (lisp-mode . (lambda () (enable-paredit)))))
 #+END_SRC
 *** lispy
-We're going to give lispy a chance. Parinfer is way too slow in large files.
+We need lispy for some of the excellent bracket based navigation integrations with parinfer
 #+BEGIN_SRC emacs-lisp
     (use-package lispy
-      :commands (lispy-mode))
+     :ensure t
+     :commands (lispy-mode))
 #+END_SRC
 *** parinfer
 #+BEGIN_SRC emacs-lisp
@@ -1044,16 +1052,15 @@ We're going to give lispy a chance. Parinfer is way too slow in large files.
     :bind (:map parinfer-mode-map
                 (("C-t" . parinfer-toggle-mode)))
     :init (progn
-              (setq parinfer-delay-invoke-threshold 30000)
-              (setq parinfer-auto-switch-indent-mode t)
-              (setq parinfer-extensions
-                    '(defaults       ; should be included.
-                       pretty-parens  ; different paren styles for different modes.
-                       paredit        ; Introduce some paredit commands.
-                       smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-                       ;;lispy
-                       ;;one
-                       smart-yank))))   ; Yank behavior depend on mode
+            (setq parinfer-delay-invoke-threshold 6000)
+            (setq parinfer-auto-switch-indent-mode t)
+            (setq parinfer-extensions
+                  '(defaults       ; should be included.
+                     pretty-parens  ; different paren styles for different modes.
+                     paredit        ; Introduce some paredit commands.
+                     smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+                     lispy
+                     smart-yank))))   ; Yank behavior depend on mode
 #+END_SRC
 
 *** eldoc
@@ -1324,6 +1331,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
            ("C-c C-b" . ruby-send-buffer)))
     :config
     (progn
+        (message "disabling company mode")
         (company-mode 0)
         (when (executable-find "pry")
           (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
