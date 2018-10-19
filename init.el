@@ -1,3 +1,26 @@
+(use-package rustic
+  :mode ("\\.rs\\'" . 'rustic-mode)
+  :bind ("C-c r" . rustic-compile)
+  :config
+  (progn
+    (setq rust-indent-offset 2)
+    (electric-pair-mode 1)))
+
+(use-package go-mode
+  :mode "\\.go\\'"
+  :bind
+  :bind (:map go-mode-map
+              (("M-." . 'godef-jump)
+               ("M-," . 'pop-tag-mark)))
+  :config
+  (progn
+    (add-hook 'before-save-hook 'gofmt-before-save)))
+
+(use-package rst
+  :mode (("\\.txt$" . rst-mode)
+         ("\\.rst$" . rst-mode)
+         ("\\.rest$" . rst-mode)))
+
 (setq gc-cons-threshold 1000000000)
 (run-with-idle-timer
  5 nil
@@ -15,9 +38,10 @@
 
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq package-archives
-             '(("melpa" . "http://melpa.org/packages/")
-              ("org" . "https://orgmode.org/elpa/")
-              ("tromey" . "http://tromey.com/elpa/")))
+      '(("gnu" . "https://elpa.gnu.org/packages/")
+        ("melpa" . "http://melpa.org/packages/")
+        ("org" . "https://orgmode.org/elpa/")
+        ("tromey" . "http://tromey.com/elpa/")))
 
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
@@ -99,6 +123,12 @@ called `Byte-compiling with Package.el'."
 (use-package org-bullets
   :init
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+(use-package ob-restclient
+  :init
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((restclient . t))))
 
 (use-package toc-org
   :hook (org-mode-hook . toc-org-enable))
@@ -410,8 +440,9 @@ called `Byte-compiling with Package.el'."
 
 (use-package counsel-projectile
   :after projectile
-  :preface (setq projectile-keymap-prefix (kbd "C-c p"))
-  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
+  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir)
+  :init
+  (setq projectile-keymap-prefix (kbd "C-c p")))
 
 (use-package swiper
   :after ivy
@@ -446,7 +477,6 @@ called `Byte-compiling with Package.el'."
   (setq treemacs-header-function #'treemacs-projectile-create-header))
 
 (use-package avy
-  :ensure t
   :bind ("C-c s" . avy-goto-char))
 
 (use-package multiple-cursors
@@ -563,8 +593,8 @@ called `Byte-compiling with Package.el'."
   )
 
 (use-package lsp-ui
-:init
-(add-hook 'lsp-mode-hook #'lsp-ui-mode))
+  :init
+  (add-hook 'lsp-mode-hook #'lsp-ui-mode))
 
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
@@ -603,14 +633,14 @@ called `Byte-compiling with Package.el'."
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package lispy
- :ensure t
- :commands (lispy-mode))
+ :defer nil)
 
 (use-package parinfer
   :commands (parinfer-mode)
   :bind (:map parinfer-mode-map
               (("C-t" . parinfer-toggle-mode)))
   :init (progn
+          (require 'lispy)
           (setq parinfer-delay-invoke-threshold 6000)
           (setq parinfer-auto-switch-indent-mode t)
           (setq parinfer-extensions
@@ -780,6 +810,7 @@ called `Byte-compiling with Package.el'."
   (add-hook 'js2-mode-hook (lambda ()
                              (tern-mode)))
   (setq js-indent-level 2)
+  (setq js2-basic-offset 2)
   (add-hook 'js-mode-hook #'indium-interaction-mode))
 
 (use-package js2-refactor
@@ -866,23 +897,14 @@ called `Byte-compiling with Package.el'."
     (add-hook 'rust-mode-hook #'lsp-rust-enable)))
 ;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 
-(use-package rust-mode
-    :mode "\\.rs\\'"
-    :bind
-    (:map rust-mode-map
-          (([tab] . company-indent-or-complete-common)
-           ("C-c <tab>" . rust-format-buffer)))
-    :config
-    (progn
-      (setq rust-indent-offset 2)
-      (electric-pair-mode 1)))
-
 (use-package cargo)
 
 (use-package rust-playground)
 
 (use-package json-mode
-  :mode "\\.json\\'")
+  :mode "\\.json\\'"
+  :config
+  (setq js-indent-level 2))
 
 (use-package dockerfile-mode
   :mode "\\Dockerfile\\'")
