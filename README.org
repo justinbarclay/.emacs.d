@@ -1394,6 +1394,19 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp
   (use-package rust-playground)
 #+END_SRC
+** Go
+*** Go Mode
+#+BEGIN_SRC elisp
+  (use-package go-mode
+    :mode "\\.go\\'"
+    :bind
+    :bind (:map go-mode-map
+                (("M-." . 'godef-jump)
+                 ("M-," . 'pop-tag-mark)))
+    :config
+    (progn
+      (add-hook 'before-save-hook 'gofmt-before-save)))
+#+END_SRC
 
 ** JSON
 #+BEGIN_SRC emacs-lisp
