@@ -1410,8 +1410,10 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 
 ** JSON
 #+BEGIN_SRC emacs-lisp
-  (use-package json-mode
-    :mode "\\.json\\'")
+    (use-package json-mode
+      :mode "\\.json\\'"
+      :config
+      (setq js-indent-level 2))
 #+END_SRC
 ** Docker
 *** Dockerfile
