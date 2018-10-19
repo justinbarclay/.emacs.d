@@ -1362,7 +1362,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
   ;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 #+END_SRC
 *** Rust-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package rust-mode
       :mode "\\.rs\\'"
       :bind
@@ -1374,6 +1374,17 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
         (setq rust-indent-offset 2)
         (electric-pair-mode 1)))
 #+END_SRC
+*** Rustic
+#+BEGIN_SRC elisp
+  (use-package rustic
+    :mode ("\\.rs\\'" . 'rustic-mode)
+    :bind ("C-c r" . rustic-compile)
+    :config
+    (progn
+      (setq rust-indent-offset 2)
+      (electric-pair-mode 1)))
+#+END_SRC
+
 *** Cargo
 #+BEGIN_SRC emacs-lisp
 (use-package cargo)
