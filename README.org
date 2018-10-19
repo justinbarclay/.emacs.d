@@ -1480,6 +1480,13 @@ Get limited autocompletion in Lua
 #+BEGIN_SRC emacs-lisp
 (use-package ssh-config-mode)
 #+END_SRC
+** Text modes
+#+BEGIN_SRC elisp
+(use-package rst
+  :mode (("\\.txt$" . rst-mode)
+         ("\\.rst$" . rst-mode)
+         ("\\.rest$" . rst-mode)))
+#+END_SRC
 
 * Communication
 ** Slack
