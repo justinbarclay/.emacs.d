@@ -784,7 +784,6 @@ Navigate a buffer by visible characters
 As Stolen from http://cestlaz.github.io/posts/using-emacs-7-avy/ (January 10, 2017)
 #+BEGIN_SRC emacs-lisp
 (use-package avy
-  :ensure t
   :bind ("C-c s" . avy-goto-char))
 #+END_SRC
 * Editing
@@ -947,28 +946,6 @@ Load this before we load Flycheck
               company-echo-metadata-frontend))
       (setq company-auto-complete t)
       (setq company-tooltip-align-annotations t)))
-#+END_SRC
-** YCMD
-#+BEGIN_SRC emacs-lisp :tangle
-  (use-package ycmd
-    :commands (ycmd-mode)
-    :config
-    (progn
-      (set-variable 'ycmd-server-command '("python" "/Users/Justin/ycmd/ycmd"))
-      (set-variable 'ycmd-extra-conf-whitelist '("~/*"))
-      (set-variable 'ycmd-global-config "~/.ycm_extra_conf.py")
-      (require 'ycmd-eldoc)
-      (add-hook 'ycmd-mode-hook 'ycmd-eldoc-setup)
-      ;;  (setq ycmd-force-semantic-completion t)
-      (add-hook 'ycmd-file-parse-result-hook 'flycheck-ycmd--cache-parse-results)))
-#+END_SRC
-
-** Company-YCMD
-#+BEGIN_SRC emacs-lisp :tangle
-(use-package company-ycmd
-    :after ycmd
-    :config
-    (company-ycmd-setup))
 #+END_SRC
 ** LSP-Mode
 #+BEGIN_SRC emacs-lisp
