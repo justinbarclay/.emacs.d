@@ -287,6 +287,14 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
     :init
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 #+END_SRC
+*** Ob-Restclient
+#+BEGIN_SRC emacs-lisp
+  (use-package ob-restclient
+    :init
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((restclient . t))))
+#+END_SRC
 *** Org-toc
 After the installation, every time you’ll be saving an org file, the first headline with a :TOC: tag will be updated with the current table of contents.
 
