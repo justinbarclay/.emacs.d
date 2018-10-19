@@ -963,9 +963,9 @@ Load this before we load Flycheck
 #+END_SRC
 *** lsp-ui
 #+BEGIN_SRC emacs-lisp
-(use-package lsp-ui
-:init
-(add-hook 'lsp-mode-hook #'lsp-ui-mode))
+  (use-package lsp-ui
+    :init
+    (add-hook 'lsp-mode-hook #'lsp-ui-mode))
 #+END_SRC
 * Setup
 Major mode customizations
@@ -1029,8 +1029,7 @@ Major mode customizations
 We need lispy for some of the excellent bracket based navigation integrations with parinfer
 #+BEGIN_SRC emacs-lisp
     (use-package lispy
-     :ensure t
-     :commands (lispy-mode))
+     :defer nil)
 #+END_SRC
 *** parinfer
 #+BEGIN_SRC emacs-lisp
@@ -1039,6 +1038,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
     :bind (:map parinfer-mode-map
                 (("C-t" . parinfer-toggle-mode)))
     :init (progn
+            (require 'lispy)
             (setq parinfer-delay-invoke-threshold 6000)
             (setq parinfer-auto-switch-indent-mode t)
             (setq parinfer-extensions
