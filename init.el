@@ -440,9 +440,8 @@ called `Byte-compiling with Package.el'."
 
 (use-package counsel-projectile
   :after projectile
-  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir)
-  :init
-  (setq projectile-keymap-prefix (kbd "C-c p")))
+  :preface (setq projectile-keymap-prefix (kbd "C-c p"))
+  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
 
 (use-package swiper
   :after ivy
@@ -572,8 +571,6 @@ called `Byte-compiling with Package.el'."
   (add-hook 'after-init-hook 'global-company-mode)
   :config
   (progn
-    (eval-after-load 'company
-      '(push 'company-robe company-backends))
     (setq company-idle-delay 0.3)
     (setq company-frontends
           '(company-pseudo-tooltip-unless-just-one-frontend
@@ -852,7 +849,9 @@ called `Byte-compiling with Package.el'."
 
 (use-package robe
   :commands (robe-start)
-  :init (add-hook 'ruby-mode-hook 'robe-mode))
+  :init (add-hook 'ruby-mode-hook 'robe-mode)
+  :config
+  (push 'company-robe company-backends))
 
 (use-package inf-ruby
   :bind
@@ -1220,3 +1219,38 @@ foo.bar.baz => baz"
                                  team)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-default-notes-file (concat org-directory "/notes.org"))
+ '(org-directory "~/Dropbox/orgfiles")
+ '(org-export-html-postamble nil)
+ '(org-hide-leading-stars t)
+ '(org-startup-folded 'overview)
+ '(org-startup-indented t)
+ '(package-selected-packages
+   '(yard-mode yaml-mode xref-js2 ws-butler web-mode web use-package undo-tree treemacs-projectile toc-org terraform-mode tagedit ssh-config-mode spaceline-all-the-icons smooth-scroll smartparens slime-company slack sass-mode rustic rust-playground rspec-mode robe ripgrep rbenv rainbow-mode rainbow-delimiters powershell popup parinfer origami org-present org-bullets ob-restclient oauth noflet magit lsp-ui lsp-rust lispy langtool kibit-helper json-navigator ivy-gitlab indium ido-completing-read+ hungry-delete htmlize go-mode ggtags flymd flycheck-ycmd flycheck-rust flycheck-pos-tip flycheck-joker flx fish-mode eyebrowse exec-path-from-shell esup enh-ruby-mode dracula-theme doom-modeline dockerfile-mode docker dired+ diminish devdocs dash-at-point csharp-mode counsel-tramp counsel-projectile counsel-gtags company-ycmd company-tern company-sourcekit company-lua company-lsp coffee-mode clojure-mode-extra-font-locking clj-refactor cargo c-eldoc benchmark-init))
+ '(safe-local-variable-values
+   '((cider-lein-global-options . "with-profile dev")
+     (cider-default-cljs-repl . figwheel))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))
+ '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
+ '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
+ '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
+ '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
+ '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
+ '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
+ '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
+ '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
+ '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
+ '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
+ '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
+ '(rainbow-delimiters-unmatched-face ((t (:foreground "black")))))
+(put 'dired-find-alternate-file 'disabled nil)
