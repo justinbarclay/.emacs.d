@@ -937,8 +937,6 @@ Load this before we load Flycheck
     (add-hook 'after-init-hook 'global-company-mode)
     :config
     (progn
-      (eval-after-load 'company
-        '(push 'company-robe company-backends))
       (setq company-idle-delay 0.3)
       (setq company-frontends
             '(company-pseudo-tooltip-unless-just-one-frontend
@@ -1307,7 +1305,9 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp
   (use-package robe
     :commands (robe-start)
-    :init (add-hook 'ruby-mode-hook 'robe-mode))
+    :init (add-hook 'ruby-mode-hook 'robe-mode)
+    :config
+    (push 'company-robe company-backends))
 #+END_SRC
 
 *** inf-ruby
