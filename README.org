@@ -895,7 +895,9 @@ Open up the program dash
     (("C-c d" . dash-at-point)
      ("C-c e" . dash-at-point-with-docset))
     :config
-    (add-to-list 'dash-at-point-mode-alist '(ruby-mode . ("ruby" "rails"))))
+    (add-to-list 'dash-at-point-mode-alist '(ruby-mode . ("ruby" "rails")))
+    (add-to-list 'dash-at-point-mode-alist '(clojurescript-mode ("clojure")))
+    (add-to-list 'dash-at-point-mode-alist '(clojure-mode ("clojure"))))
 #+END_SRC
 ** Undo-tree
 Easily navigate buffer state through a UI helper
