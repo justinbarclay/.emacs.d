@@ -566,11 +566,26 @@ My name isn't "Tinker", so I don't need a bell.
 #+END_SRC
 *** Spaceline + All the Icons
 #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elpa/doom-modeline")
+  (require 'doom-modeline)
+  (add-hook 'after-init-hook 'doom-modeline-init)
+  (progn
+    (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+    (setq doom-modeline-github nil)
+    (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
+                                                                 :inherit 'mode-line))))
+                      '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
+                      '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
+#+END_SRC
+
+Disabling this for now while I develop an alternative to doom-modelines version code
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package doom-modeline
     :hook (after-init . doom-modeline-init)
     :init
     (progn
       (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+      (setq doom-modeline-github nil)
       (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
                                                                    :inherit 'mode-line))))
                         '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
