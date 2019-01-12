@@ -1253,6 +1253,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp
   (use-package indium
     :after js2-mode
+    :commands (indium-launch)
     :config
     (progn
       (add-hook 'indium-update-script-source-hook
@@ -1265,13 +1266,14 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp
   (use-package js2-mode
     :mode "\\.js\\'"
+    :bind ("C-c l i" . indium-launch)
     :config
     (require 'indium)
     (add-hook 'js-mode-hook 'subword-mode)
     (add-hook 'html-mode-hook 'subword-mode)
     (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
     (add-hook 'js2-mode-hook #'js2-refactor-mode)
-    (add-to-list 'company-backends 'company-tern)
+    (add-to-list 'company-backends 'company-indium-repl)
     (add-hook 'js2-mode-hook (lambda ()
                                (tern-mode)))
     (setq js-indent-level 2)
