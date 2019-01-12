@@ -1,26 +1,3 @@
-(use-package rustic
-  :mode ("\\.rs\\'" . 'rustic-mode)
-  :bind ("C-c r" . rustic-compile)
-  :config
-  (progn
-    (setq rust-indent-offset 2)
-    (electric-pair-mode 1)))
-
-(use-package go-mode
-  :mode "\\.go\\'"
-  :bind
-  :bind (:map go-mode-map
-              (("M-." . 'godef-jump)
-               ("M-," . 'pop-tag-mark)))
-  :config
-  (progn
-    (add-hook 'before-save-hook 'gofmt-before-save)))
-
-(use-package rst
-  :mode (("\\.txt$" . rst-mode)
-         ("\\.rst$" . rst-mode)
-         ("\\.rest$" . rst-mode)))
-
 (setq gc-cons-threshold 1000000000)
 (run-with-idle-timer
  5 nil
@@ -112,6 +89,8 @@ called `Byte-compiling with Package.el'."
             ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
              "* %? %^L %^g \n%T" :prepend)))
     (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
+    (org-babel-do-load-languages 'org-babel-load-languages
+                                 '((shell . t)))
     (custom-set-variables
      '(org-directory "~/Dropbox/orgfiles")
      '(org-default-notes-file (concat org-directory "/notes.org"))
@@ -312,15 +291,16 @@ called `Byte-compiling with Package.el'."
 
 (use-package all-the-icons)
 
-(use-package doom-modeline
-  :hook (after-init . doom-modeline-init)
-  :init
-  (progn
-    (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-    (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
-                                                                 :inherit 'mode-line))))
-                      '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
-                      '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
+(add-to-list 'load-path "~/.emacs.d/elpa/doom-modeline")
+(require 'doom-modeline)
+(add-hook 'after-init-hook 'doom-modeline-init)
+(progn
+  (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+  (setq doom-modeline-github nil)
+  (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
+                                                               :inherit 'mode-line))))
+                    '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
+                    '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
 
 ;; (use-package spaceline-all-the-icons
 ;;     :hook (after-init . spaceline-all-the-icons-theme)
@@ -526,7 +506,9 @@ called `Byte-compiling with Package.el'."
   (("C-c d" . dash-at-point)
    ("C-c e" . dash-at-point-with-docset))
   :config
-  (add-to-list 'dash-at-point-mode-alist '(ruby-mode . ("ruby" "rails"))))
+  (add-to-list 'dash-at-point-mode-alist '(ruby-mode . ("ruby" "rails")))
+  (add-to-list 'dash-at-point-mode-alist '(clojurescript-mode ("clojure")))
+  (add-to-list 'dash-at-point-mode-alist '(clojure-mode ("clojure"))))
 
 (use-package undo-tree
   :demand t
@@ -787,6 +769,7 @@ called `Byte-compiling with Package.el'."
 
 (use-package indium
   :after js2-mode
+  :commands (indium-launch)
   :config
   (progn
     (add-hook 'indium-update-script-source-hook
@@ -797,13 +780,14 @@ called `Byte-compiling with Package.el'."
 
 (use-package js2-mode
   :mode "\\.js\\'"
+  :bind ("C-c l i" . indium-launch)
   :config
   (require 'indium)
   (add-hook 'js-mode-hook 'subword-mode)
   (add-hook 'html-mode-hook 'subword-mode)
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
   (add-hook 'js2-mode-hook #'js2-refactor-mode)
-  (add-to-list 'company-backends 'company-tern)
+  (add-to-list 'company-backends 'company-indium-repl)
   (add-hook 'js2-mode-hook (lambda ()
                              (tern-mode)))
   (setq js-indent-level 2)
@@ -849,7 +833,6 @@ called `Byte-compiling with Package.el'."
 
 (use-package robe
   :commands (robe-start)
-  :init (add-hook 'ruby-mode-hook 'robe-mode)
   :config
   (push 'company-robe company-backends))
 
@@ -882,23 +865,31 @@ called `Byte-compiling with Package.el'."
   :config
   (robe-start))
 
-(use-package flycheck-rust
-  :commands (flycheck-rust-setup)
-  :init
-  (add-hook 'rust-mode-hook 'flycheck-rust-setup))
+(use-package eglot
+  :bind (("M-." . xref-find-definitions)
+         ("M-," . xref-pop-marker-stack))
+  :init (require 'eglot))
 
-(use-package lsp-rust
-  :init
+(use-package rustic
+  :bind ("C-c r" . rustic-compile)
+  :init (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
+  :mode ("\\.rs\\'" . rustic-mode)
+  :config
   (progn
-    (require 'lsp-rust)
-    (setq RUSTC "~/.cargo/bin/rustc")
-    (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
-    (add-hook 'rust-mode-hook #'lsp-rust-enable)))
-;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
+    (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
+    (setq rustic-format-on-save nil)
+    (setq rustic-rls-pkg 'eglot)
+    (setq rustic-indent-offset 2)
+    (electric-pair-mode 1)))
 
-(use-package cargo)
-
-(use-package rust-playground)
+(use-package go-mode
+  :mode "\\.go\\'"
+  :bind (:map go-mode-map
+              (("M-." . 'godef-jump)
+               ("M-," . 'pop-tag-mark)))
+  :config
+  (progn
+    (add-hook 'before-save-hook 'gofmt-before-save)))
 
 (use-package json-mode
   :mode "\\.json\\'"
@@ -941,6 +932,11 @@ called `Byte-compiling with Package.el'."
   :defer t)
 
 (use-package ssh-config-mode)
+
+(use-package rst
+  :mode (("\\.txt$" . rst-mode)
+         ("\\.rst$" . rst-mode)
+         ("\\.rest$" . rst-mode)))
 
 (use-package slack
   :commands (slack-start slack-register-team)
@@ -1035,16 +1031,6 @@ DELTA should be a multiple of 10, in the units used by the
 
 (global-set-key (kbd "C-M-=") 'increase-default-font-height)
 (global-set-key (kbd "C-M--") 'decrease-default-font-height)
-
-(defun scroll-up-one-line-other-window ()
-  "Scroll other window one line up"
-  (interactive)
-  (scroll-other-window 1))
-
-(defun scroll-down-one-line-other-window ()
-  "Scroll other window one line down"
-  (interactive)
-  (scroll-other-window -1))
 
 (defun my/tangle-dotfiles ()
   "If the current file is this file, the code blocks are tangled"
@@ -1219,38 +1205,3 @@ foo.bar.baz => baz"
                                  team)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-default-notes-file (concat org-directory "/notes.org"))
- '(org-directory "~/Dropbox/orgfiles")
- '(org-export-html-postamble nil)
- '(org-hide-leading-stars t)
- '(org-startup-folded 'overview)
- '(org-startup-indented t)
- '(package-selected-packages
-   '(yard-mode yaml-mode xref-js2 ws-butler web-mode web use-package undo-tree treemacs-projectile toc-org terraform-mode tagedit ssh-config-mode spaceline-all-the-icons smooth-scroll smartparens slime-company slack sass-mode rustic rust-playground rspec-mode robe ripgrep rbenv rainbow-mode rainbow-delimiters powershell popup parinfer origami org-present org-bullets ob-restclient oauth noflet magit lsp-ui lsp-rust lispy langtool kibit-helper json-navigator ivy-gitlab indium ido-completing-read+ hungry-delete htmlize go-mode ggtags flymd flycheck-ycmd flycheck-rust flycheck-pos-tip flycheck-joker flx fish-mode eyebrowse exec-path-from-shell esup enh-ruby-mode dracula-theme doom-modeline dockerfile-mode docker dired+ diminish devdocs dash-at-point csharp-mode counsel-tramp counsel-projectile counsel-gtags company-ycmd company-tern company-sourcekit company-lua company-lsp coffee-mode clojure-mode-extra-font-locking clj-refactor cargo c-eldoc benchmark-init))
- '(safe-local-variable-values
-   '((cider-lein-global-options . "with-profile dev")
-     (cider-default-cljs-repl . figwheel))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))
- '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
- '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
- '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
- '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
- '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
- '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
- '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
- '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
- '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
- '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
- '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
- '(rainbow-delimiters-unmatched-face ((t (:foreground "black")))))
-(put 'dired-find-alternate-file 'disabled nil)
