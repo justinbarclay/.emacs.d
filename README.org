@@ -137,14 +137,14 @@ Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-d
 ** Package repositories
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
 #+BEGIN_SRC emacs-lisp :tangle
-    (require 'package)
-    (setq package-user-dir "~/.emacs.d/elpa")
-    (setq package-archives
-          '(("gnu" . "https://elpa.gnu.org/packages/")
-            ("melpa" . "http://melpa.org/packages/")
-            ("marmalade" . "http://marmalade-repo.org/packages/")
-            ("tromey" . "http://tromey.com/elpa/")))
-          (package-initialize)
+  (require 'package)
+  (setq package-user-dir "~/.emacs.d/elpa")
+  (setq package-archives
+        '(("gnu" . "https://elpa.gnu.org/packages/")
+          ("melpa" . "http://melpa.org/packages/")
+          ("marmalade" . "http://marmalade-repo.org/packages/")
+          ("tromey" . "http://tromey.com/elpa/")))
+  (package-initialize)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
