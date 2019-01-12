@@ -282,6 +282,8 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
               ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
                "* %? %^L %^g \n%T" :prepend)))
       (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
+      (org-babel-do-load-languages 'org-babel-load-languages
+                                   '((shell . t)))
       (custom-set-variables
        '(org-directory "~/Dropbox/orgfiles")
        '(org-default-notes-file (concat org-directory "/notes.org"))
