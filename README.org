@@ -1375,14 +1375,13 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+END_SRC
 ** Rust
 *** Flycheck-rust
-#+BEGIN_SRC emacs-lisp
-  (use-package flycheck-rust
-    :commands (flycheck-rust-setup)
-    :init
-    (add-hook 'rust-mode-hook 'flycheck-rust-setup))
+#+BEGIN_SRC emacs-lisp :tangle
+    (use-package flycheck-rust
+      :commands (flycheck-rust-setup)
+      :hook rust-mode)
 #+END_SRC
 *** lsp-rust
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package lsp-rust
     :init
     (progn
@@ -1405,31 +1404,44 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
         (setq rust-indent-offset 2)
         (electric-pair-mode 1)))
 #+END_SRC
-*** Rustic
-#+BEGIN_SRC elisp
-  (use-package rustic
-    :mode ("\\.rs\\'" . 'rustic-mode)
-    :bind ("C-c r" . rustic-compile)
-    :config
-    (progn
-      (setq rust-indent-offset 2)
-      (electric-pair-mode 1)))
+
+*** Eglot
+#+BEGIN_SRC emacs-lisp
+  (use-package eglot
+    :bind (("M-." . xref-find-definitions)
+           ("M-," . xref-pop-marker-stack))
+    :init (require 'eglot))
 #+END_SRC
 
 *** Cargo
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
 (use-package cargo)
 #+END_SRC
 *** rust-playground
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package rust-playground)
+#+END_SRC
+
+*** Rustic
+We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-playground packages are causing rust-mode to shadow rustic-mode.
+#+BEGIN_SRC emacs-lisp
+  (use-package rustic
+    :bind ("C-c r" . rustic-compile)
+    :init (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
+    :mode ("\\.rs\\'" . rustic-mode)
+    :config
+    (progn
+      (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
+      (setq rustic-format-on-save nil)
+      (setq rustic-rls-pkg 'eglot)
+      (setq rustic-indent-offset 2)
+      (electric-pair-mode 1)))
 #+END_SRC
 ** Go
 *** Go Mode
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp
   (use-package go-mode
     :mode "\\.go\\'"
-    :bind
     :bind (:map go-mode-map
                 (("M-." . 'godef-jump)
                  ("M-," . 'pop-tag-mark)))
@@ -1511,7 +1523,7 @@ Get limited autocompletion in Lua
 (use-package ssh-config-mode)
 #+END_SRC
 ** Text modes
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp
 (use-package rst
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
@@ -1655,7 +1667,7 @@ The exact same functionality VIM has for C-e and C-y in normal mode:
 #+END_SRC
 
 And the same but without leaving the current window:
-#+BEGIN_SRC emacs-lisp tangle
+#+BEGIN_SRC emacs-lisp :tangle
 (defun scroll-up-one-line-other-window ()
   "Scroll other window one line up"
   (interactive)
