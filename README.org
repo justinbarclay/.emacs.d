@@ -572,24 +572,11 @@ My name isn't "Tinker", so I don't need a bell.
 #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons)
 #+END_SRC
-*** Spaceline + All the Icons
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/elpa/doom-modeline")
-  (require 'doom-modeline)
-  (add-hook 'after-init-hook 'doom-modeline-init)
-  (progn
-    (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-    (setq doom-modeline-github nil)
-    (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
-                                                                 :inherit 'mode-line))))
-                      '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
-                      '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
-#+END_SRC
-
+*** Doom-modeline
 Disabling this for now while I develop an alternative to doom-modelines version code
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
-    :hook (after-init . doom-modeline-init)
+    :hook (after-init . doom-modeline-mode)
     :init
     (progn
       (setq doom-modeline-buffer-file-name-style 'relative-to-project)
@@ -598,26 +585,6 @@ Disabling this for now while I develop an alternative to doom-modelines version 
                                                                    :inherit 'mode-line))))
                         '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
                         '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package spaceline-all-the-icons
-  ;;     :hook (after-init . spaceline-all-the-icons-theme)
-  ;;     :config
-  ;;     (progn
-  ;;       (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
-  ;;                                                                     :foreground "#f8f8f2"
-  ;;                                                                     :inherit 'mode-line))))
-  ;;                         '(powerline-active2 ((t (:background "#44475a"
-  ;;                                                              :foregound "#50fa7b"
-  ;;                                                              :inherit 'mode-line))))
-  ;;                         '(mode-line ((t (:background "#282a36"
-  ;;                                                      :foregound "#50fa7b"
-  ;;                                                      :inherit 'mode-line))))
-  ;;                         '(powerline-active1 ((t (:background "#6272a4"
-  ;;                                                              :foregound "#50fa7b"
-  ;;                                                              :inherit 'mode-line)))))
-  ;;       (setq spaceline-all-the-icons-separator-type 'wave)))
 #+END_SRC
 
 ** Line Numbers
