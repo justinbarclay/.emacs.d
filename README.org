@@ -231,7 +231,7 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
   (progn ;'use-package
     (require 'use-package)
     (setq use-package-always-ensure t)
-    (setq use-package-verbose t)
+    (setq use-package-verbose nil)
     (setq use-package-always-defer t)
     (setq use-package-enable-imenu-support t))
 #+END_SRC
