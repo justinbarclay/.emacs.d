@@ -293,6 +293,13 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
        '(org-startup-folded (quote overview))
        '(org-startup-indented t))))
 #+END_SRC
+*** Custom Org Functions
+#+BEGIN_SRC elisp
+(defun jb/org-clear-results ()
+    (interactive)
+    (org-babel-remove-result-one-or-many 't))
+#+END_SRC
+
 *** Org-bullets
 #+BEGIN_SRC emacs-lisp
   (use-package org-bullets
