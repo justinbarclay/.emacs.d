@@ -65,7 +65,7 @@ called `Byte-compiling with Package.el'."
 (progn ;'use-package
   (require 'use-package)
   (setq use-package-always-ensure t)
-  (setq use-package-verbose t)
+  (setq use-package-verbose nil)
   (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t))
 
@@ -90,7 +90,8 @@ called `Byte-compiling with Package.el'."
              "* %? %^L %^g \n%T" :prepend)))
     (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
     (org-babel-do-load-languages 'org-babel-load-languages
-                                 '((shell . t)))
+                                 '((shell . t)
+                                   (js . t)))
     (custom-set-variables
      '(org-directory "~/Dropbox/orgfiles")
      '(org-default-notes-file (concat org-directory "/notes.org"))
@@ -291,34 +292,16 @@ called `Byte-compiling with Package.el'."
 
 (use-package all-the-icons)
 
-(add-to-list 'load-path "~/.emacs.d/elpa/doom-modeline")
-(require 'doom-modeline)
-(add-hook 'after-init-hook 'doom-modeline-init)
-(progn
-  (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-  (setq doom-modeline-github nil)
-  (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
-                                                               :inherit 'mode-line))))
-                    '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
-                    '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
-
-;; (use-package spaceline-all-the-icons
-;;     :hook (after-init . spaceline-all-the-icons-theme)
-;;     :config
-;;     (progn
-;;       (custom-set-faces '(spaceline-highlight-face ((t (:background "#cb619e"
-;;                                                                     :foreground "#f8f8f2"
-;;                                                                     :inherit 'mode-line))))
-;;                         '(powerline-active2 ((t (:background "#44475a"
-;;                                                              :foregound "#50fa7b"
-;;                                                              :inherit 'mode-line))))
-;;                         '(mode-line ((t (:background "#282a36"
-;;                                                      :foregound "#50fa7b"
-;;                                                      :inherit 'mode-line))))
-;;                         '(powerline-active1 ((t (:background "#6272a4"
-;;                                                              :foregound "#50fa7b"
-;;                                                              :inherit 'mode-line)))))
-;;       (setq spaceline-all-the-icons-separator-type 'wave)))
+(use-package doom-modeline
+  :hook (after-init . doom-modeline-mode)
+  :init
+  (progn
+    (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+    (setq doom-modeline-github nil)
+    (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
+                                                                 :inherit 'mode-line))))
+                      '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
+                      '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 
 (global-display-line-numbers-mode)
 (set-default 'display-line-numbers-type 'visual)
@@ -1205,3 +1188,7 @@ foo.bar.baz => baz"
                                  team)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
+
+(defun jb/org-clear-results ()
+    (interactive)
+    (org-babel-remove-result-one-or-many 't))
