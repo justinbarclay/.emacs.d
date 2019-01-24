@@ -76,12 +76,25 @@ called `Byte-compiling with Package.el'."
 (use-package org
   :bind
   (("C-c a" . org-agenda)
-   ("C-c c" . org-capture))
+   ("C-c c" . org-capture)
+   ("C-c C-v C-c" . jb/org-clear-results))
   :init
-  (setq truncate-lines t
-        global-company-modes '(not org-mode))
+  (progn
+    (global-unset-key "\C-c\C-v\C-c")
+    (setq truncate-lines t
+          global-company-modes '(not org-mode)))
   :config
   (progn
+    (defun jb/org-clear-results ()
+      (interactive)
+      (org-babel-remove-result-one-or-many 't))
+    (defun run-org-block ()
+      (interactive)
+      (save-excursion
+        (goto-char
+         (org-babel-find-named-block
+          (completing-read "Code Block: " (org-babel-src-block-names))))
+        (org-babel-execute-src-block-maybe)))
     (setq org-startup-truncated nil)
     (setq org-capture-templates
           '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
@@ -91,7 +104,8 @@ called `Byte-compiling with Package.el'."
     (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
     (org-babel-do-load-languages 'org-babel-load-languages
                                  '((shell . t)
-                                   (js . t)))
+                                   (js . t)
+                                   (ruby . t)))
     (custom-set-variables
      '(org-directory "~/Dropbox/orgfiles")
      '(org-default-notes-file (concat org-directory "/notes.org"))
@@ -1189,6 +1203,9 @@ foo.bar.baz => baz"
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
 
-(defun jb/org-clear-results ()
-    (interactive)
-    (org-babel-remove-result-one-or-many 't))
+
+
+(use-package langtool
+  :init
+  (setq langtool-default-language "en-US")
+  (setq langtool-bin "/usr/local/bin/languagetool"))
