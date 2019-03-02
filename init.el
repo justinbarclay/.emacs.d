@@ -127,6 +127,8 @@ called `Byte-compiling with Package.el'."
 (use-package toc-org
   :hook (org-mode-hook . toc-org-enable))
 
+(use-package org-re-reveal)
+
 (use-package eshell
   :init
   (add-hook 'eshell-mode-hook
@@ -721,36 +723,27 @@ called `Byte-compiling with Package.el'."
     ;; never ending REPL history
 
     (setq cider-repl-wrap-history t)
-    ;; looong history
 
+    ;; looong history
     (setq cider-repl-history-size 3000)
     ;; eldoc for clojure
 
     (add-hook 'cider-mode-hook #'eldoc-mode)
-    ;; error buffer not popping up
 
+    ;; error buffer not popping up
     (setq cider-show-error-buffer nil)
+
     ;; go right to the REPL buffer when it's finished connecting
     (setq cider-repl-pop-to-buffer-on-connect nil)
+
     ;; company mode for completion
     (add-hook 'cider-repl-mode-hook #'company-mode)
     (add-hook 'cider-mode-hook #'company-mode)
-    (setq cider-cljs-lein-repl "(do (use 'figwheel-sidecar.repl-api) (start-figwheel!) (cljs-repl))")
     ;; key bindings
     ;; these help me out with the way I usually develop web apps
-    (defun cider-start-http-server ()
-      (interactive)
-      (cider-load-current-buffer)
-      (let ((ns (cider-current-ns)))
-        (cider-repl-set-ns ns)
-        (cider-interactive-eval (format "(println '(def server (%s/start))) (println 'server)" ns))
-        (cider-interactive-eval (format "(def server (%s/start)) (println server)" ns))))
     (defun cider-refresh ()
       (interactive)
       (cider-interactive-eval (format "(user/reset)")))
-    (defun cider-user-ns ()
-      (interactive)
-      (cider-repl-set-ns "user"))
     (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
     (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
     (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
@@ -1203,9 +1196,196 @@ foo.bar.baz => baz"
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
 
+;; This is mostly a copy and pasted version of `org-babel-execute-src-block` but
+;; it extracts the language parameter from being defined within the function
+;; to a mandatory argument that needs to be passed in.
+(defun jb/org-babel-execute-src-block-with-lang (lang &optional arg info params)
+  "Execute the current source code block by specifying the
+language the block should be executed with.
+Insert the results of execution into the buffer.  Source code
+execution and the collection and formatting of results can be
+controlled through a variety of header arguments.
 
+With prefix argument ARG, force re-execution even if an existing
+result cached in the buffer would otherwise have been returned.
+
+Optionally supply a value for INFO in the form returned by
+`org-babel-get-src-block-info'.
+
+Optionally supply a value for PARAMS which will be merged with
+the header arguments specified at the front of the source code
+block."
+  (let* ((org-babel-current-src-block-location
+          (or org-babel-current-src-block-location
+              (nth 5 info)
+              (org-babel-where-is-src-block-head)))
+         (info (if info (copy-tree info) (org-babel-get-src-block-info))))
+    ;; Merge PARAMS with INFO before considering source block
+    ;; evaluation since both could disagree.
+    (cl-callf org-babel-merge-params (nth 2 info) params)
+    (when (org-babel-check-evaluate info)
+      (cl-callf org-babel-process-params (nth 2 info))
+      (let* ((params (nth 2 info))
+             (cache (let ((c (cdr (assq :cache params))))
+                      (and (not arg) c (string= "yes" c))))
+             (new-hash (and cache (org-babel-sha1-hash info :eval)))
+             (old-hash (and cache (org-babel-current-result-hash)))
+             (current-cache (and new-hash (equal new-hash old-hash))))
+        (cond
+         (current-cache
+          (save-excursion		;Return cached result.
+            (goto-char (org-babel-where-is-src-block-result nil info))
+            (forward-line)
+            (skip-chars-forward " \t")
+            (let ((result (org-babel-read-result)))
+              (message (replace-regexp-in-string "%" "%%" (format "%S" result)))
+              result)))
+         ((org-babel-confirm-evaluate info)
+          (let* ((result-params (cdr (assq :result-params params)))
+                 ;; Expand noweb references in BODY and remove any
+                 ;; coderef.
+                 (body
+                  (let ((coderef (nth 6 info))
+                        (expand
+                         (if (org-babel-noweb-p params :eval)
+                             (org-babel-expand-noweb-references info)
+                           (nth 1 info))))
+                    (if (not coderef) expand
+                      (replace-regexp-in-string
+                       (org-src-coderef-regexp coderef) "" expand nil nil 1))))
+                 (dir (cdr (assq :dir params)))
+                 (default-directory
+                   (or (and dir (file-name-as-directory (expand-file-name dir)))
+                       default-directory))
+                 (cmd (intern (concat "org-babel-execute:" lang)))
+                 result)
+            (unless (fboundp cmd)
+              (error "No org-babel-execute function for %s!" lang))
+            (message "executing %s code block%s..."
+                     (capitalize lang)
+                     (let ((name (nth 4 info)))
+                       (if name (format " (%s)" name) "")))
+            (if (member "none" result-params)
+                (progn (funcall cmd body params)
+                       (message "result silenced"))
+              (setq result
+                    (let ((r (funcall cmd body params)))
+                      (if (and (eq (cdr (assq :result-type params)) 'value)
+                               (or (member "vector" result-params)
+                                   (member "table" result-params))
+                               (not (listp r)))
+                          (list (list r))
+                        r)))
+              (let ((file (cdr (assq :file params))))
+                ;; If non-empty result and :file then write to :file.
+                (when file
+                  ;; If `:results' are special types like `link' or
+                  ;; `graphics', don't write result to `:file'.  Only
+                  ;; insert a link to `:file'.
+                  (when (and result
+                             (not (or (member "link" result-params)
+                                      (member "graphics" result-params))))
+                    (with-temp-file file
+                      (insert (org-babel-format-result
+                               result
+                               (cdr (assq :sep params))))))
+                  (setq result file))
+                ;; Possibly perform post process provided its
+                ;; appropriate.  Dynamically bind "*this*" to the
+                ;; actual results of the block.
+                (let ((post (cdr (assq :post params))))
+                  (when post
+                    (let ((*this* (if (not file) result
+                                    (org-babel-result-to-file
+                                     file
+                                     (let ((desc (assq :file-desc params)))
+                                       (and desc (or (cdr desc) result)))))))
+                      (setq result (org-babel-ref-resolve post))
+                      (when file
+                        (setq result-params (remove "file" result-params))))))
+                (org-babel-insert-result
+                 result result-params info new-hash lang)))
+            (run-hooks 'org-babel-after-execute-hook)
+            result)))))))
+
+;; generated-curl-command is used to communicate state across several function calls
+(setq generated-curl-command nil)
+
+(defvar org-babel-default-header-args:restclient-curl
+  `((:results . "raw"))
+  "Default arguments for evaluating a restclient block.")
+
+;; Lambda function reified to a named function, stolen from restclient
+(defun gen-restclient-curl-command (method url headers entitty)
+  (let ((header-args
+         (apply 'append
+                (mapcar (lambda (header)
+                          (list "-H" (format "%s: %s" (car header) (cdr header))))
+                        headers))))
+    (setq generated-curl-command
+          (concat
+           "#+BEGIN_SRC sh\n"
+           "curl "
+           (mapconcat 'shell-quote-argument
+                      (append '("-i")
+                              header-args
+                              (list (concat "-X" method))
+                              (list url)
+                              (when (> (string-width entitty) 0)
+                                (list "-d" entitty)))
+                      " ")
+           "\n#+END_SRC"))))
+
+(defun org-babel-execute:restclient-curl (body params)
+  "Execute a block of Restclient code to generate a curl command with org-babel.
+This function is called by `org-babel-execute-src-block'"
+  (message "executing Restclient source code block")
+  (with-temp-buffer
+    (let ((results-buffer (current-buffer))
+          (restclient-same-buffer-response t)
+          (restclient-same-buffer-response-name (buffer-name))
+          (display-buffer-alist
+           (cons
+            '("\\*temp\\*" display-buffer-no-window (allow-no-window . t))
+            display-buffer-alist)))
+
+      (insert (buffer-name))
+      (with-temp-buffer
+        (dolist (p params)
+          (let ((key (car p))
+                (value (cdr p)))
+            (when (eql key :var)
+              (insert (format ":%s = %s\n" (car value) (cdr value))))))
+        (insert body)
+        (goto-char (point-min))
+        (delete-trailing-whitespace)
+        (goto-char (point-min))
+        (restclient-http-parse-current-and-do 'gen-restclient-curl-command))
+      generated-curl-command)))
+
+;; Make it easy to interactively generate curl commands
+(defun jb/gen-curl-command ()
+  (interactive)
+  (jb/org-babel-execute-src-block-with-lang "restclient-curl"))
 
 (use-package langtool
   :init
   (setq langtool-default-language "en-US")
-  (setq langtool-bin "/usr/local/bin/languagetool"))
+  (setq langtool-java-bin "/usr/bin/java")
+  (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.4/libexec/languagetool-commandline.jar"))
+
+;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
+(defun rename-file-and-buffer (new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+        (filename (buffer-file-name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (if (get-buffer new-name)
+          (message "A buffer named '%s' already exists!" new-name)
+        (progn
+          (rename-file filename new-name 1)
+          (rename-buffer new-name)
+          (set-visited-file-name new-name)
+          (set-buffer-modified-p nil))))))
