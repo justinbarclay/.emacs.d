@@ -10,6 +10,7 @@
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
   - [[#org-mode][Org Mode]]
+  - [[#langtool][Langtool]]
   - [[#eshell][EShell]]
   - [[#magit][Magit]]
 - [[#look-and-feel][Look and Feel]]
@@ -97,8 +98,10 @@
   - [[#replace-tabs][Replace tabs]]
   - [[#find-unused-functions-in-javascript][Find unused functions in JavaScript]]
   - [[#enable-paredit-or-parinfer][Enable Paredit or Parinfer]]
+  - [[#renema-buffer-and-file][Renema buffer and file]]
   - [[#post-from-any-buffer-to-slack-with-emacs][Post from any buffer to Slack with Emacs]]
   - [[#turn-back-on-file-name-handler-alist][Turn back on file-name-handler-alist]]
+  - [[#playground][Playground]]
 
 * About
   "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
