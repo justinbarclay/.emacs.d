@@ -14,6 +14,7 @@
 (setq file-name-handler-alist nil)
 
 (setq package-user-dir "~/.emacs.d/elpa")
+(setq load-prefer-newer t)
 (setq package-archives
       '(("gnu" . "https://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")
@@ -22,13 +23,6 @@
 
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
-
-(setq package-enable-at-startup nil
-      package--init-file-ensured t)
-;; (package-initialize)
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
 
 (defmacro use-package-with-elpa ()
   "Set up use-package to optimal usage with package.el.
@@ -69,6 +63,9 @@ called `Byte-compiling with Package.el'."
   (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t))
 
+(require 'diminish)                ;; if you use :diminish
+(require 'bind-key)                ;; if you use any :bind variant
+
 ;; (use-package ess-site                   
 ;;   :disabled
 ;;   :commands R)
@@ -101,7 +98,7 @@ called `Byte-compiling with Package.el'."
              "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
             ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
              "* %? %^L %^g \n%T" :prepend)))
-    (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
+    (setq org-agenda-files (list ""))
     (org-babel-do-load-languages 'org-babel-load-languages
                                  '((shell . t)
                                    (js . t)
@@ -113,6 +110,9 @@ called `Byte-compiling with Package.el'."
      '(org-hide-leading-stars t)
      '(org-startup-folded (quote overview))
      '(org-startup-indented t))))
+
+(use-package org-trello
+)
 
 (use-package org-bullets
   :init
@@ -129,7 +129,78 @@ called `Byte-compiling with Package.el'."
 
 (use-package org-re-reveal)
 
+;; generated-curl-command is used to communicate state across several function calls
+(setq generated-curl-command nil)
+
+(defvar org-babel-default-header-args:restclient-curl
+  `((:results . "raw"))
+  "Default arguments for evaluating a restclient block.")
+
+;; Lambda function reified to a named function, stolen from restclient
+(defun gen-restclient-curl-command (method url headers entitty)
+  (let ((header-args
+         (apply 'append
+                (mapcar (lambda (header)
+                          (list "-H" (format "%s: %s" (car header) (cdr header))))
+                        headers))))
+    (setq generated-curl-command
+          (concat
+           "#+BEGIN_SRC sh\n"
+           "curl "
+           (mapconcat 'shell-quote-argument
+                      (append '("-i")
+                              header-args
+                              (list (concat "-X" method))
+                              (list url)
+                              (when (> (string-width entitty) 0)
+                                (list "-d" entitty)))
+                      " ")
+           "\n#+END_SRC"))))
+
+(defun org-babel-execute:restclient-curl (body params)
+  "Execute a block of Restclient code to generate a curl command with org-babel.
+This function is called by `org-babel-execute-src-block'"
+  (message "executing Restclient source code block")
+  (with-temp-buffer
+    (let ((results-buffer (current-buffer))
+          (restclient-same-buffer-response t)
+          (restclient-same-buffer-response-name (buffer-name))
+          (display-buffer-alist
+           (cons
+            '("\\*temp\\*" display-buffer-no-window (allow-no-window . t))
+            display-buffer-alist)))
+
+      (insert (buffer-name))
+      (with-temp-buffer
+        (dolist (p params)
+          (let ((key (car p))
+                (value (cdr p)))
+            (when (eql key :var)
+              (insert (format ":%s = %s\n" (car value) (cdr value))))))
+        (insert body)
+        (goto-char (point-min))
+        (delete-trailing-whitespace)
+        (goto-char (point-min))
+        (restclient-http-parse-current-and-do 'gen-restclient-curl-command))
+      generated-curl-command)))
+
+;; Make it easy to interactively generate curl commands
+(defun jb/gen-curl-command ()
+  (interactive)
+  (let ((info (org-babel-get-src-block-info)))
+    (if (equalp "restclient" (car info))
+        (org-babel-execute-src-block t (cons "restclient-curl"
+                                             (cdr info)))
+        (message "I'm sorry, I can only generate curl commands for a restclient block."))))
+
+(use-package langtool
+  :init
+  (setq langtool-default-language "en-US")
+  (setq langtool-java-bin "/usr/bin/java")
+  (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.4/libexec/languagetool-commandline.jar"))
+
 (use-package eshell
+  :ensure nil
   :init
   (add-hook 'eshell-mode-hook
                    #'company-mode)
@@ -368,24 +439,22 @@ called `Byte-compiling with Package.el'."
   :config
   (setq uniquify-buffer-name-style 'forward))
 
-(use-package dired+
-  :config
-  (setq dired-dwim-target t)
-  (setq dired-recursive-copies `always))
-
 (use-package recentf
+  :ensure nil
   :config
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
   (recentf-mode 1)
   (setq recentf-max-menu-items 40))
 
 (use-package projectile
+  :defer 1
   :commands
   (projectile-find-file projectile-switch-project)
   :diminish
   (projectile-mode)
   :config
   (progn
+    (projectile-global-mode)
     (setq projectile-completion-system 'ivy)
     (setq projectile-enable-caching t)))
 
@@ -395,7 +464,6 @@ called `Byte-compiling with Package.el'."
   (progn
     (setq ivy-use-virtual-buffers t)
     (setq ivy-initial-inputs-alist nil)
-    (projectile-global-mode)
     (counsel-mode)))
 
 (use-package counsel
@@ -536,20 +604,19 @@ called `Byte-compiling with Package.el'."
       (eval-after-load 'flycheck
       (flycheck-pos-tip-mode)))))
 
-(use-package semantic 
+(use-package semantic
+  :ensure nil
   :config
   (semantic-mode 1)
   (global-semanticdb-minor-mode 1)
   (global-semantic-idle-scheduler-mode 1))
 
 (use-package company
-  :commands (global-company-mode)
+  :hook (prog-mode . company-mode)
   :bind
   (;;("C-<tab>" . company-capf)
    :map company-mode-map
    (("M-h" . company-quickhelp-manual-begin)))
-  :init
-  (add-hook 'after-init-hook 'global-company-mode)
   :config
   (progn
     (setq company-idle-delay 0.3)
@@ -610,27 +677,8 @@ called `Byte-compiling with Package.el'."
          (scheme-mode . (lambda () (enable-paredit)))
          (lisp-mode . (lambda () (enable-paredit)))))
 
-(use-package lispy
- :defer nil)
-
-(use-package parinfer
-  :commands (parinfer-mode)
-  :bind (:map parinfer-mode-map
-              (("C-t" . parinfer-toggle-mode)))
-  :init (progn
-          (require 'lispy)
-          (setq parinfer-delay-invoke-threshold 6000)
-          (setq parinfer-auto-switch-indent-mode t)
-          (setq parinfer-extensions
-                '(defaults       ; should be included.
-                   pretty-parens  ; different paren styles for different modes.
-                   paredit        ; Introduce some paredit commands.
-                   smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-                   lispy
-                   smart-yank))))   ; Yank behavior depend on mode
-
 (use-package eldoc
-  :ensure t
+  :ensure nil
   :config
   (eldoc-add-command
    'paredit-backward-delete
@@ -807,6 +855,7 @@ called `Byte-compiling with Package.el'."
 (use-package tagedit)
 
 (use-package sgml-mode
+  :ensure nil
   :after tagedit
   :config
   (require 'tagedit)
@@ -823,6 +872,7 @@ called `Byte-compiling with Package.el'."
 
 (use-package robe
   :commands (robe-start)
+  :hook 'ruby-mode
   :config
   (push 'company-robe company-backends))
 
@@ -833,13 +883,11 @@ called `Byte-compiling with Package.el'."
          ("C-c C-b" . ruby-send-buffer)))
   :config
   (progn
-      (message "disabling company mode")
-      (company-mode 0)
       (when (executable-find "pry")
         (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
         (setq inf-ruby-default-implementation "pry"))))
 
-(use-package ruby-mode
+(use-package enh-ruby-mode
   :after robe
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
@@ -853,7 +901,8 @@ called `Byte-compiling with Package.el'."
           ruby-indent-tabs-mode nil)
     (add-hook 'ruby-mode 'superword-mode))
   :config
-  (robe-start))
+  (robe-start)
+  (robe-mode))
 
 (use-package eglot
   :bind (("M-." . xref-find-definitions)
@@ -924,6 +973,7 @@ called `Byte-compiling with Package.el'."
 (use-package ssh-config-mode)
 
 (use-package rst
+  :ensure nil
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
@@ -948,18 +998,22 @@ called `Byte-compiling with Package.el'."
      :client-secret (getenv "SLACK_CLIENT_SECRET")
      :token (getenv "TIDAL_SLACK_TOKEN")
      :subscribed-channels '(general)))
-
-  ;; (slack-register-team
-  ;;  :name "test"
-  ;;  :client-id "3333333333.77777777777"
-  ;;  :client-secret "cccccccccccccccccccccccccccccccc"
-  ;;  :token "xxxx-yyyyyyyyyy-zzzzzzzzzzz-hhhhhhhhhhh-llllllllll"
-  ;;  :subscribed-channels '(hoge fuga)))
-
   (use-package alert
     :commands (alert)
     :init
     (setq alert-default-style 'osx-notifier))
+
+(use-package dashboard
+  :defer ()
+  :config
+  (progn
+    (setq dashboard-center-content t)
+    (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
+    (dashboard-setup-startup-hook)
+    (setq dashboard-items '((recents  . 5)
+                            (projects . 5)
+                            (agenda . 5)
+                            (registers . 5)))))
 
 (use-package flx)
 
@@ -981,11 +1035,10 @@ called `Byte-compiling with Package.el'."
   :commands (esup))
 
 (use-package profiler
+  :ensure nil
   :bind
   (("s-l" . profiler-start)
    ("s-r" . profiler-report)))
-
-(use-package dired+)
 
 (use-package restclient)
 
@@ -1162,6 +1215,22 @@ foo.bar.baz => baz"
     (turn-off-smartparens-mode)
     (lispy-mode))
 
+;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
+(defun rename-file-and-buffer (new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+        (filename (buffer-file-name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (if (get-buffer new-name)
+          (message "A buffer named '%s' already exists!" new-name)
+        (progn
+          (rename-file filename new-name 1)
+          (rename-buffer new-name)
+          (set-visited-file-name new-name)
+          (set-buffer-modified-p nil))))))
+
 (defun jb/slack-quote-region ()
     (with-temp-buffer
       (insert region)
@@ -1195,89 +1264,3 @@ foo.bar.baz => baz"
                                  team)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
-
-;; generated-curl-command is used to communicate state across several function calls
-(setq generated-curl-command nil)
-
-(defvar org-babel-default-header-args:restclient-curl
-  `((:results . "raw"))
-  "Default arguments for evaluating a restclient block.")
-
-;; Lambda function reified to a named function, stolen from restclient
-(defun gen-restclient-curl-command (method url headers entitty)
-  (let ((header-args
-         (apply 'append
-                (mapcar (lambda (header)
-                          (list "-H" (format "%s: %s" (car header) (cdr header))))
-                        headers))))
-    (setq generated-curl-command
-          (concat
-           "#+BEGIN_SRC sh\n"
-           "curl "
-           (mapconcat 'shell-quote-argument
-                      (append '("-i")
-                              header-args
-                              (list (concat "-X" method))
-                              (list url)
-                              (when (> (string-width entitty) 0)
-                                (list "-d" entitty)))
-                      " ")
-           "\n#+END_SRC"))))
-
-(defun org-babel-execute:restclient-curl (body params)
-  "Execute a block of Restclient code to generate a curl command with org-babel.
-This function is called by `org-babel-execute-src-block'"
-  (message "executing Restclient source code block")
-  (with-temp-buffer
-    (let ((results-buffer (current-buffer))
-          (restclient-same-buffer-response t)
-          (restclient-same-buffer-response-name (buffer-name))
-          (display-buffer-alist
-           (cons
-            '("\\*temp\\*" display-buffer-no-window (allow-no-window . t))
-            display-buffer-alist)))
-
-      (insert (buffer-name))
-      (with-temp-buffer
-        (dolist (p params)
-          (let ((key (car p))
-                (value (cdr p)))
-            (when (eql key :var)
-              (insert (format ":%s = %s\n" (car value) (cdr value))))))
-        (insert body)
-        (goto-char (point-min))
-        (delete-trailing-whitespace)
-        (goto-char (point-min))
-        (restclient-http-parse-current-and-do 'gen-restclient-curl-command))
-      generated-curl-command)))
-
-;; Make it easy to interactively generate curl commands
-(defun jb/gen-curl-command ()
-  (interactive)
-  (let ((info (org-babel-get-src-block-info)))
-    (if (equalp "restclient" (car info))
-        (org-babel-execute-src-block t (cons "restclient-curl"
-                                             (cdr info)))
-        (message "I'm sorry, I can only generate curl commands for a restclient block."))))
-
-(use-package langtool
-  :init
-  (setq langtool-default-language "en-US")
-  (setq langtool-java-bin "/usr/bin/java")
-  (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.4/libexec/languagetool-commandline.jar"))
-
-;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
-(defun rename-file-and-buffer (new-name)
-  "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive "sNew name: ")
-  (let ((name (buffer-name))
-        (filename (buffer-file-name)))
-    (if (not filename)
-        (message "Buffer '%s' is not visiting a file!" name)
-      (if (get-buffer new-name)
-          (message "A buffer named '%s' already exists!" new-name)
-        (progn
-          (rename-file filename new-name 1)
-          (rename-buffer new-name)
-          (set-visited-file-name new-name)
-          (set-buffer-modified-p nil))))))

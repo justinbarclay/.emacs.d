@@ -139,19 +139,10 @@ Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-d
 
 ** Package repositories
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
-#+BEGIN_SRC emacs-lisp :tangle
-  (require 'package)
-  (setq package-user-dir "~/.emacs.d/elpa")
-  (setq package-archives
-        '(("gnu" . "https://elpa.gnu.org/packages/")
-          ("melpa" . "http://melpa.org/packages/")
-          ("marmalade" . "http://marmalade-repo.org/packages/")
-          ("tromey" . "http://tromey.com/elpa/")))
-  (package-initialize)
-#+END_SRC
 
 #+BEGIN_SRC emacs-lisp
   (setq package-user-dir "~/.emacs.d/elpa")
+  (setq load-prefer-newer t)
   (setq package-archives
         '(("gnu" . "https://elpa.gnu.org/packages/")
           ("melpa" . "http://melpa.org/packages/")
@@ -169,22 +160,13 @@ For big emacs packages, that help define the experience of Emacs itself
 ** use-package
 I use Jon Wiegley's [[https://github.com/jwiegley/use-package][use-package]] for dependency management.
 Let's bootstrap use-package so it can download everything else as we need it.
-*** Byte Compile Init file
-#+BEGIN_SRC emacs-lisp :tangle
-(setq package-enable-at-startup nil)
-  (eval-when-compile
-    (package-initialize)
-    (unless (package-installed-p 'use-package)
-      (package-refresh-contents)
-      (package-install 'use-package)))
-#+END_SRC
 *** Don't byte compile init file
 Boot strap use-package. Because we're running package initalize ourselves, we can turn it off when emacs wants to run it later in the startup process
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (setq package-enable-at-startup nil
         package--init-file-ensured t)
-  ;; (package-initialize)
-  (unless (package-installed-p 'use-package)
+
+  (when (require 'use-package nil 'noerror)
     (package-refresh-contents)
     (package-install 'use-package))
 #+END_SRC
@@ -231,12 +213,16 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
+
   (progn ;'use-package
     (require 'use-package)
     (setq use-package-always-ensure t)
     (setq use-package-verbose nil)
     (setq use-package-always-defer t)
     (setq use-package-enable-imenu-support t))
+
+  (require 'diminish)                ;; if you use :diminish
+  (require 'bind-key)                ;; if you use any :bind variant
 #+END_SRC
 
 *** Using use-package
@@ -297,7 +283,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
                "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
               ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
                "* %? %^L %^g \n%T" :prepend)))
-      (setq org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"))
+      (setq org-agenda-files (list ""))
       (org-babel-do-load-languages 'org-babel-load-languages
                                    '((shell . t)
                                      (js . t)
@@ -310,6 +296,12 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
        '(org-startup-folded (quote overview))
        '(org-startup-indented t))))
 #+END_SRC
+*** Org-trello
+#+BEGIN_SRC emacs-lisp
+(use-package org-trello
+)
+#+END_SRC
+
 *** Org-bullets
 #+BEGIN_SRC emacs-lisp
   (use-package org-bullets
@@ -338,7 +330,6 @@ You can also use @ as separator, instead of _.
 #+BEGIN_SRC emacs-lisp
   (use-package toc-org
     :hook (org-mode-hook . toc-org-enable))
-
 #+END_SRC
 *** Org-re-reveal
 Creating presentation using org mode and the web
@@ -348,7 +339,7 @@ Creating presentation using org mode and the web
 *** Custom Org Functions
 These functions expand on the abilities of org-babel and ob-restclient mode and
 as such need both of these modes loaded before they'll work.
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp
   ;; generated-curl-command is used to communicate state across several function calls
   (setq generated-curl-command nil)
 
@@ -415,18 +406,17 @@ as such need both of these modes loaded before they'll work.
 #+END_SRC
 
 ** Langtool
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp
   (use-package langtool
     :init
     (setq langtool-default-language "en-US")
     (setq langtool-java-bin "/usr/bin/java")
     (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.4/libexec/languagetool-commandline.jar"))
 #+END_SRC
-
-
 ** EShell
 #+BEGIN_SRC emacs-lisp
 (use-package eshell
+  :ensure nil
   :init
   (add-hook 'eshell-mode-hook
                    #'company-mode)
@@ -549,12 +539,10 @@ as such need both of these modes loaded before they'll work.
 #+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
 #+END_SRC
-*** Remove title-barclay
+*** Remove title-bar
 #+BEGIN_SRC emacs-lisp :tangle
 (setq default-frame-alist '((undecorated . t)))
 #+END_SRC
-
-
 *** Emacs should take focus when it launches
 #+BEGIN_SRC emacs-lisp
 (when (display-graphic-p) ; Start full screen
@@ -642,6 +630,13 @@ My name isn't "Tinker", so I don't need a bell.
 *** Dracula
 #+BEGIN_SRC emacs-lisp
 (use-package dracula-theme
+  :demand t
+  :config
+  (load-theme 'dracula t))
+#+END_SRC
+*** Cyberpunk 2019
+#+BEGIN_SRC emacs-lisp :tangle
+(use-package cyberpunk-2019
   :demand t
   :config
   (load-theme 'dracula t))
@@ -763,7 +758,8 @@ Ensure that buffers have unique file names
   (setq uniquify-buffer-name-style 'forward))
 #+END_SRC
 ** Dired+
-#+BEGIN_SRC emacs-lisp
+Can't use dired+ isn't on melpa
+#+BEGIN_SRC emacs-lisp :tangle
 (use-package dired+
   :config
   (setq dired-dwim-target t)
@@ -774,6 +770,7 @@ Ensure that buffers have unique file names
 Turn on recent file mode so that you can more easily switch to recently edited files when you first start emacs
 #+BEGIN_SRC emacs-lisp
 (use-package recentf
+  :ensure nil
   :config
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
   (recentf-mode 1)
@@ -782,12 +779,14 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 ** Projectile
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
+    :defer 1
     :commands
     (projectile-find-file projectile-switch-project)
     :diminish
     (projectile-mode)
     :config
     (progn
+      (projectile-global-mode)
       (setq projectile-completion-system 'ivy)
       (setq projectile-enable-caching t)))
 #+END_SRC
@@ -802,7 +801,6 @@ it looks like counsel is a requirement for swiper
     (progn
       (setq ivy-use-virtual-buffers t)
       (setq ivy-initial-inputs-alist nil)
-      (projectile-global-mode)
       (counsel-mode)))
 #+END_SRC
 *** Counsel
@@ -1014,7 +1012,8 @@ Load this before we load Flycheck
 * Code Completion
 ** Semantic
 #+BEGIN_SRC emacs-lisp
-(use-package semantic 
+(use-package semantic
+  :ensure nil
   :config
   (semantic-mode 1)
   (global-semanticdb-minor-mode 1)
@@ -1023,13 +1022,11 @@ Load this before we load Flycheck
 ** Company
 #+BEGIN_SRC emacs-lisp
   (use-package company
-    :commands (global-company-mode)
+    :hook (prog-mode . company-mode)
     :bind
     (;;("C-<tab>" . company-capf)
      :map company-mode-map
      (("M-h" . company-quickhelp-manual-begin)))
-    :init
-    (add-hook 'after-init-hook 'global-company-mode)
     :config
     (progn
       (setq company-idle-delay 0.3)
@@ -1060,7 +1057,7 @@ Load this before we load Flycheck
     :init
     (add-hook 'lsp-mode-hook #'lsp-ui-mode))
 #+END_SRC
-* Setup
+* Languages
 Major mode customizations
 ** CSS/LESS/SASS
 *** Rainbow mode
@@ -1120,12 +1117,13 @@ Major mode customizations
 #+END_SRC
 *** lispy
 We need lispy for some of the excellent bracket based navigation integrations with parinfer
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
     (use-package lispy
      :defer nil)
 #+END_SRC
 *** parinfer
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
+
   (use-package parinfer
     :commands (parinfer-mode)
     :bind (:map parinfer-mode-map
@@ -1146,7 +1144,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 *** eldoc
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
-    :ensure t
+    :ensure nil
     :config
     (eldoc-add-command
      'paredit-backward-delete
@@ -1370,6 +1368,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** sgml-mode
 #+BEGIN_SRC emacs-lisp
   (use-package sgml-mode
+    :ensure nil
     :after tagedit
     :config
     (require 'tagedit)
@@ -1393,6 +1392,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp
   (use-package robe
     :commands (robe-start)
+    :hook 'ruby-mode
     :config
     (push 'company-robe company-backends))
 #+END_SRC
@@ -1406,15 +1406,13 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
            ("C-c C-b" . ruby-send-buffer)))
     :config
     (progn
-        (message "disabling company mode")
-        (company-mode 0)
         (when (executable-find "pry")
           (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
           (setq inf-ruby-default-implementation "pry"))))
 #+END_SRC
 *** ruby-mode
 #+BEGIN_SRC emacs-lisp
-    (use-package ruby-mode
+    (use-package enh-ruby-mode
       :after robe
       :mode "\\.rb\\'"
       :mode "Rakefile\\'"
@@ -1428,7 +1426,8 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
               ruby-indent-tabs-mode nil)
         (add-hook 'ruby-mode 'superword-mode))
       :config
-      (robe-start))
+      (robe-start)
+      (robe-mode))
 #+END_SRC
 ** Rust
 *** Flycheck-rust
@@ -1581,10 +1580,11 @@ Get limited autocompletion in Lua
 #+END_SRC
 ** Text modes
 #+BEGIN_SRC emacs-lisp
-(use-package rst
-  :mode (("\\.txt$" . rst-mode)
-         ("\\.rst$" . rst-mode)
-         ("\\.rest$" . rst-mode)))
+  (use-package rst
+    :ensure nil
+    :mode (("\\.txt$" . rst-mode)
+           ("\\.rst$" . rst-mode)
+           ("\\.rest$" . rst-mode)))
 #+END_SRC
 
 * Communication
@@ -1610,20 +1610,27 @@ Get limited autocompletion in Lua
        :client-secret (getenv "SLACK_CLIENT_SECRET")
        :token (getenv "TIDAL_SLACK_TOKEN")
        :subscribed-channels '(general)))
-
-    ;; (slack-register-team
-    ;;  :name "test"
-    ;;  :client-id "3333333333.77777777777"
-    ;;  :client-secret "cccccccccccccccccccccccccccccccc"
-    ;;  :token "xxxx-yyyyyyyyyy-zzzzzzzzzzz-hhhhhhhhhhh-llllllllll"
-    ;;  :subscribed-channels '(hoge fuga)))
-
     (use-package alert
       :commands (alert)
       :init
       (setq alert-default-style 'osx-notifier))
 #+END_SRC
 * Misc
+** Dashboard
+#+BEGIN_SRC emacs-lisp
+  (use-package dashboard
+    :defer ()
+    :config
+    (progn
+      (setq dashboard-center-content t)
+      (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
+      (dashboard-setup-startup-hook)
+      (setq dashboard-items '((recents  . 5)
+                              (projects . 5)
+                              (agenda . 5)
+                              (registers . 5)))))
+#+END_SRC
+
 ** Fuzzy matching
 #+BEGIN_SRC emacs-lisp
   (use-package flx)
@@ -1657,13 +1664,10 @@ Get limited autocompletion in Lua
 *** profiler
 #+BEGIN_SRC emacs-lisp
   (use-package profiler
+    :ensure nil
     :bind
     (("s-l" . profiler-start)
      ("s-r" . profiler-report)))
-#+END_SRC
-** dired+
-#+BEGIN_SRC emacs-lisp
-(use-package dired+)
 #+END_SRC
 ** http client
 #+BEGIN_SRC emacs-lisp
@@ -1890,7 +1894,7 @@ And the same but without leaving the current window:
     (lispy-mode))
 #+END_SRC
 ** Renema buffer and file
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp
 ;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
