@@ -635,27 +635,11 @@ My name isn't "Tinker", so I don't need a bell.
   (load-theme 'dracula t))
 #+END_SRC
 *** Cyberpunk 2019
-#+BEGIN_SRC emacs-lisp :tangle
-(use-package cyberpunk-2019
-  :demand t
-  :config
-  (load-theme 'dracula t))
+#+BEGIN_SRC emacs-lisp
+(use-package cyberpunk-2019-theme
+  :demand t)
 #+END_SRC
 ** Modeline
-*** Powerline
-#+BEGIN_SRC emacs-lisp
-  (use-package powerline
-    :config
-    ;;(powerline-center-theme)
-    (setq powerline-default-separator 'wave))
-#+END_SRC
-*** Spaceline
-#+BEGIN_SRC emacs-lisp
-(use-package spaceline
-  :config
-  (require 'spaceline-config)
-  (setq spaceline-byte-compile nil))
-#+END_SRC
 *** all-the-icons
 #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons)
@@ -756,15 +740,6 @@ Ensure that buffers have unique file names
   :ensure nil
   :config
   (setq uniquify-buffer-name-style 'forward))
-#+END_SRC
-** Dired+
-Can't use dired+ isn't on melpa
-#+BEGIN_SRC emacs-lisp :tangle
-(use-package dired+
-  :config
-  (setq dired-dwim-target t)
-  (setq dired-recursive-copies `always))
-
 #+END_SRC
 ** Recentf
 Turn on recent file mode so that you can more easily switch to recently edited files when you first start emacs
@@ -1122,7 +1097,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
      :defer nil)
 #+END_SRC
 *** parinfer
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp
 
   (use-package parinfer
     :commands (parinfer-mode)
@@ -1619,12 +1594,14 @@ Get limited autocompletion in Lua
 ** Dashboard
 #+BEGIN_SRC emacs-lisp
   (use-package dashboard
-    :defer ()
+    :defer 1
+    :init
+    (dashboard-setup-startup-hook)
     :config
     (progn
       (setq dashboard-center-content t)
+      (setq dashboard-startup-banner 'logo)
       (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
-      (dashboard-setup-startup-hook)
       (setq dashboard-items '((recents  . 5)
                               (projects . 5)
                               (agenda . 5)
@@ -1893,7 +1870,7 @@ And the same but without leaving the current window:
     (turn-off-smartparens-mode)
     (lispy-mode))
 #+END_SRC
-** Renema buffer and file
+** Rename buffer and file
 #+BEGIN_SRC emacs-lisp
 ;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
 (defun rename-file-and-buffer (new-name)
