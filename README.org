@@ -829,7 +829,7 @@ Normally preface should automatically be set by the package, but recently (Mon A
             treemacs-show-hidden-files          t
             treemacs-never-persist              nil
             treemacs-is-never-other-window      nil
-            treemacs-goto-tag-strategy          'refetch-index)
+            treemacs-goto-tag-strategy          'prefetch-index)
       (treemacs-follow-mode t)
       (treemacs-filewatch-mode t))
     :bind
