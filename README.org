@@ -690,6 +690,77 @@ As of Emacs 26.0 we have native, perfomant support for line numebrs
                 ("RET" . dired-find-alternate-file)
                 ("a" . dired-find-file)))
 #+END_SRC
+** dired all the icons
+#+BEGIN_SRC emacs-lisp
+  (use-package all-the-icons-dired
+    :hook (dired-mode . all-the-icons-dired-mode))
+#+END_SRC
+
+** ibuffer
+*** ibuffer
+Keybindings
+We're prettying up ibuffer after
+
+This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/master/lisp/init-ibuffer.el (April 12, 2019)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ibuffer
+    :ensure nil
+    :defines all-the-icons-icon-alist
+    :functions (all-the-icons-icon-for-file
+                all-the-icons-icon-for-mode
+                all-the-icons-match-to-alist
+                all-the-icons-faicon)
+    :commands (ibuffer-current-buffer
+               ibuffer-find-file
+               ibuffer-do-sort-by-alphabetic)
+    :bind ("C-x C-b" . ibuffer)
+    :init
+    (setq ibuffer-filter-group-name-face '(:inherit (font-lock-string-face bold)))
+
+    ;; Display buffer icons on GUI
+    (when (display-graphic-p)
+      (define-ibuffer-column icon (:name " ")
+        (let ((icon (if (and buffer-file-name
+                             (all-the-icons-match-to-alist buffer-file-name
+                                                           all-the-icons-icon-alist))
+                        (all-the-icons-icon-for-file (file-name-nondirectory buffer-file-name)
+                                                     :height 0.9 :v-adjust -0.05)
+                      (all-the-icons-icon-for-mode major-mode :height 0.9 :v-adjust -0.05))))
+          (if (symbolp icon)
+              (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
+            icon)))
+
+      (setq ibuffer-formats '((mark modified read-only locked
+                                    " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
+                                    " " (size 9 -1 :right)
+                                    " " (mode 16 16 :left :elide) " " filename-and-process)
+                              (mark " " (name 16 -1) " " filename))))
+    :config
+    (with-eval-after-load 'counsel
+      (defalias 'ibuffer-find-file 'counsel-find-file)))
+#+END_SRC
+
+*** ibuffer-projectile
+#+BEGIN_SRC emacs-lisp
+  (use-package ibuffer-projectile
+    :init
+    (add-hook 'ibuffer-hook
+              (lambda ()
+                (ibuffer-projectile-set-filter-groups)
+                (unless (eq ibuffer-sorting-mode 'alphabetic)
+                  (ibuffer-do-sort-by-alphabetic))))
+    :config
+    (setq ibuffer-projectile-prefix
+          (if (display-graphic-p)
+              (concat
+               (all-the-icons-octicon "file-directory"
+                                      :face ibuffer-filter-group-name-face
+                                      :v-adjust -0.1
+                                      :height 1.1)
+               " ")
+            "Project: ")))
+#+END_SRC
 
 ** Diminish
 #+BEGIN_SRC emacs-lisp
@@ -768,6 +839,34 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 ** Minibuffer completion
 As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017) 
 it looks like counsel is a requirement for swiper
+*** Ivy-rich
+Let's pretty up ivy
+#+BEGIN_SRC emacs-lisp
+  (use-package ivy-rich
+    :config
+    (progn
+      (defun ivy-rich-switch-buffer-icon (candidate)
+        (with-current-buffer
+            (get-buffer candidate)
+          (let ((icon (all-the-icons-icon-for-mode major-mode)))
+            (if (symbolp icon)
+                (all-the-icons-icon-for-mode 'fundamental-mode)
+              icon))))
+      (setq ivy-rich--display-transformers-list
+            '(ivy-switch-buffer
+              (:columns
+               ((ivy-rich-switch-buffer-icon :width 2)
+                (ivy-rich-candidate (:width 30))
+                (ivy-rich-switch-buffer-size (:width 7))
+                (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+                (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
+                (ivy-rich-switch-buffer-project (:width 15 :face success))
+                (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
+               :predicate
+               (lambda (cand) (get-buffer cand)))))
+      (setq ivy-format-function 'ivy-format-function-line)))
+#+END_SRC
+
 *** Ivy
 #+BEGIN_SRC emacs-lisp
   (use-package ivy
@@ -776,8 +875,10 @@ it looks like counsel is a requirement for swiper
     (progn
       (setq ivy-use-virtual-buffers t)
       (setq ivy-initial-inputs-alist nil)
-      (counsel-mode)))
+      (counsel-mode)
+      (ivy-rich-mode)))
 #+END_SRC
+
 *** Counsel
 #+BEGIN_SRC emacs-lisp
   (use-package counsel
