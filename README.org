@@ -864,7 +864,7 @@ Let's pretty up ivy
                 (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
                :predicate
                (lambda (cand) (get-buffer cand)))))
-      (setq ivy-format-function 'ivy-format-function-line)))
+      (setq ivy-format-function #'ivy-format-function-line) ))
 #+END_SRC
 
 *** Ivy
@@ -1084,6 +1084,18 @@ Load this before we load Flycheck
       (eval-after-load 'flycheck
       (flycheck-pos-tip-mode)))))
 #+END_SRC
+** Flyspell
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell)
+  (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+    ;; (use-package flyspell
+    ;;  :ensure nil
+    ;;  :hook ((prog-mode flyspell-prog-mode)
+    ;;         (text-mode flyspell-mode))
+    ;;  ;; :config (setq flyspell-issue-message-flag nil)
+    ;; )
+#+END_SRC
+
 
 * Code Completion
 ** Semantic

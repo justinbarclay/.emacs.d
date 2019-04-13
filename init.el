@@ -111,8 +111,7 @@ called `Byte-compiling with Package.el'."
      '(org-startup-folded (quote overview))
      '(org-startup-indented t))))
 
-(use-package org-trello
-)
+(use-package org-trello)
 
 (use-package org-bullets
   :init
@@ -311,6 +310,12 @@ This function is called by `org-babel-execute-src-block'"
 
 (tool-bar-mode -1)
 
+(add-to-list 'default-frame-alist '(internal-border-width . 5))
+(add-to-list 'default-frame-alist '(drag-internal-border . 1))
+(add-to-list 'default-frame-alist '(undecorated . t))
+
+(menu-bar-mode -1)
+
 (when (display-graphic-p) ; Start full screen
   (add-to-list 'default-frame-alist '(fullscreen . t))
   (x-focus-frame nil))
@@ -367,15 +372,8 @@ This function is called by `org-babel-execute-src-block'"
   :config
   (load-theme 'dracula t))
 
-(use-package powerline
-  :config
-  ;;(powerline-center-theme)
-  (setq powerline-default-separator 'wave))
-
-(use-package spaceline
-  :config
-  (require 'spaceline-config)
-  (setq spaceline-byte-compile nil))
+(use-package cyberpunk-2019-theme
+  :demand t)
 
 (use-package all-the-icons)
 
@@ -414,6 +412,63 @@ This function is called by `org-babel-execute-src-block'"
   :bind (:map dired-mode-map
               ("RET" . dired-find-alternate-file)
               ("a" . dired-find-file)))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package ibuffer
+  :ensure nil
+  :defines all-the-icons-icon-alist
+  :functions (all-the-icons-icon-for-file
+              all-the-icons-icon-for-mode
+              all-the-icons-match-to-alist
+              all-the-icons-faicon)
+  :commands (ibuffer-current-buffer
+             ibuffer-find-file
+             ibuffer-do-sort-by-alphabetic)
+  :bind ("C-x C-b" . ibuffer)
+  :init
+  (setq ibuffer-filter-group-name-face '(:inherit (font-lock-string-face bold)))
+
+  ;; Display buffer icons on GUI
+  (when (display-graphic-p)
+    (define-ibuffer-column icon (:name " ")
+      (let ((icon (if (and buffer-file-name
+                           (all-the-icons-match-to-alist buffer-file-name
+                                                         all-the-icons-icon-alist))
+                      (all-the-icons-icon-for-file (file-name-nondirectory buffer-file-name)
+                                                   :height 0.9 :v-adjust -0.05)
+                    (all-the-icons-icon-for-mode major-mode :height 0.9 :v-adjust -0.05))))
+        (if (symbolp icon)
+            (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
+          icon)))
+
+    (setq ibuffer-formats '((mark modified read-only locked
+                                  " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
+                                  " " (size 9 -1 :right)
+                                  " " (mode 16 16 :left :elide) " " filename-and-process)
+                            (mark " " (name 16 -1) " " filename))))
+  :config
+  (with-eval-after-load 'counsel
+    (defalias 'ibuffer-find-file 'counsel-find-file)))
+
+(use-package ibuffer-projectile
+  :init
+  (add-hook 'ibuffer-hook
+            (lambda ()
+              (ibuffer-projectile-set-filter-groups)
+              (unless (eq ibuffer-sorting-mode 'alphabetic)
+                (ibuffer-do-sort-by-alphabetic))))
+  :config
+  (setq ibuffer-projectile-prefix
+        (if (display-graphic-p)
+            (concat
+             (all-the-icons-octicon "file-directory"
+                                    :face ibuffer-filter-group-name-face
+                                    :v-adjust -0.1
+                                    :height 1.1)
+             " ")
+          "Project: ")))
 
 (use-package diminish
   :demand t
@@ -458,13 +513,38 @@ This function is called by `org-babel-execute-src-block'"
     (setq projectile-completion-system 'ivy)
     (setq projectile-enable-caching t)))
 
+(use-package ivy-rich
+  :config
+  (progn
+    (defun ivy-rich-switch-buffer-icon (candidate)
+      (with-current-buffer
+          (get-buffer candidate)
+        (let ((icon (all-the-icons-icon-for-mode major-mode)))
+          (if (symbolp icon)
+              (all-the-icons-icon-for-mode 'fundamental-mode)
+            icon))))
+    (setq ivy-rich--display-transformers-list
+          '(ivy-switch-buffer
+            (:columns
+             ((ivy-rich-switch-buffer-icon :width 2)
+              (ivy-rich-candidate (:width 30))
+              (ivy-rich-switch-buffer-size (:width 7))
+              (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+              (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
+              (ivy-rich-switch-buffer-project (:width 15 :face success))
+              (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
+             :predicate
+             (lambda (cand) (get-buffer cand)))))
+    (setq ivy-format-function #'ivy-format-function-line) ))
+
 (use-package ivy
   :hook (after-init . ivy-mode)
   :config
   (progn
     (setq ivy-use-virtual-buffers t)
     (setq ivy-initial-inputs-alist nil)
-    (counsel-mode)))
+    (counsel-mode)
+    (ivy-rich-mode)))
 
 (use-package counsel
   :after ivy
@@ -508,7 +588,7 @@ This function is called by `org-babel-execute-src-block'"
           treemacs-show-hidden-files          t
           treemacs-never-persist              nil
           treemacs-is-never-other-window      nil
-          treemacs-goto-tag-strategy          'refetch-index)
+          treemacs-goto-tag-strategy          'prefetch-index)
     (treemacs-follow-mode t)
     (treemacs-filewatch-mode t))
   :bind
@@ -604,6 +684,15 @@ This function is called by `org-babel-execute-src-block'"
       (eval-after-load 'flycheck
       (flycheck-pos-tip-mode)))))
 
+(require 'flyspell)
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+  ;; (use-package flyspell
+  ;;  :ensure nil
+  ;;  :hook ((prog-mode flyspell-prog-mode)
+  ;;         (text-mode flyspell-mode))
+  ;;  ;; :config (setq flyspell-issue-message-flag nil)
+  ;; )
+
 (use-package semantic
   :ensure nil
   :config
@@ -676,6 +765,22 @@ This function is called by `org-babel-execute-src-block'"
   :hook ((common-lisp-mode . (lambda () (enable-paredit)))
          (scheme-mode . (lambda () (enable-paredit)))
          (lisp-mode . (lambda () (enable-paredit)))))
+
+(use-package parinfer
+  :commands (parinfer-mode)
+  :bind (:map parinfer-mode-map
+              (("C-t" . parinfer-toggle-mode)))
+  :init (progn
+          (require 'lispy)
+          (setq parinfer-delay-invoke-threshold 6000)
+          (setq parinfer-auto-switch-indent-mode t)
+          (setq parinfer-extensions
+                '(defaults       ; should be included.
+                   pretty-parens  ; different paren styles for different modes.
+                   paredit        ; Introduce some paredit commands.
+                   smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
+                   lispy
+                   smart-yank))))   ; Yank behavior depend on mode
 
 (use-package eldoc
   :ensure nil
@@ -1004,12 +1109,14 @@ This function is called by `org-babel-execute-src-block'"
     (setq alert-default-style 'osx-notifier))
 
 (use-package dashboard
-  :defer ()
+  :defer 1
+  :init
+  (dashboard-setup-startup-hook)
   :config
   (progn
     (setq dashboard-center-content t)
+    (setq dashboard-startup-banner 'logo)
     (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
-    (dashboard-setup-startup-hook)
     (setq dashboard-items '((recents  . 5)
                             (projects . 5)
                             (agenda . 5)
