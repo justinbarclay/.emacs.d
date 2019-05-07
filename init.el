@@ -1249,13 +1249,13 @@ This function is called by `org-babel-execute-src-block'"
   (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
   (setq slack-prefer-current-team t)
   :config
-  (slack-register-team
-   :name "personal"
-   :default t
-   :client-id (getenv "SLACK_CLIENT_ID")
-   :client-secret (getenv "SLACK_CLIENT_SECRET")
-   :token (getenv "SLACK_TOKEN")
-   :subscribed-channels '(general))
+  ;; (slack-register-team
+  ;;  :name "personal"
+  ;;  :default t
+  ;;  :client-id (getenv "SLACK_CLIENT_ID")
+  ;;  :client-secret (getenv "SLACK_CLIENT_SECRET")
+  ;;  :token (getenv "SLACK_TOKEN")
+  ;;  :subscribed-channels '(general))
   (slack-register-team
      :name "work"
      :default nil
@@ -1523,11 +1523,13 @@ foo.bar.baz => baz"
   (let* ((team (slack-team-select))
          (room (slack-room-select
                 (cl-loop for team in (list team)
-                         append (with-slots (groups ims channels) team
-                                  (append ims groups channels))))))
+                         append (append (slack-team-ims team)
+                                        (slack-team-groups team)
+                                        (slack-team-channels team)))
+                team)))
     (slack-message-send-internal (jb/decorate-text (filter-buffer-substring
                                                     (region-beginning) (region-end)))
-                                 (oref room id)
+                                 room
                                  team)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
