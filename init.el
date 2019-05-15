@@ -279,9 +279,11 @@ This function is called by `org-babel-execute-src-block'"
       (if show-options
           (magit-key-mode-popup-committing)
         (magit-commit)))
-
     (define-key magit-mode-map "c" 'magit-maybe-commit)
 
+    ;; Customizing transients
+    ;; This gives us the option to override local branch
+    (transient-insert-suffix 'magit-pull "-r" '("-f" "Overwrite local branch" "--force"))
     ;; magit settings
     (setq
      ;; use ido to look for branches
@@ -1138,7 +1140,6 @@ This function is called by `org-babel-execute-src-block'"
         (setq inf-ruby-default-implementation "pry"))))
 
 (use-package enh-ruby-mode
-  :after robe
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
