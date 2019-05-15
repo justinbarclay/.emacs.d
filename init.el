@@ -111,7 +111,8 @@ called `Byte-compiling with Package.el'."
      '(org-startup-folded (quote overview))
      '(org-startup-indented t))))
 
-(use-package org-trello)
+(use-package org-trello
+)
 
 (use-package org-bullets
   :init
@@ -311,12 +312,6 @@ This function is called by `org-babel-execute-src-block'"
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
 
 (tool-bar-mode -1)
-
-(add-to-list 'default-frame-alist '(internal-border-width . 5))
-(add-to-list 'default-frame-alist '(drag-internal-border . 1))
-(add-to-list 'default-frame-alist '(undecorated . t))
-
-(menu-bar-mode -1)
 
 (when (display-graphic-p) ; Start full screen
   (add-to-list 'default-frame-alist '(fullscreen . t))
@@ -736,7 +731,27 @@ This function is called by `org-babel-execute-src-block'"
           treemacs-is-never-other-window      nil
           treemacs-goto-tag-strategy          'prefetch-index)
     (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t))
+    (treemacs-filewatch-mode t)
+    (setq treemacs-icons-hash (make-hash-table :size 200 :test #'equal)
+          treemacs-icon-fallback (concat
+                                  "  "
+                                  (all-the-icons-faicon "file-o"
+                                                        :face 'all-the-icons-dsilver
+                                                        :height 0.9
+                                                        :v-adjust -0.05)
+                                  " ")
+          treemacs-icon-text treemacs-icon-fallback)
+    (dolist (item all-the-icons-icon-alist)
+      (let* ((extension (car item))
+             (func (cadr item))
+             (args (append (list (caddr item))
+                           '(:height 0.9 :v-adjust -0.05)
+                           (cdddr item)))
+             (icon (apply func args))
+             (key (s-replace-all '(("^" . "") ("\\" . "") ("$" . "") ("." . "")) extension))
+             (value (concat "  " icon " ")))
+        (ht-set! treemacs-icons-hash (s-replace-regexp "\\?" "" key) value)
+        (ht-set! treemacs-icons-hash (s-replace-regexp ".\\?" "" key) value))))
   :bind
   (:map global-map
         ([f8]        . treemacs-toggle)
@@ -1235,13 +1250,13 @@ This function is called by `org-babel-execute-src-block'"
   (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
   (setq slack-prefer-current-team t)
   :config
-  (slack-register-team
-   :name "personal"
-   :default t
-   :client-id (getenv "SLACK_CLIENT_ID")
-   :client-secret (getenv "SLACK_CLIENT_SECRET")
-   :token (getenv "SLACK_TOKEN")
-   :subscribed-channels '(general))
+  ;; (slack-register-team
+  ;;  :name "personal"
+  ;;  :default t
+  ;;  :client-id (getenv "SLACK_CLIENT_ID")
+  ;;  :client-secret (getenv "SLACK_CLIENT_SECRET")
+  ;;  :token (getenv "SLACK_TOKEN")
+  ;;  :subscribed-channels '(general))
   (slack-register-team
      :name "work"
      :default nil
@@ -1509,11 +1524,13 @@ foo.bar.baz => baz"
   (let* ((team (slack-team-select))
          (room (slack-room-select
                 (cl-loop for team in (list team)
-                         append (with-slots (groups ims channels) team
-                                  (append ims groups channels))))))
+                         append (append (slack-team-ims team)
+                                        (slack-team-groups team)
+                                        (slack-team-channels team)))
+                team)))
     (slack-message-send-internal (jb/decorate-text (filter-buffer-substring
                                                     (region-beginning) (region-end)))
-                                 (oref room id)
+                                 room
                                  team)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
