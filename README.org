@@ -295,11 +295,10 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
        '(org-hide-leading-stars t)
        '(org-startup-folded (quote overview))
        '(org-startup-indented t))))
-#+END_SRC
+    #+END_SRC
 *** Org-trello
 #+BEGIN_SRC emacs-lisp
-(use-package org-trello
-)
+(use-package org-trello)
 #+END_SRC
 
 *** Org-bullets
