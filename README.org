@@ -497,9 +497,11 @@ as such need both of these modes loaded before they'll work.
         (if show-options
             (magit-key-mode-popup-committing)
           (magit-commit)))
-
       (define-key magit-mode-map "c" 'magit-maybe-commit)
 
+      ;; Customizing transients
+      ;; This gives us the option to override local branch
+      (transient-insert-suffix 'magit-pull "-r" '("-f" "Overwrite local branch" "--force"))
       ;; magit settings
       (setq
        ;; use ido to look for branches
