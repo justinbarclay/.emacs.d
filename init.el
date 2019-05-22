@@ -66,9 +66,8 @@ called `Byte-compiling with Package.el'."
 (require 'diminish)                ;; if you use :diminish
 (require 'bind-key)                ;; if you use any :bind variant
 
-;; (use-package ess-site                   
-;;   :disabled
-;;   :commands R)
+(setq use-package-compute-statistics t)
+(setq use-package-minimum-reported-time 0.01)
 
 (use-package org
   :bind
@@ -119,7 +118,7 @@ called `Byte-compiling with Package.el'."
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 (use-package ob-restclient
-  :init
+  :config
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((restclient . t))))
@@ -307,6 +306,16 @@ This function is called by `org-babel-execute-src-block'"
 (use-package magit-blame
   :ensure nil
   :bind ("C-c C-g b" . magit-blame-mode))
+
+(use-package forge
+  :after magit
+  :init
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+  :config
+  (transient-insert-suffix 'forge-dispatch "c p"
+    '("p" "pull-request" forge-create-pullreq))
+  (transient-insert-suffix 'forge-dispatch "c i"
+    '("c" "issues" forge-create-create)))
 
 (setq default-frame-alist '((ns-transparent-titlebar . t) (ns-appearance . 'nil)))
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
@@ -502,8 +511,6 @@ This function is called by `org-babel-execute-src-block'"
   :defer 1
   :commands
   (projectile-find-file projectile-switch-project)
-  :diminish
-  (projectile-mode)
   :config
   (progn
     (projectile-global-mode)
@@ -689,10 +696,9 @@ This function is called by `org-babel-execute-src-block'"
 
 (use-package counsel
   :after ivy
-  :init
-  (progn
-    (setq counsel-grep-base-command
-          "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+  :config
+  (setq counsel-grep-base-command
+        "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
   :bind
   (("M-x" . counsel-M-x)
     ("C-x C-f" . counsel-find-file)
@@ -933,7 +939,6 @@ This function is called by `org-babel-execute-src-block'"
   :bind (:map parinfer-mode-map
               (("C-t" . parinfer-toggle-mode)))
   :init (progn
-          (require 'lispy)
           (setq parinfer-delay-invoke-threshold 6000)
           (setq parinfer-auto-switch-indent-mode t)
           (setq parinfer-extensions
@@ -942,7 +947,9 @@ This function is called by `org-babel-execute-src-block'"
                    paredit        ; Introduce some paredit commands.
                    smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
                    lispy
-                   smart-yank))))   ; Yank behavior depend on mode
+                   smart-yank)))
+  :config
+  (require 'lispy))   ; Yank behavior depend on mode
 
 (use-package eldoc
   :ensure nil
@@ -953,7 +960,6 @@ This function is called by `org-babel-execute-src-block'"
   (global-eldoc-mode))
 
 (use-package slime
-  :ensure t
   :init
   (add-hook 'lisp-mode-hook 'slime-mode)
   (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
@@ -1173,7 +1179,11 @@ This function is called by `org-babel-execute-src-block'"
 (use-package eglot
   :bind (("M-." . xref-find-definitions)
          ("M-," . xref-pop-marker-stack))
-  :init (require 'eglot))
+  :hook ((rust-mode) . eglot-ensure)
+  :config
+  ;; Fix column calculation when ligatures are used
+  (setq eglot-current-column-function 'eglot-lsp-abiding-column)
+  (general-define-key :keymap 'eglot-mode-map "C-h ." 'eglot-help-at-point))
 
 (use-package rustic
   :bind ("C-c r" . rustic-compile)
@@ -1274,14 +1284,18 @@ This function is called by `org-babel-execute-src-block'"
   :init
   (dashboard-setup-startup-hook)
   :config
-  (progn
-    (setq dashboard-center-content t)
-    (setq dashboard-startup-banner 'logo)
-    (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
-    (setq dashboard-items '((recents  . 5)
-                            (projects . 5)
-                            (agenda . 5)
-                            (registers . 5)))))
+  (defun dashboard-load-packages (list-size)
+    (insert (make-string (ceiling (max 0 (- dashboard-banner-length 38)) 5) ? )
+            (format "[%d packages loaded in %s]" (length package-activated-list) (emacs-init-time))))
+
+  (add-to-list 'dashboard-item-generators '(packages . dashboard-load-packages))
+
+  (setq dashboard-center-content t
+        dashboard-startup-banner 'logo
+        dashboard-banner-logo-title "The One True Editor, Emacs"
+        dashboard-items '((packages)
+                          (recents  . 10)
+                          (projects . 10))))
 
 (use-package flx)
 
