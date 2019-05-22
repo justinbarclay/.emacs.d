@@ -1426,7 +1426,9 @@ We need lispy for some of the excellent bracket based navigation integrations wi
                      paredit        ; Introduce some paredit commands.
                      smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
                      lispy
-                     smart-yank))))   ; Yank behavior depend on mode
+                     smart-yank)))
+    :config
+    (require 'lispy))   ; Yank behavior depend on mode
 #+END_SRC
 
 *** eldoc
@@ -1752,7 +1754,11 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
   (use-package eglot
     :bind (("M-." . xref-find-definitions)
            ("M-," . xref-pop-marker-stack))
-    :init (require 'eglot))
+    :hook ((rust-mode) . eglot-ensure)
+    :config
+    ;; Fix column calculation when ligatures are used
+    (setq eglot-current-column-function 'eglot-lsp-abiding-column)
+    (general-define-key :keymap 'eglot-mode-map "C-h ." 'eglot-help-at-point))
 #+END_SRC
 
 *** Cargo
