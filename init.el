@@ -24,6 +24,10 @@
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
 
+(defvar jb/os-linux-p (eq system-type 'gnu/linux))
+(defvar jb/os-windows-p (eq system-type 'windows-nt))
+(defvar jb/os-macos-p (eq system-type 'darwin))
+
 (defmacro use-package-with-elpa ()
   "Set up use-package to optimal usage with package.el.
 
@@ -110,8 +114,7 @@ called `Byte-compiling with Package.el'."
      '(org-startup-folded (quote overview))
      '(org-startup-indented t))))
 
-(use-package org-trello
-)
+(use-package org-trello)
 
 (use-package org-bullets
   :init
@@ -322,6 +325,13 @@ This function is called by `org-babel-execute-src-block'"
 
 (tool-bar-mode -1)
 
+(when jb/os-linux-p
+  (add-to-list 'default-frame-alist '(internal-border-width . 5))
+  (add-to-list 'default-frame-alist '(drag-internal-border . 1))
+  (add-to-list 'default-frame-alist '(undecorated . t)))
+
+(menu-bar-mode -1)
+
 (when (display-graphic-p) ; Start full screen
   (add-to-list 'default-frame-alist '(fullscreen . t))
   (x-focus-frame nil))
@@ -485,7 +495,7 @@ This function is called by `org-babel-execute-src-block'"
             (diminish 'js2-refactor-mode)
             (diminish 'tern-mode)))
 
-(when (eq system-type 'windows-nt)
+(when jb/os-windows-p
   (setq package-check-signature nil)
   (require 'gnutls)
   (add-to-list 'gnutls-trustfiles (expand-file-name "~/.cert/cacert.pm"))
