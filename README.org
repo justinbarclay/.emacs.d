@@ -225,6 +225,11 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
   (require 'diminish)                ;; if you use :diminish
   (require 'bind-key)                ;; if you use any :bind variant
 #+END_SRC
+*** Generate reports based on use-package
+#+BEGIN_SRC emacs-lisp
+(setq use-package-compute-statistics t)
+(setq use-package-minimum-reported-time 0.01)
+#+END_SRC
 
 *** Using use-package
 The plan is to use a copious amount of deferral to speed up emacs boot time.
@@ -243,7 +248,7 @@ The :disabled keyword can turn off a module you're having difficulties with, or 
 When byte-compiling your .emacs file, disabled declarations are omitted from the output entirely, to accelerate startup times.
 *** Benchmark-init
 This is hidden here to load right after we have use-package to be able to benchmark startup
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package benchmark-init
     :demand t
     :init
