@@ -533,6 +533,18 @@ as such need both of these modes loaded before they'll work.
   :ensure nil
   :bind ("C-c C-g b" . magit-blame-mode))
 #+END_SRC
+*** Magit forges
+#+BEGIN_SRC emacs-lisp
+(use-package forge
+  :after magit
+  :init
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+  :config
+  (transient-insert-suffix 'forge-dispatch "c p"
+    '("p" "pull-request" forge-create-pullreq))
+  (transient-insert-suffix 'forge-dispatch "c i"
+    '("c" "issues" forge-create-create)))
+#+END_SRC
 
 * Look and Feel
 ** Window
