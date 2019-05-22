@@ -173,7 +173,7 @@ Boot strap use-package. Because we're running package initalize ourselves, we ca
     (package-install 'use-package))
 #+END_SRC
 *** TODO Make better consolidate and explain what is going on in use-package
-*** A macro to increase emacs load times
+*** A macro to decrease emacs load times
 This macro is pulled off this commit
 https://github.com/jwiegley/use-package/pull/487/commits
 Further reading: https://github.com/nilcons/emacs-use-package-fast
