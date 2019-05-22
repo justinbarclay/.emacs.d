@@ -215,7 +215,6 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-
   (progn ;'use-package
     (require 'use-package)
     (setq use-package-always-ensure t)
@@ -236,15 +235,15 @@ The plan is to use a copious amount of deferral to speed up emacs boot time.
 + In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used. 
 *** Debugging
 The :disabled keyword can turn off a module you're having difficulties with, or stop loading something you're not using at the present time:
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package ess-site                   
-  ;;   :disabled
-  ;;   :commands R)
+#+BEGIN_SRC emacs-lisp :tangle
+  (use-package ess-site
+    :disabled
+    :commands R)
 #+END_SRC
 When byte-compiling your .emacs file, disabled declarations are omitted from the output entirely, to accelerate startup times.
 *** Benchmark-init
 This is hidden here to load right after we have use-package to be able to benchmark startup
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp
   (use-package benchmark-init
     :demand t
     :init
@@ -839,8 +838,6 @@ Turn on recent file mode so that you can more easily switch to recently edited f
     :defer 1
     :commands
     (projectile-find-file projectile-switch-project)
-    :diminish
-    (projectile-mode)
     :config
     (progn
       (projectile-global-mode)
@@ -1052,7 +1049,6 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
             (ivy-rich-candidate))))))
 #+END_SRC
 
-
 *** Ivy
 #+BEGIN_SRC emacs-lisp
   (use-package ivy
@@ -1069,10 +1065,9 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 #+BEGIN_SRC emacs-lisp
   (use-package counsel
     :after ivy
-    :init
-    (progn
-      (setq counsel-grep-base-command
-            "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+    :config
+    (setq counsel-grep-base-command
+          "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
     :bind
     (("M-x" . counsel-M-x)
       ("C-x C-f" . counsel-find-file)
@@ -1418,13 +1413,11 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 #+END_SRC
 *** parinfer
 #+BEGIN_SRC emacs-lisp
-
   (use-package parinfer
     :commands (parinfer-mode)
     :bind (:map parinfer-mode-map
                 (("C-t" . parinfer-toggle-mode)))
     :init (progn
-            (require 'lispy)
             (setq parinfer-delay-invoke-threshold 6000)
             (setq parinfer-auto-switch-indent-mode t)
             (setq parinfer-extensions
@@ -1449,7 +1442,6 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 *** Slime 
 #+BEGIN_SRC emacs-lisp
   (use-package slime
-    :ensure t
     :init
     (add-hook 'lisp-mode-hook 'slime-mode)
     (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
