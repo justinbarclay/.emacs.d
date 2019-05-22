@@ -316,7 +316,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 *** Ob-Restclient
 #+BEGIN_SRC emacs-lisp
   (use-package ob-restclient
-    :init
+    :config
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((restclient . t))))
