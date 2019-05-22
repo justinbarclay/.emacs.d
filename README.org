@@ -157,6 +157,15 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq user-full-name "Justin Barclay"
         user-mail-address "justinbarclay@gmail.com")
 #+END_SRC
+* Vars
+Let's describe some variables to help determine how to configure Emacs
+** OS
+#+BEGIN_SRC emacs-lisp
+(defvar jb/os-linux-p (eq system-type 'gnu/linux))
+(defvar jb/os-windows-p (eq system-type 'windows-nt))
+(defvar jb/os-macos-p (eq system-type 'darwin))
+#+END_SRC
+
 * Tent Pole
 For big emacs packages, that help define the experience of Emacs itself
 ** use-package
@@ -561,9 +570,10 @@ as such need both of these modes loaded before they'll work.
 *** Remove title-bar
 Remove title bar but allow resizing of frame
 #+BEGIN_SRC emacs-lisp
+(when jb/os-linux-p
   (add-to-list 'default-frame-alist '(internal-border-width . 5))
   (add-to-list 'default-frame-alist '(drag-internal-border . 1))
-  (add-to-list 'default-frame-alist '(undecorated . t))
+  (add-to-list 'default-frame-alist '(undecorated . t)))
 
 #+END_SRC
 *** Remove menu-bar
@@ -807,7 +817,7 @@ In OS X, when Emacs is started from the GUI it inherits a default set of environ
 Currently turned off due to debugging issues
 #+BEGIN_SRC emacs-lisp :tangle
     (use-package exec-path-from-shell
-      :if (eq system-type 'darwin)
+      :if jb/os-macos-p
       :demand t
       :init
       (progn
@@ -819,7 +829,7 @@ Currently turned off due to debugging issues
 #+END_SRC
 ** Windows
 #+BEGIN_SRC emacs-lisp
-  (when (eq system-type 'windows-nt)
+  (when jb/os-windows-p
     (setq package-check-signature nil)
     (require 'gnutls)
     (add-to-list 'gnutls-trustfiles (expand-file-name "~/.cert/cacert.pm"))
