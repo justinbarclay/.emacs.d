@@ -444,7 +444,7 @@ as such need both of these modes loaded before they'll work.
     :init
     (setq langtool-default-language "en-US")
     (setq langtool-java-bin "/usr/bin/java")
-    (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.4/libexec/languagetool-commandline.jar"))
+    (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.5/libexec/languagetool-commandline.jar"))
 #+END_SRC
 ** EShell
 #+BEGIN_SRC emacs-lisp
@@ -1567,7 +1567,6 @@ This is being disabled as I switch over to my own package and dog food that
     (progn
       (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
       (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
-      (setq inferior-lisp-program "lein repl")
       (font-lock-add-keywords
        nil
        '(("(\\(facts?\\)"
@@ -2291,6 +2290,22 @@ And the same but without leaving the current window:
                                                       (region-beginning) (region-end)))
                                    room
                                    team)))
+#+END_SRC
+** Stats
+#+BEGIN_SRC emacs-lisp
+(defun jb/mean (a)
+  (/ (apply '+ a)
+     (length a)))
+(defun jb/square (a)
+  (* a a))
+
+(defun jb/stdev (a)
+  (sqrt
+   (/
+    (apply '+ (mapcar 'square (mapcar (lambda (subtract)
+                                        (- subtract (mean a)))
+                                      a)))
+    (- (length a) 1 ))))
 #+END_SRC
 
 ** Turn back on file-name-handler-alist
