@@ -73,6 +73,17 @@ called `Byte-compiling with Package.el'."
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 
+(use-package quelpa
+  :ensure t
+  :defer t
+  :custom
+  (quelpa-checkout-melpa-p nil "Don't update the MELPA git repo."))
+
+(use-package quelpa-use-package
+:ensure t
+:init
+(require 'quelpa-use-package))
+
 (use-package org
   :bind
   (("C-c a" . org-agenda)
@@ -199,7 +210,7 @@ This function is called by `org-babel-execute-src-block'"
   :init
   (setq langtool-default-language "en-US")
   (setq langtool-java-bin "/usr/bin/java")
-  (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.4/libexec/languagetool-commandline.jar"))
+  (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.5/libexec/languagetool-commandline.jar"))
 
 (use-package eshell
   :ensure nil
@@ -944,22 +955,8 @@ This function is called by `org-babel-execute-src-block'"
          (scheme-mode . (lambda () (enable-paredit)))
          (lisp-mode . (lambda () (enable-paredit)))))
 
-(use-package parinfer
-  :commands (parinfer-mode)
-  :bind (:map parinfer-mode-map
-              (("C-t" . parinfer-toggle-mode)))
-  :init (progn
-          (setq parinfer-delay-invoke-threshold 6000)
-          (setq parinfer-auto-switch-indent-mode t)
-          (setq parinfer-extensions
-                '(defaults       ; should be included.
-                   pretty-parens  ; different paren styles for different modes.
-                   paredit        ; Introduce some paredit commands.
-                   smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-                   lispy
-                   smart-yank)))
-  :config
-  (require 'lispy))   ; Yank behavior depend on mode
+(use-package parinfer-smart-mode
+  :quelpa (parinfer-smart-mode :fetcher github :repo "justinbarclay/parinfer-smart-mode"))
 
 (use-package eldoc
   :ensure nil
@@ -1023,7 +1020,6 @@ This function is called by `org-babel-execute-src-block'"
   (progn
     (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
     (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
-    (setq inferior-lisp-program "lein repl")
     (font-lock-add-keywords
      nil
      '(("(\\(facts?\\)"
@@ -1294,17 +1290,10 @@ This function is called by `org-babel-execute-src-block'"
   :init
   (dashboard-setup-startup-hook)
   :config
-  (defun dashboard-load-packages (list-size)
-    (insert (make-string (ceiling (max 0 (- dashboard-banner-length 38)) 5) ? )
-            (format "[%d packages loaded in %s]" (length package-activated-list) (emacs-init-time))))
-
-  (add-to-list 'dashboard-item-generators '(packages . dashboard-load-packages))
-
   (setq dashboard-center-content t
         dashboard-startup-banner 'logo
         dashboard-banner-logo-title "The One True Editor, Emacs"
-        dashboard-items '((packages)
-                          (recents  . 10)
+        dashboard-items '((recents  . 10)
                           (projects . 10))))
 
 (use-package flx)
@@ -1501,7 +1490,7 @@ foo.bar.baz => baz"
 
   (defun enable-parinfer ()
     (turn-off-smartparens-mode)
-    (parinfer-mode))
+    (parinfer-smart-mode))
 
 (defun enable-lispy ()
     (turn-off-smartparens-mode)
@@ -1556,5 +1545,19 @@ foo.bar.baz => baz"
                                                     (region-beginning) (region-end)))
                                  room
                                  team)))
+
+(defun jb/mean (a)
+  (/ (apply '+ a)
+     (length a)))
+(defun jb/square (a)
+  (* a a))
+
+(defun jb/stdev (a)
+  (sqrt
+   (/
+    (apply '+ (mapcar 'square (mapcar (lambda (subtract)
+                                        (- subtract (mean a)))
+                                      a)))
+    (- (length a) 1 ))))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
