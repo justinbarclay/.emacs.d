@@ -1942,17 +1942,10 @@ Get limited autocompletion in Lua
     :init
     (dashboard-setup-startup-hook)
     :config
-    (defun dashboard-load-packages (list-size)
-      (insert (make-string (ceiling (max 0 (- dashboard-banner-length 38)) 5) ? )
-              (format "[%d packages loaded in %s]" (length package-activated-list) (emacs-init-time))))
-
-    (add-to-list 'dashboard-item-generators '(packages . dashboard-load-packages))
-
     (setq dashboard-center-content t
           dashboard-startup-banner 'logo
           dashboard-banner-logo-title "The One True Editor, Emacs"
-          dashboard-items '((packages)
-                            (recents  . 10)
+          dashboard-items '((recents  . 10)
                             (projects . 10))))
 #+END_SRC
 
