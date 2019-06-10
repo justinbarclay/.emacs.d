@@ -246,7 +246,25 @@ The plan is to use a copious amount of deferral to speed up emacs boot time.
 + :config can be used to execute code after a package is loaded. 
 + The :ensure keyword causes the package(s) to be installed automatically if not already present on your system (set (setq use-package-always-ensure t)
 + You can override package deferral with the :demand keyword. Thus, even if you use :bind, using :demand will force loading to occur immediately and not establish an autoload for the bound key.
-+ In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used. 
++ In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used.
+*** Quelpa and Quelpa-Use-Package
+Most of the packages I want to use are hosted on Elpa and Melpa, but sometimes that's enough. Sometimes I want to use git and Quelpa supports using git as a repository, among other things.
+#+BEGIN_SRC emacs-lisp
+(use-package quelpa
+  :ensure t
+  :defer t
+  :custom
+  (quelpa-checkout-melpa-p nil "Don't update the MELPA git repo."))
+#+END_SRC
+
+But in order for use-package to be able to use quelpa, we need to add another package
+#+BEGIN_SRC emacs-lisp
+(use-package quelpa-use-package
+:ensure t
+:init
+(require 'quelpa-use-package))
+#+END_SRC
+
 *** Debugging
 The :disabled keyword can turn off a module you're having difficulties with, or stop loading something you're not using at the present time:
 #+BEGIN_SRC emacs-lisp :tangle
@@ -311,6 +329,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
        '(org-startup-folded (quote overview))
        '(org-startup-indented t))))
     #+END_SRC
+
 *** Org-trello
 #+BEGIN_SRC emacs-lisp
 (use-package org-trello)
@@ -1439,8 +1458,9 @@ We need lispy for some of the excellent bracket based navigation integrations wi
      :defer nil)
 #+END_SRC
 *** parinfer
-#+BEGIN_SRC emacs-lisp
-  (use-package parinfer
+This is being disabled as I switch over to my own package and dog food that
+#+BEGIN_SRC emacs-lisp :tangle
+(use-package parinfer
     :commands (parinfer-mode)
     :bind (:map parinfer-mode-map
                 (("C-t" . parinfer-toggle-mode)))
@@ -1456,6 +1476,11 @@ We need lispy for some of the excellent bracket based navigation integrations wi
                      smart-yank)))
     :config
     (require 'lispy))   ; Yank behavior depend on mode
+#+END_SRC
+*** parinfer-smart
+#+BEGIN_SRC emacs-lisp
+  (use-package parinfer-smart-mode
+    :quelpa (parinfer-smart-mode :fetcher github :repo "justinbarclay/parinfer-smart-mode"))
 #+END_SRC
 
 *** eldoc
@@ -2205,7 +2230,7 @@ And the same but without leaving the current window:
 
   (defun enable-parinfer ()
     (turn-off-smartparens-mode)
-    (parinfer-mode))
+    (parinfer-smart-mode))
 
 (defun enable-lispy ()
     (turn-off-smartparens-mode)
