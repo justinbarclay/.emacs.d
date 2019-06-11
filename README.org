@@ -1480,7 +1480,11 @@ This is being disabled as I switch over to my own package and dog food that
 *** parinfer-smart
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-smart-mode
-    :quelpa (parinfer-smart-mode :fetcher github :repo "justinbarclay/parinfer-smart-mode"))
+    :commands (parinfer-smart-mode)
+    :quelpa ((parinfer-smart-mode
+              :fetcher git
+              :url "https://github.com/justinbarclay/parinfer-smart-mode.git")
+             :upgrade t))
 #+END_SRC
 
 *** eldoc
