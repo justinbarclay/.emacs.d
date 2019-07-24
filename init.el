@@ -96,7 +96,7 @@ called `Byte-compiling with Package.el'."
       "Narrow buffer to the current subtree."
       (interactive)
       (widen)
-      (previous-line)
+      (org-up-element)
       (save-excursion
         (save-match-data
       (org-with-limited-levels

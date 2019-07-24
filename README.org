@@ -300,7 +300,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
         "Narrow buffer to the current subtree."
         (interactive)
         (widen)
-        (previous-line)
+        (org-up-element)
         (save-excursion
           (save-match-data
         (org-with-limited-levels
