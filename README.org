@@ -1864,8 +1864,10 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 ** Docker
 *** Dockerfile
 #+BEGIN_SRC emacs-lisp
-  (use-package dockerfile-mode
-    :mode "\\Dockerfile\\'")
+    (use-package dockerfile-mode
+      :mode "\\Dockerfile\\'"
+      :config
+      (setq-local tab-width 2))
 #+END_SRC
 *** Docker
 #+BEGIN_SRC emacs-lisp
@@ -2076,15 +2078,16 @@ The exact same functionality VIM has for C-e and C-y in normal mode:
 
 And the same but without leaving the current window:
 #+BEGIN_SRC emacs-lisp :tangle
-(defun scroll-up-one-line-other-window ()
-  "Scroll other window one line up"
-  (interactive)
-  (scroll-other-window 1))
 
-(defun scroll-down-one-line-other-window ()
-  "Scroll other window one line down"
-  (interactive)
-  (scroll-other-window -1))
+  (defun scroll-up-one-line-other-window ()
+    "Scroll other window one line up"
+    (interactive)
+    (scroll-other-window 1))
+
+  (defun scroll-down-one-line-other-window ()
+    "Scroll other window one line down"
+    (interactive)
+    (scroll-other-window -1))
 #+END_SRC
 ** Tangle and Compile init file
 #+BEGIN_SRC emacs-lisp
@@ -2119,7 +2122,7 @@ And the same but without leaving the current window:
                  ("go" . "go run")
                  ("js" . "node") ; node.js
                  ("sh" . "bash")
-                 ("clj" . "java -cp /home/xah/apps/clojure-1.6.0/clojure-1.6.0.jar clojure.main")
+                 ("fish" . "fish")
                  ("rkt" . "racket")
                  ("ml" . "ocaml")
                  ("vbs" . "cscript")
