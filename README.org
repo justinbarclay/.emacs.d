@@ -296,6 +296,20 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
     :init
     (progn
       (global-unset-key "\C-c\C-v\C-c")
+      (defun jb/org-narrow-to-parent ()
+        "Narrow buffer to the current subtree."
+        (interactive)
+        (widen)
+        (previous-line)
+        (save-excursion
+          (save-match-data
+        (org-with-limited-levels
+         (narrow-to-region
+          (progn
+            (org-back-to-heading t) (point))
+          (progn (org-end-of-subtree t t)
+                 (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
+                 (point)))))))
       (setq truncate-lines t
             global-company-modes '(not org-mode)))
     :config
