@@ -92,6 +92,20 @@ called `Byte-compiling with Package.el'."
   :init
   (progn
     (global-unset-key "\C-c\C-v\C-c")
+    (defun jb/org-narrow-to-parent ()
+      "Narrow buffer to the current subtree."
+      (interactive)
+      (widen)
+      (previous-line)
+      (save-excursion
+        (save-match-data
+      (org-with-limited-levels
+       (narrow-to-region
+        (progn
+          (org-back-to-heading t) (point))
+        (progn (org-end-of-subtree t t)
+               (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
+               (point)))))))
     (setq truncate-lines t
           global-company-modes '(not org-mode)))
   :config
@@ -960,7 +974,8 @@ This function is called by `org-babel-execute-src-block'"
   :quelpa ((parinfer-smart-mode
             :fetcher git
             :url "https://github.com/justinbarclay/parinfer-smart-mode.git")
-           :upgrade t))
+           ;; :upgrade t
+           ))
 
 (use-package eldoc
   :ensure nil
@@ -1222,7 +1237,9 @@ This function is called by `org-babel-execute-src-block'"
   (setq js-indent-level 2))
 
 (use-package dockerfile-mode
-  :mode "\\Dockerfile\\'")
+  :mode "\\Dockerfile\\'"
+  :config
+  (setq-local tab-width 2))
 
 (use-package docker
   :config
@@ -1388,7 +1405,7 @@ DELTA should be a multiple of 10, in the units used by the
                ("go" . "go run")
                ("js" . "node") ; node.js
                ("sh" . "bash")
-               ("clj" . "java -cp /home/xah/apps/clojure-1.6.0/clojure-1.6.0.jar clojure.main")
+               ("fish" . "fish")
                ("rkt" . "racket")
                ("ml" . "ocaml")
                ("vbs" . "cscript")
@@ -1565,29 +1582,3 @@ foo.bar.baz => baz"
     (- (length a) 1 ))))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(yard-mode yaml-mode ws-butler undo-tree treemacs-projectile toc-org terraform-mode tagedit ssh-config-mode spaceline solarized-theme smartparens slime-company slack sass-mode rustic rspec-mode robe ripgrep rbenv rainbow-mode rainbow-delimiters racket-mode quelpa-use-package quack powershell parinfer-smart-mode parinfer origami org-trello org-re-reveal org-bullets ob-restclient lua-mode lsp-ui lispy lenlen-theme langtool kibit-helper ivy-rich indium ido-completing-read+ ibuffer-projectile hungry-delete go-mode ggtags forge flymd flycheck-pos-tip flycheck-joker flx fireplace esup enh-ruby-mode eglot dracula-theme doom-modeline dockerfile-mode docker diminish dashboard dash-at-point cyberpunk-2019-theme counsel-projectile counsel-gtags company-tern company-lsp coffee-mode clj-refactor c-eldoc benchmark-init all-the-icons-dired))
- '(quelpa-checkout-melpa-p nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))
- '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
- '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
- '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
- '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
- '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
- '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
- '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
- '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
- '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
- '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
- '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
- '(rainbow-delimiters-unmatched-face ((t (:foreground "black")))))
