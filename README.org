@@ -1484,7 +1484,8 @@ This is being disabled as I switch over to my own package and dog food that
     :quelpa ((parinfer-smart-mode
               :fetcher git
               :url "https://github.com/justinbarclay/parinfer-smart-mode.git")
-             :upgrade t))
+             ;; :upgrade t
+             ))
 #+END_SRC
 
 *** eldoc
