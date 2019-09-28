@@ -1592,7 +1592,7 @@ This is being disabled as I switch over to my own package and dog food that
           (2 font-lock-keyword-face))
          ("(\\(background?\\)"
           (2 font-lock-keyword-face))))
-      (electric-pair-mode)
+      (electric-pair-mode 1)
       (setq define-clojure-indent 2)))
 #+END_SRC
 
@@ -1771,21 +1771,22 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+END_SRC
 *** ruby-mode
 #+BEGIN_SRC emacs-lisp
-    (use-package enh-ruby-mode
-      :mode "\\.rb\\'"
-      :mode "Rakefile\\'"
-      :mode "Gemfile\\'"
-      :mode "Berksfile\\'"
-      :mode "Vagrantfile\\'"
-      :interpreter "ruby"
-      :init
-      (progn
-        (setq ruby-indent-level 2
-              ruby-indent-tabs-mode nil)
-        (add-hook 'ruby-mode 'superword-mode))
-      :config
+  (use-package enh-ruby-mode
+    :mode "\\.rb\\'"
+    :mode "Rakefile\\'"
+    :mode "Gemfile\\'"
+    :mode "Berksfile\\'"
+    :mode "Vagrantfile\\'"
+    :interpreter "ruby"
+    :init
+    (progn
+      (setq ruby-indent-level 2
+            ruby-indent-tabs-mode nil)
+      (add-hook 'ruby-mode 'superword-mode))
+    :config
+    (progn
       (robe-start)
-      (robe-mode))
+      (robe-mode)))
 #+END_SRC
 ** Rust
 *** Flycheck-rust
