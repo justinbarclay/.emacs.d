@@ -969,12 +969,12 @@ This function is called by `org-babel-execute-src-block'"
          (scheme-mode . (lambda () (enable-paredit)))
          (lisp-mode . (lambda () (enable-paredit)))))
 
-(use-package parinfer-smart-mode
-  :commands (parinfer-smart-mode)
-  :quelpa ((parinfer-smart-mode
+(use-package parinfer-rust-mode
+  :commands (parinfer-rust-mode)
+  :quelpa ((parinfer-rust-mode
             :fetcher git
-            :url "https://github.com/justinbarclay/parinfer-smart-mode.git")
-           ;; :upgrade t
+            :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
+            :upgrade nil
            ))
 
 (use-package eldoc
@@ -1045,7 +1045,7 @@ This function is called by `org-babel-execute-src-block'"
         (2 font-lock-keyword-face))
        ("(\\(background?\\)"
         (2 font-lock-keyword-face))))
-    (electric-pair-mode)
+    (electric-pair-mode 1)
     (setq define-clojure-indent 2)))
 
 (use-package cider
@@ -1198,8 +1198,9 @@ This function is called by `org-babel-execute-src-block'"
           ruby-indent-tabs-mode nil)
     (add-hook 'ruby-mode 'superword-mode))
   :config
-  (robe-start)
-  (robe-mode))
+  (progn
+    (robe-start)
+    (robe-mode)))
 
 (use-package eglot
   :bind (("M-." . xref-find-definitions)
@@ -1511,7 +1512,7 @@ foo.bar.baz => baz"
 
   (defun enable-parinfer ()
     (turn-off-smartparens-mode)
-    (parinfer-smart-mode))
+    (parinfer-rust-mode))
 
 (defun enable-lispy ()
     (turn-off-smartparens-mode)
