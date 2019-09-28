@@ -1491,14 +1491,14 @@ This is being disabled as I switch over to my own package and dog food that
     :config
     (require 'lispy))   ; Yank behavior depend on mode
 #+END_SRC
-*** parinfer-smart
+*** parinfer-rust-mode
 #+BEGIN_SRC emacs-lisp
-  (use-package parinfer-smart-mode
-    :commands (parinfer-smart-mode)
-    :quelpa ((parinfer-smart-mode
+  (use-package parinfer-rust-mode
+    :commands (parinfer-rust-mode)
+    :quelpa ((parinfer-rust-mode
               :fetcher git
-              :url "https://github.com/justinbarclay/parinfer-smart-mode.git")
-             ;; :upgrade t
+              :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
+              :upgrade nil
              ))
 #+END_SRC
 
@@ -2251,7 +2251,7 @@ And the same but without leaving the current window:
 
   (defun enable-parinfer ()
     (turn-off-smartparens-mode)
-    (parinfer-smart-mode))
+    (parinfer-rust-mode))
 
 (defun enable-lispy ()
     (turn-off-smartparens-mode)
