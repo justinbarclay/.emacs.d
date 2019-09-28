@@ -2336,78 +2336,48 @@ And the same but without leaving the current window:
 #+END_SRC
 
 ** Playground
-#+BEGIN_SRC emacs-lisp :tangle
-  ;; -*- lexical-binding: t -*-
-  (require 'subr-x)
-  (setq lexical-binding t)
+Pomodoro timer
+#+BEGIN_SRC elisp :tangle
+  (require 'alert)
+  (require 'seq)
+  (defvar pomodoro--current-buffer nil "Buffer to return to after the break")
+  (defvar pomodoro--round 0 "The current iteration pomodoro")
 
-  (defun ruby-version-parser (line)
-    (car (split-string
-          (cadr
-           (split-string line))
-          "p")))
+  ;; Todo make this a defcustom
+  (defvar pomodoro-activity-list '("do some push ups" "stretch your back" "core exercises") "A list of activity you wish to be reminded to do during your breaks")
+  (defvar pomodoro--completed-activities '() "Activities completed during the current session")
 
-  (defun elixir-version-parser (line)
-    (cadr
-     (split-string line)))
+  ;; This is easy to do inline, but I like providing names to ideas like this rather than
+  ;; relying on implicit knowledge
+  (defun to-seconds (minutes)
+    "Converts the given minutes to seconds"
+    (* minutes 60))
 
-  (defun rustc-version-parser (line)
-    (car
-     (split-string
-      (cadr
-       (split-string line))
-      "-")))
+  (defun start-pomodoro-timer (&optional message)
+    (interactive)
+    (when (yes-or-no-p (or message
+                           "Would you like to start a pomodoro session?"))
+      (run-at-time (to-seconds 1)
+                   nil
+                   (lambda ()
+                     (let ((suggsted-activity (first
+                                               (seq-filter (lambda (item)
+                                                             (not
+                                                              (member item (or pomodoro--completed-activities
+                                                                               '()))))
+                                                           pomodoro-activity-list)))))
+                     (when (not pomodoro--completed-activities))
+                     (message "Time to take a break!")
+                     (alert (format "Get up and %s" suggested-activity))
+                     (switch-to-buffer "*Messages*"
+                                       nil
+                                       't)
+                     (pomodoro-break (setq pomorodo--round (+1 pomodoro--round)))))))
 
-  (defun go-version-parser (line)
-    (cadr
-     (split-string
-      (caddr
-       (split-string
-        line))
-      "go")))
+  (defun pomodoro-break (multiplier)
+    (run-at-time (to-seconds (* multiplier 5))
+                 nil
+                 'start-pomodoro-timer))
 
-  (defun perl-version-parser (line)
-    (string-trim
-     (car
-      (split-string
-       (cadr
-        (split-string line "("))
-       ")"))
-     "v"))
-
-  (defun python-version-parser (line)
-    (cadr
-     (split-string line)))
-
-  ;; (defun get-prog-version (prog arg callback)
-  ;;   (let ((proc (start-process "doom-modeline-prog"
-  ;;                              "doom-modeline-prog"
-  ;;                              prog
-  ;;                              arg))
-  ;;         (parser callback))
-  ;;     (set-process-filter proc (lambda (proc1 line)
-  ;;                                (defvar old-buffer-query-functions kill-buffer-query-functions) ;; Store old query function
-  ;;                                (setq kill-buffer-query-functions nil) ;; No need to query user when we kill this buffer and process
-  ;;                                (kill-process proc1)
-  ;;                                (kill-buffer "doom-modeline-prog")
-  ;;                                (setq kill-buffer-query-functions old-buffer-query-functions) ;; let's restore everthing
-  ;;                                (funcall parser line)))
-  ;;     nil))
-
-  ;; (get-prog-version "ruby" "--version" 'ruby-version-parser)
-
-  ;; (get-prog-version "iex" "--version" 'elixir-version-parser)
-
-  ;; (get-prog-version "rustc" "--version" 'rustc-version-parser)
-
-  ;; (get-prog-version "go" "version" 'go-version-parser)
-
-  ;; (get-prog-version "perl" "--version" 'perl-version-parser)
-
-  ;; (get-prog-version "python" "--version" 'python-version-parser)
-
-  ;; (get-prog-version "pipenv" "run python --version")
-
-  ;; (ruby-parser "ruby 2.3.3p222 (2016-11-21 revision 56859) [x86_64-darwin16]")
-  ;; (elixir-parser "IEx 1.7.4 (compiled with Erlang/OTP 21)")
+  (funcall)
 #+END_SRC
