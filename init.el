@@ -1583,3 +1583,71 @@ foo.bar.baz => baz"
     (- (length a) 1 ))))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
+
+(require 'alert)
+(require 'seq)
+(require 'zone)
+
+(defvar pomodoro--current-buffer nil "Buffer to return to after the break")
+(defvar pomodoro--round 0 "The current iteration pomodoro")
+
+;; Todo make this a defcustom
+(defvar pomodoro-activity-list '("do some push ups" "stretch your back" "core exercises") "A list of activity you wish to be reminded to do during your breaks")
+(defvar pomodoro--completed-activities '() "Activities completed during the current session")
+(defvar pomodoro--timer nil "Current timer for pomodoro. It could be the break timer or the pomodoro timer itself.")
+(defvar pomodoro--last-buffer nil "Return to this buffer after the pomodoro break is over.")
+
+;; This is easy to do inline, but I like providing names to ideas like this rather than
+;; relying on implicit knowledge
+(defun pomodoro--minutes (minutes)
+  "Converts the given minutes to seconds"
+  (* minutes 60))
+
+(defun pomodoro--suggest-activity (activity-list completed-activities)
+  (let  ((suggested-list (seq-filter (lambda (item)
+                                       (not
+                                        (member item (or completed-activities
+                                                         '()))))
+                                     activity-list)))
+    (when suggested-list
+      (nth
+       (random (length suggested-list))
+       suggested-list))))
+
+(defun pomodoro-start (&optional message)
+  (interactive)
+  (when (yes-or-no-p (or message
+                         "Would you like to start a pomodoro session?"))
+    (message "Round %s" pomodoro--round)
+    (setq pomodoro--timer
+          (run-at-time (pomodoro--minutes 25)
+                       nil
+                       (lambda ()
+                         (let* ((suggested-activity-maybe (pomodoro--suggest-activity pomodoro-activity-list pomodoro--completed-activities))
+                                ;; Reset the completed activities list if we've run out of activities to suggest
+                                (suggested-activity (if suggested-activity-maybe
+                                                       suggested-activity-maybe
+                                                     (pomodoro--suggest-activity pomodoro-activity-list
+                                                                                 (setq pomodoro--completed-activities nil)))))
+                           (if pomodoro--completed-activities
+                               (push suggested-activity pomodoro--completed-activities)
+                             (setq pomodoro--completed-activities (list suggested-activity)))
+                           (message "Time to take a break!")
+                           (alert (format "Get up and %s" suggested-activity) :title "Pomodoro")
+                           (pomodoro-break (setq pomodoro--round (1+ pomodoro--round)))))))))
+
+(defun pomodoro-break (round)
+  (setq pomodoro--last-buffer (current-buffer))
+  (setq pomodoro--timer
+        (run-at-time (pomodoro--minutes 5)
+                     nil
+                     (lambda ()
+                       (pomodoro-start "Would you like to continue your pomodoro session?")
+                       (message "Welcome back!"))))
+  (zone))
+
+(defun pomodoro-cancel-timer ()
+  (interactive)
+  (when pomodoro--timer
+    (cancel-timer pomodoro--timer)
+    (message "Timer canceled")))
