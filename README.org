@@ -233,8 +233,9 @@ If we're boot strapping a fresh Emacs install, we should have use-package cloned
     (setq use-package-always-defer t)
     (setq use-package-enable-imenu-support t))
 
-  (require 'diminish)                ;; if you use :diminish
-  (require 'bind-key)                ;; if you use any :bind variant
+
+  (use-package diminish)                ;; if you use :diminish
+  (use-package bind-key)                ;; if you use any :bind variant
 #+END_SRC
 *** Generate reports based on use-package
 #+BEGIN_SRC emacs-lisp

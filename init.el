@@ -68,8 +68,9 @@ called `Byte-compiling with Package.el'."
   (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t))
 
-(require 'diminish)                ;; if you use :diminish
-(require 'bind-key)                ;; if you use any :bind variant
+
+(use-package diminish)                ;; if you use :diminish
+(use-package bind-key)                ;; if you use any :bind variant
 
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
@@ -1593,7 +1594,7 @@ foo.bar.baz => baz"
 (defvar pomodoro--round 0 "The current iteration pomodoro")
 
 ;; Todo make this a defcustom
-(defvar pomodoro-activity-list '("do some push ups" "stretch your back" "core exercises") "A list of activity you wish to be reminded to do during your breaks")
+(defvar pomodoro-activity-list '("go for a walk" "stretch your back" "core exercises") "A list of activity you wish to be reminded to do during your breaks")
 (defvar pomodoro--completed-activities '() "Activities completed during the current session")
 (defvar pomodoro--timer nil "Current timer for pomodoro. It could be the break timer or the pomodoro timer itself.")
 (defvar pomodoro--last-buffer nil "Return to this buffer after the pomodoro break is over.")
