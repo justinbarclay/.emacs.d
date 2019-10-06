@@ -223,8 +223,10 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
   (use-package-with-elpa)
 #+END_SRC
 
+If we're boot strapping a fresh Emacs install, we should have use-package cloned into site-lisp and be able to load it from there
 #+BEGIN_SRC emacs-lisp
   (progn ;'use-package
+    (add-to-list 'load-path "~/.emacs.d/site-lisp/use-package")
     (require 'use-package)
     (setq use-package-always-ensure t)
     (setq use-package-verbose nil)
@@ -2388,7 +2390,7 @@ Pomodoro timer
                                  (push suggested-activity pomodoro--completed-activities)
                                (setq pomodoro--completed-activities (list suggested-activity)))
                              (message "Time to take a break!")
-                             (alert (format "Get up and %s" suggested-activity) :title "Pomodoro")
+                             (alert (format "Get up and %s" 'suggested-activity) :title "Pomodoro")
                              (pomodoro-break (setq pomodoro--round (1+ pomodoro--round)))))))))
 
   (defun pomodoro-break (round)

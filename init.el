@@ -61,6 +61,7 @@ called `Byte-compiling with Package.el'."
 (use-package-with-elpa)
 
 (progn ;'use-package
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/use-package")
   (require 'use-package)
   (setq use-package-always-ensure t)
   (setq use-package-verbose nil)
@@ -1633,7 +1634,7 @@ foo.bar.baz => baz"
                                (push suggested-activity pomodoro--completed-activities)
                              (setq pomodoro--completed-activities (list suggested-activity)))
                            (message "Time to take a break!")
-                           (alert (format "Get up and %s" suggested-activity) :title "Pomodoro")
+                           (alert (format "Get up and %s" 'suggested-activity) :title "Pomodoro")
                            (pomodoro-break (setq pomodoro--round (1+ pomodoro--round)))))))))
 
 (defun pomodoro-break (round)
