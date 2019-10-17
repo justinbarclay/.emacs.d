@@ -1548,7 +1548,7 @@ This is being disabled as I switch over to my own package and dog food that
     (use-package elisp-mode
       :ensure nil
       :init
-      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
+      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-parinfer))))
 #+END_SRC
 
 ** Clojure
@@ -2257,6 +2257,7 @@ And the same but without leaving the current window:
 
   (defun enable-parinfer ()
     (turn-off-smartparens-mode)
+    (paredit-mode)
     (parinfer-rust-mode))
 
 (defun enable-lispy ()
