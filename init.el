@@ -736,6 +736,7 @@ This function is called by `org-babel-execute-src-block'"
   :config
   (setq counsel-grep-base-command
         "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
+  (setq ivy-initial-inputs-alist nil)
   :bind
   (("M-x" . counsel-M-x)
     ("C-x C-f" . counsel-find-file)
@@ -1010,7 +1011,7 @@ This function is called by `org-babel-execute-src-block'"
 (use-package elisp-mode
   :ensure nil
   :init
-  (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
+  (add-hook 'emacs-lisp-mode-hook (lambda () (enable-parinfer))))
 
 (use-package flycheck-joker
   :init
@@ -1232,6 +1233,7 @@ This function is called by `org-babel-execute-src-block'"
                ("M-," . 'pop-tag-mark)))
   :config
   (progn
+    (add-hook 'go-mode-hook #'lsp-deferred)
     (add-hook 'before-save-hook 'gofmt-before-save)))
 
 (use-package json-mode
@@ -1514,6 +1516,7 @@ foo.bar.baz => baz"
 
   (defun enable-parinfer ()
     (turn-off-smartparens-mode)
+    (paredit-mode)
     (parinfer-rust-mode))
 
 (defun enable-lispy ()
