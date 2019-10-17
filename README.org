@@ -1502,8 +1502,7 @@ This is being disabled as I switch over to my own package and dog food that
     :quelpa ((parinfer-rust-mode
               :fetcher git
               :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
-              :upgrade nil
-             ))
+              :upgrade nil))
 #+END_SRC
 
 *** eldoc
@@ -2256,6 +2255,7 @@ And the same but without leaving the current window:
     (paredit-mode))
 
   (defun enable-parinfer ()
+    (global-hungry-delete-mode 0)
     (turn-off-smartparens-mode)
     (paredit-mode)
     (parinfer-rust-mode))

@@ -977,8 +977,7 @@ This function is called by `org-babel-execute-src-block'"
   :quelpa ((parinfer-rust-mode
             :fetcher git
             :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
-            :upgrade nil
-           ))
+            :upgrade nil))
 
 (use-package eldoc
   :ensure nil
@@ -1515,6 +1514,7 @@ foo.bar.baz => baz"
     (paredit-mode))
 
   (defun enable-parinfer ()
+    (global-hungry-delete-mode 0)
     (turn-off-smartparens-mode)
     (paredit-mode)
     (parinfer-rust-mode))
