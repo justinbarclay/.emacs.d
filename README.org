@@ -1131,6 +1131,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
     :config
     (setq counsel-grep-base-command
           "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
+    (setq ivy-initial-inputs-alist nil)
     :bind
     (("M-x" . counsel-M-x)
       ("C-x C-f" . counsel-find-file)
