@@ -1870,6 +1870,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
                  ("M-," . 'pop-tag-mark)))
     :config
     (progn
+      (add-hook 'go-mode-hook #'lsp-deferred)
       (add-hook 'before-save-hook 'gofmt-before-save)))
 #+END_SRC
 
