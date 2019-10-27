@@ -141,7 +141,17 @@ called `Byte-compiling with Package.el'."
      '(org-startup-folded (quote overview))
      '(org-startup-indented t))))
 
-(use-package org-trello)
+(use-package org-trello
+  :config
+  (defun org-trello-pull-buffer ()
+     "Synchronize current buffer from trello."
+     (interactive)
+     (org-trello-sync-buffer 'from))
+
+  (defun org-trello-pull-card ()
+     "Synchronize card at point from trello."
+     (interactive)
+     (org-trello-sync-card 'from)))
 
 (use-package org-bullets
   :init
@@ -347,8 +357,7 @@ This function is called by `org-babel-execute-src-block'"
   (transient-insert-suffix 'forge-dispatch "c i"
     '("c" "issues" forge-create-create)))
 
-(setq default-frame-alist '((ns-transparent-titlebar . t) (ns-appearance . 'nil)))
-(add-to-list 'default-frame-alist '(ns-appearance . dark))
+(setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil)))
 
 (tool-bar-mode -1)
 
@@ -934,7 +943,7 @@ This function is called by `org-babel-execute-src-block'"
 
 (use-package lsp-ui
   :init
-  (add-hook 'lsp-mode-hook #'lsp-ui-mode))
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
@@ -1204,24 +1213,13 @@ This function is called by `org-babel-execute-src-block'"
     (robe-start)
     (robe-mode)))
 
-(use-package eglot
-  :bind (("M-." . xref-find-definitions)
-         ("M-," . xref-pop-marker-stack))
-  :hook ((rust-mode) . eglot-ensure)
-  :config
-  ;; Fix column calculation when ligatures are used
-  (setq eglot-current-column-function 'eglot-lsp-abiding-column)
-  (general-define-key :keymap 'eglot-mode-map "C-h ." 'eglot-help-at-point))
-
 (use-package rustic
   :bind ("C-c r" . rustic-compile)
-  :init (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
   :mode ("\\.rs\\'" . rustic-mode)
+  :hook lsp-deferred
   :config
   (progn
-    (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
     (setq rustic-format-on-save nil)
-    (setq rustic-rls-pkg 'eglot)
     (setq rustic-indent-offset 2)
     (electric-pair-mode 1)))
 
