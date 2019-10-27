@@ -1418,7 +1418,7 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-ui
     :init
-    (add-hook 'lsp-mode-hook #'lsp-ui-mode))
+    (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 #+END_SRC
 * Languages
 Major mode customizations
@@ -1818,22 +1818,8 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
       (add-hook 'rust-mode-hook #'lsp-rust-enable)))
   ;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
 #+END_SRC
-*** Rust-mode
-#+BEGIN_SRC emacs-lisp :tangle
-  (use-package rust-mode
-      :mode "\\.rs\\'"
-      :bind
-      (:map rust-mode-map
-            (([tab] . company-indent-or-complete-common)
-             ("C-c <tab>" . rust-format-buffer)))
-      :config
-      (progn
-        (setq rust-indent-offset 2)
-        (electric-pair-mode 1)))
-#+END_SRC
-
 *** Eglot
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package eglot
     :bind (("M-." . xref-find-definitions)
            ("M-," . xref-pop-marker-stack))
@@ -1848,23 +1834,16 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp :tangle
 (use-package cargo)
 #+END_SRC
-*** rust-playground
-#+BEGIN_SRC emacs-lisp :tangle
-  (use-package rust-playground)
-#+END_SRC
-
 *** Rustic
 We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-playground packages are causing rust-mode to shadow rustic-mode.
 #+BEGIN_SRC emacs-lisp
   (use-package rustic
     :bind ("C-c r" . rustic-compile)
-    :init (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
     :mode ("\\.rs\\'" . rustic-mode)
+    :hook lsp-deferred
     :config
     (progn
-      (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
       (setq rustic-format-on-save nil)
-      (setq rustic-rls-pkg 'eglot)
       (setq rustic-indent-offset 2)
       (electric-pair-mode 1)))
 #+END_SRC
