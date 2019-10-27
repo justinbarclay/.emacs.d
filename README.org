@@ -605,8 +605,7 @@ as such need both of these modes loaded before they'll work.
 ** Window
 *** Natural colouring from emacs chrome
 #+BEGIN_SRC emacs-lisp
-  (setq default-frame-alist '((ns-transparent-titlebar . t) (ns-appearance . 'nil)))
-  (add-to-list 'default-frame-alist '(ns-appearance . dark))
+(setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil)))
 #+END_SRC
 
 *** Remove toolbar
