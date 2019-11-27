@@ -966,17 +966,18 @@ This function is called by `org-babel-execute-src-block'"
 (use-package sass-mode
   :mode "\\.sass\\'")
 
-(progn ; C mode hook
-  (add-hook 'c-mode-hook 'flycheck-mode)
-  (add-hook 'c-mode-hook 'semantic-mode)
-  (add-hook 'c-mode-hook 'ycmd-mode)
-  (add-hook 'c-mode-hook 'counsel-gtags-mode)
-  (add-hook 'c++-mode-hook 'counsel-gtags-mode)
-  (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
+(use-package c-mode
+  :ensure nil
+  :config
+  (progn ; C mode hook
+    (add-hook 'c-mode-hook 'flycheck-mode)
+    (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
+    (eval-after-load 'c-mode '(setq-local eldoc-documentation-function #'ggtags-eldoc-function))
+    (setq-default c-basic-offset 2)))
 
-(eval-after-load 'c-mode '(setq-local eldoc-documentation-function #'ggtags-eldoc-function))
-
-(setq-default c-basic-offset 2)
+(use-package c++-mode
+  :ensure nil
+  )
 
 (use-package c-eldoc)
 
