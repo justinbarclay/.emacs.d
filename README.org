@@ -1697,6 +1697,23 @@ A REPL for Clojure and nrepl for ClojureScript
       (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
       (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)))
 #+END_SRC
+**** Custom cider functions
+This was suggested by @dpsutton on the slack channel and seems to be really interesting. It creates a little pop-up window by you cursor to show you the meaning of a thing
+#+BEGIN_SRC emacs-lisp
+(defun cider--tooltip-show ()
+  (interactive)
+  (if-let ((info (cider-var-info (thing-at-point 'symbol))))
+      (nrepl-dbind-response info (doc arglists-str name ns)
+        (pos-tip-show (format "%s : %s\n%s\n%s" ns name arglists-str doc)
+                      nil
+                      nil
+                      nil
+                      -1))
+    (message "info not found")))
+
+(bind-key "C-c t" 'cider--tooltip-show)
+#+END_SRC
+
 ** JavaScript
 Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
 *** Tern
@@ -2058,6 +2075,13 @@ Get limited autocompletion in Lua
   (use-package restclient)
 #+END_SRC
 * Custom Functions
+** Allow for clojure style comment blocks
+#+BEGIN_SRC emacs-lisp
+(defmacro comment (docstring &rest body)
+  "Ignores body and yields nil"
+  nil)
+#+END_SRC
+
 ** Resize font size
 Increases the fonts size across all buffers
 #+BEGIN_SRC emacs-lisp

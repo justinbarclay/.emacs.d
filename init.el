@@ -1122,6 +1122,19 @@ This function is called by `org-babel-execute-src-block'"
     (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
     (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)))
 
+(defun cider--tooltip-show ()
+  (interactive)
+  (if-let ((info (cider-var-info (thing-at-point 'symbol))))
+      (nrepl-dbind-response info (doc arglists-str name ns)
+        (pos-tip-show (format "%s : %s\n%s\n%s" ns name arglists-str doc)
+                      nil
+                      nil
+                      nil
+                      -1))
+    (message "info not found")))
+
+(bind-key "C-c t" 'cider--tooltip-show)
+
 (use-package company-tern
   :bind
   ("M-." . nil)
@@ -1355,6 +1368,10 @@ This function is called by `org-babel-execute-src-block'"
    ("s-r" . profiler-report)))
 
 (use-package restclient)
+
+(defmacro comment (docstring &rest body)
+  "Ignores body and yields nil"
+  nil)
 
 (defun font-name-replace-size (font-name new-size)
   (let ((parts (split-string font-name "-")))
