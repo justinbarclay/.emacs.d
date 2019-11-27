@@ -997,6 +997,7 @@ This function is called by `org-babel-execute-src-block'"
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package parinfer-rust-mode
+  :defer 2
   :commands (parinfer-rust-mode)
   :quelpa ((parinfer-rust-mode
             :fetcher git

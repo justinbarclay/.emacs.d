@@ -7,12 +7,15 @@
   - [[#lets-make-the-emacs-start-up-run-fast][Let's make the Emacs start up run fast]]
   - [[#package-repositories][Package repositories]]
   - [[#personal-information][Personal information]]
+- [[#vars][Vars]]
+  - [[#os][OS]]
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
   - [[#org-mode][Org Mode]]
   - [[#langtool][Langtool]]
   - [[#eshell][EShell]]
   - [[#magit][Magit]]
+  - [[#notmuch][Notmuch]]
 - [[#look-and-feel][Look and Feel]]
   - [[#window][Window]]
   - [[#font][Font]]
@@ -102,6 +105,7 @@
   - [[#enable-paredit-or-parinfer][Enable Paredit or Parinfer]]
   - [[#rename-buffer-and-file][Rename buffer and file]]
   - [[#post-from-any-buffer-to-slack-with-emacs][Post from any buffer to Slack with Emacs]]
+  - [[#stats][Stats]]
   - [[#turn-back-on-file-name-handler-alist][Turn back on file-name-handler-alist]]
   - [[#playground][Playground]]
 
@@ -1536,6 +1540,7 @@ This is being disabled as I switch over to my own package and dog food that
 *** parinfer-rust-mode
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
+    :defer 2
     :commands (parinfer-rust-mode)
     :quelpa ((parinfer-rust-mode
               :fetcher git
