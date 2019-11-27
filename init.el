@@ -1259,13 +1259,7 @@ This function is called by `org-babel-execute-src-block'"
   :config
   (setq-local tab-width 2))
 
-(use-package docker
-  :config
-  (progn
-    (setenv "DOCKER_TLS_VERIFY" "1")
-    (setenv "DOCKER_HOST" "tcp://10.11.12.13:2376")
-    (setenv "DOCKER_CERT_PATH" "/Users/justin/.docker/machine/machines/box")
-    (setenv "DOCKER_MACHINE_NAME" "box")))
+(use-package docker)
 
 (use-package markdown-mode
   :commands (markdown-mode gfm-mode)
