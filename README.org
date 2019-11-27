@@ -614,6 +614,16 @@ as such need both of these modes loaded before they'll work.
     '("c" "issues" forge-create-create)))
 #+END_SRC
 
+** Notmuch
+#+BEGIN_SRC emacs-lisp
+  (use-package notmuch
+    :config
+    (append 'notmuch-saved-searches
+            '((:name "unreplied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. not thread:\"{to:justincbarclay@gmail.com}\"")
+              (:name "replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
+              (:name "recently-sent" :query "tag:sent date:yesterday.."))))
+#+END_SRC
+
 * Look and Feel
 ** Window
 *** Natural colouring from emacs chrome

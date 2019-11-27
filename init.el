@@ -364,6 +364,13 @@ This function is called by `org-babel-execute-src-block'"
   (transient-insert-suffix 'forge-dispatch "c i"
     '("c" "issues" forge-create-create)))
 
+(use-package notmuch
+  :config
+  (append 'notmuch-saved-searches
+          '((:name "unreplied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. not thread:\"{to:justincbarclay@gmail.com}\"")
+            (:name "replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
+            (:name "recently-sent" :query "tag:sent date:yesterday.."))))
+
 (setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil)))
 
 (tool-bar-mode -1)
