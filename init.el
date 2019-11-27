@@ -134,7 +134,6 @@ called `Byte-compiling with Package.el'."
                                    (js . t)
                                    (ruby . t)))
     (custom-set-variables
-     '(org-directory "~/Dropbox/orgfiles")
      '(org-default-notes-file (concat org-directory "/notes.org"))
      '(org-export-html-postamble nil)
      '(org-hide-leading-stars t)
@@ -162,6 +161,14 @@ called `Byte-compiling with Package.el'."
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((restclient . t))))
+
+(use-package org-noter)
+
+(use-package org-pdftools
+ :quelpa ((org-pdftools
+           :fetcher git
+           :url "https://github.com/fuxialexander/org-pdftools.git"
+           :upgrade nil)))
 
 (use-package toc-org
   :hook (org-mode-hook . toc-org-enable))

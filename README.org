@@ -339,7 +339,6 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
                                      (js . t)
                                      (ruby . t)))
       (custom-set-variables
-       '(org-directory "~/Dropbox/orgfiles")
        '(org-default-notes-file (concat org-directory "/notes.org"))
        '(org-export-html-postamble nil)
        '(org-hide-leading-stars t)
@@ -376,6 +375,20 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
      'org-babel-load-languages
      '((restclient . t))))
 #+END_SRC
+*** org-noter
+#+BEGIN_SRC emacs-lisp
+(use-package org-noter)
+#+END_SRC
+*** org-pdftools
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-pdftools
+   :quelpa ((org-pdftools
+             :fetcher git
+             :url "https://github.com/fuxialexander/org-pdftools.git"
+             :upgrade nil)))
+#+END_SRC
+
 *** Org-toc
 After the installation, every time you’ll be saving an org file, the first headline with a :TOC: tag will be updated with the current table of contents.
 
