@@ -389,9 +389,15 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 (use-package org-noter)
 #+END_SRC
 *** org-pdftools
+Before we can install org-pdftools, we need to install pdf-tools
+#+BEGIN_SRC elisp
+(use-package pdf-tools)
+#+END_SRC
 
+Now that we have that installed we can pull in org-pdftools from github
 #+BEGIN_SRC emacs-lisp
   (use-package org-pdftools
+   :ensure nil
    :quelpa ((org-pdftools
              :fetcher git
              :url "https://github.com/fuxialexander/org-pdftools.git"
