@@ -737,6 +737,16 @@ My name isn't "Tinker", so I don't need a bell.
 ;; Go straight to scratch buffer on startup
 (setq inhibit-startup-message t)
 #+END_SRC
+
+If we're running Emacs 27, we can help improve parsing and turning Bidirectional Parentheses Algorithm.
+
+Note:
+Disabling the BPA makes redisplay faster, but might produce incorrect
+display reordering of bidirectional text with embedded parentheses
+#+BEGIN_SRC elisp
+(setq bidi-inhibit-bpa t)
+#+END_SRC
+
 ** Smooth scrolling
 
 #+BEGIN_SRC emacs-lisp :tangle
