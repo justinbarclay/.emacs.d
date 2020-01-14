@@ -266,10 +266,15 @@ Most of the packages I want to use are hosted on Elpa and Melpa, but sometimes t
 
 But in order for use-package to be able to use quelpa, we need to add another package
 #+BEGIN_SRC emacs-lisp
-(use-package quelpa-use-package
-:ensure t
-:init
-(require 'quelpa-use-package))
+  (use-package quelpa-use-package
+    :ensure t
+    :init
+    (require 'quelpa-use-package))
+#+END_SRC
+
+*** Make sure gpg-keys are up to date
+#+BEGIN_SRC emacs-lisp
+(use-package gnu-elpa-keyring-update)
 #+END_SRC
 
 *** Debugging
