@@ -419,6 +419,20 @@ You can also use @ as separator, instead of _.
   (use-package toc-org
     :hook (org-mode-hook . toc-org-enable))
 #+END_SRC
+
+*** Org-tree-slide
+A presentation mode directly in Emacs and Org Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package org-tree-slide
+    :config
+    (progn
+      (org-tree-slide-presentation-profile)
+      (setq org-tree-slide-slide-in-effect nil
+            org-tree-slide-skip-done nil
+            org-tree-slide-header nil)))
+
+#+END_SRC
+
 *** Org-re-reveal
 Creating presentation using org mode and the web
 #+BEGIN_SRC emacs-lisp
@@ -1450,6 +1464,10 @@ Load this before we load Flycheck
 #+END_SRC
 ** LSP-Mode
 #+BEGIN_SRC emacs-lisp
+  (use-package rust-analyzer)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
   (use-package lsp-mode)
 #+END_SRC
 *** Company-LSP
@@ -1463,7 +1481,7 @@ Load this before we load Flycheck
     )
 #+END_SRC
 *** lsp-ui
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package lsp-ui
     :init
     (add-hook 'lsp-mode-hook 'lsp-ui-mode))
