@@ -384,19 +384,15 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
      'org-babel-load-languages
      '((restclient . t))))
 #+END_SRC
-*** org-noter
-#+BEGIN_SRC emacs-lisp
-(use-package org-noter)
-#+END_SRC
 *** org-pdftools
 Before we can install org-pdftools, we need to install pdf-tools
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle
 (use-package pdf-tools)
 #+END_SRC
 
 Now that we have that installed we can pull in org-pdftools from github
-#+BEGIN_SRC emacs-lisp
-  (use-package org-pdftools
+#+BEGIN_SRC emacs-lisp :tangle
+(use-package org-pdftools
    :ensure nil
    :quelpa ((org-pdftools
              :fetcher git
@@ -622,16 +618,17 @@ as such need both of these modes loaded before they'll work.
        ;; pop the process buffer if we're taking a while to complete
        magit-process-popup-time 10
        ;; ask me if I want a tracking upstream
-       magit-set-upstream-on-push 'askifnotset)))
+       magit-set-upstream-on-push 'askifnotset))
+    )
 #+END_SRC
 *** Magit blame
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
 (use-package magit-blame
   :ensure nil
   :bind ("C-c C-g b" . magit-blame-mode))
 #+END_SRC
 *** Magit forges
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
 (use-package forge
   :after magit
   :init
@@ -1359,6 +1356,7 @@ Remember where point was when I come back to a file
 #+END_SRC
 
 ** Code Folding
+Emacs by default doesn't have a good story for folding text so we have to add one.
 #+BEGIN_SRC emacs-lisp
 (use-package origami
   :bind ("C-s-<tab>" . origami-recursively-toggle-node)
@@ -1377,8 +1375,8 @@ Open up the program dash
     (add-to-list 'dash-at-point-mode-alist '(clojure-mode ("clojure"))))
 #+END_SRC
 ** Undo-tree
-Easily navigate buffer state through a UI helper
-#+BEGIN_SRC emacs-lisp
+Easily navigate buffer state through a UI helper.
+#+BEGIN_SRC emacs-lisp :tangle
 (use-package undo-tree
   :demand t
   :config
@@ -1396,8 +1394,15 @@ Emacs can automatically create backup files. This tells Emacs to put all backups
 Emacs doesn’t handle trailing spaces or anything like that very well by default, it’s far too aggressive for my tastes, so we’ll use ws-butler to fix this.
 #+BEGIN_SRC emacs-lisp
   (use-package ws-butler
-    :commands (ws-butler-global-mode)
-    :hook (after-init . (lambda () (ws-butler-global-mode 1))))
+    :commands (ws-butler-mode)
+    :hook (prog-mode . ws-butler-mode))
+#+END_SRC
+** Emojis
+Emacs doesn't natively support Emojis, so let's add some.
+#+BEGIN_SRC emacs-lisp
+(use-package emojify
+    :hook ((prog-mode . emojify-mode)
+           (text-mode . emojify-mode)))
 #+END_SRC
 
 * Syntax and Error checking
@@ -1436,7 +1441,7 @@ Load this before we load Flycheck
 
 * Code Completion
 ** Semantic
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
 (use-package semantic
   :ensure nil
   :config
@@ -1448,43 +1453,35 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package company
     :hook (prog-mode . company-mode)
-    :bind
-    (;;("C-<tab>" . company-capf)
-     :map company-mode-map
-     (("M-h" . company-quickhelp-manual-begin)))
-    :config
-    (progn
-      (setq company-idle-delay 0.3)
-      (setq company-frontends
-            '(company-pseudo-tooltip-unless-just-one-frontend
-              company-preview-frontend
-              company-echo-metadata-frontend))
-      (setq company-auto-complete t)
-      (setq company-tooltip-align-annotations t)))
+    :config (setq company-tooltip-align-annotations t)
+            (setq company-minimum-prefix-length 1))
 #+END_SRC
 ** LSP-Mode
 #+BEGIN_SRC emacs-lisp
-  (use-package rust-analyzer)
+  (use-package rust-analyzer
+  :ensure nil)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-  (use-package lsp-mode)
+  (use-package lsp-mode
+    :commands lsp)
 #+END_SRC
 *** Company-LSP
 #+BEGIN_SRC emacs-lisp
   (use-package company-lsp
-    :after (company lsp-mode)
-    :init (push 'company-lsp company-backends)
+    :commands company-lsp
+    :after (company lsp)
+   ;; :init (push '(company-lsp) company-backends)
     :config
     (setq company-lsp-cache-candidates 'auto)
-    ;;(setq company-lsp-async t)
-    )
+    (setq company-lsp-async t))
 #+END_SRC
 *** lsp-ui
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp
   (use-package lsp-ui
-    :init
-    (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+    :commands lsp-ui-mode)
+    ;; :init
+    ;; (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 #+END_SRC
 * Languages
 Major mode customizations
@@ -1579,7 +1576,7 @@ This is being disabled as I switch over to my own package and dog food that
 *** parinfer-rust-mode
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
-    :defer 2
+    :defer 10
     :commands (parinfer-rust-mode)
     :quelpa ((parinfer-rust-mode
               :fetcher git
@@ -1629,7 +1626,7 @@ This is being disabled as I switch over to my own package and dog food that
     (use-package elisp-mode
       :ensure nil
       :init
-      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-parinfer))))
+      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 #+END_SRC
 
 ** Clojure
@@ -1897,17 +1894,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
       :commands (flycheck-rust-setup)
       :hook rust-mode)
 #+END_SRC
-*** lsp-rust
-#+BEGIN_SRC emacs-lisp :tangle
-  (use-package lsp-rust
-    :init
-    (progn
-      (require 'lsp-rust)
-      (setq RUSTC "~/.cargo/bin/rustc")
-      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
-      (add-hook 'rust-mode-hook #'lsp-rust-enable)))
-  ;;      (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls" "RUST_BACKTRACE=1"))))
-#+END_SRC
 *** Eglot
 #+BEGIN_SRC emacs-lisp :tangle
   (use-package eglot
@@ -1937,6 +1923,19 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
       (setq rustic-indent-offset 2)
       (electric-pair-mode 1)))
 #+END_SRC
+
+*** Rust repl
+#+BEGIN_SRC emacs-lisp :tangle
+(use-package evcxr-mode
+   :defer t
+   :ensure nil
+   :config (add-hook 'rustic-mode-hook 'evcxr-minor-mode)
+   :quelpa ((evcxr
+             :fetcher git
+             :url "https://github.com/SerialDev/evcxr-mode.git"
+             :upgrade t)))
+#+END_SRC
+
 ** Go
 *** Go Mode
 #+BEGIN_SRC emacs-lisp

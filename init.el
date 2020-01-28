@@ -103,14 +103,13 @@ called `Byte-compiling with Package.el'."
       (org-up-element)
       (save-excursion
         (save-match-data
-          (org-with-limited-levels
-           (narrow-to-region
-            (progn
-              (org-back-to-heading t)
-              (point))
-            (progn (org-end-of-subtree t t)
-                   (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
-                   (point)))))))
+      (org-with-limited-levels
+       (narrow-to-region
+        (progn
+          (org-back-to-heading t) (point))
+        (progn (org-end-of-subtree t t)
+               (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
+               (point)))))))
     (setq truncate-lines t
           global-company-modes '(not org-mode)))
   :config
@@ -165,16 +164,16 @@ called `Byte-compiling with Package.el'."
    'org-babel-load-languages
    '((restclient . t))))
 
-(use-package org-noter)
-
-(use-package org-pdftools
- :quelpa ((org-pdftools
-           :fetcher git
-           :url "https://github.com/fuxialexander/org-pdftools.git"
-           :upgrade nil)))
-
 (use-package toc-org
   :hook (org-mode-hook . toc-org-enable))
+
+(use-package org-tree-slide
+  :config
+  (progn
+    (org-tree-slide-presentation-profile)
+    (setq org-tree-slide-slide-in-effect nil
+          org-tree-slide-skip-done nil
+          org-tree-slide-header nil)))
 
 (use-package org-re-reveal)
 
@@ -351,21 +350,8 @@ This function is called by `org-babel-execute-src-block'"
      ;; pop the process buffer if we're taking a while to complete
      magit-process-popup-time 10
      ;; ask me if I want a tracking upstream
-     magit-set-upstream-on-push 'askifnotset)))
-
-(use-package magit-blame
-  :ensure nil
-  :bind ("C-c C-g b" . magit-blame-mode))
-
-(use-package forge
-  :after magit
-  :init
-  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-  :config
-  (transient-insert-suffix 'forge-dispatch "c p"
-    '("p" "pull-request" forge-create-pullreq))
-  (transient-insert-suffix 'forge-dispatch "c i"
-    '("c" "issues" forge-create-create)))
+     magit-set-upstream-on-push 'askifnotset))
+  )
 
 (use-package notmuch
   :config
@@ -765,16 +751,16 @@ This function is called by `org-babel-execute-src-block'"
   (setq ivy-initial-inputs-alist nil)
   :bind
   (("M-x" . counsel-M-x)
-   ("C-x C-f" . counsel-find-file)
-   ("C-c p f" . counsel-projectile-find-file)
-   ("C-c p d" . counsel-projectile-find-dir)
-   ("C-c p p" . counsel-projectile-switch-project)
-   ("<f1> f" . counsel-describe-function)
-   ("<f1> v" . counsel-describe-variable)
-   ("<f1> l" . counsel-load-library)
-   ("<f2> i" . counsel-info-lookup-symbol)
-   ("<f2> u" . counsel-unicode-char)
-   ("C-c k" . counsel-rg)))
+    ("C-x C-f" . counsel-find-file)
+    ("C-c p f" . counsel-projectile-find-file)
+    ("C-c p d" . counsel-projectile-find-dir)
+    ("C-c p p" . counsel-projectile-switch-project)
+    ("<f1> f" . counsel-describe-function)
+    ("<f1> v" . counsel-describe-variable)
+    ("<f1> l" . counsel-load-library)
+    ("<f2> i" . counsel-info-lookup-symbol)
+    ("<f2> u" . counsel-unicode-char)
+    ("C-c k" . counsel-rg)))
 
 (use-package counsel-projectile
   :after projectile
@@ -888,18 +874,17 @@ This function is called by `org-babel-execute-src-block'"
   (add-to-list 'dash-at-point-mode-alist '(clojurescript-mode ("clojure")))
   (add-to-list 'dash-at-point-mode-alist '(clojure-mode ("clojure"))))
 
-(use-package undo-tree
-  :demand t
-  :config
-  (global-undo-tree-mode))
-
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
 (setq auto-save-default nil)
 
 (use-package ws-butler
-  :commands (ws-butler-global-mode)
-  :hook (after-init . (lambda () (ws-butler-global-mode 1))))
+  :commands (ws-butler-mode)
+  :hook (prog-mode . ws-butler-mode))
+
+(use-package emojify
+    :hook ((prog-mode . emojify-mode)
+           (text-mode . emojify-mode)))
 
 (use-package flycheck-pos-tip)
 
@@ -913,7 +898,7 @@ This function is called by `org-babel-execute-src-block'"
     (setq flycheck-standard-error-navigation nil)
     (when 'display-graphic-p (selected-frame)
       (eval-after-load 'flycheck
-       (flycheck-pos-tip-mode)))))
+      (flycheck-pos-tip-mode)))))
 
 (require 'flyspell)
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
@@ -925,38 +910,29 @@ This function is called by `org-babel-execute-src-block'"
   ;;  ;; :config (setq flyspell-issue-message-flag nil)
   ;; )
 
-(use-package semantic
-  :ensure nil
-  :config
-  (semantic-mode 1)
-  (global-semanticdb-minor-mode 1)
-  (global-semantic-idle-scheduler-mode 1))
-
 (use-package company
   :hook (prog-mode . company-mode)
-  :bind
-  (;;("C-<tab>" . company-capf)
-   :map company-mode-map
-   (("M-h" . company-quickhelp-manual-begin)))
-  :config
-  (progn
-    (setq company-idle-delay 0.3)
-    (setq company-frontends
-          '(company-pseudo-tooltip-unless-just-one-frontend
-            company-preview-frontend
-            company-echo-metadata-frontend))
-    (setq company-auto-complete t)
-    (setq company-tooltip-align-annotations t)))
+  :config (setq company-tooltip-align-annotations t)
+          (setq company-minimum-prefix-length 1))
 
-(use-package lsp-mode)
+(use-package rust-analyzer
+:ensure nil)
+
+(use-package lsp-mode
+  :commands lsp)
 
 (use-package company-lsp
-  :after (company lsp-mode)
-  :init (push 'company-lsp company-backends)
+  :commands company-lsp
+  :after (company lsp)
+ ;; :init (push '(company-lsp) company-backends)
   :config
-  (setq company-lsp-cache-candidates 'auto))
-  ;;(setq company-lsp-async t)
-  
+  (setq company-lsp-cache-candidates 'auto)
+  (setq company-lsp-async t))
+
+(use-package lsp-ui
+  :commands lsp-ui-mode)
+  ;; :init
+  ;; (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
@@ -975,7 +951,8 @@ This function is called by `org-babel-execute-src-block'"
     (setq-default c-basic-offset 2)))
 
 (use-package c++-mode
-  :ensure nil)
+  :ensure nil
+  )
 
 (use-package c-eldoc)
 
@@ -995,12 +972,12 @@ This function is called by `org-babel-execute-src-block'"
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package parinfer-rust-mode
-  :defer 2
+  :defer 10
   :commands (parinfer-rust-mode)
   :quelpa ((parinfer-rust-mode
             :fetcher git
             :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
-           :upgrade nil))
+            :upgrade nil))
 
 (use-package eldoc
   :ensure nil
@@ -1033,7 +1010,7 @@ This function is called by `org-babel-execute-src-block'"
 (use-package elisp-mode
   :ensure nil
   :init
-  (add-hook 'emacs-lisp-mode-hook (lambda () (enable-parinfer))))
+  (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 
 (use-package flycheck-joker
   :init
@@ -1291,7 +1268,7 @@ This function is called by `org-babel-execute-src-block'"
   :mode "\\.ps\\'")
 
 (use-package terraform-mode
- :mode "\\.tf\\'")
+:mode "\\.tf\\'" )
 
 (use-package yaml-mode
   :defer t)
@@ -1324,10 +1301,10 @@ This function is called by `org-babel-execute-src-block'"
      :client-secret (getenv "SLACK_CLIENT_SECRET")
      :token (getenv "TIDAL_SLACK_TOKEN")
      :subscribed-channels '(general)))
-(use-package alert
-  :commands (alert)
-  :init
-  (setq alert-default-style 'osx-notifier))
+  (use-package alert
+    :commands (alert)
+    :init
+    (setq alert-default-style 'osx-notifier))
 
 (use-package dashboard
   :defer 1
@@ -1424,25 +1401,25 @@ DELTA should be a multiple of 10, in the units used by the
       (interactive)
       (let* ((-suffix-map
              ;; (‹extension› . ‹shell program name›)
-              `(("php" . "php")
-                ("pl" . "perl")
-                ("py" . "python")
-                ("py3" . ,(if (string-equal system-type "windows-nt") "c:/Python32/python.exe" "python3"))
-                ("rb" . "ruby")
-                ("go" . "go run")
-                ("js" . "node") ; node.js
-                ("sh" . "bash")
-                ("fish" . "fish")
-                ("rkt" . "racket")
-                ("ml" . "ocaml")
-                ("vbs" . "cscript")
-                ("tex" . "pdflatex")
-                ("latex" . "pdflatex")
-                ("java" . "javac")))
-             -fname
-             -fSuffix
-             -prog-name
-             -cmd-str)
+             `(("php" . "php")
+               ("pl" . "perl")
+               ("py" . "python")
+               ("py3" . ,(if (string-equal system-type "windows-nt") "c:/Python32/python.exe" "python3"))
+               ("rb" . "ruby")
+               ("go" . "go run")
+               ("js" . "node") ; node.js
+               ("sh" . "bash")
+               ("fish" . "fish")
+               ("rkt" . "racket")
+               ("ml" . "ocaml")
+               ("vbs" . "cscript")
+               ("tex" . "pdflatex")
+               ("latex" . "pdflatex")
+               ("java" . "javac")))
+            -fname
+            -fSuffix
+            -prog-name
+            -cmd-str)
 
         (when (null (buffer-file-name)) (save-buffer))
         (when (buffer-modified-p) (save-buffer))
@@ -1456,13 +1433,13 @@ DELTA should be a multiple of 10, in the units used by the
          ((string-equal -fSuffix "el") (load -fname))
          ((string-equal -fSuffix "java")
           (progn
-            (shell-command -cmd-str "*xah-run-current-file output*")
+            (shell-command -cmd-str "*xah-run-current-file output*" )
             (shell-command
              (format "java %s" (file-name-sans-extension (file-name-nondirectory -fname))))))
          (t (if -prog-name
                 (progn
                   (message "Running…")
-                  (shell-command -cmd-str "*xah-run-current-file output*"))
+                  (shell-command -cmd-str "*xah-run-current-file output*" ))
               (message "No recognized program file suffix for this file."))))))
   ;;  (global-set-key (kbd "s-r") 'xah-run-current-file)
 
@@ -1536,11 +1513,11 @@ foo.bar.baz => baz"
     (turn-off-smartparens-mode)
     (paredit-mode))
 
-(defun enable-parinfer ()
-  (global-hungry-delete-mode 0)
-  (turn-off-smartparens-mode)
-  (paredit-mode)
-  (parinfer-rust-mode))
+  (defun enable-parinfer ()
+    (global-hungry-delete-mode 0)
+    (turn-off-smartparens-mode)
+    (paredit-mode)
+    (parinfer-rust-mode))
 
 (defun enable-lispy ()
     (turn-off-smartparens-mode)
@@ -1608,9 +1585,11 @@ foo.bar.baz => baz"
     (apply '+ (mapcar 'square (mapcar (lambda (subtract)
                                         (- subtract (mean a)))
                                       a)))
-    (- (length a) 1))))
+    (- (length a) 1 ))))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
+
+(setq bidi-inhibit-bpa t)
 
 (require 'alert)
 (require 'seq)
@@ -1679,39 +1658,3 @@ foo.bar.baz => baz"
   (when pomodoro--timer
     (cancel-timer pomodoro--timer)
     (message "Timer canceled")))
-(put 'dired-find-alternate-file 'disabled nil)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-default-notes-file (concat org-directory "/notes.org"))
- '(org-export-html-postamble nil)
- '(org-hide-leading-stars t)
- '(org-startup-folded 'overview)
- '(org-startup-indented t)
- '(package-selected-packages
-   '(dap-mode brutalist-theme rust-auto-use ob-restclient eredis json-navigator org-tree-slide forge yard-mode ws-butler vterm undo-tree treemacs-projectile toc-org terraform-mode tagedit ssh-config-mode spaceline sos solarized-theme smartparens slime-company slack sass-mode rustic rspec-mode robe ripgrep rbenv rainbow-mode rainbow-delimiters racket-mode quelpa-use-package quack powershell ox-hugo origami org-trello org-pdftools org-noter org-bullets notmuch-labeler lua-mode lsp-ui lispy lenlen-theme langtool kibit-helper ivy-rich ido-completing-read+ ibuffer-projectile hungry-delete go-mode gnu-elpa-keyring-update ggtags flymd flycheck-pos-tip flycheck-joker flx fish-mode fireplace eyebrowse esup enh-ruby-mode elsa eglot dracula-theme doom-modeline dockerfile-mode docker diminish dashboard dash-at-point counsel-projectile counsel-notmuch counsel-gtags company-tern company-lsp coffee-mode clj-refactor c-eldoc benchmark-init autotetris-mode all-the-icons-dired))
- '(quelpa-checkout-melpa-p nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))
- '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
- '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
- '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
- '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
- '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
- '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
- '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
- '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
- '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
- '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
- '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
- '(rainbow-delimiters-unmatched-face ((t (:foreground "black")))))
-(put 'upcase-region 'disabled nil)
-(put 'set-goal-column 'disabled nil)
-(put 'narrow-to-page 'disabled nil)
-(put 'downcase-region 'disabled nil)
