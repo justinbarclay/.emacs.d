@@ -544,6 +544,11 @@ This function is called by `org-babel-execute-src-block'"
   (setenv "SHELL" shell-file-name)
   (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 
+(when jb/os-linux-p
+  (use-package pinentry
+    :defer 10
+    :init (pinentry-start)))
+
 (use-package uniquify
   :ensure nil
   :config

@@ -943,6 +943,13 @@ Currently turned off due to debugging issues
     (setenv "SHELL" shell-file-name)
     (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 #+END_SRC
+** Linux
+#+BEGIN_SRC emacs-lisp
+  (when jb/os-linux-p
+    (use-package pinentry
+      :defer 10
+      :init (pinentry-start)))
+#+END_SRC
 
 * Navigating
 ** Uniquify
