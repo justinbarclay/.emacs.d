@@ -1458,20 +1458,19 @@ Load this before we load Flycheck
 #+END_SRC
 ** LSP-Mode
 #+BEGIN_SRC emacs-lisp
-  (use-package rust-analyzer
-  :ensure nil)
+    (use-package lsp-mode
+      :commands lsp
+      :hook (rustic-mode . lsp))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
-  (use-package lsp-mode
-    :commands lsp)
-#+END_SRC
 *** Company-LSP
 #+BEGIN_SRC emacs-lisp
   (use-package company-lsp
     :commands company-lsp
+    :bind (("M-." . xref-find-definitions)
+           ("M-," . xref-pop-marker-stack))
     :after (company lsp)
-   ;; :init (push '(company-lsp) company-backends)
+    ;; :init (push '(company-lsp) company-backends)
     :config
     (setq company-lsp-cache-candidates 'auto)
     (setq company-lsp-async t))
@@ -1479,9 +1478,8 @@ Load this before we load Flycheck
 *** lsp-ui
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-ui
-    :commands lsp-ui-mode)
-    ;; :init
-    ;; (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+    :commands lsp-ui-mode
+    :hook (lsp-mode . lsp-ui-mode))
 #+END_SRC
 * Languages
 Major mode customizations
@@ -1905,7 +1903,12 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (setq eglot-current-column-function 'eglot-lsp-abiding-column)
     (general-define-key :keymap 'eglot-mode-map "C-h ." 'eglot-help-at-point))
 #+END_SRC
-
+*** Rust Analyzer
+Rust analyzer is the alternative to rls and is currently in alpha
+#+BEGIN_SRC emacs-lisp
+  (use-package rust-analyzer
+  :ensure nil)
+#+END_SRC
 *** Cargo
 #+BEGIN_SRC emacs-lisp :tangle
 (use-package cargo)
@@ -1916,9 +1919,9 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
   (use-package rustic
     :bind ("C-c r" . rustic-compile)
     :mode ("\\.rs\\'" . rustic-mode)
-    :hook lsp-deferred
     :config
     (progn
+      (setq rustic-lsp-setup-p nil)
       (setq rustic-format-on-save nil)
       (setq rustic-indent-offset 2)
       (electric-pair-mode 1)))

@@ -915,24 +915,23 @@ This function is called by `org-babel-execute-src-block'"
   :config (setq company-tooltip-align-annotations t)
           (setq company-minimum-prefix-length 1))
 
-(use-package rust-analyzer
-:ensure nil)
-
 (use-package lsp-mode
-  :commands lsp)
+  :commands lsp
+  :hook (rustic-mode . lsp))
 
 (use-package company-lsp
   :commands company-lsp
+  :bind (("M-." . xref-find-definitions)
+         ("M-," . xref-pop-marker-stack))
   :after (company lsp)
- ;; :init (push '(company-lsp) company-backends)
+  ;; :init (push '(company-lsp) company-backends)
   :config
   (setq company-lsp-cache-candidates 'auto)
   (setq company-lsp-async t))
 
 (use-package lsp-ui
-  :commands lsp-ui-mode)
-  ;; :init
-  ;; (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+  :commands lsp-ui-mode
+  :hook (lsp-mode . lsp-ui-mode))
 
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
@@ -1217,12 +1216,15 @@ This function is called by `org-babel-execute-src-block'"
     (robe-start)
     (robe-mode)))
 
+(use-package rust-analyzer
+:ensure nil)
+
 (use-package rustic
   :bind ("C-c r" . rustic-compile)
   :mode ("\\.rs\\'" . rustic-mode)
-  :hook lsp-deferred
   :config
   (progn
+    (setq rustic-lsp-setup-p nil)
     (setq rustic-format-on-save nil)
     (setq rustic-indent-offset 2)
     (electric-pair-mode 1)))
