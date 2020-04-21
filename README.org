@@ -32,6 +32,7 @@
 - [[#os-specific][OS Specific]]
   - [[#macos][MacOS]]
   - [[#windows][Windows]]
+  - [[#linux][Linux]]
 - [[#navigating][Navigating]]
   - [[#uniquify][Uniquify]]
   - [[#recentf][Recentf]]
@@ -56,6 +57,7 @@
   - [[#undo-tree][Undo-tree]]
   - [[#backups][Backups]]
   - [[#whitespace][Whitespace]]
+  - [[#emojis][Emojis]]
 - [[#syntax-and-error-checking][Syntax and Error checking]]
   - [[#flycheck-pos-tip][Flycheck pos-tip]]
   - [[#flycheck][Flycheck]]
@@ -95,6 +97,7 @@
   - [[#profiling][Profiling]]
   - [[#http-client][http client]]
 - [[#custom-functions][Custom Functions]]
+  - [[#allow-for-clojure-style-comment-blocks][Allow for clojure style comment blocks]]
   - [[#resize-font-size][Resize font size]]
   - [[#scroll-the-buffer][Scroll the buffer]]
   - [[#tangle-and-compile-init-file][Tangle and Compile init file]]
@@ -120,7 +123,7 @@ I've forgotten this before so this seems like the perfect place to put it but ~C
 ** Turn off garbage collection
 This sets the garbage collection threshold to 100mb
 Reset garbage collection to emacs default after 5s
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (setq gc-cons-threshold 1000000000)
 (run-with-idle-timer
  5 nil
@@ -146,7 +149,7 @@ Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-d
 ** Package repositories
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq load-prefer-newer t)
   (setq package-archives
@@ -164,7 +167,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
 * Vars
 Let's describe some variables to help determine how to configure Emacs
 ** OS
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (defvar jb/os-linux-p (eq system-type 'gnu/linux))
 (defvar jb/os-windows-p (eq system-type 'windows-nt))
 (defvar jb/os-macos-p (eq system-type 'darwin))
@@ -190,7 +193,7 @@ Boot strap use-package. Because we're running package initalize ourselves, we ca
 This macro is pulled off this commit
 https://github.com/jwiegley/use-package/pull/487/commits
 Further reading: https://github.com/nilcons/emacs-use-package-fast
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (defmacro use-package-with-elpa ()
     "Set up use-package to optimal usage with package.el.
 
@@ -223,7 +226,7 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
 #+END_SRC
 
 *** byte compile emacs and ignore package-initialize
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package-with-elpa)
 #+END_SRC
 
@@ -242,7 +245,7 @@ If we're boot strapping a fresh Emacs install, we should have use-package cloned
   (use-package bind-key)                ;; if you use any :bind variant
 #+END_SRC
 *** Generate reports based on use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp 
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 #+END_SRC
@@ -508,8 +511,7 @@ as such need both of these modes loaded before they'll work.
   (use-package langtool
     :init
     (setq langtool-default-language "en-US")
-    (setq langtool-java-bin "/usr/bin/java")
-    (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.5/libexec/languagetool-commandline.jar"))
+    (setq langtool-bin "/usr/sbin/languagetool"))
 #+END_SRC
 ** EShell
 #+BEGIN_SRC emacs-lisp
@@ -653,17 +655,17 @@ as such need both of these modes loaded before they'll work.
 * Look and Feel
 ** Window
 *** Natural colouring from emacs chrome
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil)))
 #+END_SRC
 
 *** Remove toolbar
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (tool-bar-mode -1)
 #+END_SRC
 *** Remove title-bar
 Remove title bar but allow resizing of frame
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (when jb/os-linux-p
   (add-to-list 'default-frame-alist '(internal-border-width . 5))
   (add-to-list 'default-frame-alist '(drag-internal-border . 1))
@@ -671,34 +673,34 @@ Remove title bar but allow resizing of frame
 
 #+END_SRC
 *** Remove menu-bar
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
   (menu-bar-mode -1)
 #+END_SRC
 *** Emacs should take focus when it launches
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
   (when (display-graphic-p) ; Start full screen
     (add-to-list 'default-frame-alist '(fullscreen . t))
     (x-focus-frame nil))
 #+END_SRC
 
 *** Don't show native OS scroll bars for buffers because they're redundant
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 #+END_SRC
 
 *** Formatting window title
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (setq-default frame-title-format "%b (%f)")
 #+END_SRC
 ** Font
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (set-face-attribute 'default nil
-                    :family "Inconsolata for Powerline" :height 180 :weight 'normal)
+                     :family "CaskaydiaCove Nerd Font Mono" :height 160 :weight 'normal)
 #+END_SRC
 ** Misc
 Don't pop up font menu
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp 
 (global-set-key (kbd "s-t") '(lambda () (interactive)))
 #+END_SRC
 
@@ -707,7 +709,7 @@ No cursor blinking, it's distracting
 (blink-cursor-mode 0)
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 ;; These settings relate to how emacs interacts with your operating system
 (setq ;; makes killing/yanking interact with the clipboard
  select-enable-clipboard t
@@ -730,11 +732,11 @@ No cursor blinking, it's distracting
 #+END_SRC
 
 My name isn't "Tinker", so I don't need a bell.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (setq ring-bell-function 'ignore)
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -754,9 +756,15 @@ If we're running Emacs 27, we can help improve parsing and turning Bidirectional
 Note:
 Disabling the BPA makes redisplay faster, but might produce incorrect
 display reordering of bidirectional text with embedded parentheses
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (setq bidi-inhibit-bpa t)
 #+END_SRC
+
+Increase the size of read-process-output-max from default of 4k to 1Mb
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
+#+END_SRC
+
 
 ** Smooth scrolling
 
@@ -798,16 +806,15 @@ display reordering of bidirectional text with embedded parentheses
                         '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
                         '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 #+END_SRC
-
 ** Line Numbers
 As of Emacs 26.0 we have native, perfomant support for line numebrs
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (global-display-line-numbers-mode)
 (set-default 'display-line-numbers-type 'visual)
 (setq display-line-numbers-current-absolute t)
 #+END_SRC
 ** Rainbow delimiters
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode)
     :config
@@ -1381,15 +1388,6 @@ Open up the program dash
     (add-to-list 'dash-at-point-mode-alist '(clojurescript-mode ("clojure")))
     (add-to-list 'dash-at-point-mode-alist '(clojure-mode ("clojure"))))
 #+END_SRC
-** Undo-tree
-Easily navigate buffer state through a UI helper.
-#+BEGIN_SRC emacs-lisp :tangle
-(use-package undo-tree
-  :demand t
-  :config
-  (global-undo-tree-mode))
-#+END_SRC
-
 ** Backups
 Emacs can automatically create backup files. This tells Emacs to put all backups in ~/.emacs.d/backups. More [[http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html][info]].
 #+BEGIN_SRC emacs-lisp
@@ -1432,17 +1430,15 @@ Load this before we load Flycheck
       (eval-after-load 'flycheck
       (flycheck-pos-tip-mode)))))
 #+END_SRC
-** Flyspell
+** Flyspell 
 #+BEGIN_SRC emacs-lisp
-  (require 'flyspell)
-  (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-  (add-hook 'text-mode-hook 'flyspell-mode)
-    ;; (use-package flyspell
-    ;;  :ensure nil
-    ;;  :hook ((prog-mode flyspell-prog-mode)
-    ;;         (text-mode flyspell-mode))
-    ;;  ;; :config (setq flyspell-issue-message-flag nil)
-    ;; )
+  (use-package flyspell
+    :ensure nil
+    :defer 10
+    :hook ((prog-mode . flyspell-prog-mode)
+           (text-mode . flyspell-mode))
+    ;; :config (setq flyspell-issue-message-flag nil)
+    )
 #+END_SRC
 
 
@@ -2132,7 +2128,7 @@ Get limited autocompletion in Lua
 
 ** Resize font size
 Increases the fonts size across all buffers
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
 (defun font-name-replace-size (font-name new-size)
   (let ((parts (split-string font-name "-")))
     (setcar (nthcdr 7 parts) (format "%d" new-size))
