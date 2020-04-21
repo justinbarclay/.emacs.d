@@ -1999,7 +1999,9 @@ Get limited autocompletion in Lua
 
 ** SSH
 #+BEGIN_SRC emacs-lisp
-(use-package ssh-config-mode)
+(use-package ssh-config-mode
+  :defer t)
+#+END_SRC
 #+END_SRC
 ** Text modes
 #+BEGIN_SRC emacs-lisp
