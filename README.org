@@ -1525,20 +1525,6 @@ c++
 #+BEGIN_SRC emacs-lisp
 (use-package c-eldoc)
 #+END_SRC
-
-*** counsel-gtags
-#+BEGIN_SRC emacs-lisp
-  (use-package counsel-gtags
-    :bind (("M-," . counsel-gtags-find-definition))
-    :config
-    (setq counsel-gtags-auto-update t))
-#+END_SRC
-*** ggtags
-#+BEGIN_SRC emacs-lisp
-(use-package ggtags
-  :config
-  (add-hook 'c-common-mode-hook 'ggtags-mode))
-#+END_SRC
 ** Lisp
 *** paredit
 #+BEGIN_SRC emacs-lisp
@@ -1805,20 +1791,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
     (js2r-add-keybindings-with-prefix "C-c C-r"))
 #+END_SRC
-*** CoffeeScript
-#+BEGIN_SRC emacs-lisp
-  (use-package coffee-mode
-    :mode "\\.coffee$"
-    :config
-    (add-to-list 'company-backends 'company-tern)
-    (custom-set-variables '(coffee-tab-width 2))
-    (add-hook 'coffee-mode-hook 'subword-mode)
-    (add-hook 'coffee-mode-hook 'highlight-indentation-current-column-mode)
-    (add-hook 'coffee-mode-hook
-              (defun coffee-mode-newline-and-indent ()
-                (define-key coffee-mode-map "\C-j" 'coffee-newline-and-indent)
-                (setq coffee-cleanup-whitespace nil))))
-#+END_SRC
 ** HTML
 *** tagedit
 #+BEGIN_SRC emacs-lisp
@@ -1973,7 +1945,8 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+END_SRC
 *** Docker
 #+BEGIN_SRC emacs-lisp
-  (use-package docker)
+  (use-package docker
+    :defer t)
 #+END_SRC
 ** Markdown
 #+BEGIN_SRC emacs-lisp
@@ -2035,7 +2008,7 @@ Get limited autocompletion in Lua
 
 * Communication
 ** Slack
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package slack
     :commands (slack-start slack-register-team)
     :init
@@ -2428,7 +2401,7 @@ And the same but without leaving the current window:
 
 ** Playground
 Pomodoro timer
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle
   (require 'alert)
   (require 'seq)
   (require 'zone)
