@@ -1380,6 +1380,7 @@ Emacs by default doesn't have a good story for folding text so we have to add on
 Open up the program dash
 #+BEGIN_SRC emacs-lisp
   (use-package dash-at-point
+    :if jb/os-macos-p
     :bind
     (("C-c d" . dash-at-point)
      ("C-c e" . dash-at-point-with-docset))
@@ -1461,9 +1462,11 @@ Load this before we load Flycheck
 #+END_SRC
 ** LSP-Mode
 #+BEGIN_SRC emacs-lisp
-    (use-package lsp-mode
-      :commands lsp
-      :hook (rustic-mode . lsp))
+  (use-package lsp-mode
+    :commands lsp
+    :hook (rustic-mode . lsp)
+    :config
+    (setq lsp-idle-delay 0.500))
 #+END_SRC
 
 *** Company-LSP
@@ -1584,8 +1587,8 @@ This is being disabled as I switch over to my own package and dog food that
 *** Slime 
 #+BEGIN_SRC emacs-lisp
   (use-package slime
+    :hook lisp-mode
     :init
-    (add-hook 'lisp-mode-hook 'slime-mode)
     (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
                                            (let (old-window selected-window)
                                              (slime)
@@ -1620,6 +1623,7 @@ This is being disabled as I switch over to my own package and dog food that
 *** Flycheck-joker
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck-joker
+    :defer t
     :init
     (require 'flycheck-joker))
 #+END_SRC
@@ -1637,7 +1641,8 @@ This is being disabled as I switch over to my own package and dog food that
 #+END_SRC
 *** Kibit
 #+BEGIN_SRC emacs-lisp
-(use-package kibit-helper)
+(use-package kibit-helper
+  :defer t)
 #+END_SRC
 *** clojure-mode
 #+BEGIN_SRC emacs-lisp
@@ -1794,7 +1799,8 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 ** HTML
 *** tagedit
 #+BEGIN_SRC emacs-lisp
-  (use-package tagedit)
+  (use-package tagedit
+   :defer t)
 #+END_SRC
 *** sgml-mode
 #+BEGIN_SRC emacs-lisp
@@ -1878,12 +1884,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (setq eglot-current-column-function 'eglot-lsp-abiding-column)
     (general-define-key :keymap 'eglot-mode-map "C-h ." 'eglot-help-at-point))
 #+END_SRC
-*** Rust Analyzer
-Rust analyzer is the alternative to rls and is currently in alpha
-#+BEGIN_SRC emacs-lisp
-  (use-package rust-analyzer
-  :ensure nil)
-#+END_SRC
 *** Cargo
 #+BEGIN_SRC emacs-lisp :tangle
 (use-package cargo)
@@ -1896,7 +1896,8 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
     :mode ("\\.rs\\'" . rustic-mode)
     :config
     (progn
-      (setq rustic-lsp-setup-p nil)
+      ;; (setq rustic-lsp-setup-p nil)
+      (setq rustic-lsp-server 'rust-analyzer)
       (setq rustic-format-on-save nil)
       (setq rustic-indent-offset 2)
       (electric-pair-mode 1)))
