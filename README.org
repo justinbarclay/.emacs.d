@@ -349,6 +349,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
       (org-babel-do-load-languages 'org-babel-load-languages
                                    '((shell . t)
                                      (js . t)
+                                     (sql . t)
                                      (ruby . t)))
       (custom-set-variables
        '(org-default-notes-file (concat org-directory "/notes.org"))
@@ -656,7 +657,8 @@ as such need both of these modes loaded before they'll work.
 ** Window
 *** Natural colouring from emacs chrome
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-(setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil)))
+  (when jb/os-macos-p
+    (setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil))))
 #+END_SRC
 
 *** Remove toolbar
@@ -1419,19 +1421,20 @@ Load this before we load Flycheck
 #+END_SRC
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
-(use-package flycheck
-  :after flycheck-pos-tip
-  :demand t
-  :config
-  (progn
-    (global-flycheck-mode)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (setq flycheck-standard-error-navigation nil)
-    (when 'display-graphic-p (selected-frame)
-      (eval-after-load 'flycheck
-      (flycheck-pos-tip-mode)))))
+  (use-package flycheck
+    :after flycheck-pos-tip
+    :demand t
+    :ensure nil
+    :config
+    (progn
+      (global-flycheck-mode)
+      (setq flycheck-check-syntax-automatically '(save mode-enabled))
+      (setq flycheck-standard-error-navigation nil)
+      (when 'display-graphic-p (selected-frame)
+        (eval-after-load 'flycheck
+        (flycheck-pos-tip-mode)))))
 #+END_SRC
-** Flyspell 
+** Flyspell
 #+BEGIN_SRC emacs-lisp
   (use-package flyspell
     :ensure nil
@@ -2002,7 +2005,12 @@ Get limited autocompletion in Lua
 (use-package ssh-config-mode
   :defer t)
 #+END_SRC
+** SQL
+*** Linting
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package sqlint)
 #+END_SRC
+*** Completion
 ** Text modes
 #+BEGIN_SRC emacs-lisp
   (use-package rst
