@@ -1,11 +1,3 @@
-(setq gc-cons-threshold 1000000000)
-(run-with-idle-timer
- 5 nil
- (lambda ()
-   (setq gc-cons-threshold 10000000)
-   (message "gc-cons-threshold restored to %S"
-            gc-cons-threshold)))
-
 (setq
  lexical-binding t
  load-prefer-newer t)
@@ -13,52 +5,8 @@
 (defvar doom--file-name-handler-alist file-name-handler-alist)
 (setq file-name-handler-alist nil)
 
-(setq package-user-dir "~/.emacs.d/elpa")
-(setq load-prefer-newer t)
-(setq package-archives
-      '(("gnu" . "https://elpa.gnu.org/packages/")
-        ("melpa" . "http://melpa.org/packages/")
-        ("org" . "https://orgmode.org/elpa/")
-        ("tromey" . "http://tromey.com/elpa/")))
-
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
-
-(defvar jb/os-linux-p (eq system-type 'gnu/linux))
-(defvar jb/os-windows-p (eq system-type 'windows-nt))
-(defvar jb/os-macos-p (eq system-type 'darwin))
-
-(defmacro use-package-with-elpa ()
-  "Set up use-package to optimal usage with package.el.
-
-For full documentation on the meaning and usage of this, please
-consult the README file that came with this file at the section
-called `Byte-compiling with Package.el'."
-  '(progn
-     ;; Disable package initialize after us.  We either initialize it
-     ;; anyway in case of interpreted .emacs, or we don't want slow
-     ;; initizlization in case of byte-compiled .emacs.elc.
-     (setq package-enable-at-startup nil)
-     ;; Set use-package-verbose to t for interpreted .emacs,
-     ;; and to nil for byte-compiled .emacs.elc.
-     (eval-and-compile
-       (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
-     ;; Add the macro generated list of package.el loadpaths to load-path.
-     (mapc (lambda (add) (add-to-list 'load-path add))
-           (eval-when-compile
-             (setq use-package-always-ensure t)
-             (let ((package-user-dir-real (file-truename package-user-dir)))
-               ;; The reverse is necessary, because outside we mapc
-               ;; add-to-list element-by-element, which reverses.
-               (nreverse (apply #'nconc
-                                ;; Only keep package.el provided loadpaths.
-                                (mapcar (lambda (path)
-                                          (if (string-prefix-p package-user-dir-real path)
-                                              (list path)
-                                            nil))
-                                        load-path))))))))
-
-(use-package-with-elpa)
 
 (progn ;'use-package
   (add-to-list 'load-path "~/.emacs.d/site-lisp/use-package")
@@ -134,6 +82,7 @@ called `Byte-compiling with Package.el'."
     (org-babel-do-load-languages 'org-babel-load-languages
                                  '((shell . t)
                                    (js . t)
+                                   (sql . t)
                                    (ruby . t)))
     (custom-set-variables
      '(org-default-notes-file (concat org-directory "/notes.org"))
@@ -244,8 +193,7 @@ This function is called by `org-babel-execute-src-block'"
 (use-package langtool
   :init
   (setq langtool-default-language "en-US")
-  (setq langtool-java-bin "/usr/bin/java")
-  (setq langtool-language-tool-jar "/usr/local/Cellar/languagetool/4.5/libexec/languagetool-commandline.jar"))
+  (setq langtool-bin "/usr/sbin/languagetool"))
 
 (use-package eshell
   :ensure nil
@@ -360,67 +308,9 @@ This function is called by `org-babel-execute-src-block'"
             (:name "replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
             (:name "recently-sent" :query "tag:sent date:yesterday.."))))
 
-(setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil)))
-
-(tool-bar-mode -1)
-
-(when jb/os-linux-p
-  (add-to-list 'default-frame-alist '(internal-border-width . 5))
-  (add-to-list 'default-frame-alist '(drag-internal-border . 1))
-  (add-to-list 'default-frame-alist '(undecorated . t)))
-
-(menu-bar-mode -1)
-
-(when (display-graphic-p) ; Start full screen
-  (add-to-list 'default-frame-alist '(fullscreen . t))
-  (x-focus-frame nil))
-
-(when (fboundp 'scroll-bar-mode)
-  (scroll-bar-mode -1))
-
-(setq-default frame-title-format "%b (%f)")
-
-(set-face-attribute 'default nil
-                    :family "Inconsolata for Powerline" :height 180 :weight 'normal)
-
 (global-set-key (kbd "s-t") '(lambda () (interactive)))
 
 (blink-cursor-mode 0)
-
-;; These settings relate to how emacs interacts with your operating system
-(setq ;; makes killing/yanking interact with the clipboard
- select-enable-clipboard t
-
- ;; I'm actually not sure what this does but it's recommended?
- select-enable-primary t
-
- ;; Save clipboard strings into kill ring before replacing them.
- ;; When one selects something in another program to paste it into Emacs,
- ;; but kills something in Emacs before actually pasting it,
- ;; this selection is gone unless this variable is non-nil
- save-interprogram-paste-before-kill t
-
- ;; Shows all options when running apropos. For more info,
- ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
- apropos-do-all t
-
- ;; Mouse yank commands yank at point instead of at click.
- mouse-yank-at-point t)
-
-(setq ring-bell-function 'ignore)
-
-;; Changes all yes/no questions to y/n type
-(fset 'yes-or-no-p 'y-or-n-p)
-
-;; shell scripts
-(setq-default sh-basic-offset 2)
-(setq-default sh-indentation 2)
-
-;; No need for ~ files when editing
-(setq create-lockfiles nil)
-
-;; Go straight to scratch buffer on startup
-(setq inhibit-startup-message t)
 
 (use-package dracula-theme
   :demand t
@@ -442,25 +332,6 @@ This function is called by `org-babel-execute-src-block'"
                                                                  :inherit 'mode-line))))
                       '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
                       '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
-
-(global-display-line-numbers-mode)
-(set-default 'display-line-numbers-type 'visual)
-(setq display-line-numbers-current-absolute t)
-
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode)
-  :config
-   (custom-set-faces 
-    '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
-    '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
-    '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
-    '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
-    '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
-    '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
-    '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
-    '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
-    '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
-    '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
 
 (use-package dired
   :ensure nil
@@ -871,6 +742,7 @@ This function is called by `org-babel-execute-src-block'"
   :hook (prog-mode . origami-mode))
 
 (use-package dash-at-point
+  :if jb/os-macos-p
   :bind
   (("C-c d" . dash-at-point)
    ("C-c e" . dash-at-point-with-docset))
@@ -896,6 +768,7 @@ This function is called by `org-babel-execute-src-block'"
 (use-package flycheck
   :after flycheck-pos-tip
   :demand t
+  :ensure nil
   :config
   (progn
     (global-flycheck-mode)
@@ -905,15 +778,13 @@ This function is called by `org-babel-execute-src-block'"
       (eval-after-load 'flycheck
       (flycheck-pos-tip-mode)))))
 
-(require 'flyspell)
-(add-hook 'prog-mode-hook 'flyspell-prog-mode)
-(add-hook 'text-mode-hook 'flyspell-mode)
-  ;; (use-package flyspell
-  ;;  :ensure nil
-  ;;  :hook ((prog-mode flyspell-prog-mode)
-  ;;         (text-mode flyspell-mode))
-  ;;  ;; :config (setq flyspell-issue-message-flag nil)
-  ;; )
+(use-package flyspell
+  :ensure nil
+  :defer 10
+  :hook ((prog-mode . flyspell-prog-mode)
+         (text-mode . flyspell-mode))
+  ;; :config (setq flyspell-issue-message-flag nil)
+  )
 
 (use-package company
   :hook (prog-mode . company-mode)
@@ -922,7 +793,9 @@ This function is called by `org-babel-execute-src-block'"
 
 (use-package lsp-mode
   :commands lsp
-  :hook (rustic-mode . lsp))
+  :hook (rustic-mode . lsp)
+  :config
+  (setq lsp-idle-delay 0.500))
 
 (use-package company-lsp
   :commands company-lsp
@@ -960,15 +833,6 @@ This function is called by `org-babel-execute-src-block'"
 
 (use-package c-eldoc)
 
-(use-package counsel-gtags
-  :bind (("M-," . counsel-gtags-find-definition))
-  :config
-  (setq counsel-gtags-auto-update t))
-
-(use-package ggtags
-  :config
-  (add-hook 'c-common-mode-hook 'ggtags-mode))
-
 (use-package paredit
   :commands (paredit-mode)
   :hook ((common-lisp-mode . (lambda () (enable-paredit)))
@@ -992,8 +856,8 @@ This function is called by `org-babel-execute-src-block'"
   (global-eldoc-mode))
 
 (use-package slime
+  :hook lisp-mode
   :init
-  (add-hook 'lisp-mode-hook 'slime-mode)
   (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
                                          (let (old-window selected-window)
                                            (slime)
@@ -1017,6 +881,7 @@ This function is called by `org-babel-execute-src-block'"
   (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 
 (use-package flycheck-joker
+  :defer t
   :init
   (require 'flycheck-joker))
 
@@ -1029,7 +894,8 @@ This function is called by `org-babel-execute-src-block'"
                                                 (clj-refactor-mode 1)
                                                 (cljr-add-keybindings-with-prefix "C-c C-m")))))
 
-(use-package kibit-helper)
+(use-package kibit-helper
+  :defer t)
 
 (use-package clojure-mode
   :mode (("\\.clj\\'" . clojure-mode)
@@ -1157,19 +1023,8 @@ This function is called by `org-babel-execute-src-block'"
   (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
   (js2r-add-keybindings-with-prefix "C-c C-r"))
 
-(use-package coffee-mode
-  :mode "\\.coffee$"
-  :config
-  (add-to-list 'company-backends 'company-tern)
-  (custom-set-variables '(coffee-tab-width 2))
-  (add-hook 'coffee-mode-hook 'subword-mode)
-  (add-hook 'coffee-mode-hook 'highlight-indentation-current-column-mode)
-  (add-hook 'coffee-mode-hook
-            (defun coffee-mode-newline-and-indent ()
-              (define-key coffee-mode-map "\C-j" 'coffee-newline-and-indent)
-              (setq coffee-cleanup-whitespace nil))))
-
-(use-package tagedit)
+(use-package tagedit
+ :defer t)
 
 (use-package sgml-mode
   :ensure nil
@@ -1189,11 +1044,13 @@ This function is called by `org-babel-execute-src-block'"
 
 (use-package robe
   :commands (robe-start)
-  :hook 'ruby-mode
+  :hook (ruby-mode . enh-ruby-mode)
   :config
-  (push 'company-robe company-backends))
+  (push 'company-robe company-backends)
+  (robe-start))
 
 (use-package inf-ruby
+  :defer t
   :bind
   (:map inf-ruby-minor-mode-map
         (("C-c C-z" . run-ruby)
@@ -1215,21 +1072,15 @@ This function is called by `org-babel-execute-src-block'"
   (progn
     (setq ruby-indent-level 2
           ruby-indent-tabs-mode nil)
-    (add-hook 'ruby-mode 'superword-mode))
-  :config
-  (progn
-    (robe-start)
-    (robe-mode)))
-
-(use-package rust-analyzer
-:ensure nil)
+    (add-hook 'ruby-mode 'superword-mode)))
 
 (use-package rustic
   :bind ("C-c r" . rustic-compile)
   :mode ("\\.rs\\'" . rustic-mode)
   :config
   (progn
-    (setq rustic-lsp-setup-p nil)
+    ;; (setq rustic-lsp-setup-p nil)
+    (setq rustic-lsp-server 'rust-analyzer)
     (setq rustic-format-on-save nil)
     (setq rustic-indent-offset 2)
     (electric-pair-mode 1)))
@@ -1254,7 +1105,8 @@ This function is called by `org-babel-execute-src-block'"
   :config
   (setq-local tab-width 2))
 
-(use-package docker)
+(use-package docker
+  :defer t)
 
 (use-package markdown-mode
   :commands (markdown-mode gfm-mode)
@@ -1280,38 +1132,16 @@ This function is called by `org-babel-execute-src-block'"
 (use-package yaml-mode
   :defer t)
 
-(use-package ssh-config-mode)
+(use-package ssh-config-mode
+  :defer t)
+
+;; (use-package sqlint)
 
 (use-package rst
   :ensure nil
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
-
-(use-package slack
-  :commands (slack-start slack-register-team)
-  :init
-  (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
-  (setq slack-prefer-current-team t)
-  :config
-  ;; (slack-register-team
-  ;;  :name "personal"
-  ;;  :default t
-  ;;  :client-id (getenv "SLACK_CLIENT_ID")
-  ;;  :client-secret (getenv "SLACK_CLIENT_SECRET")
-  ;;  :token (getenv "SLACK_TOKEN")
-  ;;  :subscribed-channels '(general))
-  (slack-register-team
-     :name "work"
-     :default nil
-     :client-id (getenv "SLACK_CLIENT_ID")
-     :client-secret (getenv "SLACK_CLIENT_SECRET")
-     :token (getenv "TIDAL_SLACK_TOKEN")
-     :subscribed-channels '(general)))
-  (use-package alert
-    :commands (alert)
-    :init
-    (setq alert-default-style 'osx-notifier))
 
 (use-package dashboard
   :defer 1
@@ -1354,39 +1184,6 @@ This function is called by `org-babel-execute-src-block'"
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"
   nil)
-
-(defun font-name-replace-size (font-name new-size)
-  (let ((parts (split-string font-name "-")))
-    (setcar (nthcdr 7 parts) (format "%d" new-size))
-    (mapconcat 'identity parts "-")))
-
-(defun increment-default-font-height (delta)
-  "Adjust the default font height by DELTA on every frame.
-The pixel size of the frame is kept (approximately) the same.
-DELTA should be a multiple of 10, in the units used by the
-:height face attribute."
-  (let* ((new-height (+ (face-attribute 'default :height) delta))
-         (new-point-height (/ new-height 10)))
-    (dolist (f (frame-list))
-      (with-selected-frame f
-        ;; Latest 'set-frame-font supports a "frames" arg, but
-        ;; we cater to Emacs 23 by looping instead.
-        (set-frame-font (font-name-replace-size (face-font 'default)
-                                                new-point-height)
-                        t)))
-    (set-face-attribute 'default nil :height new-height)
-    (message "default font size is now %d" new-point-height)))
-
-(defun increase-default-font-height ()
-  (interactive)
-  (increment-default-font-height 10))
-
-(defun decrease-default-font-height ()
-  (interactive)
-  (increment-default-font-height -10))
-
-(global-set-key (kbd "C-M-=") 'increase-default-font-height)
-(global-set-key (kbd "C-M--") 'decrease-default-font-height)
 
 (defun my/tangle-dotfiles ()
   "If the current file is this file, the code blocks are tangled"
@@ -1596,72 +1393,5 @@ foo.bar.baz => baz"
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
 
-(setq bidi-inhibit-bpa t)
-
-(require 'alert)
-(require 'seq)
-(require 'zone)
-
-(defvar pomodoro--current-buffer nil "Buffer to return to after the break")
-(defvar pomodoro--round 0 "The current iteration pomodoro")
-
-;; Todo make this a defcustom
-(defvar pomodoro-activity-list '("go for a walk" "stretch your back" "core exercises") "A list of activity you wish to be reminded to do during your breaks")
-(defvar pomodoro--completed-activities '() "Activities completed during the current session")
-(defvar pomodoro--timer nil "Current timer for pomodoro. It could be the break timer or the pomodoro timer itself.")
-(defvar pomodoro--last-buffer nil "Return to this buffer after the pomodoro break is over.")
-
-;; This is easy to do inline, but I like providing names to ideas like this rather than
-;; relying on implicit knowledge
-(defun pomodoro--minutes (minutes)
-  "Converts the given minutes to seconds"
-  (* minutes 60))
-
-(defun pomodoro--suggest-activity (activity-list completed-activities)
-  (let  ((suggested-list (seq-filter (lambda (item)
-                                       (not
-                                        (member item (or completed-activities
-                                                         '()))))
-                                     activity-list)))
-    (when suggested-list
-      (nth
-       (random (length suggested-list))
-       suggested-list))))
-
-(defun pomodoro-start (&optional message)
-  (interactive)
-  (when (yes-or-no-p (or message
-                         "Would you like to start a pomodoro session?"))
-    (message "Round %s" pomodoro--round)
-    (setq pomodoro--timer
-          (run-at-time (pomodoro--minutes 25)
-                       nil
-                       (lambda ()
-                         (let* ((suggested-activity-maybe (pomodoro--suggest-activity pomodoro-activity-list pomodoro--completed-activities))
-                                ;; Reset the completed activities list if we've run out of activities to suggest
-                                (suggested-activity (if suggested-activity-maybe
-                                                       suggested-activity-maybe
-                                                     (pomodoro--suggest-activity pomodoro-activity-list
-                                                                                 (setq pomodoro--completed-activities nil)))))
-                           (if pomodoro--completed-activities
-                               (push suggested-activity pomodoro--completed-activities)
-                             (setq pomodoro--completed-activities (list suggested-activity)))
-                           (message "Time to take a break!")
-                           (alert (format "Get up and %s" 'suggested-activity) :title "Pomodoro")
-                           (pomodoro-break (setq pomodoro--round (1+ pomodoro--round)))))))))
-
-(defun pomodoro-break (round)
-  (setq pomodoro--last-buffer (current-buffer))
-  (setq pomodoro--timer
-        (run-at-time (pomodoro--minutes 5)
-                     nil
-                     (lambda ()
-                       (pomodoro-start "Would you like to continue your pomodoro session?")
-                       (message "Welcome back!"))))
-  (zone))
-
-(defun pomodoro-cancel-timer ()
-  (interactive)
-  (when pomodoro--timer
-    (cancel-timer pomodoro--timer)
-    (message "Timer canceled")))
+(use-package rubocopfmt
+:hook 'enh-ruby-mode)
