@@ -700,6 +700,39 @@ Remove title bar but allow resizing of frame
 (set-face-attribute 'default nil
                      :family "CaskaydiaCove Nerd Font Mono" :height 160 :weight 'normal)
 #+END_SRC
+
+Let's add ligature support
+#+BEGIN_SRC emacs-lisp :tangle
+  (let ((alist `((?! . ,(regexp-opt '("!!" "!=" "!==")))
+                 (?# . ,(regexp-opt '("##" "###" "####" "#(" "#?" "#[" "#_" "#_(" "#{")))
+                 (?$ . ,(regexp-opt '("$>")))
+                 (?% . ,(regexp-opt '("%%")))
+                 (?& . ,(regexp-opt '("&&")))
+                 (?* . ,(regexp-opt '("*" "**" "***" "**/" "*/" "*>")))
+                 (?+ . ,(regexp-opt '("+" "++" "+++" "+>")))
+                 (?- . ,(regexp-opt '("--" "---" "-->" "-<" "-<<" "->" "->>" "-}" "-~")))
+                 (?. . ,(regexp-opt '(".-" ".." "..." "..<" ".=")))
+                 (?/ . ,(regexp-opt '("/*" "/**" "//" "///" "/=" "/==" "/>")))
+                 (?: . ,(regexp-opt '(":" "::" ":::" ":=")))
+                 (?\; . ,(regexp-opt '(";;")))
+                 (?< . ,(regexp-opt '("<!--" "<$" "<$>" "<*" "<*>" "<+" "<+>" "<-" "<--" "<->" "</" "</>" "<<" "<<-" "<<<" "<<=" "<=" "<=" "<=<" "<==" "<=>" "<>" "<|" "<|>" "<~" "<~~")))
+                 (?= . ,(regexp-opt '("=/=" "=:=" "=<<" "==" "===" "==>" "=>" "=>>")))
+                 (?> . ,(regexp-opt '(">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>")))
+                 (?= . ,(regexp-opt '("?=")))
+                 (?? . ,(regexp-opt '("??")))
+                 (?\[ . ,(regexp-opt '("[]")))
+                 (?\\ . ,(regexp-opt '("\\\\" "\\\\\\")))
+                 (?^ . ,(regexp-opt '("^=")))
+                 (?w . ,(regexp-opt '("www")))
+                 (?x . ,(regexp-opt '("x")))
+                 (?{ . ,(regexp-opt '("{-")))
+                 (?| . ,(regexp-opt '("|=" "|>" "||" "||=")))
+                 (?~ . ,(regexp-opt '("~-" "~=" "~>" "~@" "~~" "~~>"))))))
+    (dolist (char-regexp alist)
+      (set-char-table-range composition-function-table (car char-regexp)
+                            `([,(cdr char-regexp) 0 font-shape-gstring]))))
+#+END_SRC
+
 ** Misc
 Don't pop up font menu
 #+BEGIN_SRC emacs-lisp 
