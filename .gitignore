@@ -1,0 +1,11 @@
+elpa/
+quelpa/
+.cache/
+.cask/
+.lsp-session-v1
+.mc-lists.el
+.org-id-locations
+.recentf
+emojis/
+forge-database.sqlite
+recentf
