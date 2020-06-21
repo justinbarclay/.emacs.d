@@ -74,9 +74,9 @@
         (org-babel-execute-src-block-maybe)))
     (setq org-startup-truncated nil)
     (setq org-capture-templates
-          '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+          '(("a" "Appointment" entry (file+headline  "~/org/schedule.org" "Appointments")
              "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
-            ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
+            ("l" "Link" entry (file+headline "~/org/links.org" "Links")
              "* %? %^L %^g \n%T" :prepend)))
     (setq org-agenda-files (list ""))
     (org-babel-do-load-languages 'org-babel-load-languages
@@ -102,6 +102,12 @@
      "Synchronize card at point from trello."
      (interactive)
      (org-trello-sync-card 'from)))
+
+(use-package org-gcal
+  :init
+  (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
+        org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
+        org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/schedule.org"))))
 
 (use-package org-bullets
   :init
@@ -845,7 +851,9 @@ This function is called by `org-babel-execute-src-block'"
   :quelpa ((parinfer-rust-mode
             :fetcher git
             :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
-            :upgrade nil))
+            :upgrade nil)
+  :init
+  (setq parinfer-rust--auto-download-p 't))
 
 (use-package eldoc
   :ensure nil
@@ -979,14 +987,6 @@ This function is called by `org-babel-execute-src-block'"
     (message "info not found")))
 
 (bind-key "C-c t" 'cider--tooltip-show)
-
-(use-package company-tern
-  :bind
-  ("M-." . nil)
-  ("M-," . nil)
-  :config
-  (setq company-tooltip-align-annotations t)
-  (setq company-tern-property-marker " <p>"))
 
 (use-package indium
   :after js2-mode

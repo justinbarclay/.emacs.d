@@ -341,9 +341,9 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
           (org-babel-execute-src-block-maybe)))
       (setq org-startup-truncated nil)
       (setq org-capture-templates
-            '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+            '(("a" "Appointment" entry (file+headline  "~/org/schedule.org" "Appointments")
                "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
-              ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/links.org" "Links")
+              ("l" "Link" entry (file+headline "~/org/links.org" "Links")
                "* %? %^L %^g \n%T" :prepend)))
       (setq org-agenda-files (list ""))
       (org-babel-do-load-languages 'org-babel-load-languages
@@ -372,6 +372,14 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
        "Synchronize card at point from trello."
        (interactive)
        (org-trello-sync-card 'from)))
+#+END_SRC
+*** Org-gcal
+#+BEGIN_SRC emacs-lisp
+  (use-package org-gcal
+    :init
+    (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
+          org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
+          org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/schedule.org"))))
 #+END_SRC
 
 *** Org-bullets
@@ -631,7 +639,7 @@ as such need both of these modes loaded before they'll work.
   :bind ("C-c C-g b" . magit-blame-mode))
 #+END_SRC
 *** Magit forges
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp
 (use-package forge
   :after magit
   :init
@@ -1607,7 +1615,9 @@ This is being disabled as I switch over to my own package and dog food that
     :quelpa ((parinfer-rust-mode
               :fetcher git
               :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
-              :upgrade nil))
+              :upgrade nil)
+    :init
+    (setq parinfer-rust--auto-download-p 't))
 #+END_SRC
 
 *** eldoc
@@ -1781,7 +1791,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 ** JavaScript
 Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
 *** Tern
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle
   (use-package company-tern
     :bind
     ("M-." . nil)
@@ -1901,10 +1911,15 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
       (add-hook 'ruby-mode 'superword-mode)))
 #+END_SRC
 *** formatter
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp
   (use-package rubocopfmt
   :hook 'enh-ruby-mode)
 #+END_SRC
+*** Test running library
+#+BEGIN_SRC emacs-lisp
+(use-package rspec-mode)
+#+END_SRC
+
 ** Rust
 *** Flycheck-rust
 #+BEGIN_SRC emacs-lisp :tangle
