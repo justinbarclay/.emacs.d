@@ -307,6 +307,16 @@ This function is called by `org-babel-execute-src-block'"
      magit-set-upstream-on-push 'askifnotset))
   )
 
+(use-package forge
+  :after magit
+  :init
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+  :config
+  (transient-insert-suffix 'forge-dispatch "c p"
+    '("p" "pull-request" forge-create-pullreq))
+  (transient-insert-suffix 'forge-dispatch "c i"
+    '("c" "issues" forge-create-create)))
+
 (use-package notmuch
   :config
   (append 'notmuch-saved-searches
@@ -318,10 +328,9 @@ This function is called by `org-babel-execute-src-block'"
 
 (blink-cursor-mode 0)
 
-(use-package dracula-theme
-  :demand t
-  :config
-  (load-theme 'dracula t))
+(use-package doom-themes
+  :init
+  (load-theme 'doom-dracula t))
 
 (use-package cyberpunk-2019-theme
   :demand t)

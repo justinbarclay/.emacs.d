@@ -832,12 +832,21 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 
 ** Theme
 *** Dracula
-#+BEGIN_SRC emacs-lisp
+Dracula theme is causing me some problems
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package dracula-theme
   :demand t
   :config
   (load-theme 'dracula t))
 #+END_SRC
+
+Let's use Doom's version instead
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-themes
+    :init
+    (load-theme 'doom-dracula t))
+#+END_SRC
+
 *** Cyberpunk 2019
 #+BEGIN_SRC emacs-lisp
 (use-package cyberpunk-2019-theme
