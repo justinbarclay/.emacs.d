@@ -164,6 +164,18 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq user-full-name "Justin Barclay"
         user-mail-address "justinbarclay@gmail.com")
 #+END_SRC
+** Function for making README.org work
+Tangle and Compile init file
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
+  (defun my/tangle-dotfiles ()
+    "If the current file is this file, the code blocks are tangled"
+    (when (equal (buffer-file-name)
+		 (expand-file-name "~/.emacs.d/README.org"))
+      (org-babel-tangle nil (expand-file-name "~/.emacs.d/init.el"))))
+      ;;(byte-compile-file "~/.emacs.d/init.el")
+  (add-hook 'after-save-hook #'my/tangle-dotfiles)
+#+END_SRC
+
 * Vars
 Let's describe some variables to help determine how to configure Emacs
 ** OS
@@ -193,7 +205,7 @@ Boot strap use-package. Because we're running package initalize ourselves, we ca
 This macro is pulled off this commit
 https://github.com/jwiegley/use-package/pull/487/commits
 Further reading: https://github.com/nilcons/emacs-use-package-fast
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (defmacro use-package-with-elpa ()
     "Set up use-package to optimal usage with package.el.
 
@@ -226,7 +238,7 @@ Further reading: https://github.com/nilcons/emacs-use-package-fast
 #+END_SRC
 
 *** byte compile emacs and ignore package-initialize
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package-with-elpa)
 #+END_SRC
 
@@ -282,7 +294,7 @@ But in order for use-package to be able to use quelpa, we need to add another pa
 
 *** Debugging
 The :disabled keyword can turn off a module you're having difficulties with, or stop loading something you're not using at the present time:
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package ess-site
     :disabled
     :commands R)
@@ -290,7 +302,7 @@ The :disabled keyword can turn off a module you're having difficulties with, or 
 When byte-compiling your .emacs file, disabled declarations are omitted from the output entirely, to accelerate startup times.
 *** Benchmark-init
 This is hidden here to load right after we have use-package to be able to benchmark startup
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package benchmark-init
     :demand t
     :init
@@ -398,12 +410,12 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 #+END_SRC
 *** org-pdftools
 Before we can install org-pdftools, we need to install pdf-tools
-#+BEGIN_SRC elisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package pdf-tools)
 #+END_SRC
 
 Now that we have that installed we can pull in org-pdftools from github
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package org-pdftools
    :ensure nil
    :quelpa ((org-pdftools
@@ -633,7 +645,7 @@ as such need both of these modes loaded before they'll work.
     )
 #+END_SRC
 *** Magit blame
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package magit-blame
   :ensure nil
   :bind ("C-c C-g b" . magit-blame-mode))
@@ -676,10 +688,10 @@ as such need both of these modes loaded before they'll work.
 *** Remove title-bar
 Remove title bar but allow resizing of frame
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-  (when jb/os-linux-p
+  (when jb/os-linux-p)
       ;; (add-to-list 'default-frame-alist '(internal-border-width . 5))
       ;; (add-to-list 'default-frame-alist '(drag-internal-border . 1)))
-      (add-to-list 'default-frame-alist '(undecorated . t)))
+      ;;(add-to-list 'default-frame-alist '(undecorated . t)))
 
 #+END_SRC
 *** Remove menu-bar
@@ -710,7 +722,7 @@ Remove title bar but allow resizing of frame
 #+END_SRC
 
 Let's add ligature support
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (let ((alist `((?! . ,(regexp-opt '("!!" "!=" "!==")))
                  (?# . ,(regexp-opt '("##" "###" "####" "#(" "#?" "#[" "#_" "#_(" "#{")))
                  (?$ . ,(regexp-opt '("$>")))
@@ -811,7 +823,7 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 
 ** Smooth scrolling
 
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package smooth-scroll
   :config
   (smooth-scroll-mode 1)
@@ -850,14 +862,14 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
                         '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 #+END_SRC
 ** Line Numbers
-As of Emacs 26.0 we have native, perfomant support for line numebrs
+As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
 (global-display-line-numbers-mode)
 (set-default 'display-line-numbers-type 'visual)
 (setq display-line-numbers-current-absolute t)
 #+END_SRC
 ** Rainbow delimiters
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode)
     :config
@@ -969,7 +981,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 ** MacOS
 In OS X, when Emacs is started from the GUI it inherits a default set of environment variables. Let's fix that.
 Currently turned off due to debugging issues
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
     (use-package exec-path-from-shell
       :if jb/os-macos-p
       :demand t
@@ -1037,7 +1049,7 @@ As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10,
 it looks like counsel is a requirement for swiper
 *** Ivy-rich
 Let's pretty up ivy
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
    (use-package ivy-rich
      :init
      (setq ivy-format-function 'ivy-format-function-line)
@@ -1489,7 +1501,7 @@ Load this before we load Flycheck
 
 * Code Completion
 ** Semantic
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package semantic
   :ensure nil
   :config
@@ -1583,13 +1595,13 @@ c++
 #+END_SRC
 *** lispy
 We need lispy for some of the excellent bracket based navigation integrations with parinfer
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
     (use-package lispy
      :defer nil)
 #+END_SRC
 *** parinfer
 This is being disabled as I switch over to my own package and dog food that
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package parinfer
     :commands (parinfer-mode)
     :bind (:map parinfer-mode-map
@@ -1608,13 +1620,14 @@ This is being disabled as I switch over to my own package and dog food that
     (require 'lispy))   ; Yank behavior depend on mode
 #+END_SRC
 *** parinfer-rust-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package parinfer-rust-mode
     :defer 10
     :commands (parinfer-rust-mode)
     :quelpa ((parinfer-rust-mode
-              :fetcher git
-              :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
+              :fetcher github
+              :branch "consolidate-changes"
+              :repo "justinbarclay/parinfer-rust-mode")
               :upgrade nil)
     :init
     (setq parinfer-rust--auto-download-p 't))
@@ -1717,7 +1730,7 @@ This is being disabled as I switch over to my own package and dog food that
 #+END_SRC
 
 Clojure mode also supports extra font locking(for syntax highlighting), but I have noticed that this causes performance issues in large and complicated clojure files (which I have been playing a lot with lately), so I have turned this feature off.
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (require 'clojure-mode-extra-font-locking)
 #+END_SRC
 
@@ -1791,7 +1804,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 ** JavaScript
 Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
 *** Tern
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package company-tern
     :bind
     ("M-." . nil)
@@ -1922,13 +1935,13 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 
 ** Rust
 *** Flycheck-rust
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
     (use-package flycheck-rust
       :commands (flycheck-rust-setup)
       :hook rust-mode)
 #+END_SRC
 *** Eglot
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package eglot
     :bind (("M-." . xref-find-definitions)
            ("M-," . xref-pop-marker-stack))
@@ -1939,7 +1952,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (general-define-key :keymap 'eglot-mode-map "C-h ." 'eglot-help-at-point))
 #+END_SRC
 *** Cargo
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package cargo)
 #+END_SRC
 *** Rustic
@@ -1958,7 +1971,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+END_SRC
 
 *** Rust repl
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package evcxr-mode
    :defer t
    :ensure nil
@@ -2028,7 +2041,7 @@ Live preview of MarkDown
 #+END_SRC
 *** company-lua
 Get limited autocompletion in Lua
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package company-lua)
 #+END_SRC
 ** Powershell
@@ -2070,7 +2083,7 @@ Get limited autocompletion in Lua
 
 * Communication
 ** Slack
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package slack
     :commands (slack-start slack-register-team)
     :init
@@ -2200,7 +2213,7 @@ DELTA should be a multiple of 10, in the units used by the
 ** Scroll the buffer
 The exact same functionality VIM has for C-e and C-y in normal mode:
 [[https://github.com/anler/.emacs.d-literate/blob/master/README.org#scroll-the-buffer][stolen from here]]
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 (defun scroll-up-one-line-command ()
   "Scroll text of selected window upward 1 line."
   (interactive)
@@ -2215,7 +2228,7 @@ The exact same functionality VIM has for C-e and C-y in normal mode:
 #+END_SRC
 
 And the same but without leaving the current window:
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
 
   (defun scroll-up-one-line-other-window ()
     "Scroll other window one line up"
@@ -2227,16 +2240,6 @@ And the same but without leaving the current window:
     (interactive)
     (scroll-other-window -1))
 #+END_SRC
-** Tangle and Compile init file
-#+BEGIN_SRC emacs-lisp
-  (defun my/tangle-dotfiles ()
-    "If the current file is this file, the code blocks are tangled"
-    (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
-      (org-babel-tangle nil (expand-file-name "~/.emacs.d/init.el"))))
-      ;;(byte-compile-file "~/.emacs.d/init.el")
-  (add-hook 'after-save-hook #'my/tangle-dotfiles)
-#+END_SRC
-
 ** Run Current File
 #+BEGIN_SRC emacs-lisp
   (defun xah-run-current-file ()
@@ -2463,7 +2466,7 @@ And the same but without leaving the current window:
 
 ** Playground
 Pomodoro timer
-#+BEGIN_SRC elisp :tangle
+#+BEGIN_SRC elisp :tangle no
   (require 'alert)
   (require 'seq)
   (require 'zone)

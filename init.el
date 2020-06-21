@@ -845,16 +845,6 @@ This function is called by `org-babel-execute-src-block'"
          (scheme-mode . (lambda () (enable-paredit)))
          (lisp-mode . (lambda () (enable-paredit)))))
 
-(use-package parinfer-rust-mode
-  :defer 10
-  :commands (parinfer-rust-mode)
-  :quelpa ((parinfer-rust-mode
-            :fetcher git
-            :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
-            :upgrade nil)
-  :init
-  (setq parinfer-rust--auto-download-p 't))
-
 (use-package eldoc
   :ensure nil
   :config
@@ -1074,6 +1064,11 @@ This function is called by `org-babel-execute-src-block'"
           ruby-indent-tabs-mode nil)
     (add-hook 'ruby-mode 'superword-mode)))
 
+(use-package rubocopfmt
+:hook 'enh-ruby-mode)
+
+(use-package rspec-mode)
+
 (use-package rustic
   :bind ("C-c r" . rustic-compile)
   :mode ("\\.rs\\'" . rustic-mode)
@@ -1184,13 +1179,6 @@ This function is called by `org-babel-execute-src-block'"
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"
   nil)
-
-(defun my/tangle-dotfiles ()
-  "If the current file is this file, the code blocks are tangled"
-  (when (equal (buffer-file-name) (expand-file-name "~/.emacs.d/README.org"))
-    (org-babel-tangle nil (expand-file-name "~/.emacs.d/init.el"))))
-    ;;(byte-compile-file "~/.emacs.d/init.el")
-(add-hook 'after-save-hook #'my/tangle-dotfiles)
 
 (defun xah-run-current-file ()
       "Execute the current file.
@@ -1392,6 +1380,3 @@ foo.bar.baz => baz"
     (- (length a) 1 ))))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
-
-(use-package rubocopfmt
-:hook 'enh-ruby-mode)
