@@ -8,6 +8,9 @@
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
 
+(setq use-package-compute-statistics t)
+(setq use-package-minimum-reported-time 0.01)
+
 (progn ;'use-package
   (add-to-list 'load-path "~/.emacs.d/site-lisp/use-package")
   (require 'use-package)
@@ -19,9 +22,6 @@
 
 (use-package diminish)                ;; if you use :diminish
 (use-package bind-key)                ;; if you use any :bind variant
-
-(setq use-package-compute-statistics t)
-(setq use-package-minimum-reported-time 0.01)
 
 (use-package quelpa
   :ensure t
@@ -853,6 +853,17 @@ This function is called by `org-babel-execute-src-block'"
   :hook ((common-lisp-mode . (lambda () (enable-paredit)))
          (scheme-mode . (lambda () (enable-paredit)))
          (lisp-mode . (lambda () (enable-paredit)))))
+
+(use-package parinfer-rust-mode
+  :defer 10
+  :commands (parinfer-rust-mode)
+  :quelpa ((parinfer-rust-mode
+            :fetcher github
+            :branch "master"
+            :repo "justinbarclay/parinfer-rust-mode")
+            :upgrade nil)
+  :init
+  (setq parinfer-rust--auto-download-p 't))
 
 (use-package eldoc
   :ensure nil
