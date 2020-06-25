@@ -155,8 +155,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq package-archives
         '(("gnu" . "https://elpa.gnu.org/packages/")
           ("melpa" . "http://melpa.org/packages/")
-          ("org" . "https://orgmode.org/elpa/")
-          ("tromey" . "http://tromey.com/elpa/")))
+          ("org" . "https://orgmode.org/elpa/")))
 #+END_SRC
 
 ** Personal information
@@ -207,10 +206,25 @@ Boot strap use-package. Because we're running package initalize ourselves, we ca
 (setq use-package-minimum-reported-time 0.01)
 #+END_SRC
 
+*** Performance improvements
+If we're boot strapping a fresh Emacs install, we should have use-package cloned into site-lisp and be able to load it from there
+#+BEGIN_SRC emacs-lisp
+  (progn ;'use-package
+    (add-to-list 'load-path "~/.emacs.d/site-lisp/use-package")
+    (require 'use-package)
+    (setq use-package-always-ensure t)
+    (setq use-package-verbose nil)
+    (setq use-package-always-defer t)
+    (setq use-package-enable-imenu-support t))
+
+
+  (use-package diminish)                ;; if you use :diminish
+  (use-package bind-key)                ;; if you use any :bind variant
+#+END_SRC
 *** Using use-package
 The plan is to use a copious amount of deferral to speed up emacs boot time.
 + Use the :init keyword to execute code before a package is loaded. It accepts one or more forms, up until the next keyword
-+ :config can be used to execute code after a package is loaded. 
++ :config can be used to execute code after a package is loaded.
 + The :ensure keyword causes the package(s) to be installed automatically if not already present on your system (set (setq use-package-always-ensure t)
 + You can override package deferral with the :demand keyword. Thus, even if you use :bind, using :demand will force loading to occur immediately and not establish an autoload for the bound key.
 + In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used.
@@ -1574,13 +1588,13 @@ This is being disabled as I switch over to my own package and dog food that
     (require 'lispy))   ; Yank behavior depend on mode
 #+END_SRC
 *** parinfer-rust-mode
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
     :defer 10
     :commands (parinfer-rust-mode)
     :quelpa ((parinfer-rust-mode
               :fetcher github
-              :branch "consolidate-changes"
+              :branch "master"
               :repo "justinbarclay/parinfer-rust-mode")
               :upgrade nil)
     :init
