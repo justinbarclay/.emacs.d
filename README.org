@@ -191,7 +191,7 @@ I use Jon Wiegley's [[https://github.com/jwiegley/use-package][use-package]] for
 Let's bootstrap use-package so it can download everything else as we need it.
 *** Don't byte compile init file
 Boot strap use-package. Because we're running package initalize ourselves, we can turn it off when emacs wants to run it later in the startup process
-#+BEGIN_SRC emacs-lisp :tangle
+#+BEGIN_SRC emacs-lisp :tangle no
   (setq package-enable-at-startup nil
         package--init-file-ensured t)
 
