@@ -863,7 +863,8 @@ This function is called by `org-babel-execute-src-block'"
             :repo "justinbarclay/parinfer-rust-mode")
             :upgrade nil)
   :init
-  (setq parinfer-rust--auto-download-p 't))
+  (setq parinfer-rust-auto-download-p 't)
+  (setq parinfer-rust-check-before-enable nil))
 
 (use-package eldoc
   :ensure nil
