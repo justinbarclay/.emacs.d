@@ -8,6 +8,21 @@
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
 
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(setq straight-use-package-by-default t)
+
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 
@@ -22,17 +37,6 @@
 
 (use-package diminish)                ;; if you use :diminish
 (use-package bind-key)                ;; if you use any :bind variant
-
-(use-package quelpa
-  :ensure t
-  :defer t
-  :custom
-  (quelpa-checkout-melpa-p nil "Don't update the MELPA git repo."))
-
-(use-package quelpa-use-package
-  :ensure t
-  :init
-  (require 'quelpa-use-package))
 
 (use-package gnu-elpa-keyring-update)
 
@@ -58,13 +62,9 @@
         (progn (org-end-of-subtree t t)
                (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
                (point)))))))
-    (setq truncate-lines t
-          global-company-modes '(not org-mode)))
-  :config
-  (progn
     (defun jb/org-clear-results ()
-      (interactive)
-      (org-babel-remove-result-one-or-many 't))
+        (interactive)
+        (org-babel-remove-result-one-or-many 't))
     (defun run-org-block ()
       (interactive)
       (save-excursion
@@ -72,7 +72,12 @@
          (org-babel-find-named-block
           (completing-read "Code Block: " (org-babel-src-block-names))))
         (org-babel-execute-src-block-maybe)))
+    (setq global-company-modes '(not org-mode)))
+  :config
+  (progn
+    (setq truncate-lines nil)
     (setq org-startup-truncated nil)
+    (setq word-wrap t)
     (setq org-capture-templates
           '(("a" "Appointment" entry (file+headline  "~/org/schedule.org" "Appointments")
              "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
@@ -107,7 +112,7 @@
   :init
   (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
         org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
-        org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/schedule.org"))))
+        Org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/schedule.org"))))
 
 (use-package org-bullets
   :init
@@ -202,6 +207,7 @@ This function is called by `org-babel-execute-src-block'"
   (setq langtool-bin "/usr/sbin/languagetool"))
 
 (use-package eshell
+  :straight nil
   :ensure nil
   :init
   (add-hook 'eshell-mode-hook
@@ -332,9 +338,6 @@ This function is called by `org-babel-execute-src-block'"
   :init
   (load-theme 'doom-dracula t))
 
-(use-package cyberpunk-2019-theme
-  :demand t)
-
 (use-package all-the-icons)
 
 (use-package doom-modeline
@@ -349,6 +352,7 @@ This function is called by `org-babel-execute-src-block'"
                       '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 
 (use-package dired
+  :straight nil
   :ensure nil
   :bind (:map dired-mode-map
               ("RET" . dired-find-alternate-file)
@@ -436,11 +440,13 @@ This function is called by `org-babel-execute-src-block'"
     :init (pinentry-start)))
 
 (use-package uniquify
+  :straight nil
   :ensure nil
   :config
   (setq uniquify-buffer-name-style 'forward))
 
 (use-package recentf
+  :straight nil
   :ensure nil
   :config
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -834,6 +840,7 @@ This function is called by `org-babel-execute-src-block'"
   :mode "\\.sass\\'")
 
 (use-package c-mode
+  :straight nil
   :ensure nil
   :config
   (progn ; C mode hook
@@ -843,6 +850,7 @@ This function is called by `org-babel-execute-src-block'"
     (setq-default c-basic-offset 2)))
 
 (use-package c++-mode
+  :straight nil
   :ensure nil
   )
 
@@ -857,16 +865,15 @@ This function is called by `org-babel-execute-src-block'"
 (use-package parinfer-rust-mode
   :defer 10
   :commands (parinfer-rust-mode)
-  :quelpa ((parinfer-rust-mode
-            :fetcher github
-            :branch "master"
-            :repo "justinbarclay/parinfer-rust-mode")
-            :upgrade nil)
+  :straight (parinfer-rust-mode :type git
+                                :host github
+                                :branch "download-on-load"
+                                :repo "justinbarclay/parinfer-rust-mode")
   :init
-  (setq parinfer-rust-auto-download-p 't)
-  (setq parinfer-rust-check-before-enable nil))
+  (setq parinfer-rust-auto-download t))
 
 (use-package eldoc
+  :straight nil
   :ensure nil
   :config
   (eldoc-add-command
@@ -890,11 +897,13 @@ This function is called by `org-babel-execute-src-block'"
                          slime-autodoc)))
 
 (use-package lisp-mode
+  :straight nil    
   :ensure nil
   :config
   (setq inferior-lisp-program (executable-find "sbcl")))
 
 (use-package elisp-mode
+  :straight nil
   :ensure nil
   :init
   (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
@@ -1038,6 +1047,7 @@ This function is called by `org-babel-execute-src-block'"
  :defer t)
 
 (use-package sgml-mode
+  :straight nil
   :ensure nil
   :after tagedit
   :config
@@ -1154,6 +1164,7 @@ This function is called by `org-babel-execute-src-block'"
 ;; (use-package sqlint)
 
 (use-package rst
+  :straight nil
   :ensure nil
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
@@ -1173,6 +1184,7 @@ This function is called by `org-babel-execute-src-block'"
 (use-package flx)
 
 (use-package woman
+  :straight nil
   :ensure nil
   :config
   (progn (setq woman-manpath

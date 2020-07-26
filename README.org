@@ -183,6 +183,29 @@ Let's describe some variables to help determine how to configure Emacs
 (defvar jb/os-windows-p (eq system-type 'windows-nt))
 (defvar jb/os-macos-p (eq system-type 'darwin))
 #+END_SRC
+* Package Manager
+I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
+
+** Bootstrapping straight.el
+#+BEGIN_SRC emacs-lisp
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+#+END_SRC
+** Customize Straight
+#+BEGIN_SRC emacs-lisp
+  (setq straight-use-package-by-default t)
+#+END_SRC
+
 
 * Tent Pole
 For big emacs packages, that help define the experience of Emacs itself
@@ -230,7 +253,7 @@ The plan is to use a copious amount of deferral to speed up emacs boot time.
 + In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used.
 *** Quelpa and Quelpa-Use-Package
 Most of the packages I want to use are hosted on Elpa and Melpa, but sometimes that's enough. Sometimes I want to use git and Quelpa supports using git as a repository, among other things.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package quelpa
   :ensure t
   :defer t
@@ -239,7 +262,7 @@ Most of the packages I want to use are hosted on Elpa and Melpa, but sometimes t
 #+END_SRC
 
 But in order for use-package to be able to use quelpa, we need to add another package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package quelpa-use-package
     :ensure t
     :init
@@ -296,13 +319,9 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
           (progn (org-end-of-subtree t t)
                  (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
                  (point)))))))
-      (setq truncate-lines t
-            global-company-modes '(not org-mode)))
-    :config
-    (progn
       (defun jb/org-clear-results ()
-        (interactive)
-        (org-babel-remove-result-one-or-many 't))
+          (interactive)
+          (org-babel-remove-result-one-or-many 't))
       (defun run-org-block ()
         (interactive)
         (save-excursion
@@ -310,7 +329,12 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
            (org-babel-find-named-block
             (completing-read "Code Block: " (org-babel-src-block-names))))
           (org-babel-execute-src-block-maybe)))
+      (setq global-company-modes '(not org-mode)))
+    :config
+    (progn
+      (setq truncate-lines nil)
       (setq org-startup-truncated nil)
+      (setq word-wrap t)
       (setq org-capture-templates
             '(("a" "Appointment" entry (file+headline  "~/org/schedule.org" "Appointments")
                "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
@@ -350,7 +374,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
     :init
     (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
           org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
-          org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/schedule.org"))))
+          Org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/schedule.org"))))
 #+END_SRC
 
 *** Org-bullets
@@ -496,6 +520,7 @@ as such need both of these modes loaded before they'll work.
 ** EShell
 #+BEGIN_SRC emacs-lisp
 (use-package eshell
+  :straight nil
   :ensure nil
   :init
   (add-hook 'eshell-mode-hook
@@ -807,7 +832,7 @@ Let's use Doom's version instead
 #+END_SRC
 
 *** Cyberpunk 2019
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package cyberpunk-2019-theme
   :demand t)
 #+END_SRC
@@ -856,6 +881,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 ** dired
 #+BEGIN_SRC emacs-lisp
   (use-package dired
+    :straight nil
     :ensure nil
     :bind (:map dired-mode-map
                 ("RET" . dired-find-alternate-file)
@@ -986,6 +1012,7 @@ Currently turned off due to debugging issues
 Ensure that buffers have unique file names
 #+BEGIN_SRC emacs-lisp
 (use-package uniquify
+  :straight nil
   :ensure nil
   :config
   (setq uniquify-buffer-name-style 'forward))
@@ -994,6 +1021,7 @@ Ensure that buffers have unique file names
 Turn on recent file mode so that you can more easily switch to recently edited files when you first start emacs
 #+BEGIN_SRC emacs-lisp
 (use-package recentf
+  :straight nil
   :ensure nil
   :config
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -1530,6 +1558,7 @@ Major mode customizations
 *** Add hooks and customizations
 #+BEGIN_SRC emacs-lisp
   (use-package c-mode
+    :straight nil
     :ensure nil
     :config
     (progn ; C mode hook
@@ -1542,6 +1571,7 @@ Major mode customizations
 c++
 #+BEGIN_SRC emacs-lisp
   (use-package c++-mode
+    :straight nil
     :ensure nil
     )
 
@@ -1567,44 +1597,24 @@ We need lispy for some of the excellent bracket based navigation integrations wi
     (use-package lispy
      :defer nil)
 #+END_SRC
-*** parinfer
-This is being disabled as I switch over to my own package and dog food that
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package parinfer
-    :commands (parinfer-mode)
-    :bind (:map parinfer-mode-map
-                (("C-t" . parinfer-toggle-mode)))
-    :init (progn
-            (setq parinfer-delay-invoke-threshold 6000)
-            (setq parinfer-auto-switch-indent-mode t)
-            (setq parinfer-extensions
-                  '(defaults       ; should be included.
-                     pretty-parens  ; different paren styles for different modes.
-                     paredit        ; Introduce some paredit commands.
-                     smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-                     lispy
-                     smart-yank)))
-    :config
-    (require 'lispy))   ; Yank behavior depend on mode
-#+END_SRC
+
 *** parinfer-rust-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :
   (use-package parinfer-rust-mode
     :defer 10
     :commands (parinfer-rust-mode)
-    :quelpa ((parinfer-rust-mode
-              :fetcher github
-              :branch "master"
-              :repo "justinbarclay/parinfer-rust-mode")
-              :upgrade nil)
+    :straight (parinfer-rust-mode :type git
+                                  :host github
+                                  :branch "download-on-load"
+                                  :repo "justinbarclay/parinfer-rust-mode")
     :init
-    (setq parinfer-rust-auto-download-p 't)
-    (setq parinfer-rust-check-before-enable nil))
+    (setq parinfer-rust-auto-download t))
 #+END_SRC
 
 *** eldoc
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
+    :straight nil
     :ensure nil
     :config
     (eldoc-add-command
@@ -1634,6 +1644,7 @@ This is being disabled as I switch over to my own package and dog food that
 *** lisp-mode
 #+BEGIN_SRC emacs-lisp
   (use-package lisp-mode
+    :straight nil    
     :ensure nil
     :config
     (setq inferior-lisp-program (executable-find "sbcl")))
@@ -1641,10 +1652,11 @@ This is being disabled as I switch over to my own package and dog food that
 ** Elisp
 *** elisp-mode
 #+BEGIN_SRC emacs-lisp
-    (use-package elisp-mode
-      :ensure nil
-      :init
-      (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
+  (use-package elisp-mode
+    :straight nil
+    :ensure nil
+    :init
+    (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 #+END_SRC
 
 ** Clojure
@@ -1833,6 +1845,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** sgml-mode
 #+BEGIN_SRC emacs-lisp
   (use-package sgml-mode
+    :straight nil
     :ensure nil
     :after tagedit
     :config
@@ -2044,6 +2057,7 @@ Get limited autocompletion in Lua
 ** Text modes
 #+BEGIN_SRC emacs-lisp
   (use-package rst
+    :straight nil
     :ensure nil
     :mode (("\\.txt$" . rst-mode)
            ("\\.rst$" . rst-mode)
@@ -2100,6 +2114,7 @@ Get limited autocompletion in Lua
 ** Woman
 #+BEGIN_SRC emacs-lisp
   (use-package woman
+    :straight nil
     :ensure nil
     :config
     (progn (setq woman-manpath
