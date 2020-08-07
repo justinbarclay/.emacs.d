@@ -187,7 +187,7 @@ Let's describe some variables to help determine how to configure Emacs
 I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
 
 ** Bootstrapping straight.el
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (defvar bootstrap-version)
   (let ((bootstrap-file
          (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -202,7 +202,7 @@ I've decided to experiment with a completely new package manager. The main purpo
     (load bootstrap-file nil 'nomessage))
 #+END_SRC
 ** Customize Straight
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (setq straight-use-package-by-default t)
 #+END_SRC
 
@@ -517,10 +517,10 @@ as such need both of these modes loaded before they'll work.
     (setq langtool-default-language "en-US")
     (setq langtool-bin "/usr/sbin/languagetool"))
 #+END_SRC
+
 ** EShell
 #+BEGIN_SRC emacs-lisp
 (use-package eshell
-  :straight nil
   :ensure nil
   :init
   (add-hook 'eshell-mode-hook
@@ -881,8 +881,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 ** dired
 #+BEGIN_SRC emacs-lisp
   (use-package dired
-    :straight nil
-    :ensure nil
+      :ensure nil
     :bind (:map dired-mode-map
                 ("RET" . dired-find-alternate-file)
                 ("a" . dired-find-file)))
@@ -1012,7 +1011,6 @@ Currently turned off due to debugging issues
 Ensure that buffers have unique file names
 #+BEGIN_SRC emacs-lisp
 (use-package uniquify
-  :straight nil
   :ensure nil
   :config
   (setq uniquify-buffer-name-style 'forward))
@@ -1021,7 +1019,6 @@ Ensure that buffers have unique file names
 Turn on recent file mode so that you can more easily switch to recently edited files when you first start emacs
 #+BEGIN_SRC emacs-lisp
 (use-package recentf
-  :straight nil
   :ensure nil
   :config
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -1558,8 +1555,7 @@ Major mode customizations
 *** Add hooks and customizations
 #+BEGIN_SRC emacs-lisp
   (use-package c-mode
-    :straight nil
-    :ensure nil
+      :ensure nil
     :config
     (progn ; C mode hook
       (add-hook 'c-mode-hook 'flycheck-mode)
@@ -1571,8 +1567,7 @@ Major mode customizations
 c++
 #+BEGIN_SRC emacs-lisp
   (use-package c++-mode
-    :straight nil
-    :ensure nil
+      :ensure nil
     )
 
 #+END_SRC
@@ -1603,10 +1598,6 @@ We need lispy for some of the excellent bracket based navigation integrations wi
   (use-package parinfer-rust-mode
     :defer 10
     :commands (parinfer-rust-mode)
-    :straight (parinfer-rust-mode :type git
-                                  :host github
-                                  :branch "download-on-load"
-                                  :repo "justinbarclay/parinfer-rust-mode")
     :init
     (setq parinfer-rust-auto-download t))
 #+END_SRC
@@ -1614,8 +1605,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 *** eldoc
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
-    :straight nil
-    :ensure nil
+      :ensure nil
     :config
     (eldoc-add-command
      'paredit-backward-delete
@@ -1644,7 +1634,6 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 *** lisp-mode
 #+BEGIN_SRC emacs-lisp
   (use-package lisp-mode
-    :straight nil    
     :ensure nil
     :config
     (setq inferior-lisp-program (executable-find "sbcl")))
@@ -1653,8 +1642,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 *** elisp-mode
 #+BEGIN_SRC emacs-lisp
   (use-package elisp-mode
-    :straight nil
-    :ensure nil
+      :ensure nil
     :init
     (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 #+END_SRC
@@ -1845,8 +1833,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** sgml-mode
 #+BEGIN_SRC emacs-lisp
   (use-package sgml-mode
-    :straight nil
-    :ensure nil
+      :ensure nil
     :after tagedit
     :config
     (require 'tagedit)
@@ -1903,7 +1890,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (progn
       (setq ruby-indent-level 2
             ruby-indent-tabs-mode nil)
-      (add-hook 'ruby-mode 'superword-mode)))
+      (add-hook 'enh-ruby-mode 'superword-mode)))
 #+END_SRC
 *** formatter
 #+BEGIN_SRC emacs-lisp
@@ -2057,8 +2044,7 @@ Get limited autocompletion in Lua
 ** Text modes
 #+BEGIN_SRC emacs-lisp
   (use-package rst
-    :straight nil
-    :ensure nil
+      :ensure nil
     :mode (("\\.txt$" . rst-mode)
            ("\\.rst$" . rst-mode)
            ("\\.rest$" . rst-mode)))
@@ -2114,8 +2100,7 @@ Get limited autocompletion in Lua
 ** Woman
 #+BEGIN_SRC emacs-lisp
   (use-package woman
-    :straight nil
-    :ensure nil
+      :ensure nil
     :config
     (progn (setq woman-manpath
                 (split-string (shell-command-to-string "man --path") ":" t "\n"))
