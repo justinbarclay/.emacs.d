@@ -298,6 +298,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 *** Org
 #+BEGIN_SRC emacs-lisp
   (use-package org
+    :ensure org-plus-contrib
     :bind
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture)
@@ -312,16 +313,16 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
         (org-up-element)
         (save-excursion
           (save-match-data
-        (org-with-limited-levels
-         (narrow-to-region
-          (progn
-            (org-back-to-heading t) (point))
-          (progn (org-end-of-subtree t t)
-                 (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
-                 (point)))))))
+            (org-with-limited-levels
+             (narrow-to-region
+              (progn
+                (org-back-to-heading t) (point))
+              (progn (org-end-of-subtree t t)
+                     (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
+                     (point)))))))
       (defun jb/org-clear-results ()
-          (interactive)
-          (org-babel-remove-result-one-or-many 't))
+        (interactive)
+        (org-babel-remove-result-one-or-many 't))
       (defun run-org-block ()
         (interactive)
         (save-excursion
@@ -332,64 +333,41 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
       (setq global-company-modes '(not org-mode)))
     :config
     (progn
-      (setq truncate-lines nil)
-      (setq org-startup-truncated nil)
-      (setq word-wrap t)
-      (setq org-capture-templates
-            '(("a" "Appointment" entry (file+headline  "~/org/schedule.org" "Appointments")
-               "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
-              ("l" "Link" entry (file+headline "~/org/links.org" "Links")
-               "* %? %^L %^g \n%T" :prepend)))
-      (setq org-agenda-files (list ""))
+      (setq truncate-lines nil
+            org-startup-truncated nil
+            word-wrap t)      
+      (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
+                                   (concat org-directory "/work/calendar.org")
+                                   (concat org-directory "/personal/todo.org")
+                                   (concat org-directory "/work/todo.org")))
       (org-babel-do-load-languages 'org-babel-load-languages
                                    '((shell . t)
                                      (js . t)
                                      (sql . t)
                                      (ruby . t)))
-      (custom-set-variables
-       '(org-default-notes-file (concat org-directory "/notes.org"))
-       '(org-export-html-postamble nil)
-       '(org-hide-leading-stars t)
-       '(org-startup-folded (quote overview))
-       '(org-startup-indented t))))
+      (setq org-todo-keywords
+            '(("TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
+              ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
+
+            org-todo-keyword-faces
+            '(("TODO" :foreground "red" :weight bold)
+              ("INPROGRESS" :foreground "blue" :weight bold)
+              ("DONE" :foreground "forest green" :weight bold)
+              ("WAITING" :foreground "orange" :weight bold)
+              ("BLOCKED" :foreground "magenta" :weight bold)
+              ("CANCELLED" :foreground "forest green" :weight bold)))
+      (setq org-default-notes-file (concat org-directory "/notes.org")
+            org-export-html-postamble nil
+            org-hide-leading-stars t
+            org-startup-folded 'overview
+            org-startup-indented t)))
     #+END_SRC
-
-*** Org-trello
-#+BEGIN_SRC emacs-lisp
-  (use-package org-trello
-    :config
-    (defun org-trello-pull-buffer ()
-       "Synchronize current buffer from trello."
-       (interactive)
-       (org-trello-sync-buffer 'from))
-
-    (defun org-trello-pull-card ()
-       "Synchronize card at point from trello."
-       (interactive)
-       (org-trello-sync-card 'from)))
-#+END_SRC
-*** Org-gcal
-#+BEGIN_SRC emacs-lisp
-  (use-package org-gcal
-    :init
-    (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
-          org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
-          Org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/schedule.org"))))
-#+END_SRC
 
 *** Org-bullets
 #+BEGIN_SRC emacs-lisp
   (use-package org-bullets
     :init
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-#+END_SRC
-*** Ob-Restclient
-#+BEGIN_SRC emacs-lisp
-  (use-package ob-restclient
-    :config
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((restclient . t))))
 #+END_SRC
 *** org-pdftools
 Before we can install org-pdftools, we need to install pdf-tools
@@ -407,6 +385,14 @@ Now that we have that installed we can pull in org-pdftools from github
              :upgrade nil)))
 #+END_SRC
 
+*** Ob-Restclient
+#+BEGIN_SRC emacs-lisp
+  (use-package ob-restclient
+    :config
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((restclient . t))))
+#+END_SRC
 *** Org-toc
 After the installation, every time you’ll be saving an org file, the first headline with a :TOC: tag will be updated with the current table of contents.
 
@@ -423,6 +409,11 @@ You can also use @ as separator, instead of _.
     :hook (org-mode-hook . toc-org-enable))
 #+END_SRC
 
+*** Org-re-reveal
+Creating presentation using org mode and the web
+#+BEGIN_SRC emacs-lisp
+  (use-package org-re-reveal)
+#+END_SRC
 *** Org-tree-slide
 A presentation mode directly in Emacs and Org Mode
 #+BEGIN_SRC emacs-lisp
@@ -436,11 +427,6 @@ A presentation mode directly in Emacs and Org Mode
 
 #+END_SRC
 
-*** Org-re-reveal
-Creating presentation using org mode and the web
-#+BEGIN_SRC emacs-lisp
-  (use-package org-re-reveal)
-#+END_SRC
 *** Custom Org Functions
 These functions expand on the abilities of org-babel and ob-restclient mode and
 as such need both of these modes loaded before they'll work.
@@ -453,7 +439,7 @@ as such need both of these modes loaded before they'll work.
     "Default arguments for evaluating a restclient block.")
 
   ;; Lambda function reified to a named function, stolen from restclient
-  (defun gen-restclient-curl-command (method url headers entitty)
+  (defun gen-restclient-curl-command (method url headers entity)
     (let ((header-args
            (apply 'append
                   (mapcar (lambda (header)
@@ -468,8 +454,8 @@ as such need both of these modes loaded before they'll work.
                                 header-args
                                 (list (concat "-X" method))
                                 (list url)
-                                (when (> (string-width entitty) 0)
-                                  (list "-d" entitty)))
+                                (when (> (string-width entity) 0)
+                                  (list "-d" entity)))
                         " ")
              "\n#+END_SRC"))))
 
@@ -508,6 +494,86 @@ as such need both of these modes loaded before they'll work.
           (org-babel-execute-src-block t (cons "restclient-curl"
                                                (cdr info)))
           (message "I'm sorry, I can only generate curl commands for a restclient block."))))
+#+END_SRC
+*** Organize your life
+This section includes tooling for organizing ones work or personal life. Generally the tools and setup is pretty straight forward but should that not be the case I'll add more details about the purpose and how to use.
+
+**** DOCT
+Declarative Org Capture Templates
+#+BEGIN_SRC emacs-lisp
+  (use-package doct
+    :commands (doct)
+    :init (setq org-capture-templates
+                (doct '(("Personal" :keys "p" :children
+                         (("Todo"   :keys "t"
+                           :template ("* TODO %^{Description}"
+                                      ":PROPERTIES:"
+                                      ":Created: %U"
+                                      ":END:")
+                           :headline "Tasks" :file "~/org/personal/todo.org")
+                          ("Appointment"  :keys "a"
+                           :template ("* %^{Description}"
+                                      ":PROPERTIES:"
+                                      ":SCHEDULED: %T"
+                                      ":calendar-id: justincbarclay@gmail.com"
+                                      ":END:")
+                           :file "~/org/personal/calendar.org")
+                          ("Emails" :keys "e"
+                           :template "* TODO [#A] Reply: %a :@home:"
+                           :headline "Emails" :file "~/org/personal/todo.org")))
+
+                        ("Work"    :keys "w"
+                         :children
+                         (("Todo"  :keys "t"
+                           :template ("* TODO %^{Description}"
+                                      ":PROPERTIES:"
+                                      ":Created: %U"
+                                      ":END:")
+                           :headline "Tasks" :file "~/org/work/todo.org")
+                          ("Appointment"  :keys "a"
+                           :template ("* %^{Description}"
+                                      ":PROPERTIES:"
+                                      ":SCHEDULED: %T"
+                                      ":calendar-id: justin.barclay@tidalmigrations.com"
+                                      ":END:")
+                           :file "~/org/work/calendar.org")))))))
+#+END_SRC
+
+**** Org-trello
+#+BEGIN_SRC emacs-lisp
+  (use-package org-trello
+    :config
+    (defun org-trello-pull-buffer ()
+       "Synchronize current buffer from trello."
+       (interactive)
+       (org-trello-sync-buffer 'from))
+
+    (defun org-trello-pull-card ()
+       "Synchronize card at point from trello."
+       (interactive)
+       (org-trello-sync-card 'from)))
+#+END_SRC
+**** Org-gcal
+#+BEGIN_SRC emacs-lisp
+  (use-package org-gcal
+    :init
+    (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
+          org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
+          org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/personal/calendar.org")
+                                ("justin.barclay@tidalmigrations.com" . "~/org/work/calendar.org"))))
+#+END_SRC
+**** Org Fancy Priorities
+Change priority cookies from alphanumeric cookies into symbols and explicitly colours them
+#+BEGIN_SRC emacs-lisp
+  (use-package org-fancy-priorities
+    :ensure t
+    :hook 
+    (org-mode . org-fancy-priorities-mode)
+    :config
+    '((?A :foreground "red" )
+      (?B :foreground "orange")
+      (?C :foreground "blue"))
+    (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 #+END_SRC
 
 ** Langtool
@@ -650,11 +716,20 @@ as such need both of these modes loaded before they'll work.
 ** Notmuch
 #+BEGIN_SRC emacs-lisp
   (use-package notmuch
+    :after org
     :config
-    (append 'notmuch-saved-searches
-            '((:name "unreplied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. not thread:\"{to:justincbarclay@gmail.com}\"")
-              (:name "replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
-              (:name "recently-sent" :query "tag:sent date:yesterday.."))))
+    (require 'ol-notmuch)
+    (setq message-sendmail-f-is-evil t
+          sendmail-program "msmtp"
+          message-sendmail-extra-arguments '("--read-envelope-from"))
+    (setq notmuch-saved-searches       
+          '((:name "work/inbox" :query "tag:inbox AND to:tidalmigrations.com")
+            (:name "work/unread" :query "tag:inbox AND tag:unread AND to:tidalmigrations.com")
+            (:name "personal/inbox" :query "tag:inbox AND to:gmail.com")
+            (:name "personal/unread" :query "tag:inbox AND tag:unread AND to:gmail.com")
+            (:name "personal/unreplied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. not thread:\"{to:justincbarclay@gmail.com}\"")
+            (:name "personal/replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
+            (:name "personal/recently-sent" :query "tag:sent date:yesterday.."))))
 #+END_SRC
 
 * Look and Feel
@@ -858,9 +933,10 @@ Let's use Doom's version instead
 As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
 (global-display-line-numbers-mode)
-(set-default 'display-line-numbers-type 'visual)
+(set-default 'display-line-numbers-type 't)
 (setq display-line-numbers-current-absolute t)
 #+END_SRC
+
 ** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package rainbow-delimiters
@@ -1856,11 +1932,10 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Robe
 #+BEGIN_SRC emacs-lisp
   (use-package robe
-    :commands (robe-start)
-    :hook (ruby-mode . enh-ruby-mode)
+    :commands (robe-start robe-mode)
+    :hook (enh-ruby-mode . robe-mode)
     :config
-    (push 'company-robe company-backends)
-    (robe-start))
+    (push 'company-robe company-backends))
 #+END_SRC
 
 *** inf-ruby

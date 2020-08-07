@@ -8,21 +8,6 @@
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(setq straight-use-package-by-default t)
-
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 
@@ -41,6 +26,7 @@
 (use-package gnu-elpa-keyring-update)
 
 (use-package org
+  :ensure org-plus-contrib
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
@@ -55,16 +41,16 @@
       (org-up-element)
       (save-excursion
         (save-match-data
-      (org-with-limited-levels
-       (narrow-to-region
-        (progn
-          (org-back-to-heading t) (point))
-        (progn (org-end-of-subtree t t)
-               (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
-               (point)))))))
+          (org-with-limited-levels
+           (narrow-to-region
+            (progn
+              (org-back-to-heading t) (point))
+            (progn (org-end-of-subtree t t)
+                   (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
+                   (point)))))))
     (defun jb/org-clear-results ()
-        (interactive)
-        (org-babel-remove-result-one-or-many 't))
+      (interactive)
+      (org-babel-remove-result-one-or-many 't))
     (defun run-org-block ()
       (interactive)
       (save-excursion
@@ -75,44 +61,34 @@
     (setq global-company-modes '(not org-mode)))
   :config
   (progn
-    (setq truncate-lines nil)
-    (setq org-startup-truncated nil)
-    (setq word-wrap t)
-    (setq org-capture-templates
-          '(("a" "Appointment" entry (file+headline  "~/org/schedule.org" "Appointments")
-             "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n")
-            ("l" "Link" entry (file+headline "~/org/links.org" "Links")
-             "* %? %^L %^g \n%T" :prepend)))
-    (setq org-agenda-files (list ""))
+    (setq truncate-lines nil
+          org-startup-truncated nil
+          word-wrap t)      
+    (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
+                                 (concat org-directory "/work/calendar.org")
+                                 (concat org-directory "/personal/todo.org")
+                                 (concat org-directory "/work/todo.org")))
     (org-babel-do-load-languages 'org-babel-load-languages
                                  '((shell . t)
                                    (js . t)
                                    (sql . t)
                                    (ruby . t)))
-    (custom-set-variables
-     '(org-default-notes-file (concat org-directory "/notes.org"))
-     '(org-export-html-postamble nil)
-     '(org-hide-leading-stars t)
-     '(org-startup-folded (quote overview))
-     '(org-startup-indented t))))
+    (setq org-todo-keywords
+          '(("TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
+            ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
-(use-package org-trello
-  :config
-  (defun org-trello-pull-buffer ()
-     "Synchronize current buffer from trello."
-     (interactive)
-     (org-trello-sync-buffer 'from))
-
-  (defun org-trello-pull-card ()
-     "Synchronize card at point from trello."
-     (interactive)
-     (org-trello-sync-card 'from)))
-
-(use-package org-gcal
-  :init
-  (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
-        org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
-        Org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/schedule.org"))))
+          org-todo-keyword-faces
+          '(("TODO" :foreground "red" :weight bold)
+            ("INPROGRESS" :foreground "blue" :weight bold)
+            ("DONE" :foreground "forest green" :weight bold)
+            ("WAITING" :foreground "orange" :weight bold)
+            ("BLOCKED" :foreground "magenta" :weight bold)
+            ("CANCELLED" :foreground "forest green" :weight bold)))
+    (setq org-default-notes-file (concat org-directory "/notes.org")
+          org-export-html-postamble nil
+          org-hide-leading-stars t
+          org-startup-folded 'overview
+          org-startup-indented t)))
 
 (use-package org-bullets
   :init
@@ -127,6 +103,8 @@
 (use-package toc-org
   :hook (org-mode-hook . toc-org-enable))
 
+(use-package org-re-reveal)
+
 (use-package org-tree-slide
   :config
   (progn
@@ -134,8 +112,6 @@
     (setq org-tree-slide-slide-in-effect nil
           org-tree-slide-skip-done nil
           org-tree-slide-header nil)))
-
-(use-package org-re-reveal)
 
 ;; generated-curl-command is used to communicate state across several function calls
 (setq generated-curl-command nil)
@@ -145,7 +121,7 @@
   "Default arguments for evaluating a restclient block.")
 
 ;; Lambda function reified to a named function, stolen from restclient
-(defun gen-restclient-curl-command (method url headers entitty)
+(defun gen-restclient-curl-command (method url headers entity)
   (let ((header-args
          (apply 'append
                 (mapcar (lambda (header)
@@ -160,8 +136,8 @@
                               header-args
                               (list (concat "-X" method))
                               (list url)
-                              (when (> (string-width entitty) 0)
-                                (list "-d" entitty)))
+                              (when (> (string-width entity) 0)
+                                (list "-d" entity)))
                       " ")
            "\n#+END_SRC"))))
 
@@ -201,13 +177,78 @@ This function is called by `org-babel-execute-src-block'"
                                              (cdr info)))
         (message "I'm sorry, I can only generate curl commands for a restclient block."))))
 
+(use-package doct
+  :commands (doct)
+  :init (setq org-capture-templates
+              (doct '(("Personal" :keys "p" :children
+                       (("Todo"   :keys "t"
+                         :template ("* TODO %^{Description}"
+                                    ":PROPERTIES:"
+                                    ":Created: %U"
+                                    ":END:")
+                         :headline "Tasks" :file "~/org/personal/todo.org")
+                        ("Appointment"  :keys "a"
+                         :template ("* %^{Description}"
+                                    ":PROPERTIES:"
+                                    ":SCHEDULED: %T"
+                                    ":calendar-id: justincbarclay@gmail.com"
+                                    ":END:")
+                         :file "~/org/personal/calendar.org")
+                        ("Emails" :keys "e"
+                         :template "* TODO [#A] Reply: %a :@home:"
+                         :headline "Emails" :file "~/org/personal/todo.org")))
+
+                      ("Work"    :keys "w"
+                       :children
+                       (("Todo"  :keys "t"
+                         :template ("* TODO %^{Description}"
+                                    ":PROPERTIES:"
+                                    ":Created: %U"
+                                    ":END:")
+                         :headline "Tasks" :file "~/org/work/todo.org")
+                        ("Appointment"  :keys "a"
+                         :template ("* %^{Description}"
+                                    ":PROPERTIES:"
+                                    ":SCHEDULED: %T"
+                                    ":calendar-id: justin.barclay@tidalmigrations.com"
+                                    ":END:")
+                         :file "~/org/work/calendar.org")))))))
+
+(use-package org-trello
+  :config
+  (defun org-trello-pull-buffer ()
+     "Synchronize current buffer from trello."
+     (interactive)
+     (org-trello-sync-buffer 'from))
+
+  (defun org-trello-pull-card ()
+     "Synchronize card at point from trello."
+     (interactive)
+     (org-trello-sync-card 'from)))
+
+(use-package org-gcal
+  :init
+  (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
+        org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
+        org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/personal/calendar.org")
+                              ("justin.barclay@tidalmigrations.com" . "~/org/work/calendar.org"))))
+
+(use-package org-fancy-priorities
+  :ensure t
+  :hook 
+  (org-mode . org-fancy-priorities-mode)
+  :config
+  '((?A :foreground "red" )
+    (?B :foreground "orange")
+    (?C :foreground "blue"))
+  (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
+
 (use-package langtool
   :init
   (setq langtool-default-language "en-US")
   (setq langtool-bin "/usr/sbin/languagetool"))
 
 (use-package eshell
-  :straight nil
   :ensure nil
   :init
   (add-hook 'eshell-mode-hook
@@ -324,11 +365,20 @@ This function is called by `org-babel-execute-src-block'"
     '("c" "issues" forge-create-create)))
 
 (use-package notmuch
+  :after org
   :config
-  (append 'notmuch-saved-searches
-          '((:name "unreplied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. not thread:\"{to:justincbarclay@gmail.com}\"")
-            (:name "replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
-            (:name "recently-sent" :query "tag:sent date:yesterday.."))))
+  (require 'ol-notmuch)
+  (setq message-sendmail-f-is-evil t
+        sendmail-program "msmtp"
+        message-sendmail-extra-arguments '("--read-envelope-from"))
+  (setq notmuch-saved-searches       
+        '((:name "work/inbox" :query "tag:inbox AND to:tidalmigrations.com")
+          (:name "work/unread" :query "tag:inbox AND tag:unread AND to:tidalmigrations.com")
+          (:name "personal/inbox" :query "tag:inbox AND to:gmail.com")
+          (:name "personal/unread" :query "tag:inbox AND tag:unread AND to:gmail.com")
+          (:name "personal/unreplied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. not thread:\"{to:justincbarclay@gmail.com}\"")
+          (:name "personal/replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
+          (:name "personal/recently-sent" :query "tag:sent date:yesterday.."))))
 
 (global-set-key (kbd "s-t") '(lambda () (interactive)))
 
@@ -352,8 +402,7 @@ This function is called by `org-babel-execute-src-block'"
                       '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 
 (use-package dired
-  :straight nil
-  :ensure nil
+    :ensure nil
   :bind (:map dired-mode-map
               ("RET" . dired-find-alternate-file)
               ("a" . dired-find-file)))
@@ -440,13 +489,11 @@ This function is called by `org-babel-execute-src-block'"
     :init (pinentry-start)))
 
 (use-package uniquify
-  :straight nil
   :ensure nil
   :config
   (setq uniquify-buffer-name-style 'forward))
 
 (use-package recentf
-  :straight nil
   :ensure nil
   :config
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -840,8 +887,7 @@ This function is called by `org-babel-execute-src-block'"
   :mode "\\.sass\\'")
 
 (use-package c-mode
-  :straight nil
-  :ensure nil
+    :ensure nil
   :config
   (progn ; C mode hook
     (add-hook 'c-mode-hook 'flycheck-mode)
@@ -850,8 +896,7 @@ This function is called by `org-babel-execute-src-block'"
     (setq-default c-basic-offset 2)))
 
 (use-package c++-mode
-  :straight nil
-  :ensure nil
+    :ensure nil
   )
 
 (use-package c-eldoc)
@@ -865,16 +910,11 @@ This function is called by `org-babel-execute-src-block'"
 (use-package parinfer-rust-mode
   :defer 10
   :commands (parinfer-rust-mode)
-  :straight (parinfer-rust-mode :type git
-                                :host github
-                                :branch "download-on-load"
-                                :repo "justinbarclay/parinfer-rust-mode")
   :init
   (setq parinfer-rust-auto-download t))
 
 (use-package eldoc
-  :straight nil
-  :ensure nil
+    :ensure nil
   :config
   (eldoc-add-command
    'paredit-backward-delete
@@ -897,14 +937,12 @@ This function is called by `org-babel-execute-src-block'"
                          slime-autodoc)))
 
 (use-package lisp-mode
-  :straight nil    
   :ensure nil
   :config
   (setq inferior-lisp-program (executable-find "sbcl")))
 
 (use-package elisp-mode
-  :straight nil
-  :ensure nil
+    :ensure nil
   :init
   (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 
@@ -1047,8 +1085,7 @@ This function is called by `org-babel-execute-src-block'"
  :defer t)
 
 (use-package sgml-mode
-  :straight nil
-  :ensure nil
+    :ensure nil
   :after tagedit
   :config
   (require 'tagedit)
@@ -1064,11 +1101,10 @@ This function is called by `org-babel-execute-src-block'"
    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
 (use-package robe
-  :commands (robe-start)
-  :hook (ruby-mode . enh-ruby-mode)
+  :commands (robe-start robe-mode)
+  :hook (enh-ruby-mode . robe-mode)
   :config
-  (push 'company-robe company-backends)
-  (robe-start))
+  (push 'company-robe company-backends))
 
 (use-package inf-ruby
   :defer t
@@ -1093,7 +1129,7 @@ This function is called by `org-babel-execute-src-block'"
   (progn
     (setq ruby-indent-level 2
           ruby-indent-tabs-mode nil)
-    (add-hook 'ruby-mode 'superword-mode)))
+    (add-hook 'enh-ruby-mode 'superword-mode)))
 
 (use-package rubocopfmt
 :hook 'enh-ruby-mode)
@@ -1164,8 +1200,7 @@ This function is called by `org-babel-execute-src-block'"
 ;; (use-package sqlint)
 
 (use-package rst
-  :straight nil
-  :ensure nil
+    :ensure nil
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
@@ -1184,8 +1219,7 @@ This function is called by `org-babel-execute-src-block'"
 (use-package flx)
 
 (use-package woman
-  :straight nil
-  :ensure nil
+    :ensure nil
   :config
   (progn (setq woman-manpath
               (split-string (shell-command-to-string "man --path") ":" t "\n"))

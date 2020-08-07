@@ -89,7 +89,7 @@
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 (global-display-line-numbers-mode)
-(set-default 'display-line-numbers-type 'visual)
+(set-default 'display-line-numbers-type 't)
 (setq display-line-numbers-current-absolute t)
 
 (defun font-name-replace-size (font-name new-size)
