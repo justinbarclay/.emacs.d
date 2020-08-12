@@ -205,7 +205,13 @@ This function is called by `org-babel-execute-src-block'"
                                     ":PROPERTIES:"
                                     ":Created: %U"
                                     ":END:")
-                         :headline "Tasks" :file "~/org/work/todo.org")
+                         :headline "Tasks" :file "~/org/work/notes.org")
+                        ("Notes"  :keys "n"
+                         :template ("* %^{Description}"
+                                    ":PROPERTIES:"
+                                    ":Created: %U"
+                                    ":END:")
+                         :headline "Notes" :file "~/org/work/notes.org")
                         ("Appointment"  :keys "a"
                          :template ("* %^{Description}"
                                     ":PROPERTIES:"
@@ -365,12 +371,11 @@ This function is called by `org-babel-execute-src-block'"
     '("c" "issues" forge-create-create)))
 
 (use-package notmuch
-  :after org
   :config
-  (require 'ol-notmuch)
   (setq message-sendmail-f-is-evil t
         sendmail-program "msmtp"
         message-sendmail-extra-arguments '("--read-envelope-from"))
+
   (setq notmuch-saved-searches       
         '((:name "work/inbox" :query "tag:inbox AND to:tidalmigrations.com")
           (:name "work/unread" :query "tag:inbox AND tag:unread AND to:tidalmigrations.com")
@@ -378,7 +383,8 @@ This function is called by `org-babel-execute-src-block'"
           (:name "personal/unread" :query "tag:inbox AND tag:unread AND to:gmail.com")
           (:name "personal/unreplied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. not thread:\"{to:justincbarclay@gmail.com}\"")
           (:name "personal/replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
-          (:name "personal/recently-sent" :query "tag:sent date:yesterday.."))))
+          (:name "personal/recently-sent" :query "tag:sent date:yesterday..")))
+  (require 'ol-notmuch))
 
 (global-set-key (kbd "s-t") '(lambda () (interactive)))
 
