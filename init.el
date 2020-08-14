@@ -74,7 +74,7 @@
                                    (sql . t)
                                    (ruby . t)))
     (setq org-todo-keywords
-          '(("TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
+          '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
             ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
           org-todo-keyword-faces
@@ -176,6 +176,33 @@ This function is called by `org-babel-execute-src-block'"
         (org-babel-execute-src-block t (cons "restclient-curl"
                                              (cdr info)))
         (message "I'm sorry, I can only generate curl commands for a restclient block."))))
+
+(use-package org-agenda
+  :ensure nil
+  :init
+  (defun air-org-skip-subtree-if-priority (priority)
+    "Skip an agenda subtree if it has a priority of PRIORITY.
+
+PRIORITY may be one of the characters ?A, ?B, or ?C."
+    (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+          (pri-value (* 1000 (- org-lowest-priority priority)))
+          (pri-current (org-get-priority (thing-at-point 'line t))))
+      (if (= pri-value pri-current)
+          subtree-end
+        nil)))
+  (setq org-agenda-custom-commands
+        '(("d" "Daily perspectives"
+           ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\"" ;Priority tasks available to do today
+                       ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                        (org-agenda-overriding-header "High-priority unfinished tasks:")))
+            (agenda "" ((org-agenda-span 'day)
+                        (org-scheduled-delay-days -14)))
+            (tags-todo "SCHEDULED<\"<+1d>\"" ;All tasks available today
+                       ((org-agenda-skip-function '(or (org-agenda-skip-entry-if 'done)
+                                                       (air-org-skip-subtree-if-priority ?A)))
+                        (org-agenda-overriding-header "Available tasks:"))))))))
+
+(use-package org-alert)
 
 (use-package doct
   :commands (doct)
@@ -1210,6 +1237,23 @@ This function is called by `org-babel-execute-src-block'"
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
+
+(use-package alert
+      :commands (alert alert-define-style)
+      :init
+      (defun alert-burnt-toast-notify (info)
+        (let ((args
+               (list
+                "-c" "New-BurntToastNotification"
+                "-Text" (if-let ((title (plist-get info :title)))
+                            (format "'%s', '%s'" title (plist-get info :message))
+                          (format "'%s'" (plist-get info :message)))
+                )))
+          (apply #'start-process (append '("burnt-toast" nil "pwsh.exe") args))))
+      (alert-define-style 'burnt-toast :title "Notify Windows 10 using the PowerShell library BurntToast"
+                          :notifier
+                          #'alert-burnt-toast-notify)
+      (setq alert-default-style 'burnt-toast))
 
 (use-package dashboard
   :defer 1
