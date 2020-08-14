@@ -346,7 +346,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
                                      (sql . t)
                                      (ruby . t)))
       (setq org-todo-keywords
-            '(("TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
+            '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
               ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
             org-todo-keyword-faces
@@ -497,6 +497,39 @@ as such need both of these modes loaded before they'll work.
 #+END_SRC
 *** Organize your life
 This section includes tooling for organizing ones work or personal life. Generally the tools and setup is pretty straight forward but should that not be the case I'll add more details about the purpose and how to use.
+**** Org Agenda customizations
+#+BEGIN_SRC emacs-lisp
+  (use-package org-agenda
+    :ensure nil
+    :init
+    (defun air-org-skip-subtree-if-priority (priority)
+      "Skip an agenda subtree if it has a priority of PRIORITY.
+
+  PRIORITY may be one of the characters ?A, ?B, or ?C."
+      (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+            (pri-value (* 1000 (- org-lowest-priority priority)))
+            (pri-current (org-get-priority (thing-at-point 'line t))))
+        (if (= pri-value pri-current)
+            subtree-end
+          nil)))
+    (setq org-agenda-custom-commands
+          '(("d" "Daily perspectives"
+             ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\"" ;Priority tasks available to do today
+                         ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                          (org-agenda-overriding-header "High-priority unfinished tasks:")))
+              (agenda "" ((org-agenda-span 'day)
+                          (org-scheduled-delay-days -14)))
+              (tags-todo "SCHEDULED<\"<+1d>\"" ;All tasks available today
+                         ((org-agenda-skip-function '(or (org-agenda-skip-entry-if 'done)
+                                                         (air-org-skip-subtree-if-priority ?A)))
+                          (org-agenda-overriding-header "Available tasks:"))))))))
+#+END_SRC
+
+**** org-alert
+Have alerts pop up from your org agenda
+#+BEGIN_SRC emacs-lisp
+(use-package org-alert)
+#+END_SRC
 
 **** DOCT
 Declarative Org Capture Templates
@@ -2154,10 +2187,7 @@ Get limited autocompletion in Lua
        :client-secret (getenv "SLACK_CLIENT_SECRET")
        :token (getenv "TIDAL_SLACK_TOKEN")
        :subscribed-channels '(general)))
-    (use-package alert
-      :commands (alert)
-      :init
-      (setq alert-default-style 'osx-notifier))
+       
 #+END_SRC
 * Misc
 ** Dashboard
