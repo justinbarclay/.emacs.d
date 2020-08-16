@@ -398,7 +398,31 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     '("c" "issues" forge-create-create)))
 
 (use-package notmuch
+  :commands notmuch-poll-async
+  :bind (:map notmuch-common-keymap ("G" . notmuch-poll-async-with-refresh))
   :config
+  (defun notmuch-poll-async-with-refresh ()
+    (interactive)
+    (notmuch-poll-async (current-buffer)))
+  (defun notmuch-poll-async (&optional refresh-buffer)
+    (interactive)
+    (message "Polling mail...")
+    (notmuch-start-notmuch
+     "poll"
+     "*test*"
+     (lambda (proc msg)
+       (let ((buffer (process-buffer proc))
+             (status (process-status proc)))
+         (when (memq status '(exit signal))
+           (kill-buffer buffer)
+           (when (eq status 'signal)
+             (error "Notmuch: poll script `%s' failed!" notmuch-poll-script))
+           (when (eq status 'exit)
+             (message "Polling mail...done"))
+           (when (bound-and-true-p refresh-buffer)
+             (with-current-buffer refresh-buffer
+                 (notmuch-refresh-this-buffer))))))
+     "new"))
   (setq message-sendmail-f-is-evil t
         sendmail-program "msmtp"
         message-sendmail-extra-arguments '("--read-envelope-from"))
