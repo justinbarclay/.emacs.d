@@ -409,7 +409,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (message "Polling mail...")
     (notmuch-start-notmuch
      "poll"
-     "*test*"
+     "*notmuch-new*"
      (lambda (proc msg)
        (let ((buffer (process-buffer proc))
              (status (process-status proc)))
@@ -419,13 +419,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
              (error "Notmuch: poll script `%s' failed!" notmuch-poll-script))
            (when (eq status 'exit)
              (message "Polling mail...done"))
-           (when (bound-and-true-p refresh-buffer)
+           (if refresh-buffer
              (with-current-buffer refresh-buffer
-                 (notmuch-refresh-this-buffer))))))
+               (notmuch-refresh-this-buffer))))))
      "new"))
   (setq message-sendmail-f-is-evil t
         sendmail-program "msmtp"
-        message-sendmail-extra-arguments '("--read-envelope-from"))
+        message-sendmail-extra-arguments '("--read-envelope-from")
+        send-mail-function 'sendmail-send-it)
 
   (setq notmuch-saved-searches       
         '((:name "work/inbox" :query "tag:inbox AND to:tidalmigrations.com")
