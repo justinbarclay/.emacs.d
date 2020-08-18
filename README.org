@@ -338,10 +338,12 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
             word-wrap t)      
       (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                    (concat org-directory "/work/calendar.org")
-                                   (concat org-directory "/personal/todo.org")
-                                   (concat org-directory "/work/todo.org")))
+                                   (concat org-directory "/personal/tasks.org")
+                                   (concat org-directory "/work/tasks.org")
+                                   (concat org-directory "/work/trello.org")))
       (org-babel-do-load-languages 'org-babel-load-languages
                                    '((shell . t)
+                                     (dot . t)
                                      (js . t)
                                      (sql . t)
                                      (ruby . t)))
@@ -543,7 +545,13 @@ Declarative Org Capture Templates
                                       ":PROPERTIES:"
                                       ":Created: %U"
                                       ":END:")
-                           :headline "Tasks" :file "~/org/personal/todo.org")
+                           :headline "Tasks" :file "~/org/personal/tasks.org")
+                          ("Notes"  :keys "n"
+                           :template ("* %^{Description}"
+                                      ":PROPERTIES:"
+                                      ":Created: %U"
+                                      ":END:")
+                           :headline "Notes" :file "~/org/personal/tasks.org")
                           ("Appointment"  :keys "a"
                            :template ("* %^{Description}"
                                       ":PROPERTIES:"
@@ -553,7 +561,7 @@ Declarative Org Capture Templates
                            :file "~/org/personal/calendar.org")
                           ("Emails" :keys "e"
                            :template "* TODO [#A] Reply: %a :@home:"
-                           :headline "Emails" :file "~/org/personal/todo.org")))
+                           :headline "Emails" :file "~/org/personal/tasks.org")))
 
                         ("Work"    :keys "w"
                          :children
@@ -562,13 +570,16 @@ Declarative Org Capture Templates
                                       ":PROPERTIES:"
                                       ":Created: %U"
                                       ":END:")
-                           :headline "Tasks" :file "~/org/work/notes.org")
+                           :headline "Tasks" :file "~/org/work/tasks.org")
                           ("Notes"  :keys "n"
                            :template ("* %^{Description}"
                                       ":PROPERTIES:"
                                       ":Created: %U"
                                       ":END:")
-                           :headline "Notes" :file "~/org/work/notes.org")
+                           :headline "Notes" :file "~/org/work/tasks.org")
+                          ("Emails" :keys "e"
+                           :template "* TODO [#A] Reply: %a :@home:"
+                           :headline "Emails" :file "~/org/work/tasks.org")
                           ("Appointment"  :keys "a"
                            :template ("* %^{Description}"
                                       ":PROPERTIES:"
