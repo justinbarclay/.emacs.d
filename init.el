@@ -66,10 +66,12 @@
           word-wrap t)      
     (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                  (concat org-directory "/work/calendar.org")
-                                 (concat org-directory "/personal/todo.org")
-                                 (concat org-directory "/work/todo.org")))
+                                 (concat org-directory "/personal/tasks.org")
+                                 (concat org-directory "/work/tasks.org")
+                                 (concat org-directory "/work/trello.org")))
     (org-babel-do-load-languages 'org-babel-load-languages
                                  '((shell . t)
+                                   (dot . t)
                                    (js . t)
                                    (sql . t)
                                    (ruby . t)))
@@ -211,9 +213,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                        (("Todo"   :keys "t"
                          :template ("* TODO %^{Description}"
                                     ":PROPERTIES:"
+                                    ":Scheduled: %U"
+                                    ":END:")
+                         :headline "Tasks" :file "~/org/personal/tasks.org")
+                        ("Notes"  :keys "n"
+                         :template ("* %^{Description}"
+                                    ":PROPERTIES:"
                                     ":Created: %U"
                                     ":END:")
-                         :headline "Tasks" :file "~/org/personal/todo.org")
+                         :headline "Notes" :file "~/org/personal/tasks.org")
                         ("Appointment"  :keys "a"
                          :template ("* %^{Description}"
                                     ":PROPERTIES:"
@@ -223,22 +231,25 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                          :file "~/org/personal/calendar.org")
                         ("Emails" :keys "e"
                          :template "* TODO [#A] Reply: %a :@home:"
-                         :headline "Emails" :file "~/org/personal/todo.org")))
+                         :headline "Emails" :file "~/org/personal/tasks.org")))
 
                       ("Work"    :keys "w"
                        :children
                        (("Todo"  :keys "t"
                          :template ("* TODO %^{Description}"
                                     ":PROPERTIES:"
-                                    ":Created: %U"
+                                    ":Scheduled: %U"
                                     ":END:")
-                         :headline "Tasks" :file "~/org/work/notes.org")
+                         :headline "Tasks" :file "~/org/work/tasks.org")
                         ("Notes"  :keys "n"
                          :template ("* %^{Description}"
                                     ":PROPERTIES:"
                                     ":Created: %U"
                                     ":END:")
-                         :headline "Notes" :file "~/org/work/notes.org")
+                         :headline "Notes" :file "~/org/work/tasks.org")
+                        ("Emails" :keys "e"
+                         :template "* TODO [#A] Reply: %a :@home:"
+                         :headline "Emails" :file "~/org/work/tasks.org")
                         ("Appointment"  :keys "a"
                          :template ("* %^{Description}"
                                     ":PROPERTIES:"
@@ -248,12 +259,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                          :file "~/org/work/calendar.org")))))))
 
 (use-package org-trello
-  :config
+  :commands (org-trello-sync-buffer org-trello-sync-card)
+  :init
   (defun org-trello-pull-buffer ()
      "Synchronize current buffer from trello."
      (interactive)
      (org-trello-sync-buffer 'from))
-
   (defun org-trello-pull-card ()
      "Synchronize card at point from trello."
      (interactive)
@@ -401,27 +412,30 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands notmuch-poll-async
   :bind (:map notmuch-common-keymap ("G" . notmuch-poll-async-with-refresh))
   :config
+  (defun notmuch-new-sentinel (proc msg)
+    (let ((buffer (process-buffer proc))
+          (status (process-status proc)))
+      (when (memq status '(exit signal))
+        (kill-buffer buffer)
+        (when (eq status 'signal)
+          (error "Notmuch: poll script `%s' failed!" notmuch-poll-script))
+        (when (eq status 'exit)
+          (message "Polling mail...done"))
+        (when notmuch-refresh-buffer
+          (with-current-buffer notmuch-refresh-buffer
+            (notmuch-refresh-this-buffer)
+            (setq notmuch-refresh-buffer nil))))))
   (defun notmuch-poll-async-with-refresh ()
     (interactive)
-    (notmuch-poll-async (current-buffer)))
-  (defun notmuch-poll-async (&optional refresh-buffer)
+    (setq notmuch-refresh-buffer (current-buffer))
+    (notmuch-poll-async))
+  (defun notmuch-poll-async ()
     (interactive)
     (message "Polling mail...")
     (notmuch-start-notmuch
      "poll"
      "*notmuch-new*"
-     (lambda (proc msg)
-       (let ((buffer (process-buffer proc))
-             (status (process-status proc)))
-         (when (memq status '(exit signal))
-           (kill-buffer buffer)
-           (when (eq status 'signal)
-             (error "Notmuch: poll script `%s' failed!" notmuch-poll-script))
-           (when (eq status 'exit)
-             (message "Polling mail...done"))
-           (if refresh-buffer
-             (with-current-buffer refresh-buffer
-               (notmuch-refresh-this-buffer))))))
+     #'notmuch-new-sentinel
      "new"))
   (setq message-sendmail-f-is-evil t
         sendmail-program "msmtp"

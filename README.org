@@ -543,7 +543,7 @@ Declarative Org Capture Templates
                          (("Todo"   :keys "t"
                            :template ("* TODO %^{Description}"
                                       ":PROPERTIES:"
-                                      ":Created: %U"
+                                      ":Scheduled: %U"
                                       ":END:")
                            :headline "Tasks" :file "~/org/personal/tasks.org")
                           ("Notes"  :keys "n"
@@ -568,7 +568,7 @@ Declarative Org Capture Templates
                          (("Todo"  :keys "t"
                            :template ("* TODO %^{Description}"
                                       ":PROPERTIES:"
-                                      ":Created: %U"
+                                      ":Scheduled: %U"
                                       ":END:")
                            :headline "Tasks" :file "~/org/work/tasks.org")
                           ("Notes"  :keys "n"
@@ -592,17 +592,18 @@ Declarative Org Capture Templates
 **** Org-trello
 #+BEGIN_SRC emacs-lisp
   (use-package org-trello
-    :config
+    :commands (org-trello-sync-buffer org-trello-sync-card)
+    :init
     (defun org-trello-pull-buffer ()
        "Synchronize current buffer from trello."
        (interactive)
        (org-trello-sync-buffer 'from))
-
     (defun org-trello-pull-card ()
        "Synchronize card at point from trello."
        (interactive)
        (org-trello-sync-card 'from)))
 #+END_SRC
+
 **** Org-gcal
 #+BEGIN_SRC emacs-lisp
   (use-package org-gcal
@@ -769,27 +770,30 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :commands notmuch-poll-async
     :bind (:map notmuch-common-keymap ("G" . notmuch-poll-async-with-refresh))
     :config
+    (defun notmuch-new-sentinel (proc msg)
+      (let ((buffer (process-buffer proc))
+            (status (process-status proc)))
+        (when (memq status '(exit signal))
+          (kill-buffer buffer)
+          (when (eq status 'signal)
+            (error "Notmuch: poll script `%s' failed!" notmuch-poll-script))
+          (when (eq status 'exit)
+            (message "Polling mail...done"))
+          (when notmuch-refresh-buffer
+            (with-current-buffer notmuch-refresh-buffer
+              (notmuch-refresh-this-buffer)
+              (setq notmuch-refresh-buffer nil))))))
     (defun notmuch-poll-async-with-refresh ()
       (interactive)
-      (notmuch-poll-async (current-buffer)))
-    (defun notmuch-poll-async (&optional refresh-buffer)
+      (setq notmuch-refresh-buffer (current-buffer))
+      (notmuch-poll-async))
+    (defun notmuch-poll-async ()
       (interactive)
       (message "Polling mail...")
       (notmuch-start-notmuch
        "poll"
        "*notmuch-new*"
-       (lambda (proc msg)
-         (let ((buffer (process-buffer proc))
-               (status (process-status proc)))
-           (when (memq status '(exit signal))
-             (kill-buffer buffer)
-             (when (eq status 'signal)
-               (error "Notmuch: poll script `%s' failed!" notmuch-poll-script))
-             (when (eq status 'exit)
-               (message "Polling mail...done"))
-             (if refresh-buffer
-               (with-current-buffer refresh-buffer
-                 (notmuch-refresh-this-buffer))))))
+       #'notmuch-new-sentinel
        "new"))
     (setq message-sendmail-f-is-evil t
           sendmail-program "msmtp"
@@ -2045,8 +2049,9 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** formatter
 #+BEGIN_SRC emacs-lisp
   (use-package rubocopfmt
-  :hook 'enh-ruby-mode)
+  :hook (enh-ruby-mode . rubocopfmt-mode))
 #+END_SRC
+
 *** Test running library
 #+BEGIN_SRC emacs-lisp
 (use-package rspec-mode)
