@@ -933,7 +933,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package lsp-mode
   :commands lsp
-  :hook (rustic-mode . lsp)
+  :hook ((rustic-mode . lsp)
+         (lsp-mode . yas-minor-mode))
   :config
   (setq lsp-idle-delay 0.500))
 
@@ -1204,7 +1205,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (add-hook 'enh-ruby-mode 'superword-mode)))
 
 (use-package rubocopfmt
-:hook 'enh-ruby-mode)
+:hook (enh-ruby-mode . rubocopfmt-mode))
 
 (use-package rspec-mode)
 

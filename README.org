@@ -1668,7 +1668,8 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
     :commands lsp
-    :hook (rustic-mode . lsp)
+    :hook ((rustic-mode . lsp)
+           (lsp-mode . yas-minor-mode))
     :config
     (setq lsp-idle-delay 0.500))
 #+END_SRC
