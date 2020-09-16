@@ -8,6 +8,19 @@
 (setq user-full-name "Justin Barclay"
       user-mail-address "justinbarclay@gmail.com")
 
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 
@@ -195,13 +208,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setq org-agenda-custom-commands
         '(("d" "Daily perspectives"
            ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\"" ;Priority tasks available to do today
-                       ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                       ((org-agenda-skip-function
+                         '(org-agenda-skip-entry-if 'todo 'done))
                         (org-agenda-overriding-header "High-priority unfinished tasks:")))
             (agenda "" ((org-agenda-span 'day)
                         (org-scheduled-delay-days -14)))
             (tags-todo "SCHEDULED<\"<+1d>\"" ;All tasks available today
-                       ((org-agenda-skip-function '(or (org-agenda-skip-entry-if 'done)
-                                                       (air-org-skip-subtree-if-priority ?A)))
+                       ((org-agenda-skip-function
+                         '(or (org-agenda-skip-entry-if 'done)
+                              (air-org-skip-subtree-if-priority ?A)))
                         (org-agenda-overriding-header "Available tasks:"))))))))
 
 (use-package org-alert)
@@ -451,6 +466,19 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           (:name "personal/replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
           (:name "personal/recently-sent" :query "tag:sent date:yesterday..")))
   (require 'ol-notmuch))
+
+(use-package unicode-fonts
+   :defer 60
+   :config
+   (unicode-fonts-setup))
+
+(cond
+ (jb/os-macos-p
+  (set-fontset-font "fontset-default" 'symbol "Apple Color Emoji" nil 'prepend))
+ ((or jb/os-linux-p
+      jb/os-windows-p)
+  (set-fontset-font "fontset-default" 'symbol "Segoe UI Emoji" nil 'prepend))
+ nil)
 
 (global-set-key (kbd "s-t") '(lambda () (interactive)))
 
@@ -899,9 +927,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands (ws-butler-mode)
   :hook (prog-mode . ws-butler-mode))
 
-(use-package emojify
-    :hook ((prog-mode . emojify-mode)
-           (text-mode . emojify-mode)))
+(use-package emojify)
 
 (use-package flycheck-pos-tip)
 
@@ -926,10 +952,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   ;; :config (setq flyspell-issue-message-flag nil)
   )
 
+(use-package company-emoji)
+
 (use-package company
-  :hook (prog-mode . company-mode)
-  :config (setq company-tooltip-align-annotations t)
-          (setq company-minimum-prefix-length 1))
+  :init
+  (global-company-mode t)
+  :config
+  (setq company-tooltip-align-annotations t
+        company-minimum-prefix-length 1
+        company-idle-delay 0)
+  (add-to-list 'company-backends 'company-emoji)
+  (message "company-mode"))
 
 (use-package lsp-mode
   :commands lsp
@@ -1280,7 +1313,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package alert
       :commands (alert alert-define-style)
-      :init
+      :config
       (defun alert-burnt-toast-notify (info)
         (let ((args
                (list

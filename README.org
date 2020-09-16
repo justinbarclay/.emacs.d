@@ -187,7 +187,7 @@ Let's describe some variables to help determine how to configure Emacs
 I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
 
 ** Bootstrapping straight.el
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (defvar bootstrap-version)
   (let ((bootstrap-file
          (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -517,13 +517,15 @@ This section includes tooling for organizing ones work or personal life. General
     (setq org-agenda-custom-commands
           '(("d" "Daily perspectives"
              ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\"" ;Priority tasks available to do today
-                         ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                         ((org-agenda-skip-function
+                           '(org-agenda-skip-entry-if 'todo 'done))
                           (org-agenda-overriding-header "High-priority unfinished tasks:")))
               (agenda "" ((org-agenda-span 'day)
                           (org-scheduled-delay-days -14)))
               (tags-todo "SCHEDULED<\"<+1d>\"" ;All tasks available today
-                         ((org-agenda-skip-function '(or (org-agenda-skip-entry-if 'done)
-                                                         (air-org-skip-subtree-if-priority ?A)))
+                         ((org-agenda-skip-function
+                           '(or (org-agenda-skip-entry-if 'done)
+                                (air-org-skip-subtree-if-priority ?A)))
                           (org-agenda-overriding-header "Available tasks:"))))))))
 #+END_SRC
 
@@ -854,47 +856,71 @@ Remove title bar but allow resizing of frame
 (setq-default frame-title-format "%b (%f)")
 #+END_SRC
 ** Font
+I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good and has great ligature support.
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-(set-face-attribute 'default nil
-                     :family "CaskaydiaCove Nerd Font Mono" :height 160 :weight 'normal)
+  (set-face-attribute 'default nil
+                       :family "CaskaydiaCove Nerd Font Mono" :height 160 :weight 'normal)
 #+END_SRC
 
-Let's add ligature support
+*** Ligatures
+
+Ok we know our font supports ligatures, let's set that up. Right now, ligature.el is not on MELPA/ELPA so we need to use straight to download this for us.
 #+BEGIN_SRC emacs-lisp :tangle no
-  (let ((alist `((?! . ,(regexp-opt '("!!" "!=" "!==")))
-                 (?# . ,(regexp-opt '("##" "###" "####" "#(" "#?" "#[" "#_" "#_(" "#{")))
-                 (?$ . ,(regexp-opt '("$>")))
-                 (?% . ,(regexp-opt '("%%")))
-                 (?& . ,(regexp-opt '("&&")))
-                 (?* . ,(regexp-opt '("*" "**" "***" "**/" "*/" "*>")))
-                 (?+ . ,(regexp-opt '("+" "++" "+++" "+>")))
-                 (?- . ,(regexp-opt '("--" "---" "-->" "-<" "-<<" "->" "->>" "-}" "-~")))
-                 (?. . ,(regexp-opt '(".-" ".." "..." "..<" ".=")))
-                 (?/ . ,(regexp-opt '("/*" "/**" "//" "///" "/=" "/==" "/>")))
-                 (?: . ,(regexp-opt '(":" "::" ":::" ":=")))
-                 (?\; . ,(regexp-opt '(";;")))
-                 (?< . ,(regexp-opt '("<!--" "<$" "<$>" "<*" "<*>" "<+" "<+>" "<-" "<--" "<->" "</" "</>" "<<" "<<-" "<<<" "<<=" "<=" "<=" "<=<" "<==" "<=>" "<>" "<|" "<|>" "<~" "<~~")))
-                 (?= . ,(regexp-opt '("=/=" "=:=" "=<<" "==" "===" "==>" "=>" "=>>")))
-                 (?> . ,(regexp-opt '(">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>")))
-                 (?= . ,(regexp-opt '("?=")))
-                 (?? . ,(regexp-opt '("??")))
-                 (?\[ . ,(regexp-opt '("[]")))
-                 (?\\ . ,(regexp-opt '("\\\\" "\\\\\\")))
-                 (?^ . ,(regexp-opt '("^=")))
-                 (?w . ,(regexp-opt '("www")))
-                 (?x . ,(regexp-opt '("x")))
-                 (?{ . ,(regexp-opt '("{-")))
-                 (?| . ,(regexp-opt '("|=" "|>" "||" "||=")))
-                 (?~ . ,(regexp-opt '("~-" "~=" "~>" "~@" "~~" "~~>"))))))
-    (dolist (char-regexp alist)
-      (set-char-table-range composition-function-table (car char-regexp)
-                            `([,(cdr char-regexp) 0 font-shape-gstring]))))
+  (use-package ligature
+    :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
+    :defer 10
+    :init (ligature-generate-ligatures)
+    :config
+     ;; Enable the "www" ligature in every possible major mode
+    (ligature-set-ligatures 't '("www"))
+    ;; Enable traditional ligature support in eww-mode, if the
+    ;; `variable-pitch' face supports it
+    (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+    ;; Enable all Cascadia Code ligatures in programming modes
+    (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+                                         ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+                                         "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+                                         "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+                                         "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+                                         "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+                                         "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+                                         "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+                                         ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+                                         "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+                                         "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+                                         "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+                                         "\\" "://"))
+    ;; Enables ligature checks globally in all buffers. You can also do it
+    ;; per mode with `ligature-mode'.
+    (global-ligature-mode t))
 #+END_SRC
+
+Lets improve our mapping for unicode-fonts
+#+BEGIN_SRC emacs-lisp
+(use-package unicode-fonts
+   :defer 60
+   :config
+   (unicode-fonts-setup))
+#+END_SRC
+
+*** Emojis
+We can not place this in early-init because it requires the GUI to be initialized
+#+BEGIN_SRC emacs-lisp
+  (cond
+   (jb/os-macos-p
+    (set-fontset-font "fontset-default" 'symbol "Apple Color Emoji" nil 'prepend))
+   ((or jb/os-linux-p
+        jb/os-windows-p)
+    (set-fontset-font "fontset-default" 'symbol "Segoe UI Emoji" nil 'prepend))
+   nil)
+#+END_SRC
+
+Now, we want to be able to select emojis. I'd prefer to use the built in emoji selector from the OS but sadly, that is not working for me with X410. I would like to add the emoji selector _here_ in my config, but company is instantiated way down *there*. Instead, I just have a nice link for you [[id:bf963728-dc93-448a-a52e-0cc91d962bcb][Code Completion/company-emoji]].
 
 ** Misc
 Don't pop up font menu
 #+BEGIN_SRC emacs-lisp 
-(global-set-key (kbd "s-t") '(lambda () (interactive)))
+  (global-set-key (kbd "s-t") '(lambda () (interactive)))
 #+END_SRC
 
 No cursor blinking, it's distracting
@@ -1609,9 +1635,7 @@ Emacs doesn’t handle trailing spaces or anything like that very well by defaul
 ** Emojis
 Emacs doesn't natively support Emojis, so let's add some.
 #+BEGIN_SRC emacs-lisp
-(use-package emojify
-    :hook ((prog-mode . emojify-mode)
-           (text-mode . emojify-mode)))
+(use-package emojify)
 #+END_SRC
 
 * Syntax and Error checking
@@ -1648,21 +1672,24 @@ Load this before we load Flycheck
 
 
 * Code Completion
-** Semantic
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package semantic
-  :ensure nil
-  :config
-  (semantic-mode 1)
-  (global-semanticdb-minor-mode 1)
-  (global-semantic-idle-scheduler-mode 1))
+** Company-Emoji
+:PROPERTIES:
+:ID:       bf963728-dc93-448a-a52e-0cc91d962bcb
+:END:
+#+BEGIN_SRC emacs-lisp
+(use-package company-emoji)
 #+END_SRC
 ** Company
 #+BEGIN_SRC emacs-lisp
   (use-package company
-    :hook (prog-mode . company-mode)
-    :config (setq company-tooltip-align-annotations t)
-            (setq company-minimum-prefix-length 1))
+    :init
+    (global-company-mode t)
+    :config
+    (setq company-tooltip-align-annotations t
+          company-minimum-prefix-length 1
+          company-idle-delay 0)
+    (add-to-list 'company-backends 'company-emoji)
+    (message "company-mode"))
 #+END_SRC
 ** LSP-Mode
 #+BEGIN_SRC emacs-lisp
@@ -2211,7 +2238,7 @@ Get limited autocompletion in Lua
 #+BEGIN_SRC emacs-lisp
   (use-package alert
         :commands (alert alert-define-style)
-        :init
+        :config
         (defun alert-burnt-toast-notify (info)
           (let ((args
                  (list
