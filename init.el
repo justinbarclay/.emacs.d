@@ -80,8 +80,7 @@
     (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                  (concat org-directory "/work/calendar.org")
                                  (concat org-directory "/personal/tasks.org")
-                                 (concat org-directory "/work/tasks.org")
-                                 (concat org-directory "/work/trello.org")))
+                                 (concat org-directory "/work/tasks.org")))
     (org-babel-do-load-languages 'org-babel-load-languages
                                  '((shell . t)
                                    (dot . t)
@@ -205,19 +204,50 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       (if (= pri-value pri-current)
           subtree-end
         nil)))
-  (setq org-agenda-custom-commands
+  (setq org-agenda-window-setup 'only-window
+        org-agenda-custom-commands
         '(("d" "Daily perspectives"
            ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\"" ;Priority tasks available to do today
                        ((org-agenda-skip-function
                          '(org-agenda-skip-entry-if 'todo 'done))
                         (org-agenda-overriding-header "High-priority unfinished tasks:")))
             (agenda "" ((org-agenda-span 'day)
-                        (org-scheduled-delay-days -14)))
+                        (org-scheduled-delay-days -14)
+                        (org-agenda-overriding-header "Schedule")))
             (tags-todo "SCHEDULED<\"<+1d>\"" ;All tasks available today
                        ((org-agenda-skip-function
                          '(or (org-agenda-skip-entry-if 'done)
                               (air-org-skip-subtree-if-priority ?A)))
-                        (org-agenda-overriding-header "Available tasks:"))))))))
+                        (org-agenda-overriding-header "Tasks:"))))))))
+
+(defun elegant-agenda (orig-func &rest args)
+  ""
+  (interactive)
+  (let ((width (window-width))
+        (title "—  T O D A Y  ")
+        (org-agenda-use-time-grid nil)
+        (line-spacing 8))
+    (setq-local line-spacing 8)
+    (setq org-agenda-block-separator "  ")    
+    (apply orig-func args)
+    (display-line-numbers-mode 0)
+    (face-remap-add-relative
+     'header-line '(:family "Yanone Kaffeesatz Light"
+                    :height 2.0 :weight thin
+                    :foreground "#000000" :background "#ffffff"
+                    :underline nil  :overline nil :box nil))
+    (face-remap-add-relative 'default '(:family "Yanone Kaffeesatz Light"
+                                        :height 1.5 :weight thin))
+    (face-remap-add-relative 'italic '(:foreground "orange"))
+    (face-remap-add-relative 'bold '(:height 1.1 :weight light))
+    (face-remap-add-relative 'org-link '(:foreground "white"))
+    (setq-local mode-line-format nil)
+    (setq-local header-line-format
+                (format "%s%s" title (make-string (- width (length title)) ?— t)))))
+
+(advice-add 'org-agenda :around #'elegant-agenda)
+(setq initial-buffer-choice (lambda () (org-agenda nil "d")
+                                       (buffer-find "*Org Agenda*")))
 
 (use-package org-alert)
 
@@ -227,9 +257,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
               (doct '(("Personal" :keys "p" :children
                        (("Todo"   :keys "t"
                          :template ("* TODO %^{Description}"
-                                    ":PROPERTIES:"
-                                    ":Scheduled: %U"
-                                    ":END:")
+                                    "SCHEDULED: %U")
                          :headline "Tasks" :file "~/org/personal/tasks.org")
                         ("Notes"  :keys "n"
                          :template ("* %^{Description}"
@@ -239,8 +267,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                          :headline "Notes" :file "~/org/personal/tasks.org")
                         ("Appointment"  :keys "a"
                          :template ("* %^{Description}"
-                                    ":PROPERTIES:"
-                                    ":SCHEDULED: %T"
+                                    "SCHEDULED: %T"
+                                    ":PROPERTIES:"                                    
                                     ":calendar-id: justincbarclay@gmail.com"
                                     ":END:")
                          :file "~/org/personal/calendar.org")
@@ -263,12 +291,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":END:")
                          :headline "Notes" :file "~/org/work/tasks.org")
                         ("Emails" :keys "e"
-                         :template "* TODO [#A] Reply: %a :@home:"
+                         :template "* TODO [#A] Reply: %a :@work:"
                          :headline "Emails" :file "~/org/work/tasks.org")
+                        ("Trello" :keys "r"
+                         :template ("* TODO [#B] %a " "SCHEDULED: %U")
+                         :headline "Tasks" :file "~/org/work/tasks.org")
                         ("Appointment"  :keys "a"
                          :template ("* %^{Description}"
-                                    ":PROPERTIES:"
-                                    ":SCHEDULED: %T"
+                                    "SCHEDULED: %T"
+                                    ":PROPERTIES:"                                      
                                     ":calendar-id: justin.barclay@tidalmigrations.com"
                                     ":END:")
                          :file "~/org/work/calendar.org")))))))
@@ -466,11 +497,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           (:name "personal/replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
           (:name "personal/recently-sent" :query "tag:sent date:yesterday..")))
   (require 'ol-notmuch))
-
-(use-package unicode-fonts
-   :defer 60
-   :config
-   (unicode-fonts-setup))
 
 (cond
  (jb/os-macos-p
@@ -1327,17 +1353,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                           :notifier
                           #'alert-burnt-toast-notify)
       (setq alert-default-style 'burnt-toast))
-
-(use-package dashboard
-  :defer 1
-  :init
-  (dashboard-setup-startup-hook)
-  :config
-  (setq dashboard-center-content t
-        dashboard-startup-banner 'logo
-        dashboard-banner-logo-title "The One True Editor, Emacs"
-        dashboard-items '((recents  . 10)
-                          (projects . 10))))
 
 (use-package flx)
 
