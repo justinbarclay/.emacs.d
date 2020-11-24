@@ -98,6 +98,8 @@
             ("WAITING" :foreground "orange" :weight bold)
             ("BLOCKED" :foreground "magenta" :weight bold)
             ("CANCELLED" :foreground "forest green" :weight bold)))
+    (setq org-log-into-drawer t)
+
     (setq org-default-notes-file (concat org-directory "/notes.org")
           org-export-html-postamble nil
           org-hide-leading-stars t
@@ -116,6 +118,12 @@
 
 (use-package toc-org
   :hook (org-mode-hook . toc-org-enable))
+
+(use-package svg-tag-mode
+  :straight (svg-tag-mode :type git
+                          :host github
+                          :branch main
+                          :repo "rougier/svg-tag-mode"))
 
 (use-package org-re-reveal)
 
@@ -204,9 +212,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       (if (= pri-value pri-current)
           subtree-end
         nil)))
+  (setq initial-buffer-choice (lambda () (org-agenda nil "d")
+                                (buffer-find "*Org Agenda*")))
   (setq org-agenda-window-setup 'only-window
         org-agenda-custom-commands
-        '(("d" "Daily perspectives"
+        '(("d" "Today"
            ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\"" ;Priority tasks available to do today
                        ((org-agenda-skip-function
                          '(org-agenda-skip-entry-if 'todo 'done))
@@ -220,58 +230,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                               (air-org-skip-subtree-if-priority ?A)))
                         (org-agenda-overriding-header "Tasks:"))))))))
 
-(defvar elegant-agenda-transforms nil)
-
-(defvar elegant-agenda-face-remappings (let ((face-height (face-attribute 'default :height)))
-                                         (list
-                                          (list 'default (list :family "Yanone Kaffeesatz Light"
-                                                               :height (ceiling (* face-height 1.5)) :weight 'thin))
-                                          (list 'header-line (list :family "Yanone Kaffeesatz Light"
-                                                                   :height (* face-height 2) :weight 'thin
-                                                                   :underline nil  :overline nil :box nil))                                          
-                                          (list 'bold (list :height (ceiling (* face-height 1.1)) :weight 'light))
-                                          '(italic (:foreground "orange"))
-                                          '(org-link (:foreground "white"))))
-  "A list of faces and the associated specs that will be remapped when elegant-agenda-mode is enabled")
-
-(defun elegant-agenda--enable ()
-  (let ((width (window-width))
-        (title "—  T O D A Y  "))
-    (setq-local line-spacing 8)
-    (setq-local org-agenda-use-time-grid nil)
-    (setq-local org-agenda-block-separator "  ")
-    (display-line-numbers-mode 0)
-    (setq elegant-agenda-transforms
-          (mapcar (lambda (face-&-spec)
-                    (face-remap-add-relative (car face-&-spec) (cadr face-&-spec)))
-                  elegant-agenda-face-remappings))
-    (setq-local mode-line-format nil)
-    (setq-local header-line-format
-                (format "%s%s" title (make-string (- width (length title)) ?— t)))))
-
-(defun elegant-agenda--disable ()
-  (setq-local line-spacing (default-value 'line-spacing))
-  (setq-local org-agenda-use-time-grid (default-value 'line-spacing))
-  (setq-local org-agenda-block-separator (default-value 'org-agenda-block-separator))    
-
-  (mapc #'face-remap-remove-relative
-        elegant-agenda-transforms)     
-  (setq-local elegant-agenda-transforms nil)
-
-  (setq-local mode-line-format (default-value 'mode-line-format))
-  (setq-local header-line-format nil))
-
-(define-minor-mode elegant-agenda-mode
-  "Provides a more elegant view into your agenda"
-  :init-value nil :lighter " elegant-agenda" :keymap nil
-  (if elegant-agenda-mode
-      (elegant-agenda--enable)
-    (elegant-agenda--disable))
-  (force-window-update (current-buffer)))
-
-(add-hook 'org-agenda-mode-hook #'elegant-agenda-mode)
-(setq initial-buffer-choice (lambda () (org-agenda nil "d")
-                                       (buffer-find "*Org Agenda*")))
+(use-package elegant-agenda-mode
+  :straight (elegant-agenda-mode :type git :host github :repo "justinbarclay/elegant-agenda-mode")
+  :hook '(org-agenda-mode . elegant-agenda-mode))
 
 (use-package org-alert)
 
@@ -534,7 +495,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (blink-cursor-mode 0)
 
-(use-package doom-themes
+(use-package doom-themes 
   :init
   (load-theme 'doom-dracula t))
 
@@ -1011,8 +972,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setq company-tooltip-align-annotations t
         company-minimum-prefix-length 1
         company-idle-delay 0)
-  (add-to-list 'company-backends 'company-emoji)
-  (message "company-mode"))
+  ;;(add-to-list 'company-backends 'company-emoji)
+  )
 
 (use-package lsp-mode
   :commands lsp
@@ -1607,5 +1568,17 @@ foo.bar.baz => baz"
                                         (- subtract (mean a)))
                                       a)))
     (- (length a) 1 ))))
+
+(defun take-screenshot ()
+  (interactive)
+  (let ((frame-height (read-number "Enter frame height: " 40))
+        (frame-width (read-number "Enter frame width: " 55))
+        (filename (read-file-name "Where would you like to save the svg? ")))
+    (set-frame-width (selected-frame) frame-width)
+    (set-frame-height (selected-frame) frame-height)
+    (with-temp-file filename
+      (insert (x-export-frames nil 'svg)))
+    (kill-new filename)
+    (message filename)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
