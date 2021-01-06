@@ -305,6 +305,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
      ("C-c C-v C-c" . jb/org-clear-results))
     :init
     (progn
+      (setq org-src-tab-acts-natively nil)
       (global-unset-key "\C-c\C-v\C-c")
       (defun jb/org-narrow-to-parent ()
         "Narrow buffer to the current subtree."
@@ -1022,14 +1023,6 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 #+end_src
 
 *** Dracula
-Dracula theme is causing me some problems
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package dracula-theme
-  :demand t
-  :config
-  (load-theme 'dracula t))
-#+END_SRC
-
 Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes 
@@ -1724,7 +1717,8 @@ Load this before we load Flycheck
     :hook ((rustic-mode . lsp)
            (lsp-mode . yas-minor-mode))
     :config
-    (setq lsp-idle-delay 0.500))
+    (setq lsp-idle-delay 0.500
+          lsp-headerline-breadcrumb-enable nil))
 #+END_SRC
 
 *** Company-LSP
@@ -1814,7 +1808,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 *** eldoc
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
-      :ensure nil
+    :ensure nil
     :config
     (eldoc-add-command
      'paredit-backward-delete
@@ -2743,3 +2737,42 @@ Pomodoro timer
       (cancel-timer pomodoro--timer)
       (message "Timer canceled")))
 #+END_SRC
+
+Count line repititions
+#+begin_src emacs-lisp
+  (defun count-repititions ()
+    (interactive)
+    ;; 
+    (let ((tracker (make-hash-table :test 'equal))
+          (buffer (current-buffer)))
+      (with-temp-buffer
+        (insert-buffer buffer)
+        (goto-char (point-min))
+        (replace-regexp "^[0-9]+:[0-9][0-9]" "")        
+        (delete-blank-lines)
+        (sort-lines nil (point-min) (point-max))
+        (goto-char (point-min))
+        (while (not (eobp))
+          (delete-blank-lines)
+          (let ((current-line (string-trim
+                               (buffer-substring-no-properties ;; current-line
+                                (line-beginning-position)
+                                (line-end-position)))))
+            (when (string-match "^All measurement" current-line)
+              (puthash current-line
+                       (+ 1 (gethash current-line tracker 0))
+                       tracker)))
+          (forward-line 1)))
+      (message "%s" (length (hash-table-keys tracker)))
+      (with-current-buffer (get-buffer-create "*repititions*")
+        (erase-buffer)
+        (maphash (lambda (k v)
+                   (insert (format "%s - %s\n" v k)))
+                 tracker)
+        (goto-char (point-min))
+        (sort-numeric-fields 1 (point-min) (point-max)))))
+#+end_src
+
+#+RESULTS:
+: count-repititions
+
