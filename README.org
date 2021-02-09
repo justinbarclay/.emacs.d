@@ -352,12 +352,13 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
               ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
             org-todo-keyword-faces
-            '(("TODO" :foreground "red" :weight bold)
-              ("INPROGRESS" :foreground "blue" :weight bold)
-              ("DONE" :foreground "forest green" :weight bold)
-              ("WAITING" :foreground "orange" :weight bold)
-              ("BLOCKED" :foreground "magenta" :weight bold)
-              ("CANCELLED" :foreground "forest green" :weight bold)))
+            '(("TODO" :foreground "red" :weight regular)
+              ("INPROGRESS" :foreground "blue" :weight regular)
+              ("DONE" :foreground "forest green" :weight regular)
+              ("WAITING" :foreground "orange" :weight regular)
+              ("BLOCKED" :foreground "magenta" :weight regular)
+              ("CANCELLED" :foreground "forest green" :weight regular))
+            )
       (setq org-log-into-drawer t)
 
       (setq org-default-notes-file (concat org-directory "/notes.org")
@@ -544,8 +545,7 @@ This section includes tooling for organizing ones work or personal life. General
 #+END_SRC
 ***** elegant-agenda-mode
 #+begin_src emacs-lisp
-  (use-package elegant-agenda-mode
-    :straight (elegant-agenda-mode :type git :host github :repo "justinbarclay/elegant-agenda-mode")
+  (use-package elegant-agenda-mode  
     :hook '(org-agenda-mode . elegant-agenda-mode))
 #+end_src
 
@@ -880,7 +880,7 @@ Remove title bar but allow resizing of frame
 I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good and has great ligature support.
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
   (set-face-attribute 'default nil
-                       :family "CaskaydiaCove Nerd Font Mono" :height 160 :weight 'normal)
+                      :family "CaskaydiaCove Nerd Font Mono" :height 160 :weight 'normal)
 #+END_SRC
 
 *** Ligatures
@@ -1718,7 +1718,9 @@ Load this before we load Flycheck
            (lsp-mode . yas-minor-mode))
     :config
     (setq lsp-idle-delay 0.500
-          lsp-headerline-breadcrumb-enable nil))
+          lsp-completion-provider :capf
+          lsp-headerline-breadcrumb-enable nil)
+    (setq read-process-output-max (* 1024 1024)))
 #+END_SRC
 
 *** Company-LSP
@@ -1742,6 +1744,13 @@ Load this before we load Flycheck
 * Languages
 Major mode customizations
 ** CSS/LESS/SASS
+*** CSS
+#+begin_src emacs-lisp
+  (use-package css-mode
+    :ensure nil
+    :config
+    (setq css-indent-offset 2))
+#+end_src
 *** Rainbow mode
 #+BEGIN_SRC emacs-lisp
 (use-package rainbow-mode
@@ -1758,7 +1767,7 @@ Major mode customizations
 *** Add hooks and customizations
 #+BEGIN_SRC emacs-lisp
   (use-package c-mode
-      :ensure nil
+    :ensure nil
     :config
     (progn ; C mode hook
       (add-hook 'c-mode-hook 'flycheck-mode)
@@ -1775,10 +1784,9 @@ c++
 
 #+END_SRC
 
-
 *** c-eldoc
 #+BEGIN_SRC emacs-lisp
-(use-package c-eldoc)
+  (use-package c-eldoc)
 #+END_SRC
 ** Lisp
 *** paredit
@@ -2036,7 +2044,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** sgml-mode
 #+BEGIN_SRC emacs-lisp
   (use-package sgml-mode
-      :ensure nil
+    :ensure nil
     :after tagedit
     :config
     (require 'tagedit)
