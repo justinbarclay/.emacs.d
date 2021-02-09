@@ -46,6 +46,7 @@
    ("C-c C-v C-c" . jb/org-clear-results))
   :init
   (progn
+    (setq org-src-tab-acts-natively nil)
     (global-unset-key "\C-c\C-v\C-c")
     (defun jb/org-narrow-to-parent ()
       "Narrow buffer to the current subtree."
@@ -92,12 +93,13 @@
             ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
           org-todo-keyword-faces
-          '(("TODO" :foreground "red" :weight bold)
-            ("INPROGRESS" :foreground "blue" :weight bold)
-            ("DONE" :foreground "forest green" :weight bold)
-            ("WAITING" :foreground "orange" :weight bold)
-            ("BLOCKED" :foreground "magenta" :weight bold)
-            ("CANCELLED" :foreground "forest green" :weight bold)))
+          '(("TODO" :foreground "red" :weight regular)
+            ("INPROGRESS" :foreground "blue" :weight regular)
+            ("DONE" :foreground "forest green" :weight regular)
+            ("WAITING" :foreground "orange" :weight regular)
+            ("BLOCKED" :foreground "magenta" :weight regular)
+            ("CANCELLED" :foreground "forest green" :weight regular))
+          )
     (setq org-log-into-drawer t)
 
     (setq org-default-notes-file (concat org-directory "/notes.org")
@@ -230,8 +232,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                               (air-org-skip-subtree-if-priority ?A)))
                         (org-agenda-overriding-header "Tasks:"))))))))
 
-(use-package elegant-agenda-mode
-  :straight (elegant-agenda-mode :type git :host github :repo "justinbarclay/elegant-agenda-mode")
+(use-package elegant-agenda-mode  
   :hook '(org-agenda-mode . elegant-agenda-mode))
 
 (use-package org-alert)
@@ -980,7 +981,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook ((rustic-mode . lsp)
          (lsp-mode . yas-minor-mode))
   :config
-  (setq lsp-idle-delay 0.500))
+  (setq lsp-idle-delay 0.500
+        lsp-completion-provider :capf
+        lsp-headerline-breadcrumb-enable nil)
+  (setq read-process-output-max (* 1024 1024)))
 
 (use-package company-lsp
   :commands company-lsp
@@ -996,6 +1000,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
+(use-package css-mode
+  :ensure nil
+  :config
+  (setq css-indent-offset 2))
+
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
          (less-mode . rainbow-mode)))
@@ -1004,7 +1013,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :mode "\\.sass\\'")
 
 (use-package c-mode
-    :ensure nil
+  :ensure nil
   :config
   (progn ; C mode hook
     (add-hook 'c-mode-hook 'flycheck-mode)
@@ -1031,7 +1040,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setq parinfer-rust-auto-download t))
 
 (use-package eldoc
-    :ensure nil
+  :ensure nil
   :config
   (eldoc-add-command
    'paredit-backward-delete
@@ -1163,32 +1172,42 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (bind-key "C-c t" 'cider--tooltip-show)
 
-(use-package indium
-  :after js2-mode
-  :commands (indium-launch)
+(use-package typescript-mode
+  :ensure t
   :config
-  (progn
-    (add-hook 'indium-update-script-source-hook
-              (lambda (url)
-                (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
-                                     url))))
-    (indium-interaction-mode)))
+  (setq typescript-indent-level 2)
+  (add-hook 'typescript-mode #'subword-mode))
+
+(use-package tide
+  :init
+  (defun setup-tide-mode ()
+    (interactive)
+    (tide-setup)
+    (flycheck-mode +1)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (eldoc-mode +1)
+    (tide-hl-identifier-mode +1)
+    (company-mode +1))      
+  :hook ((typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
+
+(use-package prettier
+  :hook ((typescript-mode . prettier-mode)
+         (js2-mode . prettier-mode)
+         (web-mode . prettier-mode)))
 
 (use-package js2-mode
   :mode "\\.js\\'"
   :bind ("C-c l i" . indium-launch)
-  :config
-  (require 'indium)
+  :config    
   (add-hook 'js-mode-hook 'subword-mode)
   (add-hook 'html-mode-hook 'subword-mode)
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
   (add-hook 'js2-mode-hook #'js2-refactor-mode)
-  (add-to-list 'company-backends 'company-indium-repl)
-  (add-hook 'js2-mode-hook (lambda ()
-                             (tern-mode)))
+  (add-hook 'js2-mode-hook #'setup-tide-mode)
   (setq js-indent-level 2)
-  (setq js2-basic-offset 2)
-  (add-hook 'js-mode-hook #'indium-interaction-mode))
+  (setq js2-basic-offset 2))
 
 (use-package js2-refactor
   :bind
@@ -1198,11 +1217,33 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
   (js2r-add-keybindings-with-prefix "C-c C-r"))
 
+(use-package web-mode
+  ;; :after tide
+  :mode (("\\.html?\\'" . web-mode)
+         ("\\.tsx\\'" . web-mode)
+         ("\\.jsx\\'" . web-mode))
+  :config
+  (setq web-mode-markup-indent-offset 2
+        web-mode-css-indent-offset 2
+        web-mode-code-indent-offset 2
+        web-mode-block-padding 2
+        web-mode-comment-style 2
+
+        web-mode-enable-css-colorization t
+        web-mode-enable-auto-pairing t
+        web-mode-enable-comment-keywords t
+        web-mode-enable-current-element-highlight t)
+  (add-hook 'web-mode-hook
+            (lambda ()
+              (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
+                        (string-equal "jsx" (file-name-extension buffer-file-name))
+                (setup-tide-mode))))))
+
 (use-package tagedit
  :defer t)
 
 (use-package sgml-mode
-    :ensure nil
+  :ensure nil
   :after tagedit
   :config
   (require 'tagedit)
@@ -1582,3 +1623,35 @@ foo.bar.baz => baz"
     (message filename)))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
+
+(defun count-repititions ()
+  (interactive)
+  ;; 
+  (let ((tracker (make-hash-table :test 'equal))
+        (buffer (current-buffer)))
+    (with-temp-buffer
+      (insert-buffer buffer)
+      (goto-char (point-min))
+      (replace-regexp "^[0-9]+:[0-9][0-9]" "")        
+      (delete-blank-lines)
+      (sort-lines nil (point-min) (point-max))
+      (goto-char (point-min))
+      (while (not (eobp))
+        (delete-blank-lines)
+        (let ((current-line (string-trim
+                             (buffer-substring-no-properties ;; current-line
+                              (line-beginning-position)
+                              (line-end-position)))))
+          (when (string-match "^All measurement" current-line)
+            (puthash current-line
+                     (+ 1 (gethash current-line tracker 0))
+                     tracker)))
+        (forward-line 1)))
+    (message "%s" (length (hash-table-keys tracker)))
+    (with-current-buffer (get-buffer-create "*repititions*")
+      (erase-buffer)
+      (maphash (lambda (k v)
+                 (insert (format "%s - %s\n" v k)))
+               tracker)
+      (goto-char (point-min))
+      (sort-numeric-fields 1 (point-min) (point-max)))))

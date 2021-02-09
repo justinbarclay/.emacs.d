@@ -1983,47 +1983,54 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 
 ** JavaScript
 Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
-*** Tern
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package company-tern
-    :bind
-    ("M-." . nil)
-    ("M-," . nil)
+*** Typescript
+#+begin_src emacs-lisp
+  (use-package typescript-mode
+    :ensure t
     :config
-    (setq company-tooltip-align-annotations t)
-    (setq company-tern-property-marker " <p>"))
-#+END_SRC
+    (setq typescript-indent-level 2)
+    (add-hook 'typescript-mode #'subword-mode))
 
-*** REPL
-#+BEGIN_SRC emacs-lisp
-  (use-package indium
-    :after js2-mode
-    :commands (indium-launch)
-    :config
-    (progn
-      (add-hook 'indium-update-script-source-hook
-                (lambda (url)
-                  (indium-eval (format "window.dispatchEvent(new CustomEvent('patch', {detail: {url: '%s'}}))"
-                                       url))))
-      (indium-interaction-mode)))
-#+END_SRC
+#+end_src
+
+*** JS/TS dev environment
+#+begin_src emacs-lisp
+  (use-package tide
+    :init
+    (defun setup-tide-mode ()
+      (interactive)
+      (tide-setup)
+      (flycheck-mode +1)
+      (setq flycheck-check-syntax-automatically '(save mode-enabled))
+      (eldoc-mode +1)
+      (tide-hl-identifier-mode +1)
+      (company-mode +1))      
+    :hook ((typescript-mode . tide-setup)
+           (typescript-mode . tide-hl-identifier-mode)
+           (before-save . tide-format-before-save)))
+#+end_src
+
+*** Prettier
+Autoformatting
+#+begin_src emacs-lisp
+  (use-package prettier
+    :hook ((typescript-mode . prettier-mode)
+           (js2-mode . prettier-mode)
+           (web-mode . prettier-mode)))
+#+end_src
 *** js2-Mode
 #+BEGIN_SRC emacs-lisp
   (use-package js2-mode
     :mode "\\.js\\'"
     :bind ("C-c l i" . indium-launch)
-    :config
-    (require 'indium)
+    :config    
     (add-hook 'js-mode-hook 'subword-mode)
     (add-hook 'html-mode-hook 'subword-mode)
     (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
     (add-hook 'js2-mode-hook #'js2-refactor-mode)
-    (add-to-list 'company-backends 'company-indium-repl)
-    (add-hook 'js2-mode-hook (lambda ()
-                               (tern-mode)))
+    (add-hook 'js2-mode-hook #'setup-tide-mode)
     (setq js-indent-level 2)
-    (setq js2-basic-offset 2)
-    (add-hook 'js-mode-hook #'indium-interaction-mode))
+    (setq js2-basic-offset 2))
 #+END_SRC
 *** js2-refactor
 #+BEGIN_SRC emacs-lisp
@@ -2036,6 +2043,31 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (js2r-add-keybindings-with-prefix "C-c C-r"))
 #+END_SRC
 ** HTML
+*** Web Mode
+#+begin_src emacs-lisp
+  (use-package web-mode
+    ;; :after tide
+    :mode (("\\.html?\\'" . web-mode)
+           ("\\.tsx\\'" . web-mode)
+           ("\\.jsx\\'" . web-mode))
+    :config
+    (setq web-mode-markup-indent-offset 2
+          web-mode-css-indent-offset 2
+          web-mode-code-indent-offset 2
+          web-mode-block-padding 2
+          web-mode-comment-style 2
+
+          web-mode-enable-css-colorization t
+          web-mode-enable-auto-pairing t
+          web-mode-enable-comment-keywords t
+          web-mode-enable-current-element-highlight t)
+    (add-hook 'web-mode-hook
+              (lambda ()
+                (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
+                          (string-equal "jsx" (file-name-extension buffer-file-name))
+                  (setup-tide-mode))))))
+#+end_src
+
 *** tagedit
 #+BEGIN_SRC emacs-lisp
   (use-package tagedit
