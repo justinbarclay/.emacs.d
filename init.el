@@ -941,6 +941,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package emojify)
 
+(use-package tree-sitter)
+(use-package tree-sitter-langs)
+
 (use-package flycheck-pos-tip)
 
 (use-package flycheck
@@ -979,6 +982,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode . lsp)
+         (csharp-mode . lsp)
          (lsp-mode . yas-minor-mode))
   :config
   (setq lsp-idle-delay 0.500
@@ -1192,11 +1196,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (typescript-mode . tide-hl-identifier-mode)
          (before-save . tide-format-before-save)))
 
-(use-package prettier
-  :hook ((typescript-mode . prettier-mode)
-         (js2-mode . prettier-mode)
-         (web-mode . prettier-mode)))
-
 (use-package js2-mode
   :mode "\\.js\\'"
   :bind ("C-c l i" . indium-launch)
@@ -1216,6 +1215,19 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :config
   (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
   (js2r-add-keybindings-with-prefix "C-c C-r"))
+
+(use-package prettier
+  :hook ((typescript-mode . prettier-mode)
+         (js2-mode . prettier-mode)
+         (web-mode . prettier-mode)))
+
+(use-package csharp-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode)))
+
+(use-package sharper
+  :bind
+  ("C-c n" . sharper-main-transient))
 
 (use-package web-mode
   ;; :after tide

@@ -1658,6 +1658,13 @@ Emacs doesn't natively support Emojis, so let's add some.
 #+END_SRC
 
 * Syntax and Error checking
+** Treesitter
+Treesitter is a system that does syntax highlighting through AST analysis and not through regex
+#+begin_src emacs-lisp
+(use-package tree-sitter)
+(use-package tree-sitter-langs)
+#+end_src
+
 ** Flycheck pos-tip
 Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
@@ -1715,6 +1722,7 @@ Load this before we load Flycheck
   (use-package lsp-mode
     :commands lsp
     :hook ((rustic-mode . lsp)
+           (csharp-mode . lsp)
            (lsp-mode . yas-minor-mode))
     :config
     (setq lsp-idle-delay 0.500
@@ -2009,15 +2017,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
            (typescript-mode . tide-hl-identifier-mode)
            (before-save . tide-format-before-save)))
 #+end_src
-
-*** Prettier
-Autoformatting
-#+begin_src emacs-lisp
-  (use-package prettier
-    :hook ((typescript-mode . prettier-mode)
-           (js2-mode . prettier-mode)
-           (web-mode . prettier-mode)))
-#+end_src
 *** js2-Mode
 #+BEGIN_SRC emacs-lisp
   (use-package js2-mode
@@ -2042,6 +2041,31 @@ Autoformatting
     (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
     (js2r-add-keybindings-with-prefix "C-c C-r"))
 #+END_SRC
+*** Prettier
+Autoformatting
+#+begin_src emacs-lisp
+  (use-package prettier
+    :hook ((typescript-mode . prettier-mode)
+           (js2-mode . prettier-mode)
+           (web-mode . prettier-mode)))
+#+end_src
+** C#
+
+*** csharp-mode
+Major mode implementation
+#+begin_src emacs-lisp
+  (use-package csharp-mode
+    :config
+    (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode)))
+#+end_src
+
+*** CSharper
+Transient mode to manage building and running operations in CSharp Projects
+#+begin_src emacs-lisp
+(use-package sharper
+  :bind
+  ("C-c n" . sharper-main-transient))
+#+end_src
 ** HTML
 *** Web Mode
 #+begin_src emacs-lisp
