@@ -128,7 +128,7 @@ Reset garbage collection to emacs default after 5s
 (run-with-idle-timer
  5 nil
  (lambda ()
-   (setq gc-cons-threshold 10000000)
+   (setq gc-cons-threshold (* 1024 1024 100))
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 #+END_SRC
@@ -251,24 +251,6 @@ The plan is to use a copious amount of deferral to speed up emacs boot time.
 + The :ensure keyword causes the package(s) to be installed automatically if not already present on your system (set (setq use-package-always-ensure t)
 + You can override package deferral with the :demand keyword. Thus, even if you use :bind, using :demand will force loading to occur immediately and not establish an autoload for the bound key.
 + In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used.
-*** Quelpa and Quelpa-Use-Package
-Most of the packages I want to use are hosted on Elpa and Melpa, but sometimes that's enough. Sometimes I want to use git and Quelpa supports using git as a repository, among other things.
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package quelpa
-  :ensure t
-  :defer t
-  :custom
-  (quelpa-checkout-melpa-p nil "Don't update the MELPA git repo."))
-#+END_SRC
-
-But in order for use-package to be able to use quelpa, we need to add another package
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package quelpa-use-package
-    :ensure t
-    :init
-    (require 'quelpa-use-package))
-#+END_SRC
-
 *** Make sure gpg-keys are up to date
 #+BEGIN_SRC emacs-lisp
 (use-package gnu-elpa-keyring-update)
@@ -414,7 +396,7 @@ You can also use @ as separator, instead of _.
     :hook (org-mode-hook . toc-org-enable))
 #+END_SRC
 *** SVG Tag Mode
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package svg-tag-mode
     :straight (svg-tag-mode :type git
                             :host github
@@ -776,15 +758,10 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+END_SRC
 *** Magit forges
 #+BEGIN_SRC emacs-lisp
-(use-package forge
-  :after magit
-  :init
-  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-  :config
-  (transient-insert-suffix 'forge-dispatch "c p"
-    '("p" "pull-request" forge-create-pullreq))
-  (transient-insert-suffix 'forge-dispatch "c i"
-    '("c" "issues" forge-create-create)))
+  (use-package forge
+    :after magit
+    :init
+    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
 
 ** Notmuch
@@ -1696,6 +1673,10 @@ Load this before we load Flycheck
     )
 #+END_SRC
 
+* Integrated Debugging
+#+begin_src emacs-lisp
+(use-package dap-mode)
+#+end_src
 
 * Code Completion
 ** Company-Emoji
@@ -1710,6 +1691,8 @@ Load this before we load Flycheck
   (use-package company
     :init
     (global-company-mode t)
+    :commands (compant-manual-begin)
+    :bind ("C-<tab>" . company-manual-begin)
     :config
     (setq company-tooltip-align-annotations t
           company-minimum-prefix-length 1
@@ -1723,9 +1706,11 @@ Load this before we load Flycheck
     :commands lsp
     :hook ((rustic-mode . lsp)
            (csharp-mode . lsp)
+           (rjsx-mode . lsp)
            (lsp-mode . yas-minor-mode))
     :config
-    (setq lsp-idle-delay 0.500
+    (setq lsp-idle-delay 0.100
+          lsp-log-io nil
           lsp-completion-provider :capf
           lsp-headerline-breadcrumb-enable nil)
     (setq read-process-output-max (* 1024 1024)))
@@ -1796,7 +1781,7 @@ c++
 #+BEGIN_SRC emacs-lisp
   (use-package c-eldoc)
 #+END_SRC
-** Lisp
+** Lispy-languages
 *** paredit
 #+BEGIN_SRC emacs-lisp
   (use-package paredit
@@ -1808,18 +1793,18 @@ c++
 *** lispy
 We need lispy for some of the excellent bracket based navigation integrations with parinfer
 #+BEGIN_SRC emacs-lisp :tangle no
-    (use-package lispy
-     :defer nil)
+    (use-package lispy)
 #+END_SRC
 
 *** parinfer-rust-mode
-#+BEGIN_SRC emacs-lisp :
+#+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
     :defer 10
     :commands (parinfer-rust-mode)
     :init
-    (setq parinfer-rust-auto-download t))
+    (setq parinfer-rust-auto-download nil))
 #+END_SRC
+
 
 *** eldoc
 #+BEGIN_SRC emacs-lisp
@@ -1830,32 +1815,6 @@ We need lispy for some of the excellent bracket based navigation integrations wi
      'paredit-backward-delete
      'paredit-close-round)
     (global-eldoc-mode))
-#+END_SRC
-*** Slime 
-#+BEGIN_SRC emacs-lisp
-  (use-package slime
-    :hook lisp-mode
-    :init
-    (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
-                                           (let (old-window selected-window)
-                                             (slime)
-                                             (delete-other-windows old-window)
-                                             (window-buffer old-window))))))
-#+END_SRC
-*** slime-company
-#+BEGIN_SRC emacs-lisp
-  (use-package slime-company
-    :after slime
-    :config
-    (setq slime-contribs '(slime-fancy
-                           slime-autodoc)))
-#+END_SRC
-*** lisp-mode
-#+BEGIN_SRC emacs-lisp
-  (use-package lisp-mode
-    :ensure nil
-    :config
-    (setq inferior-lisp-program (executable-find "sbcl")))
 #+END_SRC
 ** Elisp
 *** elisp-mode
@@ -2000,8 +1959,24 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (add-hook 'typescript-mode #'subword-mode))
 
 #+end_src
+*** css-in-js
+#+begin_src emacs-lisp
+  (use-package css-in-js
+    :straight (css-in-js :type git :host github :repo "orzechowskid/css-in-js.el"))
+#+end_src
 
-*** JS/TS dev environment
+*** JS/JSX dev environment
+#+begin_src emacs-lisp
+  (use-package rjsx-mode
+    :mode (("\\.jsx\\'" . rjsx-mode)
+           ("\\.js\\'" . rjsx-mode))
+    :config (add-hook 'typescript-mode #'subword-mode))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (24638 40402 87239 700000) :use-package-secs (0 4 801544 400000) :init (24638 40402 87218 0) :init-secs (0 0 34 900000)))
+
+*** Typescript/TSX development
 #+begin_src emacs-lisp
   (use-package tide
     :init
@@ -2018,7 +1993,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
            (before-save . tide-format-before-save)))
 #+end_src
 *** js2-Mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package js2-mode
     :mode "\\.js\\'"
     :bind ("C-c l i" . indium-launch)
@@ -2046,7 +2021,7 @@ Autoformatting
 #+begin_src emacs-lisp
   (use-package prettier
     :hook ((typescript-mode . prettier-mode)
-           (js2-mode . prettier-mode)
+           ;;(js2-mode . prettier-mode)
            (web-mode . prettier-mode)))
 #+end_src
 ** C#
@@ -2072,14 +2047,13 @@ Transient mode to manage building and running operations in CSharp Projects
   (use-package web-mode
     ;; :after tide
     :mode (("\\.html?\\'" . web-mode)
-           ("\\.tsx\\'" . web-mode)
-           ("\\.jsx\\'" . web-mode))
+           ("\\.tsx\\'" . web-mode))
     :config
     (setq web-mode-markup-indent-offset 2
           web-mode-css-indent-offset 2
           web-mode-code-indent-offset 2
           web-mode-block-padding 2
-          web-mode-comment-style 2
+          web-mode-comment-style 2 
 
           web-mode-enable-css-colorization t
           web-mode-enable-auto-pairing t
@@ -2087,9 +2061,8 @@ Transient mode to manage building and running operations in CSharp Projects
           web-mode-enable-current-element-highlight t)
     (add-hook 'web-mode-hook
               (lambda ()
-                (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
-                          (string-equal "jsx" (file-name-extension buffer-file-name))
-                  (setup-tide-mode))))))
+                (when (string-equal "tsx" (file-name-extension buffer-file-name))                          
+                  (setup-tide-mode)))))
 #+end_src
 
 *** tagedit

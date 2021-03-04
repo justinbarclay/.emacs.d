@@ -121,12 +121,6 @@
 (use-package toc-org
   :hook (org-mode-hook . toc-org-enable))
 
-(use-package svg-tag-mode
-  :straight (svg-tag-mode :type git
-                          :host github
-                          :branch main
-                          :repo "rougier/svg-tag-mode"))
-
 (use-package org-re-reveal)
 
 (use-package org-tree-slide
@@ -433,12 +427,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package forge
   :after magit
   :init
-  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-  :config
-  (transient-insert-suffix 'forge-dispatch "c p"
-    '("p" "pull-request" forge-create-pullreq))
-  (transient-insert-suffix 'forge-dispatch "c i"
-    '("c" "issues" forge-create-create)))
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
 (use-package notmuch
   :commands notmuch-poll-async
@@ -967,11 +956,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   ;; :config (setq flyspell-issue-message-flag nil)
   )
 
+(use-package dap-mode)
+
 (use-package company-emoji)
 
 (use-package company
   :init
   (global-company-mode t)
+  :commands (compant-manual-begin)
+  :bind ("C-<tab>" . company-manual-begin)
   :config
   (setq company-tooltip-align-annotations t
         company-minimum-prefix-length 1
@@ -983,9 +976,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands lsp
   :hook ((rustic-mode . lsp)
          (csharp-mode . lsp)
+         (rjsx-mode . lsp)
          (lsp-mode . yas-minor-mode))
   :config
-  (setq lsp-idle-delay 0.500
+  (setq lsp-idle-delay 0.100
+        lsp-log-io nil
         lsp-completion-provider :capf
         lsp-headerline-breadcrumb-enable nil)
   (setq read-process-output-max (* 1024 1024)))
@@ -1041,7 +1036,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :defer 10
   :commands (parinfer-rust-mode)
   :init
-  (setq parinfer-rust-auto-download t))
+  (setq parinfer-rust-auto-download nil))
 
 (use-package eldoc
   :ensure nil
@@ -1050,26 +1045,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    'paredit-backward-delete
    'paredit-close-round)
   (global-eldoc-mode))
-
-(use-package slime
-  :hook lisp-mode
-  :init
-  (add-hook 'lisp-mode-hook (lambda () (with-current-buffer (buffer-name)
-                                         (let (old-window selected-window)
-                                           (slime)
-                                           (delete-other-windows old-window)
-                                           (window-buffer old-window))))))
-
-(use-package slime-company
-  :after slime
-  :config
-  (setq slime-contribs '(slime-fancy
-                         slime-autodoc)))
-
-(use-package lisp-mode
-  :ensure nil
-  :config
-  (setq inferior-lisp-program (executable-find "sbcl")))
 
 (use-package elisp-mode
     :ensure nil
@@ -1182,6 +1157,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setq typescript-indent-level 2)
   (add-hook 'typescript-mode #'subword-mode))
 
+(use-package css-in-js
+  :straight (css-in-js :type git :host github :repo "orzechowskid/css-in-js.el"))
+
+(use-package rjsx-mode
+  :mode (("\\.jsx\\'" . rjsx-mode)
+         ("\\.js\\'" . rjsx-mode))
+  :config (add-hook 'typescript-mode #'subword-mode))
+
 (use-package tide
   :init
   (defun setup-tide-mode ()
@@ -1196,18 +1179,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (typescript-mode . tide-hl-identifier-mode)
          (before-save . tide-format-before-save)))
 
-(use-package js2-mode
-  :mode "\\.js\\'"
-  :bind ("C-c l i" . indium-launch)
-  :config    
-  (add-hook 'js-mode-hook 'subword-mode)
-  (add-hook 'html-mode-hook 'subword-mode)
-  (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
-  (add-hook 'js2-mode-hook #'js2-refactor-mode)
-  (add-hook 'js2-mode-hook #'setup-tide-mode)
-  (setq js-indent-level 2)
-  (setq js2-basic-offset 2))
-
 (use-package js2-refactor
   :bind
   (:map js2-mode-map
@@ -1218,7 +1189,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package prettier
   :hook ((typescript-mode . prettier-mode)
-         (js2-mode . prettier-mode)
+         ;;(js2-mode . prettier-mode)
          (web-mode . prettier-mode)))
 
 (use-package csharp-mode
@@ -1232,14 +1203,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package web-mode
   ;; :after tide
   :mode (("\\.html?\\'" . web-mode)
-         ("\\.tsx\\'" . web-mode)
-         ("\\.jsx\\'" . web-mode))
+         ("\\.tsx\\'" . web-mode))
   :config
   (setq web-mode-markup-indent-offset 2
         web-mode-css-indent-offset 2
         web-mode-code-indent-offset 2
         web-mode-block-padding 2
-        web-mode-comment-style 2
+        web-mode-comment-style 2 
 
         web-mode-enable-css-colorization t
         web-mode-enable-auto-pairing t
@@ -1247,9 +1217,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         web-mode-enable-current-element-highlight t)
   (add-hook 'web-mode-hook
             (lambda ()
-              (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
-                        (string-equal "jsx" (file-name-extension buffer-file-name))
-                (setup-tide-mode))))))
+              (when (string-equal "tsx" (file-name-extension buffer-file-name))                          
+                (setup-tide-mode)))))
 
 (use-package tagedit
  :defer t)
