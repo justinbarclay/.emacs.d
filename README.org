@@ -1970,7 +1970,8 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
   (use-package rjsx-mode
     :mode (("\\.jsx\\'" . rjsx-mode)
            ("\\.js\\'" . rjsx-mode))
-    :config (add-hook 'typescript-mode #'subword-mode))
+    :bind (:map js2-mode-map ("M-." . xref-find-definitions))
+    :config (add-hook 'rjsx-mode #'subword-mode))
 #+end_src
 
 #+RESULTS:
@@ -1996,13 +1997,9 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package js2-mode
     :mode "\\.js\\'"
-    :bind ("C-c l i" . indium-launch)
     :config    
     (add-hook 'js-mode-hook 'subword-mode)
     (add-hook 'html-mode-hook 'subword-mode)
-    (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
-    (add-hook 'js2-mode-hook #'js2-refactor-mode)
-    (add-hook 'js2-mode-hook #'setup-tide-mode)
     (setq js-indent-level 2)
     (setq js2-basic-offset 2))
 #+END_SRC
@@ -2019,10 +2016,10 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Prettier
 Autoformatting
 #+begin_src emacs-lisp
-  (use-package prettier
-    :hook ((typescript-mode . prettier-mode)
+  (use-package prettier-js
+    :hook ((typescript-mode . prettier-js-mode)
            ;;(js2-mode . prettier-mode)
-           (web-mode . prettier-mode)))
+           (web-mode . prettier-js-mode)))
 #+end_src
 ** C#
 

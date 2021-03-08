@@ -1163,7 +1163,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package rjsx-mode
   :mode (("\\.jsx\\'" . rjsx-mode)
          ("\\.js\\'" . rjsx-mode))
-  :config (add-hook 'typescript-mode #'subword-mode))
+  :bind (:map js2-mode-map ("M-." . xref-find-definitions))
+  :config (add-hook 'rjsx-mode #'subword-mode))
 
 (use-package tide
   :init
@@ -1187,10 +1188,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
   (js2r-add-keybindings-with-prefix "C-c C-r"))
 
-(use-package prettier
-  :hook ((typescript-mode . prettier-mode)
+(use-package prettier-js
+  :hook ((typescript-mode . prettier-js-mode)
          ;;(js2-mode . prettier-mode)
-         (web-mode . prettier-mode)))
+         (web-mode . prettier-js-mode)))
 
 (use-package csharp-mode
   :config
