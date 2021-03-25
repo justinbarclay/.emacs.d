@@ -1805,7 +1805,6 @@ We need lispy for some of the excellent bracket based navigation integrations wi
     (setq parinfer-rust-auto-download nil))
 #+END_SRC
 
-
 *** eldoc
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
@@ -1971,7 +1970,10 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     :mode (("\\.jsx\\'" . rjsx-mode)
            ("\\.js\\'" . rjsx-mode))
     :bind (:map js2-mode-map ("M-." . xref-find-definitions))
-    :config (add-hook 'rjsx-mode #'subword-mode))
+    :config
+    (add-hook 'rjsx-mode #'subword-mode)
+    (setq js-indent-level 2)
+    (setq js2-basic-offset 2))
 #+end_src
 
 #+RESULTS:
@@ -2018,7 +2020,7 @@ Autoformatting
 #+begin_src emacs-lisp
   (use-package prettier-js
     :hook ((typescript-mode . prettier-js-mode)
-           ;;(js2-mode . prettier-mode)
+           (js-mode . prettier-js-mode)
            (web-mode . prettier-js-mode)))
 #+end_src
 ** C#

@@ -1164,7 +1164,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :mode (("\\.jsx\\'" . rjsx-mode)
          ("\\.js\\'" . rjsx-mode))
   :bind (:map js2-mode-map ("M-." . xref-find-definitions))
-  :config (add-hook 'rjsx-mode #'subword-mode))
+  :config
+  (add-hook 'rjsx-mode #'subword-mode)
+  (setq js-indent-level 2)
+  (setq js2-basic-offset 2))
 
 (use-package tide
   :init
@@ -1190,7 +1193,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package prettier-js
   :hook ((typescript-mode . prettier-js-mode)
-         ;;(js2-mode . prettier-mode)
+         (js-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
 
 (use-package csharp-mode
