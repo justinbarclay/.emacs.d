@@ -609,7 +609,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (progn
     (projectile-global-mode)
     (setq projectile-completion-system 'ivy)
-    (setq projectile-enable-caching t)))
+    (setq projectile-enable-caching t)
+    (setq projectile-switch-project-action #'magit-status)))
 
 (use-package ivy-rich
   :defines (all-the-icons-icon-alist
@@ -1033,10 +1034,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package parinfer-rust-mode
-  :defer 10
-  :commands (parinfer-rust-mode)
-  :init
-  (setq parinfer-rust-auto-download nil))
+ :defer 10
+ :commands (parinfer-rust-mode)
+ :init
+ (setq parinfer-rust-auto-download nil))
 
 (use-package eldoc
   :ensure nil

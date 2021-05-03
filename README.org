@@ -124,20 +124,20 @@ I've forgotten this before so this seems like the perfect place to put it but ~C
 This sets the garbage collection threshold to 100mb
 Reset garbage collection to emacs default after 5s
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-(setq gc-cons-threshold 1000000000)
-(run-with-idle-timer
- 5 nil
- (lambda ()
-   (setq gc-cons-threshold (* 1024 1024 100))
-   (message "gc-cons-threshold restored to %S"
-            gc-cons-threshold)))
+  (setq gc-cons-threshold 1000000000)
+  (run-with-idle-timer
+   5 nil
+   (lambda ()
+     (setq gc-cons-threshold (* 1024 1024 100))
+     (message "gc-cons-threshold restored to %S"
+              gc-cons-threshold)))
 #+END_SRC
 
 ** Let's make the Emacs start up run fast
 #+BEGIN_SRC emacs-lisp
-(setq
- lexical-binding t
- load-prefer-newer t)
+  (setq
+   lexical-binding t
+   load-prefer-newer t)
 #+END_SRC
 
 Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-dooms-startup-so-fast
@@ -1212,7 +1212,8 @@ Turn on recent file mode so that you can more easily switch to recently edited f
     (progn
       (projectile-global-mode)
       (setq projectile-completion-system 'ivy)
-      (setq projectile-enable-caching t)))
+      (setq projectile-enable-caching t)
+      (setq projectile-switch-project-action #'magit-status)))
 #+END_SRC
 ** Minibuffer completion
 As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017) 
@@ -1799,10 +1800,10 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 *** parinfer-rust-mode
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
-    :defer 10
-    :commands (parinfer-rust-mode)
-    :init
-    (setq parinfer-rust-auto-download nil))
+   :defer 10
+   :commands (parinfer-rust-mode)
+   :init
+   (setq parinfer-rust-auto-download nil))
 #+END_SRC
 
 *** eldoc
@@ -1846,8 +1847,8 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 #+END_SRC
 *** Kibit
 #+BEGIN_SRC emacs-lisp
-(use-package kibit-helper
-  :defer t)
+  (use-package kibit-helper
+    :defer t)
 #+END_SRC
 *** clojure-mode
 #+BEGIN_SRC emacs-lisp
@@ -2808,7 +2809,3 @@ Count line repititions
         (goto-char (point-min))
         (sort-numeric-fields 1 (point-min) (point-max)))))
 #+end_src
-
-#+RESULTS:
-: count-repititions
-
