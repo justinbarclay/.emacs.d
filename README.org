@@ -248,7 +248,7 @@ If we're boot strapping a fresh Emacs install, we should have use-package cloned
 The plan is to use a copious amount of deferral to speed up emacs boot time.
 + Use the :init keyword to execute code before a package is loaded. It accepts one or more forms, up until the next keyword
 + :config can be used to execute code after a package is loaded.
-+ The :ensure keyword causes the package(s) to be installed automatically if not already present on your system (set (setq use-package-always-ensure t)
++ The :ensure keyword causes the package(s) to be installed automatically if not already present on your system (set (setq use-package-always-ensure t))
 + You can override package deferral with the :demand keyword. Thus, even if you use :bind, using :demand will force loading to occur immediately and not establish an autoload for the bound key.
 + In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used.
 *** Make sure gpg-keys are up to date
