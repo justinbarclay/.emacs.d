@@ -1,3 +1,6 @@
+(setq comp-deferred-compilation-deny-list '())
+(setq native-comp-async-report-warnings-errors nil)
+
 (setq
  lexical-binding t
  load-prefer-newer t)
@@ -911,16 +914,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :bind ("C-s-<tab>" . origami-recursively-toggle-node)
   :hook (prog-mode . origami-mode))
 
-(use-package dash-at-point
-  :if jb/os-macos-p
-  :bind
-  (("C-c d" . dash-at-point)
-   ("C-c e" . dash-at-point-with-docset))
-  :config
-  (add-to-list 'dash-at-point-mode-alist '(ruby-mode . ("ruby" "rails")))
-  (add-to-list 'dash-at-point-mode-alist '(clojurescript-mode ("clojure")))
-  (add-to-list 'dash-at-point-mode-alist '(clojure-mode ("clojure"))))
-
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
 (setq auto-save-default nil)
@@ -957,7 +950,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   ;; :config (setq flyspell-issue-message-flag nil)
   )
 
-(use-package dap-mode)
+(use-package dap-mode
+ :init
+ (require 'dap-lldb)
+ (require 'dap-gdb-lldb))
 
 (use-package company-emoji)
 

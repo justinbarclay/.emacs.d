@@ -132,6 +132,12 @@ Reset garbage collection to emacs default after 5s
      (message "gc-cons-threshold restored to %S"
               gc-cons-threshold)))
 #+END_SRC
+** Turn off bytecompiler warnings
+They are really noisy and annoying right now. And nothing I can deal with.
+#+begin_src emacs-lisp
+  (setq comp-deferred-compilation-deny-list '())
+  (setq native-comp-async-report-warnings-errors nil)
+#+end_src
 
 ** Let's make the Emacs start up run fast
 #+BEGIN_SRC emacs-lisp
@@ -153,9 +159,9 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq load-prefer-newer t)
   (setq package-archives
-        '(("gnu" . "https://elpa.gnu.org/packages/")
-          ("melpa" . "http://melpa.org/packages/")
-          ("org" . "https://orgmode.org/elpa/")))
+        '(("org" . "https://orgmode.org/elpa/")
+          ("gnu" . "https://elpa.gnu.org/packages/")
+          ("melpa" . "http://melpa.org/packages/")))
 #+END_SRC
 
 ** Personal information
@@ -1602,19 +1608,6 @@ Emacs by default doesn't have a good story for folding text so we have to add on
   :bind ("C-s-<tab>" . origami-recursively-toggle-node)
   :hook (prog-mode . origami-mode))
 #+END_SRC
-** Dash At Point
-Open up the program dash
-#+BEGIN_SRC emacs-lisp
-  (use-package dash-at-point
-    :if jb/os-macos-p
-    :bind
-    (("C-c d" . dash-at-point)
-     ("C-c e" . dash-at-point-with-docset))
-    :config
-    (add-to-list 'dash-at-point-mode-alist '(ruby-mode . ("ruby" "rails")))
-    (add-to-list 'dash-at-point-mode-alist '(clojurescript-mode ("clojure")))
-    (add-to-list 'dash-at-point-mode-alist '(clojure-mode ("clojure"))))
-#+END_SRC
 ** Backups
 Emacs can automatically create backup files. This tells Emacs to put all backups in ~/.emacs.d/backups. More [[http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html][info]].
 #+BEGIN_SRC emacs-lisp
@@ -1676,7 +1669,10 @@ Load this before we load Flycheck
 
 * Integrated Debugging
 #+begin_src emacs-lisp
-(use-package dap-mode)
+(use-package dap-mode
+ :init
+ (require 'dap-lldb)
+ (require 'dap-gdb-lldb))
 #+end_src
 
 * Code Completion

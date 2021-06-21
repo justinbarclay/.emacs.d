@@ -9,9 +9,9 @@
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq load-prefer-newer t)
 (setq package-archives
-      '(("gnu" . "https://elpa.gnu.org/packages/")
-        ("melpa" . "http://melpa.org/packages/")
-        ("org" . "https://orgmode.org/elpa/")))
+      '(("org" . "https://orgmode.org/elpa/")
+        ("gnu" . "https://elpa.gnu.org/packages/")
+        ("melpa" . "http://melpa.org/packages/")))
 
 (defun my/tangle-dotfiles ()
   "If the current file is this file, the code blocks are tangled"
