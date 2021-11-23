@@ -159,8 +159,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq load-prefer-newer t)
   (setq package-archives
-        '(("org" . "https://orgmode.org/elpa/")
-          ("gnu" . "https://elpa.gnu.org/packages/")
+        '(("gnu" . "https://elpa.gnu.org/packages/")
           ("melpa" . "http://melpa.org/packages/")))
 #+END_SRC
 
@@ -334,6 +333,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
                                      (dot . t)
                                      (js . t)
                                      (sql . t)
+                                     (python . t)
                                      (ruby . t)))
       (setq org-todo-keywords
             '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
@@ -1677,12 +1677,16 @@ Load this before we load Flycheck
 
 * Code Completion
 ** Company-Emoji
-:PROPERTIES:
-:ID:       bf963728-dc93-448a-a52e-0cc91d962bcb
-:END:
 #+BEGIN_SRC emacs-lisp
 (use-package company-emoji)
 #+END_SRC
+
+** Company-Posframe
+#+begin_src emacs-lisp :tangle no
+(use-package company-posframe
+ :hook (company-mode . company-posframe-mode))
+#+end_src
+
 ** Company
 #+BEGIN_SRC emacs-lisp
   (use-package company
@@ -2260,6 +2264,21 @@ Get limited autocompletion in Lua
   (use-package terraform-mode
   :mode "\\.tf\\'" )
 #+END_SRC
+** Python
+#+begin_src emacs-lisp
+(use-package python-mode)
+#+end_src
+
+*** lsp
+#+begin_src emacs-lisp
+(use-package lsp-python-ms
+  :ensure t
+  :init (setq lsp-python-ms-auto-install-server t)
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-python-ms)
+                          (lsp)))) 
+#+end_src
+
 ** YAML
 #+BEGIN_SRC emacs-lisp
   (use-package yaml-mode

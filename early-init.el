@@ -9,8 +9,7 @@
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq load-prefer-newer t)
 (setq package-archives
-      '(("org" . "https://orgmode.org/elpa/")
-        ("gnu" . "https://elpa.gnu.org/packages/")
+      '(("gnu" . "https://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")))
 
 (defun my/tangle-dotfiles ()

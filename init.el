@@ -90,6 +90,7 @@
                                    (dot . t)
                                    (js . t)
                                    (sql . t)
+                                   (python . t)
                                    (ruby . t)))
     (setq org-todo-keywords
           '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
@@ -1330,6 +1331,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package terraform-mode
 :mode "\\.tf\\'" )
+
+(use-package python-mode)
+
+(use-package lsp-python-ms
+  :ensure t
+  :init (setq lsp-python-ms-auto-install-server t)
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-python-ms)
+                          (lsp))))
 
 (use-package yaml-mode
   :defer t)
