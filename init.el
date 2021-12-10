@@ -42,7 +42,7 @@
 (use-package gnu-elpa-keyring-update)
 
 (use-package org
-  :ensure org-plus-contrib
+  :ensure t
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
@@ -111,6 +111,9 @@
           org-hide-leading-stars t
           org-startup-folded 'overview
           org-startup-indented t)))
+
+(use-package org-contrib
+:after org)
 
 (use-package org-bullets
   :init
@@ -1647,3 +1650,5 @@ foo.bar.baz => baz"
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
+(put 'dired-find-alternate-file 'disabled nil)
+(put 'narrow-to-region 'disabled nil)

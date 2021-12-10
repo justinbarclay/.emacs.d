@@ -159,8 +159,9 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq load-prefer-newer t)
   (setq package-archives
-        '(("gnu" . "https://elpa.gnu.org/packages/")
-          ("melpa" . "http://melpa.org/packages/")))
+        '(("melpa" . "http://melpa.org/packages/")
+          ("gnu" . "https://elpa.gnu.org/packages/")
+          ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 #+END_SRC
 
 ** Personal information
@@ -285,7 +286,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 *** Org
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :ensure org-plus-contrib
+    :ensure t
     :bind
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture)
@@ -355,6 +356,12 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
             org-startup-folded 'overview
             org-startup-indented t)))
     #+END_SRC
+
+*** Org Contrib
+#+begin_src emacs-lisp
+  (use-package org-contrib
+  :after org)
+#+end_src
 
 *** Org-bullets
 #+BEGIN_SRC emacs-lisp
