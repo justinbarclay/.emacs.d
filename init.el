@@ -42,7 +42,7 @@
 (use-package gnu-elpa-keyring-update)
 
 (use-package org
-  :ensure t
+  :ensure nil
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture)
@@ -320,6 +320,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (?C :foreground "blue"))
   (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 
+(use-package flycheck-grammarly)
+
 (use-package langtool
   :init
   (setq langtool-default-language "en-US")
@@ -482,10 +484,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (cond
  (jb/os-macos-p
-  (set-fontset-font "fontset-default" 'symbol "Apple Color Emoji" nil 'prepend))
+  (progn
+    (set-fontset-font "fontset-default" 'symbol "Apple Color Emoji" nil 'prepend)
+    (set-fontset-font "fontset-default" 'emoji "Apple Color Emoji" nil 'prepend)))
  ((or jb/os-linux-p
       jb/os-windows-p)
-  (set-fontset-font "fontset-default" 'symbol "Segoe UI Emoji" nil 'prepend))
+  (progn
+    (set-fontset-font "fontset-default" 'symbol "Segoe UI Emoji" nil 'prepend)
+    (set-fontset-font "fontset-default" 'emoji "Segoe UI Emoji" nil 'prepend)))
  nil)
 
 (global-set-key (kbd "s-t") '(lambda () (interactive)))
@@ -1369,7 +1375,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                             (format "'%s', '%s'" title (plist-get info :message))
                           (format "'%s'" (plist-get info :message)))
                 )))
-          (apply #'start-process (append '("burnt-toast" nil "pwsh.exe") args))))
+          (apply #'start-process (append '("burnt-toast" nil "powershell.exe") args))))
       (alert-define-style 'burnt-toast :title "Notify Windows 10 using the PowerShell library BurntToast"
                           :notifier
                           #'alert-burnt-toast-notify)
@@ -1650,5 +1656,3 @@ foo.bar.baz => baz"
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
-(put 'dired-find-alternate-file 'disabled nil)
-(put 'narrow-to-region 'disabled nil)

@@ -286,7 +286,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 *** Org
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :ensure t
+    :ensure nil
     :bind
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture)
@@ -645,6 +645,11 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 #+END_SRC
 
+** Grammarly
+#+begin_src emacs-lisp
+(use-package flycheck-grammarly)
+#+end_src
+
 ** Langtool
 #+BEGIN_SRC emacs-lisp
   (use-package langtool
@@ -919,10 +924,14 @@ We can not place this in early-init because it requires the GUI to be initialize
 #+BEGIN_SRC emacs-lisp
   (cond
    (jb/os-macos-p
-    (set-fontset-font "fontset-default" 'symbol "Apple Color Emoji" nil 'prepend))
+    (progn
+      (set-fontset-font "fontset-default" 'symbol "Apple Color Emoji" nil 'prepend)
+      (set-fontset-font "fontset-default" 'emoji "Apple Color Emoji" nil 'prepend)))
    ((or jb/os-linux-p
         jb/os-windows-p)
-    (set-fontset-font "fontset-default" 'symbol "Segoe UI Emoji" nil 'prepend))
+    (progn
+      (set-fontset-font "fontset-default" 'symbol "Segoe UI Emoji" nil 'prepend)
+      (set-fontset-font "fontset-default" 'emoji "Segoe UI Emoji" nil 'prepend)))
    nil)
 #+END_SRC
 
@@ -2326,7 +2335,7 @@ Get limited autocompletion in Lua
                               (format "'%s', '%s'" title (plist-get info :message))
                             (format "'%s'" (plist-get info :message)))
                   )))
-            (apply #'start-process (append '("burnt-toast" nil "pwsh.exe") args))))
+            (apply #'start-process (append '("burnt-toast" nil "powershell.exe") args))))
         (alert-define-style 'burnt-toast :title "Notify Windows 10 using the PowerShell library BurntToast"
                             :notifier
                             #'alert-burnt-toast-notify)
