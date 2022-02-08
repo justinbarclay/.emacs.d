@@ -1187,8 +1187,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (tide-hl-identifier-mode +1)
     (company-mode +1))      
   :hook ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-format-before-save)))
+         (typescript-mode . tide-hl-identifier-mode)))
 
 (use-package js2-refactor
   :bind
@@ -1225,10 +1224,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         web-mode-enable-css-colorization t
         web-mode-enable-auto-pairing t
         web-mode-enable-comment-keywords t
-        web-mode-enable-current-element-highlight t)
+        web-mode-enable-current-element-highlight t
+        flycheck-javascript-eslint-executable "eslint_d")
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
   (add-hook 'web-mode-hook
             (lambda ()
-              (when (string-equal "tsx" (file-name-extension buffer-file-name))                          
+              (when (string-equal "tsx" (file-name-extension buffer-file-name))
+                (flycheck-add-mode 'typescript-tslint 'web-mode)
                 (setup-tide-mode)))))
 
 (use-package tagedit
