@@ -1648,8 +1648,14 @@ Emacs doesn't natively support Emojis, so let's add some.
 ** Treesitter
 Treesitter is a system that does syntax highlighting through AST analysis and not through regex
 #+begin_src emacs-lisp
-(use-package tree-sitter)
-(use-package tree-sitter-langs)
+  (use-package tree-sitter
+    :hook ((tsx-mode . tree-sitter-hl-mode)))
+
+  (use-package tree-sitter-langs
+    :after tree-sitter
+    :config
+    (tree-sitter-require 'tsx)
+    (add-to-list 'tree-sitter-major-mode-language-alist '(tsx-mode . tsx)))
 #+end_src
 
 ** Flycheck pos-tip
@@ -1721,16 +1727,20 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
     :commands lsp
-    :hook ((rustic-mode . lsp)
-           (csharp-mode . lsp)
-           (rjsx-mode . lsp)
-           (lsp-mode . yas-minor-mode))
+    :hook ((rustic-mode 
+             csharp-mode
+             rjsx-mode
+             typescript-mode
+             web-mode
+             js-mode
+             tsx-mode)
+           . lsp-deferred)
     :config
     (setq lsp-idle-delay 0.100
           lsp-log-io nil
           lsp-completion-provider :capf
-          lsp-headerline-breadcrumb-enable nil)
-    (setq read-process-output-max (* 1024 1024)))
+          lsp-headerline-breadcrumb-enable nil
+          read-process-output-max (* 1024 1024)))
 #+END_SRC
 
 *** Company-LSP
@@ -1969,12 +1979,23 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 *** Typescript
 #+begin_src emacs-lisp
   (use-package typescript-mode
-    :ensure t
+    :mode "\\.ts\\'"
+    :custom
+    (typescript-indent-level 2)
     :config
-    (setq typescript-indent-level 2)
     (add-hook 'typescript-mode #'subword-mode))
-
 #+end_src
+*** TSX Mode
+#+begin_src emacs-lisp
+  (use-package tsx-mode
+    :ensure nil
+    :init
+    (require 'web-mode)
+    (define-derived-mode tsx-mode typescript-mode "tsx")
+    (add-hook 'tsx-mode #'subword-mode)
+    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-mode)))
+#+end_src
+
 *** css-in-js
 #+begin_src emacs-lisp
   (use-package css-in-js
