@@ -1217,7 +1217,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   ("C-c n" . sharper-main-transient))
 
 (use-package web-mode
-  ;; :after tide
   :mode (("\\.html?\\'" . web-mode))
   :config
   (setq web-mode-markup-indent-offset 2
@@ -1231,7 +1230,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         web-mode-enable-comment-keywords t
         web-mode-enable-current-element-highlight t
         flycheck-javascript-eslint-executable "eslint_d"
-        flycheck-typescript-tslint-executable "eslint_d")          
+        flycheck-typescript-tslint-executable "eslint_d")
   (flycheck-add-mode 'javascript-eslint 'web-mode))
 
 (use-package tagedit
