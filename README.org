@@ -1992,25 +1992,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (setq js-indent-level 2)
     (setq js2-basic-offset 2))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (24638 40402 87239 700000) :use-package-secs (0 4 801544 400000) :init (24638 40402 87218 0) :init-secs (0 0 34 900000)))
-
-*** Typescript/TSX development
-#+begin_src emacs-lisp
-  (use-package tide
-    :init
-    (defun setup-tide-mode ()
-      (interactive)
-      (tide-setup)
-      (flycheck-mode +1)
-      (setq flycheck-check-syntax-automatically '(save mode-enabled))
-      (eldoc-mode +1)
-      (tide-hl-identifier-mode +1)
-      (company-mode +1))      
-    :hook ((typescript-mode . tide-setup)
-           (typescript-mode . tide-hl-identifier-mode)))
-#+end_src
 *** js2-Mode
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package js2-mode
@@ -2060,9 +2041,7 @@ Transient mode to manage building and running operations in CSharp Projects
 *** Web Mode
 #+begin_src emacs-lisp
   (use-package web-mode
-    ;; :after tide
-    :mode (("\\.html?\\'" . web-mode)
-           ("\\.tsx\\'" . web-mode))
+    :mode (("\\.html?\\'" . web-mode))
     :config
     (setq web-mode-markup-indent-offset 2
           web-mode-css-indent-offset 2
@@ -2074,13 +2053,9 @@ Transient mode to manage building and running operations in CSharp Projects
           web-mode-enable-auto-pairing t
           web-mode-enable-comment-keywords t
           web-mode-enable-current-element-highlight t
-          flycheck-javascript-eslint-executable "eslint_d")
-    (flycheck-add-mode 'javascript-eslint 'web-mode)
-    (add-hook 'web-mode-hook
-              (lambda ()
-                (when (string-equal "tsx" (file-name-extension buffer-file-name))
-                  (flycheck-add-mode 'typescript-tslint 'web-mode)
-                  (setup-tide-mode)))))
+          flycheck-javascript-eslint-executable "eslint_d"
+          flycheck-typescript-tslint-executable "eslint_d")
+    (flycheck-add-mode 'javascript-eslint 'web-mode))
 #+end_src
 
 *** tagedit

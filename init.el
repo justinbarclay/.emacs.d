@@ -934,8 +934,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package emojify)
 
-(use-package tree-sitter)
-(use-package tree-sitter-langs)
+(use-package tree-sitter
+  :hook ((tsx-mode . tree-sitter-hl-mode)))
+
+(use-package tree-sitter-langs
+  :after tree-sitter
+  :config
+  (tree-sitter-require 'tsx)
+  (add-to-list 'tree-sitter-major-mode-language-alist '(tsx-mode . tsx)))
 
 (use-package flycheck-pos-tip)
 
@@ -981,16 +987,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package lsp-mode
   :commands lsp
-  :hook ((rustic-mode . lsp)
-         (csharp-mode . lsp)
-         (rjsx-mode . lsp)
-         (lsp-mode . yas-minor-mode))
+  :hook ((rustic-mode 
+           csharp-mode
+           rjsx-mode
+           typescript-mode
+           web-mode
+           js-mode
+           tsx-mode)
+         . lsp-deferred)
   :config
   (setq lsp-idle-delay 0.100
         lsp-log-io nil
         lsp-completion-provider :capf
-        lsp-headerline-breadcrumb-enable nil)
-  (setq read-process-output-max (* 1024 1024)))
+        lsp-headerline-breadcrumb-enable nil
+        read-process-output-max (* 1024 1024)))
 
 (use-package company-lsp
   :commands company-lsp
@@ -1159,10 +1169,19 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (bind-key "C-c t" 'cider--tooltip-show)
 
 (use-package typescript-mode
-  :ensure t
+  :mode "\\.ts\\'"
+  :custom
+  (typescript-indent-level 2)
   :config
-  (setq typescript-indent-level 2)
   (add-hook 'typescript-mode #'subword-mode))
+
+(use-package tsx-mode
+  :ensure nil
+  :init
+  (require 'web-mode)
+  (define-derived-mode tsx-mode typescript-mode "tsx")
+  (add-hook 'tsx-mode #'subword-mode)
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-mode)))
 
 (use-package css-in-js
   :straight (css-in-js :type git :host github :repo "orzechowskid/css-in-js.el"))
@@ -1175,19 +1194,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (add-hook 'rjsx-mode #'subword-mode)
   (setq js-indent-level 2)
   (setq js2-basic-offset 2))
-
-(use-package tide
-  :init
-  (defun setup-tide-mode ()
-    (interactive)
-    (tide-setup)
-    (flycheck-mode +1)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (eldoc-mode +1)
-    (tide-hl-identifier-mode +1)
-    (company-mode +1))      
-  :hook ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)))
 
 (use-package js2-refactor
   :bind
@@ -1212,8 +1218,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package web-mode
   ;; :after tide
-  :mode (("\\.html?\\'" . web-mode)
-         ("\\.tsx\\'" . web-mode))
+  :mode (("\\.html?\\'" . web-mode))
   :config
   (setq web-mode-markup-indent-offset 2
         web-mode-css-indent-offset 2
@@ -1225,13 +1230,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         web-mode-enable-auto-pairing t
         web-mode-enable-comment-keywords t
         web-mode-enable-current-element-highlight t
-        flycheck-javascript-eslint-executable "eslint_d")
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
-  (add-hook 'web-mode-hook
-            (lambda ()
-              (when (string-equal "tsx" (file-name-extension buffer-file-name))
-                (flycheck-add-mode 'typescript-tslint 'web-mode)
-                (setup-tide-mode)))))
+        flycheck-javascript-eslint-executable "eslint_d"
+        flycheck-typescript-tslint-executable "eslint_d")          
+  (flycheck-add-mode 'javascript-eslint 'web-mode))
 
 (use-package tagedit
  :defer t)
