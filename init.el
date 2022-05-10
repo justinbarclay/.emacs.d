@@ -359,8 +359,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package magit
   :commands magit-get-top-dir
   :bind (("C-c g" . magit-status)
-         ("C-c C-g l" . magit-file-log)
-         ("C-c f" . magit-grep))
+         ("C-c C-g l" . magit-file-log))
   :init
   (progn
     ;; magit extensions
@@ -1663,19 +1662,3 @@ foo.bar.baz => baz"
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("a82ab9f1308b4e10684815b08c9cac6b07d5ccb12491f44a942d845b406b0296" "7a7b1d475b42c1a0b61f3b1d1225dd249ffa1abb1b7f726aec59ac7ca3bf4dae" default)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))
- '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
- '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line)))))
-(put 'dired-find-alternate-file 'disabled nil)

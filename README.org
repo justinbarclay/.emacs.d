@@ -694,8 +694,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
   (use-package magit
     :commands magit-get-top-dir
     :bind (("C-c g" . magit-status)
-           ("C-c C-g l" . magit-file-log)
-           ("C-c f" . magit-grep))
+           ("C-c C-g l" . magit-file-log))
     :init
     (progn
       ;; magit extensions
