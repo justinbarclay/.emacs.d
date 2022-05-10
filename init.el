@@ -988,12 +988,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode 
-           csharp-mode
-           rjsx-mode
-           typescript-mode
-           web-mode
-           js-mode
-           tsx-mode)
+          csharp-mode
+          rjsx-mode
+          typescript-mode
+          web-mode
+          js-mode
+          tsx-mode)
          . lsp-deferred)
   :config
   (setq lsp-idle-delay 0.100
@@ -1173,7 +1173,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :custom
   (typescript-indent-level 2)
   :config
-  (add-hook 'typescript-mode #'subword-mode))
+  (add-hook 'typescript-mode #'subword-mode)
+  (setq lsp-eslint-enable 't)
+  (flycheck-add-mode 'javascript-eslint 'typescript-mode))
 
 (use-package tsx-mode
   :ensure nil
@@ -1181,7 +1183,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (require 'web-mode)
   (define-derived-mode tsx-mode typescript-mode "tsx")
   (add-hook 'tsx-mode #'subword-mode)
-  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-mode)))
+  (flycheck-add-mode 'javascript-eslint 'tsx-mode)
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-mode))
+  :config
+  (setq lsp-eslint-enable 't))
 
 (use-package css-in-js
   :straight (css-in-js :type git :host github :repo "orzechowskid/css-in-js.el"))
@@ -1658,3 +1663,19 @@ foo.bar.baz => baz"
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("a82ab9f1308b4e10684815b08c9cac6b07d5ccb12491f44a942d845b406b0296" "7a7b1d475b42c1a0b61f3b1d1225dd249ffa1abb1b7f726aec59ac7ca3bf4dae" default)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line))))
+ '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
+ '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line)))))
+(put 'dired-find-alternate-file 'disabled nil)

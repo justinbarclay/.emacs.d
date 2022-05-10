@@ -1728,12 +1728,12 @@ Load this before we load Flycheck
   (use-package lsp-mode
     :commands lsp
     :hook ((rustic-mode 
-             csharp-mode
-             rjsx-mode
-             typescript-mode
-             web-mode
-             js-mode
-             tsx-mode)
+            csharp-mode
+            rjsx-mode
+            typescript-mode
+            web-mode
+            js-mode
+            tsx-mode)
            . lsp-deferred)
     :config
     (setq lsp-idle-delay 0.100
@@ -1983,7 +1983,9 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     :custom
     (typescript-indent-level 2)
     :config
-    (add-hook 'typescript-mode #'subword-mode))
+    (add-hook 'typescript-mode #'subword-mode)
+    (setq lsp-eslint-enable 't)
+    (flycheck-add-mode 'javascript-eslint 'typescript-mode))
 #+end_src
 *** TSX Mode
 #+begin_src emacs-lisp
@@ -1993,7 +1995,10 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (require 'web-mode)
     (define-derived-mode tsx-mode typescript-mode "tsx")
     (add-hook 'tsx-mode #'subword-mode)
-    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-mode)))
+    (flycheck-add-mode 'javascript-eslint 'tsx-mode)
+    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-mode))
+    :config
+    (setq lsp-eslint-enable 't))
 #+end_src
 
 *** css-in-js
