@@ -514,14 +514,64 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                       '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
                       '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 
-(use-package dired
-    :ensure nil
-  :bind (:map dired-mode-map
-              ("RET" . dired-find-alternate-file)
-              ("a" . dired-find-file)))
-
-(use-package all-the-icons-dired
-  :hook (dired-mode . all-the-icons-dired-mode))
+(use-package dirvish
+  :init
+  (dirvish-override-dired-mode)
+  :custom
+  ;; Go back home? Just press `bh'
+  (dirvish-bookmark-entries
+   '(("h" "~/" "Home")
+     ("m" "~/dev/tidal/application-inventory/" "MMP")
+     ("t" "~/dev/tidal/tidal-wave" "Tidal Wave")))
+  ;; (dirvish-header-line-format '(:left (path) :right (free-space)))
+  (dirvish-mode-line-format ; it's ok to place string inside
+   '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
+  ;; Don't worry, Dirvish is still performant even you enable all these attributes
+  (dirvish-attributes '(all-the-icons file-size collapse subtree-state vc-state git-msg))
+  ;; Maybe the icons are too big to your eyes
+  ;; (dirvish-all-the-icons-height 0.8)
+  ;; In case you want the details at startup like `dired'
+  ;; (dirvish-hide-details nil)
+  :config
+  (dirvish-peek-mode)
+  ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
+  (setq dired-dwim-target t)
+  (setq delete-by-moving-to-trash t)
+  ;; Enable mouse drag-and-drop files to other applications
+  (setq dired-mouse-drag-files t)                   ; added in Emacs 29
+  (setq mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
+  ;; Make sure to use the long name of flags when exists
+  ;; eg. use "--almost-all" instead of "-A"
+  ;; Otherwise some commands won't work properly
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
+  :bind
+  ;; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+  (("C-c f" . dirvish)
+   ;; Dirvish has all the keybindings (except `dired-summary') in `dired-mode-map' already
+   :map dirvish-mode-map
+   ;; ("h" . dired-up-directory)
+   ;; ("j" . dired-next-line)
+   ;; ("k" . dired-previous-line)
+   ;; ("l" . dired-find-file)
+   ;; ("i" . wdired-change-to-wdired-mode)
+   ;; ("." . dired-omit-mode)
+   ("b"   . dirvish-bookmark-jump)
+   ("f"   . dirvish-file-info-menu)
+   ("y"   . dirvish-yank-menu)
+   ("N"   . dirvish-narrow)
+   ("^"   . dirvish-history-last)
+   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+   ("TAB" . dirvish-subtree-toggle)
+   ("M-n" . dirvish-history-go-forward)
+   ("M-p" . dirvish-history-go-backward)
+   ("M-l" . dirvish-ls-switches-menu)
+   ("M-m" . dirvish-mark-menu)
+   ("M-f" . dirvish-toggle-fullscreen)
+   ("M-s" . dirvish-setup-menu)
+   ("M-e" . dirvish-emerge-menu)
+   ("M-j" . dirvish-fd-jump)))
 
 (use-package ibuffer
   :ensure nil
@@ -948,14 +998,27 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :after flycheck-pos-tip
   :demand t
   :ensure nil
+  :init
+  (flycheck-define-checker less-stylelint
+    "A LESS syntax and style checker using stylelint.
+
+See URL `http://stylelint.io/'."
+    :command ("stylelint"
+              (eval flycheck-stylelint-args)
+              (option-flag "--quiet" flycheck-stylelint-quiet)
+              (config-file "--config" flycheck-stylelintrc))
+    :standard-input t
+    :error-parser flycheck-parse-stylelint
+    :predicate flycheck-buffer-nonempty-p
+    :modes (less-css-mode))
   :config
   (progn
     (global-flycheck-mode)
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
     (setq flycheck-standard-error-navigation nil)
     (when 'display-graphic-p (selected-frame)
-      (eval-after-load 'flycheck
-      (flycheck-pos-tip-mode)))))
+          (eval-after-load 'flycheck
+            (flycheck-pos-tip-mode)))))
 
 (use-package flyspell
   :ensure nil
@@ -1015,8 +1078,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
+(use-package yasnippet
+ :hook (prog-mode . yas-minor-mode))
+
 (use-package css-mode
   :ensure nil
+  :config
+  (setq css-indent-offset 2))
+
+(use-package less-css-mode
+  :ensure nil
+  :hook (less-css-mode . flycheck-mode)
   :config
   (setq css-indent-offset 2))
 
