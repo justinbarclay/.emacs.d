@@ -1817,18 +1817,6 @@ Load this before we load Flycheck
           read-process-output-max (* 1024 1024)))
 #+END_SRC
 
-*** Company-LSP
-#+BEGIN_SRC emacs-lisp
-  (use-package company-lsp
-    :commands company-lsp
-    :bind (("M-." . xref-find-definitions)
-           ("M-," . xref-pop-marker-stack))
-    :after (company lsp)
-    ;; :init (push '(company-lsp) company-backends)
-    :config
-    (setq company-lsp-cache-candidates 'auto)
-    (setq company-lsp-async t))
-#+END_SRC
 *** lsp-ui
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-ui

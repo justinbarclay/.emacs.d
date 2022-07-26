@@ -1064,16 +1064,6 @@ See URL `http://stylelint.io/'."
         lsp-headerline-breadcrumb-enable nil
         read-process-output-max (* 1024 1024)))
 
-(use-package company-lsp
-  :commands company-lsp
-  :bind (("M-." . xref-find-definitions)
-         ("M-," . xref-pop-marker-stack))
-  :after (company lsp)
-  ;; :init (push '(company-lsp) company-backends)
-  :config
-  (setq company-lsp-cache-candidates 'auto)
-  (setq company-lsp-async t))
-
 (use-package lsp-ui
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
