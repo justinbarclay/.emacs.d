@@ -668,13 +668,148 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands
   (projectile-find-file projectile-switch-project)
   :config
+  ;; :bind (("C-c p p" . projectile-switch-project)
+  ;;        ("C-c p f" . projectile-find-file))
   (progn
     (projectile-global-mode)
-    (setq projectile-completion-system 'ivy)
+    (setq projectile-completion-system 'auto)
     (setq projectile-enable-caching t)
     (setq projectile-switch-project-action #'magit-status)))
 
-(use-package ivy-rich
+(use-package vertico
+  :init
+  (vertico-mode)
+  :config
+  (vertico-multiform-mode)
+  :bind (:map vertico-map
+         ("<escape>" . #'minibuffer-keyboard-quit)
+         ("?" . #'minibuffer-completion-help)))
+
+(use-package marginalia
+  :config
+  (setq marginalia-max-relative-age 0)
+  (setq marginalia-align 'left)
+  :init
+  (marginalia-mode))
+
+(use-package all-the-icons-completion
+  :after (marginalia all-the-icons)
+  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+  :init
+  (all-the-icons-completion-mode))
+
+(use-package orderless
+  :custom
+  (completion-styles '(orderless))      ; Use orderless
+  (completion-category-overrides
+   '((file (styles basic-remote ; For `tramp' hostname completion with `vertico'
+                   orderless))))
+  (orderless-component-separator 'orderless-escapable-split-on-space)
+  (orderless-matching-styles
+   '(orderless-literal
+     orderless-prefixes
+     orderless-initialism
+     orderless-regexp)))
+
+use-package consult
+;; Replace bindings. Lazily loaded due by `use-package'.
+:bind ;; C-c bindings (mode-specific-map)
+("C-c h" . consult-history)
+("C-c m" . consult-mode-command)
+("C-c k" . consult-kmacro)
+("C-s" . consult-line)
+;; C-x bindings (ctl-x-map)
+("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+;; Custom M-# bindings for fast register access
+("M-#" . consult-register-load)
+("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+("C-M-#" . consult-register)
+;; Other custom bindings
+("M-y" . consult-yank-pop)                ;; orig. yank-pop
+("<help> a" . consult-apropos)            ;; orig. apropos-command
+;; M-g bindings (goto-map)
+("M-g e" . consult-compile-error)
+("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
+("M-g g" . consult-goto-line)             ;; orig. goto-line
+("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+;; M-s bindings (search-map)
+("M-s d" . consult-find)
+("M-s D" . consult-locate)
+("M-s r" . consult-ripgrep)
+("M-s l" . consult-line)
+("M-s L" . consult-line-multi)
+("M-s u" . consult-focus-lines)
+;; Minibuffer history
+:map minibuffer-local-map
+("M-s" . consult-history)                 ;; orig. next-matching-history-element
+("M-r" . consult-history)                ;; orig. previous-matching-history-element
+
+;; Enable automatic preview at point in the *Completions* buffer. This is
+;; relevant when you use the default completion UI.
+:hook (completion-list-mode . consult-preview-at-point-mode)
+
+;; The :init configuration is always executed (Not lazy)
+:init
+
+;; Optionally configure the register formatting. This improves the register
+;; preview for `consult-register', `consult-register-load',
+;; `consult-register-store' and the Emacs built-ins.
+(setq register-preview-delay 0.5
+      register-preview-function #'consult-register-format)
+
+;; Optionally tweak the register preview window.
+;; This adds thin lines, sorting and hides the mode line of the window.
+(advice-add #'register-preview :override #'consult-register-window)
+
+;; Use Consult to select xref locations with preview
+(setq xref-show-xrefs-function #'consult-xref
+      xref-show-definitions-function #'consult-xref)
+
+;; Configure other variables and modes in the :config section,
+;; after lazily loading the package.
+:config
+
+;; Optionally configure preview. The default value
+;; is 'any, such that any key triggers the preview.
+;; (setq consult-preview-key 'any)
+;; (setq consult-preview-key (kbd "M-."))
+;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+;; For some commands and buffer sources it is useful to configure the
+;; :preview-key on a per-command basis using the `consult-customize' macro.
+(consult-customize
+ consult-theme
+ :preview-key '(:debounce 0.2 any)
+ consult-ripgrep consult-git-grep consult-grep
+ consult-bookmark consult-recent-file consult-xref
+ consult--source-bookmark consult--source-recent-file
+ consult--source-project-recent-file
+ :preview-key (kbd "M-."))
+
+;; Optionally configure the narrowing key.
+;; Both < and C-+ work reasonably well.
+(setq consult-narrow-key "<") ;; (kbd "C-+")
+
+;; Optionally make narrowing help available in the minibuffer.
+;; You may want to use `embark-prefix-help-command' or which-key instead.
+;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+;; By default `consult-project-function' uses `project-root' from project.el.
+;; Optionally configure a different project root function.
+;; There are multiple reasonable alternatives to chose from.
+  ;;;; 1. project.el (the default)
+;; (setq consult-project-function #'consult--default-project--function)
+  ;;;; 2. projectile.el (projectile-project-root)
+;; (autoload 'projectile-project-root "projectile")
+;; (setq consult-project-function (lambda (_) (projectile-project-root)))
+  ;;;; 3. vc.el (vc-root-dir)
+;; (setq consult-project-function (lambda (_) (vc-root-dir)))
+  ;;;; 4. locate-dominating-file
+;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+
+(use-package ivy-rich :tangle no
   :defines (all-the-icons-icon-alist
             all-the-icons-dir-icon-alist
             bookmark-alist)
@@ -842,40 +977,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
            ((ivy-rich-file-icon)
             (ivy-rich-candidate))))))
 
-(use-package ivy
-  :hook (after-init . ivy-mode)
-  :config
-  (progn
-    (setq ivy-use-virtual-buffers t)
-    (setq ivy-initial-inputs-alist nil)
-    (counsel-mode)
-    (ivy-rich-mode)))
-
-(use-package counsel
-  :after ivy
-  :config
-  (setq counsel-grep-base-command
-        "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
-  (setq ivy-initial-inputs-alist nil)
-  :bind
-  (("M-x" . counsel-M-x)
-    ("C-x C-f" . counsel-find-file)
-    ("C-c p f" . counsel-projectile-find-file)
-    ("C-c p d" . counsel-projectile-find-dir)
-    ("C-c p p" . counsel-projectile-switch-project)
-    ("<f1> f" . counsel-describe-function)
-    ("<f1> v" . counsel-describe-variable)
-    ("<f1> l" . counsel-load-library)
-    ("<f2> i" . counsel-info-lookup-symbol)
-    ("<f2> u" . counsel-unicode-char)
-    ("C-c k" . counsel-rg)))
-
-(use-package counsel-projectile
-  :after projectile
-  :preface (setq projectile-keymap-prefix (kbd "C-c p"))
-  :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
-
-(use-package swiper
+(use-package swiper :tangle no
   :after ivy
   :bind ("C-s" . swiper))
 
@@ -959,8 +1061,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
   :bind (:map smartparens-mode-map
-          ("C-)" . sp-forward-slurp-sexp)
-          ("C-(" . sp-backward-slurp-sexp)
+          ("C-]" . sp-forward-slurp-sexp)
+          ("C-[" . sp-backward-slurp-sexp)
           ("C-}" . sp-forward-barf-sexp)
           ("C-{" . sp-backward-barf-sexp))
   :config
@@ -1035,6 +1137,9 @@ See URL `http://stylelint.io/'."
 
 (use-package company-emoji)
 
+(use-package company-posframe
+ :hook (company-mode . company-posframe-mode))
+
 (use-package company
   :init
   (global-company-mode t)
@@ -1095,6 +1200,7 @@ See URL `http://stylelint.io/'."
   (progn ; C mode hook
     (add-hook 'c-mode-hook 'flycheck-mode)
     (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
+    (add-hook 'c-mode-hook 'lsp-mode)
     (eval-after-load 'c-mode '(setq-local eldoc-documentation-function #'ggtags-eldoc-function))
     (setq-default c-basic-offset 2)))
 
