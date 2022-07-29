@@ -1291,9 +1291,9 @@ Turn on recent file mode so that you can more easily switch to recently edited f
     :defer 1
     :commands
     (projectile-find-file projectile-switch-project)
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
     :config
-    ;; :bind (("C-c p p" . projectile-switch-project)
-    ;;        ("C-c p f" . projectile-find-file))
     (progn
       (projectile-global-mode)
       (setq projectile-completion-system 'auto)
