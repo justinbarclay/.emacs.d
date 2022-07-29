@@ -667,9 +667,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :defer 1
   :commands
   (projectile-find-file projectile-switch-project)
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
   :config
-  ;; :bind (("C-c p p" . projectile-switch-project)
-  ;;        ("C-c p f" . projectile-find-file))
   (progn
     (projectile-global-mode)
     (setq projectile-completion-system 'auto)
@@ -681,14 +681,32 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (vertico-mode)
   :config
   (vertico-multiform-mode)
+  (setq vertico-multiform-commands
+      '((describe-symbol (vertico-sort-function . vertico-sort-alpha))))
+
+(setq vertico-multiform-categories
+      '((symbol (vertico-sort-function . vertico-sort-alpha))
+        (file (vertico-sort-function . sort-directories-first))))
+
+;; Sort directories before files
+(defun sort-directories-first (files)
+  (setq files (vertico-sort-history-length-alpha files))
+  (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
+         (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
   :bind (:map vertico-map
-         ("<escape>" . #'minibuffer-keyboard-quit)
-         ("?" . #'minibuffer-completion-help)))
+         ("<escape>" . #'minibuffer-keyboard-quit)))
+
+(use-package savehist
+  :ensure nil
+  :init
+  (savehist-mode))
 
 (use-package marginalia
   :config
   (setq marginalia-max-relative-age 0)
   (setq marginalia-align 'left)
+  :bind
+  (("M-A" . marginalia-cycle))
   :init
   (marginalia-mode))
 
@@ -700,9 +718,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package orderless
   :custom
-  (completion-styles '(orderless))      ; Use orderless
+  (completion-styles '(orderless basic))      ; Use orderless
   (completion-category-overrides
    '((file (styles basic-remote ; For `tramp' hostname completion with `vertico'
+                   partial-completion
                    orderless))))
   (orderless-component-separator 'orderless-escapable-split-on-space)
   (orderless-matching-styles
@@ -711,271 +730,111 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
      orderless-initialism
      orderless-regexp)))
 
-use-package consult
-;; Replace bindings. Lazily loaded due by `use-package'.
-:bind ;; C-c bindings (mode-specific-map)
-("C-c h" . consult-history)
-("C-c m" . consult-mode-command)
-("C-c k" . consult-kmacro)
-("C-s" . consult-line)
-;; C-x bindings (ctl-x-map)
-("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-;; Custom M-# bindings for fast register access
-("M-#" . consult-register-load)
-("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-("C-M-#" . consult-register)
-;; Other custom bindings
-("M-y" . consult-yank-pop)                ;; orig. yank-pop
-("<help> a" . consult-apropos)            ;; orig. apropos-command
-;; M-g bindings (goto-map)
-("M-g e" . consult-compile-error)
-("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
-("M-g g" . consult-goto-line)             ;; orig. goto-line
-("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-;; M-s bindings (search-map)
-("M-s d" . consult-find)
-("M-s D" . consult-locate)
-("M-s r" . consult-ripgrep)
-("M-s l" . consult-line)
-("M-s L" . consult-line-multi)
-("M-s u" . consult-focus-lines)
-;; Minibuffer history
-:map minibuffer-local-map
-("M-s" . consult-history)                 ;; orig. next-matching-history-element
-("M-r" . consult-history)                ;; orig. previous-matching-history-element
+(use-package consult
+  ;; Replace bindings. Lazily loaded due by `use-package'.
+  :bind ;; C-c bindings (mode-specific-map)
+  (("C-c h" . consult-history)
+  ("C-c m" . consult-mode-command)
+  ("C-c k" . consult-kmacro)
+  ("C-s" . consult-line)
+  ;; C-x bindings (ctl-x-map)
+  ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+  ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+  ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+  ;; Custom M-# bindings for fast register access
+  ("M-#" . consult-register-load)
+  ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+  ("C-M-#" . consult-register)
+  ;; Other custom bindings
+  ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+  ("<help> a" . consult-apropos)            ;; orig. apropos-command
+  ;; M-g bindings (goto-map)
+  ("M-g e" . consult-compile-error)
+  ("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
+  ("M-g g" . consult-goto-line)             ;; orig. goto-line
+  ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+  ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+  ;; M-s bindings (search-map)
+  ("M-s d" . consult-find)
+  ("M-s D" . consult-locate)
+  ("M-s r" . consult-ripgrep)
 
-;; Enable automatic preview at point in the *Completions* buffer. This is
-;; relevant when you use the default completion UI.
-:hook (completion-list-mode . consult-preview-at-point-mode)
+  ("M-s u" . consult-focus-lines)
+  ;; Minibuffer history
+  :map minibuffer-local-map
+  ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+  ("M-r" . consult-history))                ;; orig. previous-matching-history-element
 
-;; The :init configuration is always executed (Not lazy)
-:init
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
 
-;; Optionally configure the register formatting. This improves the register
-;; preview for `consult-register', `consult-register-load',
-;; `consult-register-store' and the Emacs built-ins.
-(setq register-preview-delay 0.5
-      register-preview-function #'consult-register-format)
-
-;; Optionally tweak the register preview window.
-;; This adds thin lines, sorting and hides the mode line of the window.
-(advice-add #'register-preview :override #'consult-register-window)
-
-;; Use Consult to select xref locations with preview
-(setq xref-show-xrefs-function #'consult-xref
-      xref-show-definitions-function #'consult-xref)
-
-;; Configure other variables and modes in the :config section,
-;; after lazily loading the package.
-:config
-
-;; Optionally configure preview. The default value
-;; is 'any, such that any key triggers the preview.
-;; (setq consult-preview-key 'any)
-;; (setq consult-preview-key (kbd "M-."))
-;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
-;; For some commands and buffer sources it is useful to configure the
-;; :preview-key on a per-command basis using the `consult-customize' macro.
-(consult-customize
- consult-theme
- :preview-key '(:debounce 0.2 any)
- consult-ripgrep consult-git-grep consult-grep
- consult-bookmark consult-recent-file consult-xref
- consult--source-bookmark consult--source-recent-file
- consult--source-project-recent-file
- :preview-key (kbd "M-."))
-
-;; Optionally configure the narrowing key.
-;; Both < and C-+ work reasonably well.
-(setq consult-narrow-key "<") ;; (kbd "C-+")
-
-;; Optionally make narrowing help available in the minibuffer.
-;; You may want to use `embark-prefix-help-command' or which-key instead.
-;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
-
-;; By default `consult-project-function' uses `project-root' from project.el.
-;; Optionally configure a different project root function.
-;; There are multiple reasonable alternatives to chose from.
-  ;;;; 1. project.el (the default)
-;; (setq consult-project-function #'consult--default-project--function)
-  ;;;; 2. projectile.el (projectile-project-root)
-;; (autoload 'projectile-project-root "projectile")
-;; (setq consult-project-function (lambda (_) (projectile-project-root)))
-  ;;;; 3. vc.el (vc-root-dir)
-;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-  ;;;; 4. locate-dominating-file
-;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
-
-(use-package ivy-rich :tangle no
-  :defines (all-the-icons-icon-alist
-            all-the-icons-dir-icon-alist
-            bookmark-alist)
-  :functions (all-the-icons-icon-for-file
-              all-the-icons-icon-for-mode
-              all-the-icons-icon-family
-              all-the-icons-match-to-alist
-              all-the-icons-faicon
-              all-the-icons-octicon
-              all-the-icons-dir-is-submodule)
-  :preface
-  (defun ivy-rich-bookmark-name (candidate)
-    (car (assoc candidate bookmark-alist)))
-
-  (defun ivy-rich-buffer-icon (candidate)
-    "Display buffer icons in `ivy-rich'."
-    (when (display-graphic-p)
-      (let* ((buffer (get-buffer candidate))
-             (buffer-file-name (buffer-file-name buffer))
-             (major-mode (buffer-local-value 'major-mode buffer))
-             (icon (if (and buffer-file-name
-                            (all-the-icons-match-to-alist buffer-file-name
-                                                          all-the-icons-icon-alist))
-                       (all-the-icons-icon-for-file (file-name-nondirectory buffer-file-name)
-                                                    :height 0.9 :v-adjust -0.05)
-                     (all-the-icons-icon-for-mode major-mode :height 0.9 :v-adjust -0.05))))
-        (if (symbolp icon)
-            (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
-          icon))))
-
-  (defun ivy-rich-file-icon (candidate)
-    "Display file icons in `ivy-rich'."
-    (when (display-graphic-p)
-      (let* ((path (concat ivy--directory candidate))
-             (file (file-name-nondirectory path))
-             (icon (cond ((file-directory-p path)
-                          (cond
-                           ((and (fboundp 'tramp-tramp-file-p)
-                                 (tramp-tramp-file-p default-directory))
-                            (all-the-icons-octicon "file-directory" :height 0.93 :v-adjust 0.01))
-                           ((file-symlink-p path)
-                            (all-the-icons-octicon "file-symlink-directory" :height 0.93 :v-adjust 0.01))
-                           ((all-the-icons-dir-is-submodule path)
-                            (all-the-icons-octicon "file-submodule" :height 0.93 :v-adjust 0.01))
-                           ((file-exists-p (format "%s/.git" path))
-                            (all-the-icons-octicon "repo" :height 1.0 :v-adjust -0.01))
-                           (t (let ((matcher (all-the-icons-match-to-alist candidate all-the-icons-dir-icon-alist)))
-                                (apply (car matcher) (list (cadr matcher) :height 0.93 :v-adjust 0.01))))))
-                         ((string-match "^/.*:$" path)
-                          (all-the-icons-material "settings_remote" :height 0.9 :v-adjust -0.2))
-                         ((not (string-empty-p file))
-                          (all-the-icons-icon-for-file file :height 0.9 :v-adjust -0.05)))))
-        (if (symbolp icon)
-            (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
-          icon))))
-  :hook ((ivy-mode . ivy-rich-mode)
-         (ivy-rich-mode . (lambda ()
-                            (setq ivy-virtual-abbreviate
-                                  (or (and ivy-rich-mode 'abbreviate) 'name)))))
+  ;; The :init configuration is always executed (Not lazy)
   :init
-  ;; For better performance
-  (setq ivy-rich-parse-remote-buffer nil)
 
-  (setq ivy-rich-display-transformers-list
-        '(ivy-switch-buffer
-          (:columns
-           ((ivy-rich-buffer-icon)
-            (ivy-rich-candidate (:width 30))
-            (ivy-rich-switch-buffer-size (:width 7))
-            (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-            (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          ivy-switch-buffer-other-window
-          (:columns
-           ((ivy-rich-buffer-icon)
-            (ivy-rich-candidate (:width 30))
-            (ivy-rich-switch-buffer-size (:width 7))
-            (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-            (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          counsel-switch-buffer
-          (:columns
-           ((ivy-rich-buffer-icon)
-            (ivy-rich-candidate (:width 30))
-            (ivy-rich-switch-buffer-size (:width 7))
-            (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-            (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          persp-switch-to-buffer
-          (:columns
-           ((ivy-rich-buffer-icon)
-            (ivy-rich-candidate (:width 30))
-            (ivy-rich-switch-buffer-size (:width 7))
-            (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-            (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          counsel-M-x
-          (:columns
-           ((counsel-M-x-transformer (:width 50))
-            (ivy-rich-counsel-function-docstring (:face font-lock-doc-face))))
-          counsel-describe-function
-          (:columns
-           ((counsel-describe-function-transformer (:width 50))
-            (ivy-rich-counsel-function-docstring (:face font-lock-doc-face))))
-          counsel-describe-variable
-          (:columns
-           ((counsel-describe-variable-transformer (:width 50))
-            (ivy-rich-counsel-variable-docstring (:face font-lock-doc-face))))
-          counsel-find-file
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-read-file-transformer)))
-          counsel-file-jump
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate)))
-          counsel-dired
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-read-file-transformer)))
-          counsel-dired-jump
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate)))
-          counsel-git
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate)))
-          counsel-recentf
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate (:width 0.8))
-            (ivy-rich-file-last-modified-time (:face font-lock-comment-face))))
-          counsel-bookmark
-          (:columns
-           ((ivy-rich-bookmark-type)
-            (ivy-rich-bookmark-name (:width 40))
-            (ivy-rich-bookmark-info)))
-          counsel-projectile-switch-project
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate)))
-          counsel-projectile-find-file
-          (:columns
-           ((ivy-rich-file-icon)
-            (counsel-projectile-find-file-transformer)))
-          counsel-projectile-find-dir
-          (:columns
-           ((ivy-rich-file-icon)
-            (counsel-projectile-find-dir-transformer)))
-          treemacs-projectile
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate))))))
+  ;; Optionally configure the register formatting. This improves the register
+  ;; preview for `consult-register', `consult-register-load',
+  ;; `consult-register-store' and the Emacs built-ins.
+  (setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key (kbd "M-."))
+  ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme
+   :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-recent-file
+   consult--source-project-recent-file
+   :preview-key (kbd "M-."))
+   (autoload 'projectile-project-root "projectile")
+   (setq consult-project-function (lambda (_) (projectile-project-root))))
+
+(use-package embark
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(use-package embark-consult
+  :ensure t
+  :after (embark consult)
+  :demand t ; only necessary if you have the hook below
+  ;; if you want to have consult previews as you move around an
+  ;; auto-updating embark collect buffer
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package swiper :tangle no
   :after ivy
