@@ -1409,14 +1409,17 @@ Remember where point was when I come back to a file
 #+BEGIN_SRC emacs-lisp
   (use-package smartparens
     :hook (prog-mode . smartparens-mode)
-    :bind (:map smartparens-mode-map
-            ("C-]" . sp-forward-slurp-sexp)
-            ("C-[" . sp-backward-slurp-sexp)
-            ("C-}" . sp-forward-barf-sexp)
-            ("C-{" . sp-backward-barf-sexp))
     :config
-    (setq sp-escape-wrapped-region nil))
+    (sp-use-smartparens-bindings))
 #+END_SRC
+
+Config
+#+begin_src emacs-lisp
+(use-package smartparens-config
+ :after smartparens
+ :ensure nil)
+#+end_src
+
 ** Hungry Delete
 #+BEGIN_SRC emacs-lisp
   (use-package hungry-delete
@@ -1427,9 +1430,10 @@ Remember where point was when I come back to a file
 Emacs by default doesn't have a good story for folding text so we have to add one.
 #+BEGIN_SRC emacs-lisp
 (use-package origami
-  :bind ("C-s-<tab>" . origami-recursively-toggle-node)
+  :bind ("C-<tab>" . origami-recursively-toggle-node)
   :hook (prog-mode . origami-mode))
 #+END_SRC
+
 ** Backups
 Emacs can automatically create backup files. This tells Emacs to put all backups in ~/.emacs.d/backups. More [[http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html][info]].
 #+BEGIN_SRC emacs-lisp
@@ -1499,7 +1503,7 @@ Load this before we load Flycheck
 #+END_SRC
 ** Flyspell
 #+BEGIN_SRC emacs-lisp
-  (use-package flyspell
+  (use-package flyspell 
     :ensure nil
     :defer 10
     :hook ((prog-mode . flyspell-prog-mode)
@@ -1947,6 +1951,17 @@ Normally preface should automatically be set by the package, but recently (Mon A
         (corfu-mode 1)))
     (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 #+end_src
+**** Kind Icon
+#+begin_src emacs-lisp
+  (use-package kind-icon
+    :config
+    (setq kind-icon-use-icons t)
+    (setq kind-icon-default-face 'corfu-default) ; Have background color be the same as `corfu' face background
+    (setq kind-icon-blend-background nil)  ; Use midpoint color between foreground and background colors ("blended")?
+    (setq kind-icon-blend-frac 0.08)
+    :init
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
 
 *** Company
 #+BEGIN_SRC emacs-lisp :tangle no
@@ -1983,9 +1998,9 @@ Major mode customizations
             tsx-mode)
            . lsp-deferred)
     :config
-    (setq lsp-idle-delay 0.100
+    (setq lsp-idle-delay 0.1
           lsp-log-io nil
-          lsp-completion-provider :capf
+          lsp-completion-provider :none
           lsp-headerline-breadcrumb-enable nil
           read-process-output-max (* 1024 1024)))
 #+END_SRC

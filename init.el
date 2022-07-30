@@ -755,19 +755,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
-  :bind (:map smartparens-mode-map
-          ("C-]" . sp-forward-slurp-sexp)
-          ("C-[" . sp-backward-slurp-sexp)
-          ("C-}" . sp-forward-barf-sexp)
-          ("C-{" . sp-backward-barf-sexp))
   :config
-  (setq sp-escape-wrapped-region nil))
+  (sp-use-smartparens-bindings))
+
+(use-package smartparens-config
+ :after smartparens
+ :ensure nil)
 
 (use-package hungry-delete
   :hook (prog-mode . global-hungry-delete-mode))
 
 (use-package origami
-  :bind ("C-s-<tab>" . origami-recursively-toggle-node)
+  :bind ("C-<tab>" . origami-recursively-toggle-node)
   :hook (prog-mode . origami-mode))
 
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
@@ -817,7 +816,7 @@ See URL `http://stylelint.io/'."
           (eval-after-load 'flycheck
             (flycheck-pos-tip-mode)))))
 
-(use-package flyspell
+(use-package flyspell 
   :ensure nil
   :defer 10
   :hook ((prog-mode . flyspell-prog-mode)
@@ -1010,6 +1009,15 @@ See URL `http://stylelint.io/'."
       (corfu-mode 1)))
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 
+(use-package kind-icon
+  :config
+  (setq kind-icon-use-icons t)
+  (setq kind-icon-default-face 'corfu-default) ; Have background color be the same as `corfu' face background
+  (setq kind-icon-blend-background nil)  ; Use midpoint color between foreground and background colors ("blended")?
+  (setq kind-icon-blend-frac 0.08)
+  :init
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
 (use-package yasnippet
  :hook (prog-mode . yas-minor-mode))
 
@@ -1023,9 +1031,9 @@ See URL `http://stylelint.io/'."
           tsx-mode)
          . lsp-deferred)
   :config
-  (setq lsp-idle-delay 0.100
+  (setq lsp-idle-delay 0.1
         lsp-log-io nil
-        lsp-completion-provider :capf
+        lsp-completion-provider :none
         lsp-headerline-breadcrumb-enable nil
         read-process-output-max (* 1024 1024)))
 
