@@ -1005,7 +1005,6 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 
 
 ** Smooth scrolling
-
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package smooth-scroll
   :config
@@ -1027,12 +1026,6 @@ Let's use Doom's version instead
     :init
     (load-theme 'doom-dracula t))
 #+END_SRC
-
-*** Cyberpunk 2019
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package cyberpunk-2019-theme
-  :demand t)
-#+END_SRC
 ** Modeline
 *** all-the-icons
 #+BEGIN_SRC emacs-lisp
@@ -1051,6 +1044,7 @@ Let's use Doom's version instead
                         '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
                         '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
 #+END_SRC
+
 ** Line Numbers
 As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
@@ -1436,9 +1430,6 @@ Save minibuffer history for better integration with orderless
 
     ;; Optionally configure preview. The default value
     ;; is 'any, such that any key triggers the preview.
-    ;; (setq consult-preview-key 'any)
-    ;; (setq consult-preview-key (kbd "M-."))
-    ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
     ;; For some commands and buffer sources it is useful to configure the
     ;; :preview-key on a per-command basis using the `consult-customize' macro.
     (consult-customize
@@ -2034,9 +2025,7 @@ Major mode customizations
 c++
 #+BEGIN_SRC emacs-lisp
   (use-package c++-mode
-      :ensure nil
-    )
-
+      :ensure nil)
 #+END_SRC
 
 *** c-eldoc
@@ -2236,12 +2225,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     (setq lsp-eslint-enable 't))
 #+end_src
 
-*** css-in-js
-#+begin_src emacs-lisp
-  (use-package css-in-js
-    :straight (css-in-js :type git :host github :repo "orzechowskid/css-in-js.el"))
-#+end_src
-
 *** JS/JSX dev environment
 #+begin_src emacs-lisp
   (use-package rjsx-mode
@@ -2281,23 +2264,6 @@ Autoformatting
            (js-mode . prettier-js-mode)
            (web-mode . prettier-js-mode)))
 #+end_src
-** C#
-
-*** csharp-mode
-Major mode implementation
-#+begin_src emacs-lisp
-  (use-package csharp-mode
-    :config
-    (add-to-list 'auto-mode-alist '("\\.cs\\'" . csharp-tree-sitter-mode)))
-#+end_src
-
-*** CSharper
-Transient mode to manage building and running operations in CSharp Projects
-#+begin_src emacs-lisp
-(use-package sharper
-  :bind
-  ("C-c n" . sharper-main-transient))
-#+end_src
 ** HTML
 *** Web Mode
 #+begin_src emacs-lisp
@@ -2335,11 +2301,6 @@ Transient mode to manage building and running operations in CSharp Projects
     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 #+END_SRC
 ** Ruby
-*** Yard
-#+BEGIN_SRC emacs-lisp
-  (use-package yard-mode
-    :hook (ruby-mode . yard-mode))
-#+END_SRC
 *** rbenv
 #+BEGIN_SRC emacs-lisp
   (use-package rbenv
@@ -2351,9 +2312,7 @@ Transient mode to manage building and running operations in CSharp Projects
 #+BEGIN_SRC emacs-lisp
   (use-package robe
     :commands (robe-start robe-mode)
-    :hook (enh-ruby-mode . robe-mode)
-    :config
-    (push 'company-robe company-backends))
+    :hook (enh-ruby-mode . robe-mode))
 #+END_SRC
 
 *** inf-ruby
@@ -2403,17 +2362,6 @@ Transient mode to manage building and running operations in CSharp Projects
       :commands (flycheck-rust-setup)
       :hook rust-mode)
 #+END_SRC
-*** Eglot
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package eglot
-    :bind (("M-." . xref-find-definitions)
-           ("M-," . xref-pop-marker-stack))
-    :hook ((rust-mode) . eglot-ensure)
-    :config
-    ;; Fix column calculation when ligatures are used
-    (setq eglot-current-column-function 'eglot-lsp-abiding-column)
-    (general-define-key :keymap 'eglot-mode-map "C-h ." 'eglot-help-at-point))
-#+END_SRC
 *** Cargo
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package cargo)
@@ -2426,7 +2374,6 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
     :mode ("\\.rs\\'" . rustic-mode)
     :config
     (progn
-      ;; (setq rustic-lsp-setup-p nil)
       (setq rustic-lsp-server 'rust-analyzer)
       (setq rustic-format-on-save nil)
       (setq rustic-indent-offset 2)
@@ -2494,19 +2441,6 @@ Live preview of MarkDown
   (use-package flymd
    :commands (flymd-flyit))
 #+END_SRC
-** Lua
-*** lua-mode
-#+BEGIN_SRC emacs-lisp
-  (use-package lua-mode
-    :mode ("\\.lua\\'")
-    :config
-    (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
-#+END_SRC
-*** company-lua
-Get limited autocompletion in Lua
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package company-lua)
-#+END_SRC
 ** Powershell
 #+BEGIN_SRC emacs-lisp
   (use-package powershell
@@ -2518,21 +2452,6 @@ Get limited autocompletion in Lua
   (use-package terraform-mode
   :mode "\\.tf\\'" )
 #+END_SRC
-** Python
-#+begin_src emacs-lisp
-(use-package python-mode)
-#+end_src
-
-*** lsp
-#+begin_src emacs-lisp
-(use-package lsp-python-ms
-  :ensure t
-  :init (setq lsp-python-ms-auto-install-server t)
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-python-ms)
-                          (lsp)))) 
-#+end_src
-
 ** YAML
 #+BEGIN_SRC emacs-lisp
   (use-package yaml-mode
@@ -2549,7 +2468,6 @@ Get limited autocompletion in Lua
 #+BEGIN_SRC emacs-lisp
   ;; (use-package sqlint)
 #+END_SRC
-*** Completion
 ** Text modes
 #+BEGIN_SRC emacs-lisp
   (use-package rst
@@ -2579,45 +2497,7 @@ Get limited autocompletion in Lua
                             #'alert-burnt-toast-notify)
         (setq alert-default-style 'burnt-toast))
 #+END_SRC
-
-** Slack
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package slack
-    :commands (slack-start slack-register-team)
-    :init
-    (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
-    (setq slack-prefer-current-team t)
-    :config
-    ;; (slack-register-team
-    ;;  :name "personal"
-    ;;  :default t
-    ;;  :client-id (getenv "SLACK_CLIENT_ID")
-    ;;  :client-secret (getenv "SLACK_CLIENT_SECRET")
-    ;;  :token (getenv "SLACK_TOKEN")
-    ;;  :subscribed-channels '(general))
-    (slack-register-team
-       :name "work"
-       :default nil
-       :client-id (getenv "SLACK_CLIENT_ID")
-       :client-secret (getenv "SLACK_CLIENT_SECRET")
-       :token (getenv "TIDAL_SLACK_TOKEN")
-       :subscribed-channels '(general)))
-       
-#+END_SRC
 * Misc
-** Dashboard
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package dashboard
-    :defer 1
-    :init
-    (dashboard-setup-startup-hook)
-    :config
-    (setq dashboard-center-content t
-          dashboard-startup-banner 'logo
-          dashboard-banner-logo-title "The One True Editor, Emacs"       
-          dashboard-items '((projects . 5))))
-#+END_SRC
-
 ** Fuzzy matching
 #+BEGIN_SRC emacs-lisp
   (use-package flx)
@@ -2633,10 +2513,6 @@ Get limited autocompletion in Lua
             "Decode and browse a UN*X man page." t)
           (autoload 'woman-find-file "woman"
             "Find, decode and browse a specific UN*X man-page file." t)))
-#+END_SRC
-** ido-completing-read
-#+BEGIN_SRC emacs-lisp
-  (use-package ido-completing-read+)
 #+END_SRC
 ** Asynchronous framework
 #+BEGIN_SRC emacs-lisp
@@ -2703,36 +2579,6 @@ DELTA should be a multiple of 10, in the units used by the
 
 (global-set-key (kbd "C-M-=") 'increase-default-font-height)
 (global-set-key (kbd "C-M--") 'decrease-default-font-height)
-#+END_SRC
-** Scroll the buffer
-The exact same functionality VIM has for C-e and C-y in normal mode:
-[[https://github.com/anler/.emacs.d-literate/blob/master/README.org#scroll-the-buffer][stolen from here]]
-#+BEGIN_SRC emacs-lisp :tangle no
-(defun scroll-up-one-line-command ()
-  "Scroll text of selected window upward 1 line."
-  (interactive)
-  (scroll-up-command 1)
-  (next-line))
-
-(defun scroll-down-one-line-command ()
-  "Scroll text of selected window downward 1 line."
-  (interactive)
-  (scroll-down-command 1)
-  (previous-line))
-#+END_SRC
-
-And the same but without leaving the current window:
-#+BEGIN_SRC emacs-lisp :tangle no
-
-  (defun scroll-up-one-line-other-window ()
-    "Scroll other window one line up"
-    (interactive)
-    (scroll-other-window 1))
-
-  (defun scroll-down-one-line-other-window ()
-    "Scroll other window one line down"
-    (interactive)
-    (scroll-other-window -1))
 #+END_SRC
 ** Run Current File
 #+BEGIN_SRC emacs-lisp
@@ -2816,54 +2662,6 @@ And the same but without leaving the current window:
     (untabify (region-beginning) (region-end))
     (keyboard-quit))
 #+END_SRC
-
-** Find unused functions in JavaScript
-#+BEGIN_SRC emacs-lisp
-  (defun js2-unused--find-definitions ()
-    ;; Reset the value before visiting the AST
-    (setq js2-unused-definitions nil)
-    (js2-visit-ast js2-mode-ast
-                   #'js2-unused-visitor))
-  (defun js2-unused--unqualified-name (name)
-    "Return the local name of NAME.
-  foo.bar.baz => baz"
-    (save-match-data
-      (if (string-match "\\.\\([^.]+\\)$" name)
-          (match-string 1 name)
-        name)))
-
-  (defun js2-unused-visitor (node end-p)
-    "Add NODE's name to `js2-unused-definitions` if it is a function."
-    (unless end-p
-      (cond
-       ;; assignment to a function
-       ((and (js2-assign-node-p node)
-             (js2-function-node-p (js2-assign-node-right node)))
-        (push (js2-node-string (js2-assign-node-left node)) js2-unused-definitions))
-       ;; function declaration (skipping anonymous ones)
-       ((js2-function-node-p node)
-        (if-let* ((name (js2-function-name node)))
-            (push name js2-unused-definitions))))
-      t))
-  (defun js2-unused-functions ()
-    (interactive)
-    ;; Make sure that JS2 has finished parsing the buffer
-    (js2-mode-wait-for-parse
-     (lambda ()
-       ;; Walk the AST tree to find all function definitions
-       (js2-unused--find-definitions)
-       ;; Use xref-js2 to filter the ones that are not referenced anywhere
-       (let ((unused (seq-filter (lambda (name)
-                                   (null (xref-js2--find-references
-                                          (js2-unused--unqualified-name name))))
-                                 js2-unused-definitions)))
-         ;; If there are unreferenced function, display a message
-         (apply #'message (if unused
-                              `("Unused functions in %s: %s "
-                                ,(file-name-nondirectory buffer-file-name)
-                                ,(mapconcat #'identity unused " "))
-                            '("No unused function found")))))))
-#+END_SRC
 ** Enable Paredit or Parinfer
 #+BEGIN_SRC emacs-lisp
   (defun enable-paredit ()
@@ -2897,44 +2695,6 @@ And the same but without leaving the current window:
           (rename-buffer new-name)
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil))))))
-#+END_SRC
-
-** Post from any buffer to Slack with Emacs
-
-#+BEGIN_SRC emacs-lisp
-  (defun jb/slack-quote-region ()
-      (with-temp-buffer
-        (insert region)
-        (goto-char 1)
-        (while (> (point-max) (point))
-          (beginning-of-line)
-          (insert "> ")
-          (forward-line 1))
-        (buffer-string)))
-
-  (defun jb/decorate-text (text)
-    (let* ((decorators '(("None" . (lambda (text) text))
-                         ("Code"  . (lambda (text) (concat "```" text "```")))
-                         ("Quote"  . (lambda (text) (jb/slack-quote-region text)))))
-           (decoration (completing-read "Select decoration: "
-                                        decorators
-                                        nil
-                                        t)))
-      (funcall (cdr (assoc decoration decorators)) text)))
-
-  (defun jb/send-region-to-slack ()
-    (interactive)
-    (let* ((team (slack-team-select))
-           (room (slack-room-select
-                  (cl-loop for team in (list team)
-                           append (append (slack-team-ims team)
-                                          (slack-team-groups team)
-                                          (slack-team-channels team)))
-                  team)))
-      (slack-message-send-internal (jb/decorate-text (filter-buffer-substring
-                                                      (region-beginning) (region-end)))
-                                   room
-                                   team)))
 #+END_SRC
 ** Stats
 #+BEGIN_SRC emacs-lisp
@@ -2971,7 +2731,6 @@ And the same but without leaving the current window:
 #+BEGIN_SRC emacs-lisp
 (setq file-name-handler-alist doom--file-name-handler-alist)
 #+END_SRC
-
 ** Playground
 Pomodoro timer
 #+BEGIN_SRC elisp :tangle no
