@@ -902,7 +902,6 @@ See URL `http://stylelint.io/'."
   ("M-y" . consult-yank-pop)                ;; orig. yank-pop
   ("<help> a" . consult-apropos)            ;; orig. apropos-command
   ;; M-g bindings (goto-map)
-  ("M-g e" . consult-compile-error)
   ("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
   ("M-g g" . consult-goto-line)             ;; orig. goto-line
   ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
@@ -912,11 +911,7 @@ See URL `http://stylelint.io/'."
   ("M-s D" . consult-locate)
   ("M-s r" . consult-ripgrep)
 
-  ("M-s u" . consult-focus-lines)
-  ;; Minibuffer history
-  :map minibuffer-local-map
-  ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-  ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+  ("M-s u" . consult-focus-lines))
 
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
@@ -978,7 +973,6 @@ See URL `http://stylelint.io/'."
                  (window-parameters (mode-line-format . none)))))
 
 (use-package embark-consult
-  :ensure t
   :after (embark consult)
   :demand t ; only necessary if you have the hook below
   ;; if you want to have consult previews as you move around an
@@ -994,13 +988,12 @@ See URL `http://stylelint.io/'."
   (setq corfu-auto 't)
   (setq corfu-auto-prefix 2)
   (setq corfu-min-width 40)
+  (setq corfu-min-height 20)
   (setq corfu-scroll-margin 4)
-
   ;; You can also enable Corfu more generally for every minibuffer, as
   ;; long as no other completion UI is active. If you use Mct or
   ;; Vertico as your main minibuffer completion UI, the following
   ;; snippet should yield the desired result.
-
   (defun corfu-enable-always-in-minibuffer ()
     "Enable Corfu in the minibuffer if Vertico/Mct are not active."
     (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
@@ -1009,14 +1002,29 @@ See URL `http://stylelint.io/'."
       (corfu-mode 1)))
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 
+(use-package cape
+  :init
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file))
+
 (use-package kind-icon
+  :init
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
   :config
   (setq kind-icon-use-icons t)
   (setq kind-icon-default-face 'corfu-default) ; Have background color be the same as `corfu' face background
-  (setq kind-icon-blend-background nil)  ; Use midpoint color between foreground and background colors ("blended")?
-  (setq kind-icon-blend-frac 0.08)
-  :init
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+  (setq kind-icon-blend-background nil)
+  (setq kind-icon-blend-frac 0.08))
+
+(use-package corfu-doc
+  :after corfu
+  :hook (corfu-mode . corfu-doc-mode)
+  :config
+  (setq corfu-doc-delay 0.5)
+  (setq corfu-doc-max-width 70)
+  (setq corfu-doc-max-height 20)
+  (setq corfu-echo-documentation nil))
 
 (use-package yasnippet
  :hook (prog-mode . yas-minor-mode))

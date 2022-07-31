@@ -1611,7 +1611,6 @@ Save minibuffer history for better integration with orderless
     ("M-y" . consult-yank-pop)                ;; orig. yank-pop
     ("<help> a" . consult-apropos)            ;; orig. apropos-command
     ;; M-g bindings (goto-map)
-    ("M-g e" . consult-compile-error)
     ("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
     ("M-g g" . consult-goto-line)             ;; orig. goto-line
     ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
@@ -1621,11 +1620,7 @@ Save minibuffer history for better integration with orderless
     ("M-s D" . consult-locate)
     ("M-s r" . consult-ripgrep)
 
-    ("M-s u" . consult-focus-lines)
-    ;; Minibuffer history
-    :map minibuffer-local-map
-    ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-    ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+    ("M-s u" . consult-focus-lines))
 
     ;; Enable automatic preview at point in the *Completions* buffer. This is
     ;; relevant when you use the default completion UI.
@@ -1668,6 +1663,9 @@ Save minibuffer history for better integration with orderless
      (setq consult-project-function (lambda (_) (projectile-project-root))))
 #+end_src
 
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25317 53430 436680 54000) :init (25317 53430 436238 889000) :init-secs (0 0 150 170000) :use-package-secs (0 0 706 462000) :config (25317 53430 436220 816000) :config-secs (0 0 66 662000)))
+
 ***** Embark
 #+begin_src emacs-lisp
 (use-package embark
@@ -1693,7 +1691,6 @@ Save minibuffer history for better integration with orderless
 Consult users will also want the embark-consult package.
 #+begin_src emacs-lisp
 (use-package embark-consult
-  :ensure t
   :after (embark consult)
   :demand t ; only necessary if you have the hook below
   ;; if you want to have consult previews as you move around an
@@ -1911,14 +1908,6 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
       ("<f2> u" . counsel-unicode-char)
       ("C-c k" . counsel-rg)))
 #+END_SRC
-**** Counsel-projectile
-Normally preface should automatically be set by the package, but recently (Mon Aug 13, 2018), I've found projectile has changed their key mapping (https://github.com/bbatsov/projectile/commit/9c6e9813abec6e067c659e9107bf356086a95e04), and I need to handle this myself or until counsel projectile handles this for me ala https://github.com/ericdanan/counsel-projectile/pull/92.
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package counsel-projectile
-    :after projectile
-    :preface (setq projectile-keymap-prefix (kbd "C-c p"))
-    :commands (counsel-projectile-switch-project counsel-projectile-find-file counsel-projectile-find-dir))
-#+END_SRC
 **** swiper
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package swiper :tangle no
@@ -1936,13 +1925,12 @@ Normally preface should automatically be set by the package, but recently (Mon A
     (setq corfu-auto 't)
     (setq corfu-auto-prefix 2)
     (setq corfu-min-width 40)
+    (setq corfu-min-height 20)
     (setq corfu-scroll-margin 4)
-
     ;; You can also enable Corfu more generally for every minibuffer, as
     ;; long as no other completion UI is active. If you use Mct or
     ;; Vertico as your main minibuffer completion UI, the following
     ;; snippet should yield the desired result.
-
     (defun corfu-enable-always-in-minibuffer ()
       "Enable Corfu in the minibuffer if Vertico/Mct are not active."
       (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
@@ -1951,16 +1939,39 @@ Normally preface should automatically be set by the package, but recently (Mon A
         (corfu-mode 1)))
     (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 #+end_src
+
+**** Cape
+#+begin_src emacs-lisp
+(use-package cape
+  :init
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file))
+#+end_src
+
 **** Kind Icon
+Things are always better when they are prettier, let's add icons to our in buffer completions and make them pretty. Nothing requires kind-icon, so nothing really brings it into scope. So, we can't just stuff everything into config. We need a way to trigger calling, and loading, kind-icons. So, we add kind-icon to corfu's formatters within the init block.
 #+begin_src emacs-lisp
   (use-package kind-icon
+    :init
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
     :config
     (setq kind-icon-use-icons t)
     (setq kind-icon-default-face 'corfu-default) ; Have background color be the same as `corfu' face background
-    (setq kind-icon-blend-background nil)  ; Use midpoint color between foreground and background colors ("blended")?
-    (setq kind-icon-blend-frac 0.08)
-    :init
-    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+    (setq kind-icon-blend-background nil)
+    (setq kind-icon-blend-frac 0.08))
+#+end_src
+**** corfu-Doc
+Let's add some documentation. No, we don't need to write any, we just want to show more documentation when we're using auto complete. It's also important that when we're using document corfu-doc that we don't use the natural corfu documentation method that echos in the minibuffer.
+#+begin_src emacs-lisp
+(use-package corfu-doc
+  :after corfu
+  :hook (corfu-mode . corfu-doc-mode)
+  :config
+  (setq corfu-doc-delay 0.5)
+  (setq corfu-doc-max-width 70)
+  (setq corfu-doc-max-height 20)
+  (setq corfu-echo-documentation nil))
 #+end_src
 
 *** Company
@@ -1977,6 +1988,7 @@ Normally preface should automatically be set by the package, but recently (Mon A
     ;;(add-to-list 'company-backends 'company-emoji)
     )
 #+END_SRC
+http://www.google.com
 ** Yas Snippets
 #+begin_src elisp
   (use-package yasnippet
