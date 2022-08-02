@@ -414,8 +414,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (transient-insert-suffix 'magit-pull "-r" '("-f" "Overwrite local branch" "--force"))
     ;; magit settings
     (setq
-     ;; use ido to look for branches
-     magit-completing-read-function  'ivy-completing-read
      ;; don't put "origin-" in front of new branch names by default
      magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
      ;; open magit status in same window as current buffer
@@ -499,7 +497,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package doom-themes 
   :init
-  (load-theme 'doom-dracula t))
+  (load-theme 'doom-outrun-electric t))
 
 (use-package all-the-icons)
 
@@ -508,7 +506,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (progn
     (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-    (setq doom-modeline-github nil)
+    ;;(setq doom-modeline-github nil)
     (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
                                                                  :inherit 'mode-line))))
                       '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
@@ -550,12 +548,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (("C-c f" . dirvish)
    ;; Dirvish has all the keybindings (except `dired-summary') in `dired-mode-map' already
    :map dirvish-mode-map
-   ;; ("h" . dired-up-directory)
-   ;; ("j" . dired-next-line)
-   ;; ("k" . dired-previous-line)
-   ;; ("l" . dired-find-file)
-   ;; ("i" . wdired-change-to-wdired-mode)
-   ;; ("." . dired-omit-mode)
    ("b"   . dirvish-bookmark-jump)
    ("f"   . dirvish-file-info-menu)
    ("y"   . dirvish-yank-menu)
@@ -832,32 +824,133 @@ See URL `http://stylelint.io/'."
 (use-package vertico
   :init
   (vertico-mode)
+  :bind (:map vertico-map
+              ("<escape>" . #'minibuffer-keyboard-quit))
   :config
   (vertico-multiform-mode)
+
+  (defun +completion-category-highlight-files (cand)
+    (let ((len (length cand1)))
+      (when (and (> len 0)
+                 (eq (aref cand (1- len)) ?/))
+        (add-face-text-property 0 len 'dired-directory 'append cand)))
+    cand)
+
+  (defun +completion-category-highlight-commands (cand)
+    (let ((len (length cand)))
+      (when (and (> len 0)
+                 (with-current-buffer (nth 1 (buffer-list)) ; get buffer before minibuffer
+                   (or (eq major-mode (intern cand)) ; check major mode
+                       (seq-contains-p local-minor-modes (intern cand))))) ; check minor modes
+        (add-face-text-property 0 len '(:foreground "red") 'append cand))) ; choose any color or face you like
+    cand)
+  (defvar +completion-category-hl-func-overrides
+    `((file . ,#'+completion-category-highlight-files)
+      (command . ,#'+completion-category-highlight-commands)
+      (recentf . ,#'+completion-category-highlight-files))
+    "Alist mapping category to highlight functions.")
+
+  (advice-add #'vertico--arrange-candidates :around
+              (defun vertico-format-candidates+ (func)
+                (let ((hl-func (or (alist-get (vertico--metadata-get 'category)
+                                              +completion-category-hl-func-overrides)
+                                   #'identity)))
+                  (cl-letf* (((symbol-function 'actual-vertico-format-candidate)
+                              (symbol-function #'vertico--format-candidate))
+                             ((symbol-function #'vertico--format-candidate)
+                              (lambda (cand &rest args)
+                                (apply #'actual-vertico-format-candidate
+                                       (funcall hl-func cand) args))))
+                    (funcall func)))))
+
+      ;; Sort directories before files
+  (defun sort-directories-first (files)
+    (setq files (vertico-sort-history-length-alpha files))
+    (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
+           (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
+
   (setq vertico-multiform-commands
-      '((describe-symbol (vertico-sort-function . vertico-sort-alpha))))
+        '((describe-symbol (vertico-sort-function . vertico-sort-alpha))))
 
-(setq vertico-multiform-categories
-      '((symbol (vertico-sort-function . vertico-sort-alpha))
-        (file (vertico-sort-function . sort-directories-first))))
-
-;; Sort directories before files
-(defun sort-directories-first (files)
-  (setq files (vertico-sort-history-length-alpha files))
-  (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
-         (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
-  :bind (:map vertico-map
-         ("<escape>" . #'minibuffer-keyboard-quit)))
+  (setq vertico-multiform-categories
+        '((symbol (vertico-sort-function . vertico-sort-alpha))
+          (file (vertico-sort-function . sort-directories-first))))
+  ;;(advice-add #'vertico--format-candidate :filter-args #'my/vertico-truncate-candidates)
+  )
 
 (use-package savehist
   :ensure nil
   :init
   (savehist-mode))
 
+;; ((ivy-rich-buffer-icon)
+;; (ivy-rich-candidate (:width 30))
+;; (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+;; (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
+;; (ivy-rich-switch-buffer-project (:width 15 :face success))
+;; (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
+(defun ivy-rich-switch-buffer-user-buffer-p (buffer)
+  "Check whether BUFFER-NAME is a user buffer."
+  (let ((buffer-name
+         (if (stringp buffer)
+             buffer
+           (buffer-name buffer))))
+    (not (string-match "^\\*" buffer-name))))
+
+(defun ivy-rich--local-values (buffer args)
+  (let ((buffer (get-buffer buffer)))
+    (if (listp args)
+        (mapcar #'(lambda (x) (buffer-local-value x buffer)) args)
+      (buffer-local-value args buffer))))
+
+(defun ivy-rich-switch-buffer-indicators (candidate)
+  (let* ((buffer (get-buffer candidate))
+         (process-p (get-buffer-process buffer)))
+    (cl-destructuring-bind
+        (filename directory read-only)
+        (ivy-rich--local-values candidate '(buffer-file-name default-directory buffer-read-only))
+      (let ((modified (if (and (buffer-modified-p buffer)
+                               (null process-p)
+                               (ivy-rich-switch-buffer-user-buffer-p candidate))
+                          "*"
+                        ""))
+            (readonly (if (and read-only (ivy-rich-switch-buffer-user-buffer-p candidate))
+                          "!"
+                        ""))
+            (process (if process-p
+                         "&"
+                       ""))
+            (remote (if (file-remote-p (or filename directory))
+                        "@"
+                      "")))
+        (format "%s%s%s%s" remote readonly modified process)))))
+
+(defun ivy-rich-switch-buffer-shorten-path (file len)
+  "Shorten the path of FILE until the length of FILE <= LEN.
+For example, a path /a/b/c/d/e/f.el will be shortened to
+   /a/…/c/d/e/f.el
+or /a/…/d/e/f.el
+or /a/…/e/f.el
+or /a/…/f.el."
+  (if (> (length file) len)
+      (let ((new-file (replace-regexp-in-string "/?.+?/\\(\\(…/\\)?.+?\\)/.*" "…" file nil nil 1)))
+        (if (string= new-file file)
+            file
+          (ivy-rich-switch-buffer-shorten-path new-file len)))
+    file))
+
 (use-package marginalia
   :config
   (setq marginalia-max-relative-age 0)
   (setq marginalia-align 'left)
+  (defun marginalia-annotate-buffer (cand)
+    "Annotate buffer CAND with modification status, file name and major mode."
+    (when-let (buffer (get-buffer cand))
+      (marginalia--fields
+       ((format "%s" (file-size-human-readable (buffer-size buffer))) :face 'marginalia-number :width 7)
+       ((ivy-rich-switch-buffer-indicators buffer) :face 'error)
+       ((ivy-rich-switch-buffer-shorten-path (marginalia--buffer-file buffer) 30)
+        :face 'marginalia-file-name))))
   :bind
   (("M-A" . marginalia-cycle))
   :init
@@ -902,7 +995,6 @@ See URL `http://stylelint.io/'."
   ("M-y" . consult-yank-pop)                ;; orig. yank-pop
   ("<help> a" . consult-apropos)            ;; orig. apropos-command
   ;; M-g bindings (goto-map)
-  ("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
   ("M-g g" . consult-goto-line)             ;; orig. goto-line
   ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
   ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
@@ -917,9 +1009,7 @@ See URL `http://stylelint.io/'."
   ;; relevant when you use the default completion UI.
   :hook (completion-list-mode . consult-preview-at-point-mode)
 
-  ;; The :init configuration is always executed (Not lazy)
   :init
-
   ;; Optionally configure the register formatting. This improves the register
   ;; preview for `consult-register', `consult-register-load',
   ;; `consult-register-store' and the Emacs built-ins.
@@ -989,7 +1079,7 @@ See URL `http://stylelint.io/'."
   (setq corfu-auto-prefix 2)
   (setq corfu-min-width 40)
   (setq corfu-min-height 20)
-  (setq corfu-scroll-margin 4)
+
   ;; You can also enable Corfu more generally for every minibuffer, as
   ;; long as no other completion UI is active. If you use Mct or
   ;; Vertico as your main minibuffer completion UI, the following
@@ -1012,10 +1102,8 @@ See URL `http://stylelint.io/'."
   :init
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
   :config
-  (setq kind-icon-use-icons t)
-  (setq kind-icon-default-face 'corfu-default) ; Have background color be the same as `corfu' face background
-  (setq kind-icon-blend-background nil)
-  (setq kind-icon-blend-frac 0.08))
+  (setq kind-icon-default-face 'corfu-default ; Have background color be the same as `corfu' face background
+        kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 
 (use-package corfu-doc
   :after corfu

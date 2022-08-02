@@ -749,8 +749,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
       (transient-insert-suffix 'magit-pull "-r" '("-f" "Overwrite local branch" "--force"))
       ;; magit settings
       (setq
-       ;; use ido to look for branches
-       magit-completing-read-function  'ivy-completing-read
        ;; don't put "origin-" in front of new branch names by default
        magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
        ;; open magit status in same window as current buffer
@@ -1024,7 +1022,7 @@ Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes 
     :init
-    (load-theme 'doom-dracula t))
+    (load-theme 'doom-outrun-electric t))
 #+END_SRC
 ** Modeline
 *** all-the-icons
@@ -1038,7 +1036,7 @@ Let's use Doom's version instead
     :init
     (progn
       (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-      (setq doom-modeline-github nil)
+      ;;(setq doom-modeline-github nil)
       (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
                                                                    :inherit 'mode-line))))
                         '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
@@ -1086,64 +1084,58 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 
 ** Dirvish
 #+begin_src emacs-lisp
-(use-package dirvish
-  :init
-  (dirvish-override-dired-mode)
-  :custom
-  ;; Go back home? Just press `bh'
-  (dirvish-bookmark-entries
-   '(("h" "~/" "Home")
-     ("m" "~/dev/tidal/application-inventory/" "MMP")
-     ("t" "~/dev/tidal/tidal-wave" "Tidal Wave")))
-  ;; (dirvish-header-line-format '(:left (path) :right (free-space)))
-  (dirvish-mode-line-format ; it's ok to place string inside
-   '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
-  ;; Don't worry, Dirvish is still performant even you enable all these attributes
-  (dirvish-attributes '(all-the-icons file-size collapse subtree-state vc-state git-msg))
-  ;; Maybe the icons are too big to your eyes
-  ;; (dirvish-all-the-icons-height 0.8)
-  ;; In case you want the details at startup like `dired'
-  ;; (dirvish-hide-details nil)
-  :config
-  (dirvish-peek-mode)
-  ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
-  (setq dired-dwim-target t)
-  (setq delete-by-moving-to-trash t)
-  ;; Enable mouse drag-and-drop files to other applications
-  (setq dired-mouse-drag-files t)                   ; added in Emacs 29
-  (setq mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
-  ;; Make sure to use the long name of flags when exists
-  ;; eg. use "--almost-all" instead of "-A"
-  ;; Otherwise some commands won't work properly
-  (setq dired-listing-switches
-        "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
-  :bind
-  ;; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
-  (("C-c f" . dirvish)
-   ;; Dirvish has all the keybindings (except `dired-summary') in `dired-mode-map' already
-   :map dirvish-mode-map
-   ;; ("h" . dired-up-directory)
-   ;; ("j" . dired-next-line)
-   ;; ("k" . dired-previous-line)
-   ;; ("l" . dired-find-file)
-   ;; ("i" . wdired-change-to-wdired-mode)
-   ;; ("." . dired-omit-mode)
-   ("b"   . dirvish-bookmark-jump)
-   ("f"   . dirvish-file-info-menu)
-   ("y"   . dirvish-yank-menu)
-   ("N"   . dirvish-narrow)
-   ("^"   . dirvish-history-last)
-   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
-   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
-   ("TAB" . dirvish-subtree-toggle)
-   ("M-n" . dirvish-history-go-forward)
-   ("M-p" . dirvish-history-go-backward)
-   ("M-l" . dirvish-ls-switches-menu)
-   ("M-m" . dirvish-mark-menu)
-   ("M-f" . dirvish-toggle-fullscreen)
-   ("M-s" . dirvish-setup-menu)
-   ("M-e" . dirvish-emerge-menu)
-   ("M-j" . dirvish-fd-jump)))
+  (use-package dirvish
+    :init
+    (dirvish-override-dired-mode)
+    :custom
+    ;; Go back home? Just press `bh'
+    (dirvish-bookmark-entries
+     '(("h" "~/" "Home")
+       ("m" "~/dev/tidal/application-inventory/" "MMP")
+       ("t" "~/dev/tidal/tidal-wave" "Tidal Wave")))
+    ;; (dirvish-header-line-format '(:left (path) :right (free-space)))
+    (dirvish-mode-line-format ; it's ok to place string inside
+     '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
+    ;; Don't worry, Dirvish is still performant even you enable all these attributes
+    (dirvish-attributes '(all-the-icons file-size collapse subtree-state vc-state git-msg))
+    ;; Maybe the icons are too big to your eyes
+    ;; (dirvish-all-the-icons-height 0.8)
+    ;; In case you want the details at startup like `dired'
+    ;; (dirvish-hide-details nil)
+    :config
+    (dirvish-peek-mode)
+    ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
+    (setq dired-dwim-target t)
+    (setq delete-by-moving-to-trash t)
+    ;; Enable mouse drag-and-drop files to other applications
+    (setq dired-mouse-drag-files t)                   ; added in Emacs 29
+    (setq mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
+    ;; Make sure to use the long name of flags when exists
+    ;; eg. use "--almost-all" instead of "-A"
+    ;; Otherwise some commands won't work properly
+    (setq dired-listing-switches
+          "-l --almost-all --human-readable --time-style=long-iso --group-directories-first --no-group")
+    :bind
+    ;; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+    (("C-c f" . dirvish)
+     ;; Dirvish has all the keybindings (except `dired-summary') in `dired-mode-map' already
+     :map dirvish-mode-map
+     ("b"   . dirvish-bookmark-jump)
+     ("f"   . dirvish-file-info-menu)
+     ("y"   . dirvish-yank-menu)
+     ("N"   . dirvish-narrow)
+     ("^"   . dirvish-history-last)
+     ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+     ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+     ("TAB" . dirvish-subtree-toggle)
+     ("M-n" . dirvish-history-go-forward)
+     ("M-p" . dirvish-history-go-backward)
+     ("M-l" . dirvish-ls-switches-menu)
+     ("M-m" . dirvish-mark-menu)
+     ("M-f" . dirvish-toggle-fullscreen)
+     ("M-s" . dirvish-setup-menu)
+     ("M-e" . dirvish-emerge-menu)
+     ("M-j" . dirvish-fd-jump)))
 #+end_src
 
 ** ibuffer
@@ -1522,27 +1514,80 @@ Load this before we load Flycheck
 * Completion
 ** Minibuffer
 *** Vertico
+#+begin_src emacs-lisp :tangle no
+  (defun my/vertico-truncate-candidates (args)
+    (if-let ((arg (car args))
+             (type (get-text-property 0 'multi-category arg))
+             ((eq (car-safe type) 'file))
+             (w 30)
+             (l (length arg))
+             ((> l w)))
+        (setcar args (ivy-rich-switch-buffer-shorten-path arg 30)))
+    args)
+#+end_src
+
 #+begin_src emacs-lisp
   (use-package vertico
     :init
     (vertico-mode)
+    :bind (:map vertico-map
+                ("<escape>" . #'minibuffer-keyboard-quit))
     :config
     (vertico-multiform-mode)
+
+    (defun +completion-category-highlight-files (cand)
+      (let ((len (length cand1)))
+        (when (and (> len 0)
+                   (eq (aref cand (1- len)) ?/))
+          (add-face-text-property 0 len 'dired-directory 'append cand)))
+      cand)
+
+    (defun +completion-category-highlight-commands (cand)
+      (let ((len (length cand)))
+        (when (and (> len 0)
+                   (with-current-buffer (nth 1 (buffer-list)) ; get buffer before minibuffer
+                     (or (eq major-mode (intern cand)) ; check major mode
+                         (seq-contains-p local-minor-modes (intern cand))))) ; check minor modes
+          (add-face-text-property 0 len '(:foreground "red") 'append cand))) ; choose any color or face you like
+      cand)
+    (defvar +completion-category-hl-func-overrides
+      `((file . ,#'+completion-category-highlight-files)
+        (command . ,#'+completion-category-highlight-commands)
+        (recentf . ,#'+completion-category-highlight-files))
+      "Alist mapping category to highlight functions.")
+
+    (advice-add #'vertico--arrange-candidates :around
+                (defun vertico-format-candidates+ (func)
+                  (let ((hl-func (or (alist-get (vertico--metadata-get 'category)
+                                                +completion-category-hl-func-overrides)
+                                     #'identity)))
+                    (cl-letf* (((symbol-function 'actual-vertico-format-candidate)
+                                (symbol-function #'vertico--format-candidate))
+                               ((symbol-function #'vertico--format-candidate)
+                                (lambda (cand &rest args)
+                                  (apply #'actual-vertico-format-candidate
+                                         (funcall hl-func cand) args))))
+                      (funcall func)))))
+
+        ;; Sort directories before files
+    (defun sort-directories-first (files)
+      (setq files (vertico-sort-history-length-alpha files))
+      (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
+             (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
+
     (setq vertico-multiform-commands
-        '((describe-symbol (vertico-sort-function . vertico-sort-alpha))))
+          '((describe-symbol (vertico-sort-function . vertico-sort-alpha))))
 
-  (setq vertico-multiform-categories
-        '((symbol (vertico-sort-function . vertico-sort-alpha))
-          (file (vertico-sort-function . sort-directories-first))))
-
-  ;; Sort directories before files
-  (defun sort-directories-first (files)
-    (setq files (vertico-sort-history-length-alpha files))
-    (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
-           (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
-    :bind (:map vertico-map
-           ("<escape>" . #'minibuffer-keyboard-quit)))
+    (setq vertico-multiform-categories
+          '((symbol (vertico-sort-function . vertico-sort-alpha))
+            (file (vertico-sort-function . sort-directories-first))))
+    ;;(advice-add #'vertico--format-candidate :filter-args #'my/vertico-truncate-candidates)
+    )
 #+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25320 27551 331817 339000) :init (25320 27551 331731 298000) :config (25320 27551 331681 875000) :config-secs (0 0 100 169000) :init-secs (0 0 312 728000) :use-package-secs (0 0 467 583000)))
+
 ***** savehist
 Save minibuffer history for better integration with orderless
 #+begin_src emacs-lisp
@@ -1553,11 +1598,78 @@ Save minibuffer history for better integration with orderless
 #+end_src
 
 ***** Marginalia
+Customizations
+#+begin_src emacs-lisp
+  ;; ((ivy-rich-buffer-icon)
+  ;; (ivy-rich-candidate (:width 30))
+  ;; (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+  ;; (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
+  ;; (ivy-rich-switch-buffer-project (:width 15 :face success))
+  ;; (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
+  (defun ivy-rich-switch-buffer-user-buffer-p (buffer)
+    "Check whether BUFFER-NAME is a user buffer."
+    (let ((buffer-name
+           (if (stringp buffer)
+               buffer
+             (buffer-name buffer))))
+      (not (string-match "^\\*" buffer-name))))
+
+  (defun ivy-rich--local-values (buffer args)
+    (let ((buffer (get-buffer buffer)))
+      (if (listp args)
+          (mapcar #'(lambda (x) (buffer-local-value x buffer)) args)
+        (buffer-local-value args buffer))))
+
+  (defun ivy-rich-switch-buffer-indicators (candidate)
+    (let* ((buffer (get-buffer candidate))
+           (process-p (get-buffer-process buffer)))
+      (cl-destructuring-bind
+          (filename directory read-only)
+          (ivy-rich--local-values candidate '(buffer-file-name default-directory buffer-read-only))
+        (let ((modified (if (and (buffer-modified-p buffer)
+                                 (null process-p)
+                                 (ivy-rich-switch-buffer-user-buffer-p candidate))
+                            "*"
+                          ""))
+              (readonly (if (and read-only (ivy-rich-switch-buffer-user-buffer-p candidate))
+                            "!"
+                          ""))
+              (process (if process-p
+                           "&"
+                         ""))
+              (remote (if (file-remote-p (or filename directory))
+                          "@"
+                        "")))
+          (format "%s%s%s%s" remote readonly modified process)))))
+
+  (defun ivy-rich-switch-buffer-shorten-path (file len)
+    "Shorten the path of FILE until the length of FILE <= LEN.
+  For example, a path /a/b/c/d/e/f.el will be shortened to
+     /a/…/c/d/e/f.el
+  or /a/…/d/e/f.el
+  or /a/…/e/f.el
+  or /a/…/f.el."
+    (if (> (length file) len)
+        (let ((new-file (replace-regexp-in-string "/?.+?/\\(\\(…/\\)?.+?\\)/.*" "…" file nil nil 1)))
+          (if (string= new-file file)
+              file
+            (ivy-rich-switch-buffer-shorten-path new-file len)))
+      file))
+#+end_src
+
 #+begin_src emacs-lisp
   (use-package marginalia
     :config
     (setq marginalia-max-relative-age 0)
     (setq marginalia-align 'left)
+    (defun marginalia-annotate-buffer (cand)
+      "Annotate buffer CAND with modification status, file name and major mode."
+      (when-let (buffer (get-buffer cand))
+        (marginalia--fields
+         ((format "%s" (file-size-human-readable (buffer-size buffer))) :face 'marginalia-number :width 7)
+         ((ivy-rich-switch-buffer-indicators buffer) :face 'error)
+         ((ivy-rich-switch-buffer-shorten-path (marginalia--buffer-file buffer) 30)
+          :face 'marginalia-file-name))))
     :bind
     (("M-A" . marginalia-cycle))
     :init
@@ -1611,7 +1723,6 @@ Save minibuffer history for better integration with orderless
     ("M-y" . consult-yank-pop)                ;; orig. yank-pop
     ("<help> a" . consult-apropos)            ;; orig. apropos-command
     ;; M-g bindings (goto-map)
-    ("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
     ("M-g g" . consult-goto-line)             ;; orig. goto-line
     ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
     ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
@@ -1625,10 +1736,8 @@ Save minibuffer history for better integration with orderless
     ;; Enable automatic preview at point in the *Completions* buffer. This is
     ;; relevant when you use the default completion UI.
     :hook (completion-list-mode . consult-preview-at-point-mode)
-
-    ;; The :init configuration is always executed (Not lazy)
+    
     :init
-
     ;; Optionally configure the register formatting. This improves the register
     ;; preview for `consult-register', `consult-register-load',
     ;; `consult-register-store' and the Emacs built-ins.
@@ -1662,9 +1771,6 @@ Save minibuffer history for better integration with orderless
      (autoload 'projectile-project-root "projectile")
      (setq consult-project-function (lambda (_) (projectile-project-root))))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25317 53430 436680 54000) :init (25317 53430 436238 889000) :init-secs (0 0 150 170000) :use-package-secs (0 0 706 462000) :config (25317 53430 436220 816000) :config-secs (0 0 66 662000)))
 
 ***** Embark
 #+begin_src emacs-lisp
@@ -1706,173 +1812,173 @@ it looks like counsel is a requirement for swiper
 Let's pretty up ivy
 This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emacs.d/blob/master/lisp/init-ivy.el
 #+BEGIN_SRC emacs-lisp :tangle no
-(use-package ivy-rich 
-  :defines (all-the-icons-icon-alist
-            all-the-icons-dir-icon-alist
-            bookmark-alist)
-  :functions (all-the-icons-icon-for-file
-              all-the-icons-icon-for-mode
-              all-the-icons-icon-family
-              all-the-icons-match-to-alist
-              all-the-icons-faicon
-              all-the-icons-octicon
-              all-the-icons-dir-is-submodule)
-  :preface
-  (defun ivy-rich-bookmark-name (candidate)
-    (car (assoc candidate bookmark-alist)))
+  (use-package ivy-rich 
+    :defines (all-the-icons-icon-alist
+              all-the-icons-dir-icon-alist
+              bookmark-alist)
+    :functions (all-the-icons-icon-for-file
+                all-the-icons-icon-for-mode
+                all-the-icons-icon-family
+                all-the-icons-match-to-alist
+                all-the-icons-faicon
+                all-the-icons-octicon
+                all-the-icons-dir-is-submodule)
+    :preface
+    (defun ivy-rich-bookmark-name (candidate)
+      (car (assoc candidate bookmark-alist)))
 
-  (defun ivy-rich-buffer-icon (candidate)
-    "Display buffer icons in `ivy-rich'."
-    (when (display-graphic-p)
-      (let* ((buffer (get-buffer candidate))
-             (buffer-file-name (buffer-file-name buffer))
-             (major-mode (buffer-local-value 'major-mode buffer))
-             (icon (if (and buffer-file-name
-                            (all-the-icons-match-to-alist buffer-file-name
-                                                          all-the-icons-icon-alist))
-                       (all-the-icons-icon-for-file (file-name-nondirectory buffer-file-name)
-                                                    :height 0.9 :v-adjust -0.05)
-                     (all-the-icons-icon-for-mode major-mode :height 0.9 :v-adjust -0.05))))
-        (if (symbolp icon)
-            (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
-          icon))))
+    (defun ivy-rich-buffer-icon (candidate)
+      "Display buffer icons in `ivy-rich'."
+      (when (display-graphic-p)
+        (let* ((buffer (get-buffer candidate))
+               (buffer-file-name (buffer-file-name buffer))
+               (major-mode (buffer-local-value 'major-mode buffer))
+               (icon (if (and buffer-file-name
+                              (all-the-icons-match-to-alist buffer-file-name
+                                                            all-the-icons-icon-alist))
+                         (all-the-icons-icon-for-file (file-name-nondirectory buffer-file-name)
+                                                      :height 0.9 :v-adjust -0.05)
+                       (all-the-icons-icon-for-mode major-mode :height 0.9 :v-adjust -0.05))))
+          (if (symbolp icon)
+              (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
+            icon))))
 
-  (defun ivy-rich-file-icon (candidate)
-    "Display file icons in `ivy-rich'."
-    (when (display-graphic-p)
-      (let* ((path (concat ivy--directory candidate))
-             (file (file-name-nondirectory path))
-             (icon (cond ((file-directory-p path)
-                          (cond
-                           ((and (fboundp 'tramp-tramp-file-p)
-                                 (tramp-tramp-file-p default-directory))
-                            (all-the-icons-octicon "file-directory" :height 0.93 :v-adjust 0.01))
-                           ((file-symlink-p path)
-                            (all-the-icons-octicon "file-symlink-directory" :height 0.93 :v-adjust 0.01))
-                           ((all-the-icons-dir-is-submodule path)
-                            (all-the-icons-octicon "file-submodule" :height 0.93 :v-adjust 0.01))
-                           ((file-exists-p (format "%s/.git" path))
-                            (all-the-icons-octicon "repo" :height 1.0 :v-adjust -0.01))
-                           (t (let ((matcher (all-the-icons-match-to-alist candidate all-the-icons-dir-icon-alist)))
-                                (apply (car matcher) (list (cadr matcher) :height 0.93 :v-adjust 0.01))))))
-                         ((string-match "^/.*:$" path)
-                          (all-the-icons-material "settings_remote" :height 0.9 :v-adjust -0.2))
-                         ((not (string-empty-p file))
-                          (all-the-icons-icon-for-file file :height 0.9 :v-adjust -0.05)))))
-        (if (symbolp icon)
-            (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
-          icon))))
-  :hook ((ivy-mode . ivy-rich-mode)
-         (ivy-rich-mode . (lambda ()
-                            (setq ivy-virtual-abbreviate
-                                  (or (and ivy-rich-mode 'abbreviate) 'name)))))
-  :init
-  ;; For better performance
-  (setq ivy-rich-parse-remote-buffer nil)
+    (defun ivy-rich-file-icon (candidate)
+      "Display file icons in `ivy-rich'."
+      (when (display-graphic-p)
+        (let* ((path (concat ivy--directory candidate))
+               (file (file-name-nondirectory path))
+               (icon (cond ((file-directory-p path)
+                            (cond
+                             ((and (fboundp 'tramp-tramp-file-p)
+                                   (tramp-tramp-file-p default-directory))
+                              (all-the-icons-octicon "file-directory" :height 0.93 :v-adjust 0.01))
+                             ((file-symlink-p path)
+                              (all-the-icons-octicon "file-symlink-directory" :height 0.93 :v-adjust 0.01))
+                             ((all-the-icons-dir-is-submodule path)
+                              (all-the-icons-octicon "file-submodule" :height 0.93 :v-adjust 0.01))
+                             ((file-exists-p (format "%s/.git" path))
+                              (all-the-icons-octicon "repo" :height 1.0 :v-adjust -0.01))
+                             (t (let ((matcher (all-the-icons-match-to-alist candidate all-the-icons-dir-icon-alist)))
+                                  (apply (car matcher) (list (cadr matcher) :height 0.93 :v-adjust 0.01))))))
+                           ((string-match "^/.*:$" path)
+                            (all-the-icons-material "settings_remote" :height 0.9 :v-adjust -0.2))
+                           ((not (string-empty-p file))
+                            (all-the-icons-icon-for-file file :height 0.9 :v-adjust -0.05)))))
+          (if (symbolp icon)
+              (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
+            icon))))
+    :hook ((ivy-mode . ivy-rich-mode)
+           (ivy-rich-mode . (lambda ()
+                              (setq ivy-virtual-abbreviate
+                                    (or (and ivy-rich-mode 'abbreviate) 'name)))))
+    :init
+    ;; For better performance
+    (setq ivy-rich-parse-remote-buffer nil)
 
-  (setq ivy-rich-display-transformers-list
-        '(ivy-switch-buffer
-          (:columns
-           ((ivy-rich-buffer-icon)
-            (ivy-rich-candidate (:width 30))
-            (ivy-rich-switch-buffer-size (:width 7))
-            (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-            (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          ivy-switch-buffer-other-window
-          (:columns
-           ((ivy-rich-buffer-icon)
-            (ivy-rich-candidate (:width 30))
-            (ivy-rich-switch-buffer-size (:width 7))
-            (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-            (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          counsel-switch-buffer
-          (:columns
-           ((ivy-rich-buffer-icon)
-            (ivy-rich-candidate (:width 30))
-            (ivy-rich-switch-buffer-size (:width 7))
-            (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-            (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          persp-switch-to-buffer
-          (:columns
-           ((ivy-rich-buffer-icon)
-            (ivy-rich-candidate (:width 30))
-            (ivy-rich-switch-buffer-size (:width 7))
-            (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-            (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          counsel-M-x
-          (:columns
-           ((counsel-M-x-transformer (:width 50))
-            (ivy-rich-counsel-function-docstring (:face font-lock-doc-face))))
-          counsel-describe-function
-          (:columns
-           ((counsel-describe-function-transformer (:width 50))
-            (ivy-rich-counsel-function-docstring (:face font-lock-doc-face))))
-          counsel-describe-variable
-          (:columns
-           ((counsel-describe-variable-transformer (:width 50))
-            (ivy-rich-counsel-variable-docstring (:face font-lock-doc-face))))
-          counsel-find-file
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-read-file-transformer)))
-          counsel-file-jump
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate)))
-          counsel-dired
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-read-file-transformer)))
-          counsel-dired-jump
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate)))
-          counsel-git
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate)))
-          counsel-recentf
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate (:width 0.8))
-            (ivy-rich-file-last-modified-time (:face font-lock-comment-face))))
-          counsel-bookmark
-          (:columns
-           ((ivy-rich-bookmark-type)
-            (ivy-rich-bookmark-name (:width 40))
-            (ivy-rich-bookmark-info)))
-          counsel-projectile-switch-project
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate)))
-          counsel-projectile-find-file
-          (:columns
-           ((ivy-rich-file-icon)
-            (counsel-projectile-find-file-transformer)))
-          counsel-projectile-find-dir
-          (:columns
-           ((ivy-rich-file-icon)
-            (counsel-projectile-find-dir-transformer)))
-          treemacs-projectile
-          (:columns
-           ((ivy-rich-file-icon)
-            (ivy-rich-candidate))))))
+    (setq ivy-rich-display-transformers-list
+          '(ivy-switch-buffer
+            (:columns
+             ((ivy-rich-buffer-icon)
+              (ivy-rich-candidate (:width 30))
+              (ivy-rich-switch-buffer-size (:width 7))
+              (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+              (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
+              (ivy-rich-switch-buffer-project (:width 15 :face success))
+              (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
+             :predicate
+             (lambda (cand) (get-buffer cand)))
+            ivy-switch-buffer-other-window
+            (:columns
+             ((ivy-rich-buffer-icon)
+              (ivy-rich-candidate (:width 30))
+              (ivy-rich-switch-buffer-size (:width 7))
+              (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+              (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
+              (ivy-rich-switch-buffer-project (:width 15 :face success))
+              (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
+             :predicate
+             (lambda (cand) (get-buffer cand)))
+            counsel-switch-buffer
+            (:columns
+             ((ivy-rich-buffer-icon)
+              (ivy-rich-candidate (:width 30))
+              (ivy-rich-switch-buffer-size (:width 7))
+              (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+              (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
+              (ivy-rich-switch-buffer-project (:width 15 :face success))
+              (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
+             :predicate
+             (lambda (cand) (get-buffer cand)))
+            persp-switch-to-buffer
+            (:columns
+             ((ivy-rich-buffer-icon)
+              (ivy-rich-candidate (:width 30))
+              (ivy-rich-switch-buffer-size (:width 7))
+              (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+              (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
+              (ivy-rich-switch-buffer-project (:width 15 :face success))
+              (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
+             :predicate
+             (lambda (cand) (get-buffer cand)))
+            counsel-M-x
+            (:columns
+             ((counsel-M-x-transformer (:width 50))
+              (ivy-rich-counsel-function-docstring (:face font-lock-doc-face))))
+            counsel-describe-function
+            (:columns
+             ((counsel-describe-function-transformer (:width 50))
+              (ivy-rich-counsel-function-docstring (:face font-lock-doc-face))))
+            counsel-describe-variable
+            (:columns
+             ((counsel-describe-variable-transformer (:width 50))
+              (ivy-rich-counsel-variable-docstring (:face font-lock-doc-face))))
+            counsel-find-file
+            (:columns
+             ((ivy-rich-file-icon)
+              (ivy-read-file-transformer)))
+            counsel-file-jump
+            (:columns
+             ((ivy-rich-file-icon)
+              (ivy-rich-candidate)))
+            counsel-dired
+            (:columns
+             ((ivy-rich-file-icon)
+              (ivy-read-file-transformer)))
+            counsel-dired-jump
+            (:columns
+             ((ivy-rich-file-icon)
+              (ivy-rich-candidate)))
+            counsel-git
+            (:columns
+             ((ivy-rich-file-icon)
+              (ivy-rich-candidate)))
+            counsel-recentf
+            (:columns
+             ((ivy-rich-file-icon)
+              (ivy-rich-candidate (:width 0.8))
+              (ivy-rich-file-last-modified-time (:face font-lock-comment-face))))
+            counsel-bookmark
+            (:columns
+             ((ivy-rich-bookmark-type)
+              (ivy-rich-bookmark-name (:width 40))
+              (ivy-rich-bookmark-info)))
+            counsel-projectile-switch-project
+            (:columns
+             ((ivy-rich-file-icon)
+              (ivy-rich-candidate)))
+            counsel-projectile-find-file
+            (:columns
+             ((ivy-rich-file-icon)
+              (counsel-projectile-find-file-transformer)))
+            counsel-projectile-find-dir
+            (:columns
+             ((ivy-rich-file-icon)
+              (counsel-projectile-find-dir-transformer)))
+            treemacs-projectile
+            (:columns
+             ((ivy-rich-file-icon)
+              (ivy-rich-candidate))))))
 #+END_SRC
 
 **** Ivy
@@ -1926,7 +2032,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
     (setq corfu-auto-prefix 2)
     (setq corfu-min-width 40)
     (setq corfu-min-height 20)
-    (setq corfu-scroll-margin 4)
+
     ;; You can also enable Corfu more generally for every minibuffer, as
     ;; long as no other completion UI is active. If you use Mct or
     ;; Vertico as your main minibuffer completion UI, the following
@@ -1956,10 +2062,8 @@ Things are always better when they are prettier, let's add icons to our in buffe
     :init
     (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
     :config
-    (setq kind-icon-use-icons t)
-    (setq kind-icon-default-face 'corfu-default) ; Have background color be the same as `corfu' face background
-    (setq kind-icon-blend-background nil)
-    (setq kind-icon-blend-frac 0.08))
+    (setq kind-icon-default-face 'corfu-default ; Have background color be the same as `corfu' face background
+          kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 #+end_src
 **** corfu-Doc
 Let's add some documentation. No, we don't need to write any, we just want to show more documentation when we're using auto complete. It's also important that when we're using document corfu-doc that we don't use the natural corfu documentation method that echos in the minibuffer.
