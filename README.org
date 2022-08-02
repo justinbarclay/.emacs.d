@@ -1022,8 +1022,11 @@ Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes 
     :init
-    (load-theme 'doom-outrun-electric t))
+    (load-theme 'doom-outrun-electric t)
+    ;; When using doom-themes region is a much better colour for highlighting current line
+    (setq hl-line-face 'region))
 #+END_SRC
+
 ** Modeline
 *** all-the-icons
 #+BEGIN_SRC emacs-lisp
@@ -1662,9 +1665,6 @@ Customizations
       "-"))
 #+end_src
 
-#+RESULTS:
-: +marginalia-display-project-name
-
 #+begin_src emacs-lisp
   (use-package marginalia
     :config
@@ -1674,11 +1674,11 @@ Customizations
       "Annotate buffer CAND with modification status, file name and major mode."
       (when-let (buffer (get-buffer cand))
         (marginalia--fields
-         ((file-size-human-readable (buffer-size buffer)) :transpose -0.5 :face 'marginalia-number :width -10)
+         ((file-size-human-readable (buffer-size buffer)) :face 'marginalia-number :width -10)
          ((ivy-rich-switch-buffer-indicators buffer) :face 'error :width 3)
          ((+marginalia-display-project-name buffer) :face 'success :width 10)
          ((ivy-rich-switch-buffer-shorten-path
-           (+marginalia-buffer-or-proc-file-location
+           (+marginalia-buffer-get-directory-name
             buffer)
            30)
           :face 'marginalia-file-name))))
@@ -1687,9 +1687,6 @@ Customizations
     :init
     (marginalia-mode))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25320 56067 879427 525000) :init (25320 56067 879345 436000) :config (25320 56067 879264 428000) :config-secs (0 0 42 656000) :init-secs (0 0 318 399000) :use-package-secs (0 0 553 191000)))
 
 ***** All the icons completion
 #+begin_src emacs-lisp
@@ -1751,7 +1748,7 @@ Customizations
     ;; Enable automatic preview at point in the *Completions* buffer. This is
     ;; relevant when you use the default completion UI.
     :hook (completion-list-mode . consult-preview-at-point-mode)
-    
+
     :init
     ;; Optionally configure the register formatting. This improves the register
     ;; preview for `consult-register', `consult-register-load',

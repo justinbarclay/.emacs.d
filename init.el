@@ -497,7 +497,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package doom-themes 
   :init
-  (load-theme 'doom-outrun-electric t))
+  (load-theme 'doom-outrun-electric t)
+  ;; When using doom-themes region is a much better colour for highlighting current line
+  (setq hl-line-face 'region))
 
 (use-package all-the-icons)
 
@@ -967,11 +969,11 @@ See URL `http://stylelint.io/'."
     "Annotate buffer CAND with modification status, file name and major mode."
     (when-let (buffer (get-buffer cand))
       (marginalia--fields
-       ((file-size-human-readable (buffer-size buffer)) :transpose -0.5 :face 'marginalia-number :width -10)
+       ((file-size-human-readable (buffer-size buffer)) :face 'marginalia-number :width -10)
        ((ivy-rich-switch-buffer-indicators buffer) :face 'error :width 3)
        ((+marginalia-display-project-name buffer) :face 'success :width 10)
        ((ivy-rich-switch-buffer-shorten-path
-         (+marginalia-buffer-or-proc-file-location
+         (+marginalia-buffer-get-directory-name
           buffer)
          30)
         :face 'marginalia-file-name))))
