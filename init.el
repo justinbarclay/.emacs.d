@@ -830,7 +830,7 @@ See URL `http://stylelint.io/'."
   (vertico-multiform-mode)
 
   (defun +completion-category-highlight-files (cand)
-    (let ((len (length cand1)))
+    (let ((len (length cand)))
       (when (and (> len 0)
                  (eq (aref cand (1- len)) ?/))
         (add-face-text-property 0 len 'dired-directory 'append cand)))
@@ -844,11 +844,18 @@ See URL `http://stylelint.io/'."
                        (seq-contains-p local-minor-modes (intern cand))))) ; check minor modes
         (add-face-text-property 0 len '(:foreground "red") 'append cand))) ; choose any color or face you like
     cand)
+
+  (defun +completion-category-truncate-files (cand)
+    (if-let ((type (get-text-property 0 'multi-category cand))
+              ((eq (car-safe type) 'file)))                
+        (ivy-rich-switch-buffer-shorten-path cand 30)
+        cand))
+
   (defvar +completion-category-hl-func-overrides
     `((file . ,#'+completion-category-highlight-files)
       (command . ,#'+completion-category-highlight-commands)
-      (recentf . ,#'+completion-category-highlight-files))
-    "Alist mapping category to highlight functions.")
+      (multi-category . ,#'+completion-category-truncate-files))
+      "Alist mapping category to highlight functions.")
 
   (advice-add #'vertico--arrange-candidates :around
               (defun vertico-format-candidates+ (func)
@@ -863,7 +870,7 @@ See URL `http://stylelint.io/'."
                                        (funcall hl-func cand) args))))
                     (funcall func)))))
 
-      ;; Sort directories before files
+  ;; Sort directories before files
   (defun sort-directories-first (files)
     (setq files (vertico-sort-history-length-alpha files))
     (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
@@ -927,17 +934,30 @@ See URL `http://stylelint.io/'."
 
 (defun ivy-rich-switch-buffer-shorten-path (file len)
   "Shorten the path of FILE until the length of FILE <= LEN.
-For example, a path /a/b/c/d/e/f.el will be shortened to
-   /a/…/c/d/e/f.el
-or /a/…/d/e/f.el
-or /a/…/e/f.el
-or /a/…/f.el."
+  For example, a path /a/b/c/d/e/f.el will be shortened to
+     /a/…/c/d/e/f.el
+  or /a/…/d/e/f.el
+  or /a/…/e/f.el
+  or /a/…/f.el."
   (if (> (length file) len)
       (let ((new-file (replace-regexp-in-string "/?.+?/\\(\\(…/\\)?.+?\\)/.*" "…" file nil nil 1)))
         (if (string= new-file file)
             file
           (ivy-rich-switch-buffer-shorten-path new-file len)))
     file))
+
+(defun +marginalia-buffer-get-directory-name (cand)
+  (let ((name (buffer-file-name cand)))
+    (if name
+        (file-name-directory name)
+      (buffer-local-value 'list-buffers-directory cand))))
+
+(defun +marginalia-display-project-name (cand)
+  (if-let ((dir (+marginalia-buffer-get-directory-name cand))
+           (message dir))
+      (projectile-project-name
+       (projectile-project-root dir))
+    "-"))
 
 (use-package marginalia
   :config
@@ -947,9 +967,13 @@ or /a/…/f.el."
     "Annotate buffer CAND with modification status, file name and major mode."
     (when-let (buffer (get-buffer cand))
       (marginalia--fields
-       ((format "%s" (file-size-human-readable (buffer-size buffer))) :face 'marginalia-number :width 7)
-       ((ivy-rich-switch-buffer-indicators buffer) :face 'error)
-       ((ivy-rich-switch-buffer-shorten-path (marginalia--buffer-file buffer) 30)
+       ((file-size-human-readable (buffer-size buffer)) :transpose -0.5 :face 'marginalia-number :width -10)
+       ((ivy-rich-switch-buffer-indicators buffer) :face 'error :width 3)
+       ((+marginalia-display-project-name buffer) :face 'success :width 10)
+       ((ivy-rich-switch-buffer-shorten-path
+         (+marginalia-buffer-or-proc-file-location
+          buffer)
+         30)
         :face 'marginalia-file-name))))
   :bind
   (("M-A" . marginalia-cycle))
@@ -1038,6 +1062,7 @@ or /a/…/f.el."
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
    consult--source-bookmark consult--source-recent-file
+   projectile-find-file
    consult--source-project-recent-file
    :preview-key (kbd "M-."))
    (autoload 'projectile-project-root "projectile")
@@ -1169,6 +1194,20 @@ or /a/…/f.el."
     :ensure nil)
 
 (use-package c-eldoc)
+
+(defun enable-paredit ()
+    (turn-off-smartparens-mode)
+    (paredit-mode))
+
+  (defun enable-parinfer ()
+    (global-hungry-delete-mode 0)
+    (turn-off-smartparens-mode)
+    (paredit-mode)
+    (parinfer-rust-mode))
+
+(defun enable-lispy ()
+    (turn-off-smartparens-mode)
+    (lispy-mode))
 
 (use-package paredit
   :commands (paredit-mode)
@@ -1588,20 +1627,6 @@ or /a/…/f.el."
   (mark-whole-buffer)
   (untabify (region-beginning) (region-end))
   (keyboard-quit))
-
-(defun enable-paredit ()
-    (turn-off-smartparens-mode)
-    (paredit-mode))
-
-  (defun enable-parinfer ()
-    (global-hungry-delete-mode 0)
-    (turn-off-smartparens-mode)
-    (paredit-mode)
-    (parinfer-rust-mode))
-
-(defun enable-lispy ()
-    (turn-off-smartparens-mode)
-    (lispy-mode))
 
 ;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
 (defun rename-file-and-buffer (new-name)

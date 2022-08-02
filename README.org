@@ -1514,18 +1514,6 @@ Load this before we load Flycheck
 * Completion
 ** Minibuffer
 *** Vertico
-#+begin_src emacs-lisp :tangle no
-  (defun my/vertico-truncate-candidates (args)
-    (if-let ((arg (car args))
-             (type (get-text-property 0 'multi-category arg))
-             ((eq (car-safe type) 'file))
-             (w 30)
-             (l (length arg))
-             ((> l w)))
-        (setcar args (ivy-rich-switch-buffer-shorten-path arg 30)))
-    args)
-#+end_src
-
 #+begin_src emacs-lisp
   (use-package vertico
     :init
@@ -1536,7 +1524,7 @@ Load this before we load Flycheck
     (vertico-multiform-mode)
 
     (defun +completion-category-highlight-files (cand)
-      (let ((len (length cand1)))
+      (let ((len (length cand)))
         (when (and (> len 0)
                    (eq (aref cand (1- len)) ?/))
           (add-face-text-property 0 len 'dired-directory 'append cand)))
@@ -1550,11 +1538,18 @@ Load this before we load Flycheck
                          (seq-contains-p local-minor-modes (intern cand))))) ; check minor modes
           (add-face-text-property 0 len '(:foreground "red") 'append cand))) ; choose any color or face you like
       cand)
+
+    (defun +completion-category-truncate-files (cand)
+      (if-let ((type (get-text-property 0 'multi-category cand))
+                ((eq (car-safe type) 'file)))                
+          (ivy-rich-switch-buffer-shorten-path cand 30)
+          cand))
+
     (defvar +completion-category-hl-func-overrides
       `((file . ,#'+completion-category-highlight-files)
         (command . ,#'+completion-category-highlight-commands)
-        (recentf . ,#'+completion-category-highlight-files))
-      "Alist mapping category to highlight functions.")
+        (multi-category . ,#'+completion-category-truncate-files))
+        "Alist mapping category to highlight functions.")
 
     (advice-add #'vertico--arrange-candidates :around
                 (defun vertico-format-candidates+ (func)
@@ -1569,7 +1564,7 @@ Load this before we load Flycheck
                                          (funcall hl-func cand) args))))
                       (funcall func)))))
 
-        ;; Sort directories before files
+    ;; Sort directories before files
     (defun sort-directories-first (files)
       (setq files (vertico-sort-history-length-alpha files))
       (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
@@ -1584,9 +1579,6 @@ Load this before we load Flycheck
     ;;(advice-add #'vertico--format-candidate :filter-args #'my/vertico-truncate-candidates)
     )
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25320 27551 331817 339000) :init (25320 27551 331731 298000) :config (25320 27551 331681 875000) :config-secs (0 0 100 169000) :init-secs (0 0 312 728000) :use-package-secs (0 0 467 583000)))
 
 ***** savehist
 Save minibuffer history for better integration with orderless
@@ -1644,18 +1636,34 @@ Customizations
 
   (defun ivy-rich-switch-buffer-shorten-path (file len)
     "Shorten the path of FILE until the length of FILE <= LEN.
-  For example, a path /a/b/c/d/e/f.el will be shortened to
-     /a/…/c/d/e/f.el
-  or /a/…/d/e/f.el
-  or /a/…/e/f.el
-  or /a/…/f.el."
+    For example, a path /a/b/c/d/e/f.el will be shortened to
+       /a/…/c/d/e/f.el
+    or /a/…/d/e/f.el
+    or /a/…/e/f.el
+    or /a/…/f.el."
     (if (> (length file) len)
         (let ((new-file (replace-regexp-in-string "/?.+?/\\(\\(…/\\)?.+?\\)/.*" "…" file nil nil 1)))
           (if (string= new-file file)
               file
             (ivy-rich-switch-buffer-shorten-path new-file len)))
       file))
+
+  (defun +marginalia-buffer-get-directory-name (cand)
+    (let ((name (buffer-file-name cand)))
+      (if name
+          (file-name-directory name)
+        (buffer-local-value 'list-buffers-directory cand))))
+
+  (defun +marginalia-display-project-name (cand)
+    (if-let ((dir (+marginalia-buffer-get-directory-name cand))
+             (message dir))
+        (projectile-project-name
+         (projectile-project-root dir))
+      "-"))
 #+end_src
+
+#+RESULTS:
+: +marginalia-display-project-name
 
 #+begin_src emacs-lisp
   (use-package marginalia
@@ -1666,15 +1674,22 @@ Customizations
       "Annotate buffer CAND with modification status, file name and major mode."
       (when-let (buffer (get-buffer cand))
         (marginalia--fields
-         ((format "%s" (file-size-human-readable (buffer-size buffer))) :face 'marginalia-number :width 7)
-         ((ivy-rich-switch-buffer-indicators buffer) :face 'error)
-         ((ivy-rich-switch-buffer-shorten-path (marginalia--buffer-file buffer) 30)
+         ((file-size-human-readable (buffer-size buffer)) :transpose -0.5 :face 'marginalia-number :width -10)
+         ((ivy-rich-switch-buffer-indicators buffer) :face 'error :width 3)
+         ((+marginalia-display-project-name buffer) :face 'success :width 10)
+         ((ivy-rich-switch-buffer-shorten-path
+           (+marginalia-buffer-or-proc-file-location
+            buffer)
+           30)
           :face 'marginalia-file-name))))
     :bind
     (("M-A" . marginalia-cycle))
     :init
     (marginalia-mode))
 #+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25320 56067 879427 525000) :init (25320 56067 879345 436000) :config (25320 56067 879264 428000) :config-secs (0 0 42 656000) :init-secs (0 0 318 399000) :use-package-secs (0 0 553 191000)))
 
 ***** All the icons completion
 #+begin_src emacs-lisp
@@ -1766,6 +1781,7 @@ Customizations
      consult-ripgrep consult-git-grep consult-grep
      consult-bookmark consult-recent-file consult-xref
      consult--source-bookmark consult--source-recent-file
+     projectile-find-file
      consult--source-project-recent-file
      :preview-key (kbd "M-."))
      (autoload 'projectile-project-root "projectile")
@@ -2180,6 +2196,22 @@ c++
   (use-package c-eldoc)
 #+END_SRC
 ** Lispy-languages
+** Enable Paredit or Parinfer
+#+BEGIN_SRC emacs-lisp
+  (defun enable-paredit ()
+    (turn-off-smartparens-mode)
+    (paredit-mode))
+
+  (defun enable-parinfer ()
+    (global-hungry-delete-mode 0)
+    (turn-off-smartparens-mode)
+    (paredit-mode)
+    (parinfer-rust-mode))
+
+(defun enable-lispy ()
+    (turn-off-smartparens-mode)
+    (lispy-mode))
+#+END_SRC
 *** paredit
 #+BEGIN_SRC emacs-lisp
   (use-package paredit
@@ -2808,22 +2840,6 @@ DELTA should be a multiple of 10, in the units used by the
     (mark-whole-buffer)
     (untabify (region-beginning) (region-end))
     (keyboard-quit))
-#+END_SRC
-** Enable Paredit or Parinfer
-#+BEGIN_SRC emacs-lisp
-  (defun enable-paredit ()
-    (turn-off-smartparens-mode)
-    (paredit-mode))
-
-  (defun enable-parinfer ()
-    (global-hungry-delete-mode 0)
-    (turn-off-smartparens-mode)
-    (paredit-mode)
-    (parinfer-rust-mode))
-
-(defun enable-lispy ()
-    (turn-off-smartparens-mode)
-    (lispy-mode))
 #+END_SRC
 ** Rename buffer and file
 #+BEGIN_SRC emacs-lisp
