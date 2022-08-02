@@ -946,25 +946,25 @@ No cursor blinking, it's distracting
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-;; These settings relate to how emacs interacts with your operating system
-(setq ;; makes killing/yanking interact with the clipboard
- select-enable-clipboard t
+  ;; These settings relate to how emacs interacts with your operating system
+  (setq ;; makes killing/yanking interact with the clipboard
+   select-enable-clipboard t
 
- ;; I'm actually not sure what this does but it's recommended?
- select-enable-primary t
+   ;; I'm actually not sure what this does but it's recommended?
+   select-enable-primary t
 
- ;; Save clipboard strings into kill ring before replacing them.
- ;; When one selects something in another program to paste it into Emacs,
- ;; but kills something in Emacs before actually pasting it,
- ;; this selection is gone unless this variable is non-nil
- save-interprogram-paste-before-kill t
+   ;; Save clipboard strings into kill ring before replacing them.
+   ;; When one selects something in another program to paste it into Emacs,
+   ;; but kills something in Emacs before actually pasting it,
+   ;; this selection is gone unless this variable is non-nil
+   save-interprogram-paste-before-kill t
 
- ;; Shows all options when running apropos. For more info,
- ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
- apropos-do-all t
+   ;; Shows all options when running apropos. For more info,
+   ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
+   apropos-do-all t
 
- ;; Mouse yank commands yank at point instead of at click.
- mouse-yank-at-point t)
+   ;; Mouse yank commands yank at point instead of at click.
+   mouse-yank-at-point t)
 #+END_SRC
 
 My name isn't "Tinker", so I don't need a bell.
@@ -1550,8 +1550,7 @@ Load this before we load Flycheck
 
     (defvar +completion-category-hl-func-overrides
       `((file . ,#'+completion-category-highlight-files)
-        (command . ,#'+completion-category-highlight-commands)
-        (multi-category . ,#'+completion-category-truncate-files))
+        (command . ,#'+completion-category-highlight-commands))
         "Alist mapping category to highlight functions.")
 
     (advice-add #'vertico--arrange-candidates :around
@@ -1578,9 +1577,7 @@ Load this before we load Flycheck
 
     (setq vertico-multiform-categories
           '((symbol (vertico-sort-function . vertico-sort-alpha))
-            (file (vertico-sort-function . sort-directories-first))))
-    ;;(advice-add #'vertico--format-candidate :filter-args #'my/vertico-truncate-candidates)
-    )
+            (file (vertico-sort-function . sort-directories-first)))))
 #+end_src
 
 ***** savehist
@@ -1593,14 +1590,8 @@ Save minibuffer history for better integration with orderless
 #+end_src
 
 ***** Marginalia
-Customizations
+Marginalia looks  and acts great, however as an old grey(ing) beard, I got used to some of the aesthetics of `ivy-rich` so I would like to bring some of these back.
 #+begin_src emacs-lisp
-  ;; ((ivy-rich-buffer-icon)
-  ;; (ivy-rich-candidate (:width 30))
-  ;; (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-  ;; (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-  ;; (ivy-rich-switch-buffer-project (:width 15 :face success))
-  ;; (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
   (defun ivy-rich-switch-buffer-user-buffer-p (buffer)
     "Check whether BUFFER-NAME is a user buffer."
     (let ((buffer-name
@@ -1663,29 +1654,73 @@ Customizations
         (projectile-project-name
          (projectile-project-root dir))
       "-"))
+
+  (defun +marginalia-category-truncate-files (cand)
+    (if-let ((type (get-text-property 0 'multi-category cand))
+             ((eq (car-safe type) 'file)))
+        (ivy-rich-switch-buffer-shorten-path cand 30)
+      cand))
+
+  (defun +marginalia-truncate-helper (cand)
+    (if-let ((func (alist-get (vertico--metadata-get 'category)
+                              +marginalia-truncation-func-overrides))
+                 (shortened-candidate (funcall func cand)))
+        shortened-candidate
+      cand))
 #+end_src
 
+
 #+begin_src emacs-lisp
-  (use-package marginalia
-    :config
-    (setq marginalia-max-relative-age 0)
-    (setq marginalia-align 'left)
-    (defun marginalia-annotate-buffer (cand)
-      "Annotate buffer CAND with modification status, file name and major mode."
-      (when-let (buffer (get-buffer cand))
-        (marginalia--fields
-         ((file-size-human-readable (buffer-size buffer)) :face 'marginalia-number :width -10)
-         ((ivy-rich-switch-buffer-indicators buffer) :face 'error :width 3)
-         ((+marginalia-display-project-name buffer) :face 'success :width 10)
-         ((ivy-rich-switch-buffer-shorten-path
-           (+marginalia-buffer-get-directory-name
-            buffer)
-           30)
-          :face 'marginalia-file-name))))
-    :bind
-    (("M-A" . marginalia-cycle))
-    :init
-    (marginalia-mode))
+    (use-package marginalia
+      :config
+      (setq marginalia-max-relative-age 0)
+      (setq marginalia-align 'left)
+      (defvar +marginalia-truncation-func-overrides
+        `((file . ,#'+marginalia-category-truncate-files)
+          (multi-category . ,#'+marginalia-category-truncate-files))
+        "Alist mapping category to truncate functions.")
+
+      (defun marginalia--align (cands)
+        "Align annotations of CANDS according to `marginalia-align'."
+        (cl-loop for (cand . ann) in cands do
+                 (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+                   (setq marginalia--candw-max
+                         (max marginalia--candw-max
+                              (+ (string-width (+marginalia-truncate-helper cand))
+                                 (string-width (substring ann 0 align)))))))
+        (setq marginalia--candw-max (* (ceiling marginalia--candw-max
+                                                marginalia--candw-step)
+                                       marginalia--candw-step))
+        (cl-loop for (cand . ann) in cands collect
+             (progn
+               (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+                 (put-text-property
+                  align (1+ align) 'display
+                  `(space :align-to
+                          ,(pcase-exhaustive marginalia-align
+                             ('center `(+ center ,marginalia-align-offset))
+                             ('left `(+ left ,(+ marginalia-align-offset marginalia--candw-max)))
+                             ('right `(+ right ,(+ marginalia-align-offset 1
+                                                   (- (string-width (substring ann 0 align))
+                                                      (string-width ann)))))))
+                  ann))
+               (list (+marginalia-truncate-helper cand) "" ann))))
+      (defun marginalia-annotate-buffer (cand)
+        "Annotate buffer CAND with modification status, file name and major mode."
+        (when-let (buffer (get-buffer cand))
+          (marginalia--fields
+           ((file-size-human-readable (buffer-size buffer)) :face 'marginalia-number :width -10)
+           ((ivy-rich-switch-buffer-indicators buffer) :face 'error :width 3)
+           ((+marginalia-display-project-name buffer) :face 'success :width 10)
+           ((ivy-rich-switch-buffer-shorten-path
+             (+marginalia-buffer-get-directory-name
+              buffer)
+             30)
+            :face 'marginalia-file-name))))
+      :bind
+      (("M-A" . marginalia-cycle))
+      :init
+      (marginalia-mode))
 #+end_src
 
 ***** All the icons completion

@@ -855,8 +855,7 @@ See URL `http://stylelint.io/'."
 
   (defvar +completion-category-hl-func-overrides
     `((file . ,#'+completion-category-highlight-files)
-      (command . ,#'+completion-category-highlight-commands)
-      (multi-category . ,#'+completion-category-truncate-files))
+      (command . ,#'+completion-category-highlight-commands))
       "Alist mapping category to highlight functions.")
 
   (advice-add #'vertico--arrange-candidates :around
@@ -883,21 +882,13 @@ See URL `http://stylelint.io/'."
 
   (setq vertico-multiform-categories
         '((symbol (vertico-sort-function . vertico-sort-alpha))
-          (file (vertico-sort-function . sort-directories-first))))
-  ;;(advice-add #'vertico--format-candidate :filter-args #'my/vertico-truncate-candidates)
-  )
+          (file (vertico-sort-function . sort-directories-first)))))
 
 (use-package savehist
   :ensure nil
   :init
   (savehist-mode))
 
-;; ((ivy-rich-buffer-icon)
-;; (ivy-rich-candidate (:width 30))
-;; (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
-;; (ivy-rich-switch-buffer-major-mode (:width 12 :face warning))
-;; (ivy-rich-switch-buffer-project (:width 15 :face success))
-;; (ivy-rich-switch-buffer-path (:width (lambda (x) (ivy-rich-switch-buffer-shorten-path x (ivy-rich-minibuffer-width 0.3))))))
 (defun ivy-rich-switch-buffer-user-buffer-p (buffer)
   "Check whether BUFFER-NAME is a user buffer."
   (let ((buffer-name
@@ -961,10 +952,53 @@ See URL `http://stylelint.io/'."
        (projectile-project-root dir))
     "-"))
 
+(defun +marginalia-category-truncate-files (cand)
+  (if-let ((type (get-text-property 0 'multi-category cand))
+           ((eq (car-safe type) 'file)))
+      (ivy-rich-switch-buffer-shorten-path cand 30)
+    cand))
+
+(defun +marginalia-truncate-helper (cand)
+  (if-let ((func (alist-get (vertico--metadata-get 'category)
+                            +marginalia-truncation-func-overrides))
+               (shortened-candidate (funcall func cand)))
+      shortened-candidate
+    cand))
+
 (use-package marginalia
   :config
   (setq marginalia-max-relative-age 0)
   (setq marginalia-align 'left)
+  (defvar +marginalia-truncation-func-overrides
+    `((file . ,#'+marginalia-category-truncate-files)
+      (multi-category . ,#'+marginalia-category-truncate-files))
+    "Alist mapping category to truncate functions.")
+
+  (defun marginalia--align (cands)
+    "Align annotations of CANDS according to `marginalia-align'."
+    (cl-loop for (cand . ann) in cands do
+             (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+               (setq marginalia--candw-max
+                     (max marginalia--candw-max
+                          (+ (string-width (+marginalia-truncate-helper cand))
+                             (string-width (substring ann 0 align)))))))
+    (setq marginalia--candw-max (* (ceiling marginalia--candw-max
+                                            marginalia--candw-step)
+                                   marginalia--candw-step))
+    (cl-loop for (cand . ann) in cands collect
+         (progn
+           (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+             (put-text-property
+              align (1+ align) 'display
+              `(space :align-to
+                      ,(pcase-exhaustive marginalia-align
+                         ('center `(+ center ,marginalia-align-offset))
+                         ('left `(+ left ,(+ marginalia-align-offset marginalia--candw-max)))
+                         ('right `(+ right ,(+ marginalia-align-offset 1
+                                               (- (string-width (substring ann 0 align))
+                                                  (string-width ann)))))))
+              ann))
+           (list (+marginalia-truncate-helper cand) "" ann))))
   (defun marginalia-annotate-buffer (cand)
     "Annotate buffer CAND with modification status, file name and major mode."
     (when-let (buffer (get-buffer cand))
