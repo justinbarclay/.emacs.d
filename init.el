@@ -499,7 +499,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (load-theme 'doom-outrun-electric t)
   ;; When using doom-themes region is a much better colour for highlighting current line
-  (setq hl-line-face 'region))
+  (defface custom-hl-line
+    '((t (:inherit region :background "#2d2844")))
+    "Customized HL line face")
+  (setq hl-line-face 'custom-hl-line))
 
 (use-package all-the-icons)
 

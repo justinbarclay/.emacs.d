@@ -1024,7 +1024,10 @@ Let's use Doom's version instead
     :init
     (load-theme 'doom-outrun-electric t)
     ;; When using doom-themes region is a much better colour for highlighting current line
-    (setq hl-line-face 'region))
+    (defface custom-hl-line
+      '((t (:inherit region :background "#2d2844")))
+      "Customized HL line face")
+    (setq hl-line-face 'custom-hl-line))
 #+END_SRC
 
 ** Modeline
