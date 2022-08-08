@@ -1417,6 +1417,12 @@ See URL `http://stylelint.io/'."
          (js-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
 
+(use-package eslint-disable-rule
+  :straight (eslint-disable-rule :type git
+                                 :host github
+                                 :branch "lsp-eslint"
+                                 :repo "justinbarclay/eslint-disable-rule"))
+
 (use-package web-mode
   :mode (("\\.html?\\'" . web-mode))
   :config
