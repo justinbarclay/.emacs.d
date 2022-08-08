@@ -329,9 +329,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package eshell
   :ensure nil
-  :init
-  (add-hook 'eshell-mode-hook
-                   #'company-mode)
   :config
   (progn
     (eval-after-load 'esh-opt
@@ -1349,9 +1346,6 @@ See URL `http://stylelint.io/'."
     ;; go right to the REPL buffer when it's finished connecting
     (setq cider-repl-pop-to-buffer-on-connect nil)
 
-    ;; company mode for completion
-    (add-hook 'cider-repl-mode-hook #'company-mode)
-    (add-hook 'cider-mode-hook #'company-mode)
     ;; key bindings
     ;; these help me out with the way I usually develop web apps
     (defun cider-refresh ()
