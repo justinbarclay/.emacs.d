@@ -752,6 +752,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
+  :bind (:map smartparens-mode-map ("M-<backspace>" . 'backward-kill-word))
   :config
   (sp-use-smartparens-bindings))
 
@@ -1008,7 +1009,7 @@ See URL `http://stylelint.io/'."
       (marginalia--fields
        ((file-size-human-readable (buffer-size buffer)) :face 'marginalia-number :width -10)
        ((ivy-rich-switch-buffer-indicators buffer) :face 'error :width 3)
-       ((+marginalia-display-project-name buffer) :face 'success :width 10)
+       ((+marginalia-display-project-name buffer) :face 'success :width 15)
        ((ivy-rich-switch-buffer-shorten-path
          (+marginalia-buffer-get-directory-name
           buffer)
@@ -1154,6 +1155,7 @@ See URL `http://stylelint.io/'."
                 (bound-and-true-p vertico--input))
       (setq-local corfu-auto nil) ; Ensure auto completion is disabled
       (corfu-mode 1)))
+  (custom-set-faces '(corfu-current ((t :inherit region :background "#2d2844"))))
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 
 (use-package cape
