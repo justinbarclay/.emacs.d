@@ -749,9 +749,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
-  :bind (:map smartparens-mode-map ("M-<backspace>" . 'backward-kill-word))
-  :config
-  (sp-use-smartparens-bindings))
+  :bind (:map smartparens-mode-map ("M-<backspace>" . 'backward-kill-word)))
 
 (use-package smartparens-config
  :after smartparens
