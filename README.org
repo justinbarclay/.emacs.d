@@ -1,4 +1,4 @@
-[[./graphite_logo.png]]
+[[./logo_512x512.png]]
 * Table of Contents                                                      :TOC:
 - [[#about][About]]
   - [[#note-for-making-elisp-blocks][Note for making Elisp Blocks]]
@@ -26,7 +26,6 @@
   - [[#window][Window]]
   - [[#font][Font]]
   - [[#misc][Misc]]
-  - [[#smooth-scrolling][Smooth scrolling]]
   - [[#theme][Theme]]
   - [[#modeline][Modeline]]
   - [[#line-numbers][Line Numbers]]
@@ -552,7 +551,7 @@ Have alerts pop up from your org agenda
 #+BEGIN_SRC emacs-lisp
 (use-package org-alert)
 #+END_SRC
-
+e
 **** DOCT
 Declarative Org Capture Templates
 #+BEGIN_SRC emacs-lisp
@@ -851,6 +850,11 @@ Remove title bar but allow resizing of frame
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
   (menu-bar-mode -1)
 #+END_SRC
+*** Scrolling
+#+begin_src emacs-lisp :tangle early-init.el
+  (pixel-scroll-precision-mode 1)
+#+end_src
+
 *** Emacs should take focus when it launches
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
   (when (display-graphic-p) ; Start full screen
@@ -957,7 +961,7 @@ No cursor blinking, it's distracting
    ;; When one selects something in another program to paste it into Emacs,
    ;; but kills something in Emacs before actually pasting it,
    ;; this selection is gone unless this variable is non-nil
-   save-interprogram-paste-before-kill t
+   save-interprogram-paste-before-kill nil ;; This is disabled because it crashes emacs.
 
    ;; Shows all options when running apropos. For more info,
    ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
@@ -1000,16 +1004,6 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 #+END_SRC
-
-
-** Smooth scrolling
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package smooth-scroll
-  :config
-  (smooth-scroll-mode 1)
-  (setq smooth-scroll/vscroll-step-size 5))
-#+END_SRC
-
 ** Theme
 *** Elegant Emacs
 #+begin_src emacs-lisp :tangle no
@@ -1017,7 +1011,7 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
     :straight (elegant-emacs-light :type git :host github :repo "rougier/elegant-emacs"))
 #+end_src
 
-*** Dracula
+*** Doom Themes
 Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes 
@@ -1029,6 +1023,11 @@ Let's use Doom's version instead
       "Customized HL line face")
     (setq hl-line-face 'custom-hl-line))
 #+END_SRC
+**** Add on doom theme
+#+begin_src emacs-lisp
+  (use-package everblush
+    :straight (everblush-theme :type git :host github :repo "Everblush/emacs"))
+#+end_src
 
 ** Modeline
 *** all-the-icons
@@ -2478,11 +2477,7 @@ Autoformatting
 #+end_src
 *** eslint-disable
 #+begin_src emacs-lisp
-  (use-package eslint-disable-rule
-    :straight (eslint-disable-rule :type git
-                                   :host github
-                                   :branch "lsp-eslint"
-                                   :repo "justinbarclay/eslint-disable-rule"))
+  (use-package eslint-disable-rule)
 #+end_src
 
 ** HTML

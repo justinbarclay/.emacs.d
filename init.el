@@ -501,6 +501,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     "Customized HL line face")
   (setq hl-line-face 'custom-hl-line))
 
+(use-package everblush
+  :straight (everblush-theme :type git :host github :repo "Everblush/emacs"))
+
 (use-package all-the-icons)
 
 (use-package doom-modeline
@@ -1409,11 +1412,7 @@ See URL `http://stylelint.io/'."
          (js-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
 
-(use-package eslint-disable-rule
-  :straight (eslint-disable-rule :type git
-                                 :host github
-                                 :branch "lsp-eslint"
-                                 :repo "justinbarclay/eslint-disable-rule"))
+(use-package eslint-disable-rule)
 
 (use-package web-mode
   :mode (("\\.html?\\'" . web-mode))

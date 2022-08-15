@@ -37,6 +37,8 @@
 
 (menu-bar-mode -1)
 
+(pixel-scroll-precision-mode 1)
+
 (when (display-graphic-p) ; Start full screen
   (add-to-list 'default-frame-alist '(fullscreen . t))
   (x-focus-frame nil))
@@ -60,7 +62,7 @@
  ;; When one selects something in another program to paste it into Emacs,
  ;; but kills something in Emacs before actually pasting it,
  ;; this selection is gone unless this variable is non-nil
- save-interprogram-paste-before-kill t
+ save-interprogram-paste-before-kill nil ;; This is disabled because it crashes emacs.
 
  ;; Shows all options when running apropos. For more info,
  ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
