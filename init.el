@@ -1025,18 +1025,29 @@ See URL `http://stylelint.io/'."
   (all-the-icons-completion-mode))
 
 (use-package orderless
+  :config
+  (defun prot-orderless-literal-dispatcher (pattern _index _total)
+    "Literal style dispatcher using the equals sign as a suffix.
+It matches PATTERN _INDEX and _TOTAL according to how Orderless
+parses its input."
+    (when (string-suffix-p "=" pattern)
+      `(orderless-literal . ,(substring pattern 0 -1))))
   :custom
+
   (completion-styles '(orderless basic))      ; Use orderless
   (completion-category-overrides
    '((file (styles basic ; For `tramp' hostname completion with `vertico'
                    partial-completion
                    orderless))))
   (orderless-component-separator 'orderless-escapable-split-on-space)
+
   (orderless-matching-styles
    '(orderless-literal
      orderless-prefixes
      orderless-initialism
-     orderless-regexp)))
+     orderless-regexp))
+
+  (orderless-style-dispatchers '(prot-orderless-literal-dispatcher)))
 
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
