@@ -432,50 +432,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
-(use-package notmuch
-  :commands notmuch-poll-async
-  :bind (:map notmuch-common-keymap ("G" . notmuch-poll-async-with-refresh))
-  :config
-  (defun notmuch-new-sentinel (proc msg)
-    (let ((buffer (process-buffer proc))
-          (status (process-status proc)))
-      (when (memq status '(exit signal))
-        (kill-buffer buffer)
-        (when (eq status 'signal)
-          (error "Notmuch: poll script `%s' failed!" notmuch-poll-script))
-        (when (eq status 'exit)
-          (message "Polling mail...done"))
-        (when notmuch-refresh-buffer
-          (with-current-buffer notmuch-refresh-buffer
-            (notmuch-refresh-this-buffer)
-            (setq notmuch-refresh-buffer nil))))))
-  (defun notmuch-poll-async-with-refresh ()
-    (interactive)
-    (setq notmuch-refresh-buffer (current-buffer))
-    (notmuch-poll-async))
-  (defun notmuch-poll-async ()
-    (interactive)
-    (message "Polling mail...")
-    (notmuch-start-notmuch
-     "poll"
-     "*notmuch-new*"
-     #'notmuch-new-sentinel
-     "new"))
-  (setq message-sendmail-f-is-evil t
-        sendmail-program "msmtp"
-        message-sendmail-extra-arguments '("--read-envelope-from")
-        send-mail-function 'sendmail-send-it)
-
-  (setq notmuch-saved-searches       
-        '((:name "work/inbox" :query "tag:inbox AND to:tidalmigrations.com")
-          (:name "work/unread" :query "tag:inbox AND tag:unread AND to:tidalmigrations.com")
-          (:name "personal/inbox" :query "tag:inbox AND to:gmail.com")
-          (:name "personal/unread" :query "tag:inbox AND tag:unread AND to:gmail.com")
-          (:name "personal/unreplied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. not thread:\"{to:justincbarclay@gmail.com}\"")
-          (:name "personal/replied" :query "tag:sent from:justincbarclay@gmail.com date:yesterday.. thread:\"{to:justincbarclay@gmail.com}\"")
-          (:name "personal/recently-sent" :query "tag:sent date:yesterday..")))
-  (require 'ol-notmuch))
-
 (cond
  (jb/os-macos-p
   (progn
@@ -780,7 +736,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package tree-sitter-langs
   :after tree-sitter
-  :config
+  :init
   (tree-sitter-require 'tsx)
   (add-to-list 'tree-sitter-major-mode-language-alist '(tsx-mode . tsx)))
 
@@ -1150,7 +1106,7 @@ parses its input."
   :config
   (setq corfu-auto-delay 0.1)
   (setq corfu-auto 't)
-  (setq corfu-auto-prefix 2)
+  (setq corfu-auto-prefix 3)
   (setq corfu-min-width 40)
   (setq corfu-min-height 20)
 

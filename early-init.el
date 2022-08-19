@@ -62,7 +62,7 @@
  ;; When one selects something in another program to paste it into Emacs,
  ;; but kills something in Emacs before actually pasting it,
  ;; this selection is gone unless this variable is non-nil
- save-interprogram-paste-before-kill nil ;; This is disabled because it crashes emacs.
+ ;;save-interprogram-paste-before-kill nil ;; This is disabled because it crashes emacs.
 
  ;; Shows all options when running apropos. For more info,
  ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
