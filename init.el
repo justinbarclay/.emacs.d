@@ -9,7 +9,7 @@
 (setq file-name-handler-alist nil)
 
 (setq user-full-name "Justin Barclay"
-      user-mail-address "justinbarclay@gmail.com")
+      user-mail-address "me@justincbarclay.ca")
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -45,8 +45,7 @@
   :ensure nil
   :bind
   (("C-c a" . org-agenda)
-   ("C-c c" . org-capture)
-   ("C-c C-v C-c" . jb/org-clear-results))
+   ("C-c c" . org-capture))
   :init
   (progn
     (setq org-src-tab-acts-natively nil)
@@ -431,6 +430,68 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :after magit
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+
+(use-package mu4e
+  :ensure nil
+  :init
+  (require 'mu4e)
+  :config
+  (setq mu4e-headers-skip-duplicates  t
+        mu4e-view-show-images t
+        mu4e-view-show-addresses t
+        mu4e-compose-format-flowed nil
+        mu4e-date-format "%y/%m/%d"
+        mu4e-headers-date-format "%Y/%m/%d"
+        mu4e-change-filenames-when-moving t
+        mu4e-attachments-dir "~/Downloads"
+
+        mu4e-maildir       "~/Maildir"   ;; top-level Maildir
+        ;; note that these folders below must start with /
+        ;; the paths are relative to maildir root
+        mu4e-refile-folder "/Archive"
+        mu4e-sent-folder   "/Sent"
+        mu4e-drafts-folder "/Drafts"
+        mu4e-trash-folder  "/Trash")
+
+  ;; this setting allows to re-sync and re-index mail
+  ;; by pressing U
+  (setq mu4e-get-mail-command  "mbsync -a")
+
+  (setq message-send-mail-function   'smtpmail-send-it
+        smtpmail-default-smtp-server "smtp.fastmail.com"
+        smtpmail-smtp-server         "smtp.fastmail.com"))
+
+(use-package mu4e-dashboard
+  :after mu4e
+  :straight (mu4e-dashboard :type git :host github :repo "rougier/mu4e-dashboard"))
+
+(use-package ligature
+  :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
+  :defer 10
+  :init (ligature-generate-ligatures)
+  :config
+   ;; Enable the "www" ligature in every possible major mode
+  (ligature-set-ligatures 't '("www"))
+  ;; Enable traditional ligature support in eww-mode, if the
+  ;; `variable-pitch' face supports it
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  ;; Enable all Cascadia Code ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+                                       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+                                       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+                                       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+                                       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+                                       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+                                       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+                                       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+                                       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+                                       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+                                       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+                                       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+                                       "\\" "://"))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t))
 
 (cond
  (jb/os-macos-p
@@ -1106,7 +1167,7 @@ parses its input."
   :config
   (setq corfu-auto-delay 0.1)
   (setq corfu-auto 't)
-  (setq corfu-auto-prefix 3)
+  (setq corfu-auto-prefix 2)
   (setq corfu-min-width 40)
   (setq corfu-min-height 20)
 

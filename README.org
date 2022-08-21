@@ -169,8 +169,9 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
 ** Personal information
 #+BEGIN_SRC emacs-lisp
   (setq user-full-name "Justin Barclay"
-        user-mail-address "justinbarclay@gmail.com")
+        user-mail-address "me@justincbarclay.ca")
 #+END_SRC
+
 ** Function for making README.org work
 Tangle and Compile init file
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
@@ -291,8 +292,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
     :ensure nil
     :bind
     (("C-c a" . org-agenda)
-     ("C-c c" . org-capture)
-     ("C-c C-v C-c" . jb/org-clear-results))
+     ("C-c c" . org-capture))
     :init
     (progn
       (setq org-src-tab-acts-natively nil)
@@ -764,12 +764,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
        magit-set-upstream-on-push 'askifnotset))
     )
 #+END_SRC
-*** Magit blame
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package magit-blame
-  :ensure nil
-  :bind ("C-c C-g b" . magit-blame-mode))
-#+END_SRC
 *** Magit forges
 #+BEGIN_SRC emacs-lisp
   (use-package forge
@@ -777,6 +771,49 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
+** Mu4e
+#+begin_src emacs-lisp
+  (use-package mu4e
+    :ensure nil
+    :init
+    (require 'mu4e)
+    :config
+    (setq mu4e-headers-skip-duplicates  t
+          mu4e-view-show-images t
+          mu4e-view-show-addresses t
+          mu4e-compose-format-flowed nil
+          mu4e-date-format "%y/%m/%d"
+          mu4e-headers-date-format "%Y/%m/%d"
+          mu4e-change-filenames-when-moving t
+          mu4e-attachments-dir "~/Downloads"
+
+          mu4e-maildir       "~/Maildir"   ;; top-level Maildir
+          ;; note that these folders below must start with /
+          ;; the paths are relative to maildir root
+          mu4e-refile-folder "/Archive"
+          mu4e-sent-folder   "/Sent"
+          mu4e-drafts-folder "/Drafts"
+          mu4e-trash-folder  "/Trash")
+
+    ;; this setting allows to re-sync and re-index mail
+    ;; by pressing U
+    (setq mu4e-get-mail-command  "mbsync -a")
+
+    (setq message-send-mail-function   'smtpmail-send-it
+          smtpmail-default-smtp-server "smtp.fastmail.com"
+          smtpmail-smtp-server         "smtp.fastmail.com"))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25343 15230 23226 324000) :init (25343 15230 23219 635000) :init-secs (0 0 69563 575000) :use-package-secs (0 0 69581 598000) :config (25343 15230 23210 881000) :config-secs (0 0 11 644000)))
+
+** Mu4e Dashboard
+#+begin_src emacs-lisp
+  (use-package mu4e-dashboard
+    :after mu4e
+    :straight (mu4e-dashboard :type git :host github :repo "rougier/mu4e-dashboard"))
+#+end_src
+
 * Look and Feel
 ** Window
 *** Natural colouring from emacs chrome
@@ -834,7 +871,7 @@ I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good
 *** Ligatures
 
 Ok we know our font supports ligatures, let's set that up. Right now, ligature.el is not on MELPA/ELPA so we need to use straight to download this for us.
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (use-package ligature
     :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
     :defer 10
