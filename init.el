@@ -1165,11 +1165,11 @@ parses its input."
   :init
   (global-corfu-mode)
   :config
-  (setq corfu-auto-delay 0.1)
-  (setq corfu-auto 't)
-  (setq corfu-auto-prefix 2)
-  (setq corfu-min-width 40)
-  (setq corfu-min-height 20)
+  (setq corfu-auto-delay 0.1
+        corfu-auto 't
+        corfu-auto-prefix 2
+        corfu-min-width 40
+        corfu-min-height 20)
 
   ;; You can also enable Corfu more generally for every minibuffer, as
   ;; long as no other completion UI is active. If you use Mct or
@@ -1218,12 +1218,28 @@ parses its input."
           js-mode
           tsx-mode)
          . lsp-deferred)
+  (lsp-completion-mode . my/lsp-mode-setup-completion)
   :config
   (setq lsp-idle-delay 0.1
         lsp-log-io nil
         lsp-completion-provider :none
         lsp-headerline-breadcrumb-enable nil
-        read-process-output-max (* 1024 1024)))
+        read-process-output-max (* 1024 1024))
+  (defun lsp-completion--looking-back-trigger-characterp (& args)
+    nil)
+  :init
+  (defun my/orderless-dispatch-flex-first (_pattern index _total)
+    (and (eq index 0) 'orderless-flex))
+
+  (defun my/lsp-mode-setup-completion ()
+    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+          '(orderless)))
+
+  ;; Optionally configure the first word as flex filtered.
+  (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
+
+  ;; Optionally configure the cape-capf-buster.
+  (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
