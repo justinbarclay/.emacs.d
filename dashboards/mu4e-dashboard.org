@@ -1,0 +1,80 @@
+* Mu for Emacs (mu4e)                   [[mu:flag:unread|%3d Unread][  1 Unread]]
+
+[[mu:flag:unread][Unread]]  [[mu:flag:unread|%4d][   1]] .... [u]  [[mu:date:today..now][Today]]      [[mu:date:today..now|%4d][ 127]] .... [t]  *Compose* ...... [C]
+[[mu:m:/Inbox and flag:unread][Inbox]]   [[mu:m:/Inbox and flag:unread|%4d][   0]] .... [i]  [[mu:date:2d..today and not date:today..now][Yesterday]]  [[mu:date:2d..today and not date:today..now|%4d][  92]] .... [y]  *Update* ....... [U]
+[[mu:m:/Drafts][Drafts]]  [[mu:m:/Drafts|%4d][   0]] .... [d]  [[mu:date:7d..now][Last week]]  [[mu:date:7d..now|%4d][ 327]] .... [w]  *Switch context* [;]
+[[mu:m:/Sent][Sent]]    [[mu:m:/Sent|%4d][   0]] .... [s]  [[mu:date:4w..now][Last month]] [[mu:date:4w..|%4d][ 338]] .... [m]  *Quit* ......... [q]
+[[mu:m:/Inbox/Github and flag:unread][Github]]  [[mu:m:/Inbox/Github and flag:unread|%4d][   1]] .... [gh]
+
+* Queries
+
+Type *C-c C-c* on the /CALL/ line below to evaluate your query.
+*NOTE*: dashboard needs to be deactivated first
+
+#+CALL: query("flag:unread", 5)
+#+RESULTS:
+- Po Lu via Bug reports for GNU Emacs,  the Swiss army knife of text editors <bug-gnu-emacs@gnu.org> bug#57364: 28.1.91; asynchronous X server error when creating a second frame on alternate DISPLAY
+- Mike Kupfer <mkupfer@alum.berkeley.edu> bug#57293: 29.0.50; query-replace with Wdired skips symlink target
+- Dima Kogan <dima@secretsauce.net> bug#56635: 29.0.50; [PATCH] hide-show in python-mode supports ONLY function and class blocks
+- Jim Porter <jporterbugs@gmail.com> bug#57370: 28.1; eshell/addpath does not work when called noninteractively
+- Michael Heerdegen <michael_heerdegen@web.de> bug#57293: 29.0.50; query-replace with Wdired skips symlink target
+
+* Saved searches
+[[mu:m:/Archive][Archive]]   [[mu:m:/Archive|%4d][  47]] ....... [[mu:m:/Archive||100][100]] - [[mu:m:/Archive||500][500]]  [[mu:flag:attach][ Attachments]] [[mu:flag:attach|%4d][   3]] ...... [[mu:flag:attach||99999][all]] - [[mu:size:10M..][big]]
+[[mu:flag:flagged][Important]] [[mu:flag:flagged|%4d][   0]] ....... [[mu:flag:flagged||100][100]] - [[mu:flag:flagged||500][500]]   [[mu:flag:encrypted][Encrypted]]   [[mu:flag:encrypted|%4d][   0]] ...... [[mu:flag:encrypted||100][100]] - [[mu:flag:encrypted||500][500]]
+[[mu:m:/Inbox/Github][Github]]    [[mu:m:/Inbox/Github|%4d][ 140]] ....... [[mu:m:/Inbox/Github||100][100]] - [[mu:m:/Inbox/Github||500][500]]
+
+** People
+[[mu:from:rms@gnu.org][Richard Stallman]]    [[mu:from:rms@gnu.org|%4d][  14]] ......................... [[mu:mu:from:rms@gnu.org||100][100]] - [[mu:from:rms@gnu.org||500][500]] - [[mu:from:rms@gnu.org||9999][all]]
+[[mu:from:djcb@djcbsoftware.nl][Dirk-Jan C. Binnema]] [[mu:from:djcb@djcbsoftware.nl|%4d][   1]] ......................... [[mu:from:djcb@djcbsoftware.nl||100][100]] - [[mu:from:djcb@djcbsoftware.nl||500][500]] - [[mu:from:djcb@djcbsoftware.nl||9999][all]]
+
+** Date
+[[Year 2022]] [[mu:date:20220101..20221231|%4d][ 338]]         [[mu:date:20210101..20211231][Year 2021]] [[mu:date:20210101..20211231|%4d][   0]]
+[[mu:date:20200101..20201231][Year 2020]] [[mu:date:20200101..20201231|%4d][   0]]         [[mu:date:20190101..20191231][Year 2019]] [[mu:date:20190101..20191231|%4d][   0]]
+[[mu:date:20180101..20181231][Year 2018]] [[mu:date:20180101..20181231|%4d][   0]]
+
+** Mailing lists
+[[mu:list:emacs-devel.gnu.org
+][Emacs development]] [[mu:list:emacs-devel.gnu.org|%4d][ 110]] ........................... [[mu:list:emacs-devel.gnu .org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-devel.gnu.org||9999][all]]
+[[mu:list:bug-gnu-emacs.gnu.org
+][Emacs bugs]]        [[mu:list:bug-gnu-emacs.gnu.org|%4d][  16]] ........................... [[mu:list:bug-gnu-emacs.gnu.org||100][100]] - [[mu:list:bug-gnu-emacs.gnu.org||500][500]] - [[mu:list:bug-gnu-emacs.gnu.org||9999][all]]
+[[mu:list:emacs-help.gnu.org
+][Emacs help]]        [[mu:list:emacs-help.gnu.org|%4d][   0]] ........................... [[mu:list:emacs-help.gnu .org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-help.gnu.org||9999][all]]
+[[mu:list:mu-discuss.googlegroups.com][Mu4e discussions]]  [[mu:list:mu-discuss.googlegroups.com|%4d][   0]] ........................... [[mu:list:mu-discuss.googlegroups.com||100][100]] - [[mu:list:mu-discuss.googlegroups.com||500][500]] - [[mu:list:mu-discuss.googlegroups.com||9999][all]]
+
+* Information
+
+*Database*  : ~/.cache/mu/xapian
+*Maildir*   : ~/Maildir/
+*Addresses* : [[mailto:me@justinbarclay.ca][<me@justinbarclay.ca>]] (fastmail)
+
+* Configuration
+:PROPERTIES:
+:VISIBILITY: hideall
+:END:
+
+#+STARTUP: showall showstars indent
+
+#+NAME: query
+#+BEGIN_SRC sh :results list raw :var query="flag:unread" count=5 
+export LANG="en_US.UTF-8"; export LC_ALL="en_US.UTF-8";
+mu find -n $count --sortfield=date --reverse --fields "f s" $query
+#+END_SRC
+
+#+KEYMAP: u | mu4e-search "flag:unread"
+#+KEYMAP: i | mu4e-search "m:/Inbox and flag:unread"
+#+KEYMAP: I | mu4e-search "m:/Inbox"
+#+KEYMAP: d | mu4e-search "m:/Drafts"
+#+KEYMAP: s | mu4e-search "m:/Sent"
+#+KEYMAP: gh | mu4e-search "m:/Inbox/Github and flag:unread"
+#+KEYMAP: Gh | mu4e-search "m:/Inbox/Github"
+
+#+KEYMAP: t | mu4e-headers-search "date:today..now"
+#+KEYMAP: y | mu4e-headers-search "date:2d..today and not date:today..now"
+#+KEYMAP: w | mu4e-headers-search "date:7d..now"
+#+KEYMAP: m | mu4e-headers-search "date:4w..now"
+
+#+KEYMAP: C | mu4e-compose-new
+#+KEYMAP: U | mu4e-dashboard-update
+#+KEYMAP: ; | mu4e-context-switch
+#+KEYMAP: q | kill-current-buffer

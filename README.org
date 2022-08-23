@@ -771,47 +771,76 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
-** Mu4e
+** Email (mu4e)
 #+begin_src emacs-lisp
   (use-package mu4e
     :ensure nil
-    :init
-    (require 'mu4e)
-    :config
+    :commands (mu4e)
+    :functions (mu4e--server-filter)
+    :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
+    :bind (:map mu4e-headers-mode-map
+                ("q" . kill-current-buffer))
+    :config 
     (setq mu4e-headers-skip-duplicates  t
-          mu4e-view-show-images t
-          mu4e-view-show-addresses t
-          mu4e-compose-format-flowed nil
-          mu4e-date-format "%y/%m/%d"
-          mu4e-headers-date-format "%Y/%m/%d"
-          mu4e-change-filenames-when-moving t
-          mu4e-attachments-dir "~/Downloads"
+     mu4e-view-show-images t
+     mu4e-view-show-addresses t
+     mu4e-compose-format-flowed nil
+     mu4e-date-format "%y/%m/%d"
+     mu4e-headers-date-format "%Y/%m/%d"
+     mu4e-change-filenames-when-moving t
+     mu4e-attachments-dir "~/Downloads"
 
-          mu4e-maildir       "~/Maildir"   ;; top-level Maildir
-          ;; note that these folders below must start with /
-          ;; the paths are relative to maildir root
-          mu4e-refile-folder "/Archive"
-          mu4e-sent-folder   "/Sent"
-          mu4e-drafts-folder "/Drafts"
-          mu4e-trash-folder  "/Trash")
+     mu4e-maildir       "~/Maildir"   ;; top-level Maildir
+     ;; note that these folders below must start with /
+     ;; the paths are relative to maildir root
+     mu4e-refile-folder "/Archive"
+     mu4e-sent-folder   "/Sent"
+     mu4e-drafts-folder "/Drafts"
+     mu4e-trash-folder  "/Trash"
 
-    ;; this setting allows to re-sync and re-index mail
-    ;; by pressing U
-    (setq mu4e-get-mail-command  "mbsync -a")
+     ;; this setting allows to re-sync and re-index mail
+     ;; by pressing U
+     mu4e-get-mail-command  "mbsync -a"
 
-    (setq message-send-mail-function   'smtpmail-send-it
-          smtpmail-default-smtp-server "smtp.fastmail.com"
-          smtpmail-smtp-server         "smtp.fastmail.com"))
+     message-send-mail-function   'smtpmail-send-it
+     smtpmail-default-smtp-server "smtp.fastmail.com"
+     smtpmail-smtp-server         "smtp.fastmail.com"))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25343 15230 23226 324000) :init (25343 15230 23219 635000) :init-secs (0 0 69563 575000) :use-package-secs (0 0 69581 598000) :config (25343 15230 23210 881000) :config-secs (0 0 11 644000)))
 
 ** Mu4e Dashboard
 #+begin_src emacs-lisp
   (use-package mu4e-dashboard
+    :straight (:type git :host github :repo "rougier/mu4e-dashboard")
+    :bind ("C-c d" . mu4e-dashboard)
+    :custom
+    (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
+    :config
+    (flyspell-mode -1))
+#+end_src
+
+** Mu4e Theading
+#+begin_src emacs-lisp
+  (use-package mu4e-thread-folding
     :after mu4e
-    :straight (mu4e-dashboard :type git :host github :repo "rougier/mu4e-dashboard"))
+    :straight (:type git :host github :repo "rougier/mu4e-thread-folding")
+    :init
+    (add-to-list 'mu4e-header-info-custom
+                 '(:empty . (:name "Empty"
+                             :shortname ""
+                             :function (lambda (msg) "  "))))
+    :custom
+    (mu4e-headers-fields '((:empty         .    2)
+                           (:human-date    .   12)
+                           (:flags         .    6)
+                           (:mailing-list  .   10)
+                           (:from          .   22)
+                           (:subject       .   nil)))
+    :bind (:map mu4e-headers-mode-map
+                ("<tab>"     . mu4e-headers-toggle-at-point)
+                ("<left>"    . mu4e-headers-fold-at-point)
+                ("<S-left>"  . mu4e-headers-fold-all)
+                ("<right>"   . mu4e-headers-unfold-at-point)
+                ("<S-right>" . mu4e-headers-unfold-all)))                            
 #+end_src
 
 * Look and Feel
@@ -929,8 +958,8 @@ Now, we want to be able to select emojis. I'd prefer to use the built in emoji s
 
 ** Misc
 Don't pop up font menu
-#+BEGIN_SRC emacs-lisp 
-  (global-set-key (kbd "s-t") '(lambda () (interactive)))
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "s-t") #'(lambda () (interactive)))
 #+END_SRC
 
 No cursor blinking, it's distracting
@@ -995,9 +1024,22 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 #+END_SRC
 ** Theme
 *** Elegant Emacs
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package elegant-emacs-light
-    :straight (elegant-emacs-light :type git :host github :repo "rougier/elegant-emacs"))
+    :straight (:type git :host github :repo "rougier/elegant-emacs"))
+#+end_src
+
+*** Lambda Themes
+#+begin_src emacs-lisp
+(use-package lambda-themes
+  :straight (:type git :host github :repo "lambda-emacs/lambda-themes") 
+  :custom
+  (lambda-themes-set-italic-comments nil)
+  (lambda-themes-set-italic-keywords nil)
+  (lambda-themes-set-variable-pitch nil) 
+  :config
+  ;; load preferred theme 
+  (load-theme 'lambda-light))
 #+end_src
 
 *** Doom Themes

@@ -433,37 +433,66 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package mu4e
   :ensure nil
-  :init
-  (require 'mu4e)
-  :config
+  :commands (mu4e)
+  :functions (mu4e--server-filter)
+  :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
+  :bind (:map mu4e-headers-mode-map
+              ("q" . kill-current-buffer))
+  :config 
   (setq mu4e-headers-skip-duplicates  t
-        mu4e-view-show-images t
-        mu4e-view-show-addresses t
-        mu4e-compose-format-flowed nil
-        mu4e-date-format "%y/%m/%d"
-        mu4e-headers-date-format "%Y/%m/%d"
-        mu4e-change-filenames-when-moving t
-        mu4e-attachments-dir "~/Downloads"
+   mu4e-view-show-images t
+   mu4e-view-show-addresses t
+   mu4e-compose-format-flowed nil
+   mu4e-date-format "%y/%m/%d"
+   mu4e-headers-date-format "%Y/%m/%d"
+   mu4e-change-filenames-when-moving t
+   mu4e-attachments-dir "~/Downloads"
 
-        mu4e-maildir       "~/Maildir"   ;; top-level Maildir
-        ;; note that these folders below must start with /
-        ;; the paths are relative to maildir root
-        mu4e-refile-folder "/Archive"
-        mu4e-sent-folder   "/Sent"
-        mu4e-drafts-folder "/Drafts"
-        mu4e-trash-folder  "/Trash")
+   mu4e-maildir       "~/Maildir"   ;; top-level Maildir
+   ;; note that these folders below must start with /
+   ;; the paths are relative to maildir root
+   mu4e-refile-folder "/Archive"
+   mu4e-sent-folder   "/Sent"
+   mu4e-drafts-folder "/Drafts"
+   mu4e-trash-folder  "/Trash"
 
-  ;; this setting allows to re-sync and re-index mail
-  ;; by pressing U
-  (setq mu4e-get-mail-command  "mbsync -a")
+   ;; this setting allows to re-sync and re-index mail
+   ;; by pressing U
+   mu4e-get-mail-command  "mbsync -a"
 
-  (setq message-send-mail-function   'smtpmail-send-it
-        smtpmail-default-smtp-server "smtp.fastmail.com"
-        smtpmail-smtp-server         "smtp.fastmail.com"))
+   message-send-mail-function   'smtpmail-send-it
+   smtpmail-default-smtp-server "smtp.fastmail.com"
+   smtpmail-smtp-server         "smtp.fastmail.com"))
 
 (use-package mu4e-dashboard
+  :straight (:type git :host github :repo "rougier/mu4e-dashboard")
+  :bind ("C-c d" . mu4e-dashboard)
+  :custom
+  (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
+  :config
+  (flyspell-mode -1))
+
+(use-package mu4e-thread-folding
   :after mu4e
-  :straight (mu4e-dashboard :type git :host github :repo "rougier/mu4e-dashboard"))
+  :straight (:type git :host github :repo "rougier/mu4e-thread-folding")
+  :init
+  (add-to-list 'mu4e-header-info-custom
+               '(:empty . (:name "Empty"
+                           :shortname ""
+                           :function (lambda (msg) "  "))))
+  :custom
+  (mu4e-headers-fields '((:empty         .    2)
+                         (:human-date    .   12)
+                         (:flags         .    6)
+                         (:mailing-list  .   10)
+                         (:from          .   22)
+                         (:subject       .   nil)))
+  :bind (:map mu4e-headers-mode-map
+              ("<tab>"     . mu4e-headers-toggle-at-point)
+              ("<left>"    . mu4e-headers-fold-at-point)
+              ("<S-left>"  . mu4e-headers-fold-all)
+              ("<right>"   . mu4e-headers-unfold-at-point)
+              ("<S-right>" . mu4e-headers-unfold-all)))
 
 (use-package ligature
   :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
@@ -505,9 +534,22 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (set-fontset-font "fontset-default" 'emoji "Segoe UI Emoji" nil 'prepend)))
  nil)
 
-(global-set-key (kbd "s-t") '(lambda () (interactive)))
+(global-set-key (kbd "s-t") #'(lambda () (interactive)))
 
 (blink-cursor-mode 0)
+
+(use-package elegant-emacs-light
+  :straight (:type git :host github :repo "rougier/elegant-emacs"))
+
+(use-package lambda-themes
+  :straight (:type git :host github :repo "lambda-emacs/lambda-themes") 
+  :custom
+  (lambda-themes-set-italic-comments nil)
+  (lambda-themes-set-italic-keywords nil)
+  (lambda-themes-set-variable-pitch nil) 
+  :config
+  ;; load preferred theme 
+  (load-theme 'lambda-light))
 
 (use-package doom-themes 
   :init
