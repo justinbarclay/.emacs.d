@@ -38,6 +38,7 @@
 
 (use-package diminish)                ;; if you use :diminish
 (use-package bind-key)                ;; if you use any :bind variant
+(use-package use-package-ensure-system-package) ;; So we can specify external programs needed for some packages
 
 (use-package gnu-elpa-keyring-update)
 
@@ -433,6 +434,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package mu4e
   :ensure nil
+  :ensure-system-package mu
+  :ensure-system-package (mbsync . isync)
   :commands (mu4e)
   :functions (mu4e--server-filter)
   :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
@@ -579,6 +582,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package dirvish
   :init
   (dirvish-override-dired-mode)
+  :ensure-system-package
+  ((fd)
+   (pdfopen . poppler)
+   (ffmpegthumbnailer)
+   (mediainfo)
+   (tar)
+   (unzip))
   :custom
   ;; Go back home? Just press `bh'
   (dirvish-bookmark-entries
@@ -782,6 +792,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package avy
   :bind ("C-c s" . avy-goto-char))
+
+(use-package rg
+  :ensure-system-package
+  (rg . ripgrep))
 
 (use-package multiple-cursors
   :bind

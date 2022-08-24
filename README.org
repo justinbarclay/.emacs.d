@@ -252,6 +252,7 @@ If we're boot strapping a fresh Emacs install, we should have use-package cloned
 
   (use-package diminish)                ;; if you use :diminish
   (use-package bind-key)                ;; if you use any :bind variant
+  (use-package use-package-ensure-system-package) ;; So we can specify external programs needed for some packages
 #+END_SRC
 *** Using use-package
 The plan is to use a copious amount of deferral to speed up emacs boot time.
@@ -775,6 +776,8 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+begin_src emacs-lisp
   (use-package mu4e
     :ensure nil
+    :ensure-system-package mu
+    :ensure-system-package (mbsync . isync)
     :commands (mu4e)
     :functions (mu4e--server-filter)
     :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
@@ -807,7 +810,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
      smtpmail-smtp-server         "smtp.fastmail.com"))
 #+end_src
 
-** Mu4e Dashboard
+*** Mu4e Dashboard
 #+begin_src emacs-lisp
   (use-package mu4e-dashboard
     :straight (:type git :host github :repo "rougier/mu4e-dashboard")
@@ -818,7 +821,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (flyspell-mode -1))
 #+end_src
 
-** Mu4e Theading
+*** Mu4e Theading
 #+begin_src emacs-lisp
   (use-package mu4e-thread-folding
     :after mu4e
@@ -1123,6 +1126,13 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
   (use-package dirvish
     :init
     (dirvish-override-dired-mode)
+    :ensure-system-package
+    ((fd)
+     (pdfopen . poppler)
+     (ffmpegthumbnailer)
+     (mediainfo)
+     (tar)
+     (unzip))
     :custom
     ;; Go back home? Just press `bh'
     (dirvish-bookmark-entries
@@ -1382,6 +1392,13 @@ As Stolen from http://cestlaz.github.io/posts/using-emacs-7-avy/ (January 10, 20
 (use-package avy
   :bind ("C-c s" . avy-goto-char))
 #+END_SRC
+** Searching
+#+begin_src emacs-lisp
+  (use-package rg
+    :ensure-system-package
+    (rg . ripgrep))
+#+end_src
+
 * Editing
 General config to make editing text feel nice
 ** Multiple Cursors
