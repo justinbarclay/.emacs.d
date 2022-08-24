@@ -818,6 +818,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :custom
     (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
     :config
+    (display-line-numbers-mode -1)
     (flyspell-mode -1))
 #+end_src
 
@@ -847,6 +848,17 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 * Look and Feel
+** Nano Emacs
+#+begin_src emacs-lisp :tangle no
+  (use-package nano-emacs
+   :straight '(nano-emacs :type git :host github :repo "rougier/nano-emacs")
+   :init
+   (require 'nano))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25349 55801 280037 339000) :init (25349 55801 280030 709000) :init-secs (0 0 15835 601000) :use-package-secs (0 0 50579 530000)))
+
 ** Window
 *** Natural colouring from emacs chrome
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
@@ -927,7 +939,7 @@ Ok we know our font supports ligatures, let's set that up. Right now, ligature.e
                                          "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
                                          "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
                                          "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
-                                         "\\" "://"))
+                                          "://"))
     ;; Enables ligature checks globally in all buffers. You can also do it
     ;; per mode with `ligature-mode'.
     (global-ligature-mode t))

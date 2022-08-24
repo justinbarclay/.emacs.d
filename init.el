@@ -473,6 +473,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :custom
   (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
   :config
+  (display-line-numbers-mode -1)
   (flyspell-mode -1))
 
 (use-package mu4e-thread-folding
@@ -520,7 +521,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                        "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
                                        "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
                                        "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
-                                       "\\" "://"))
+                                        "://"))
   ;; Enables ligature checks globally in all buffers. You can also do it
   ;; per mode with `ligature-mode'.
   (global-ligature-mode t))
