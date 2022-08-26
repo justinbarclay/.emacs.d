@@ -693,6 +693,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
   ;; https://github.com/magit/magit
   (use-package magit
     :commands magit-get-top-dir
+    :ensure-system-package git
     :bind (("C-c g" . magit-status)
            ("C-c C-g l" . magit-file-log))
     :init
@@ -792,7 +793,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
      mu4e-headers-date-format "%Y/%m/%d"
      mu4e-change-filenames-when-moving t
      mu4e-attachments-dir "~/Downloads"
-
+     mu4e-use-fancy-chars 't
      mu4e-maildir       "~/Maildir"   ;; top-level Maildir
      ;; note that these folders below must start with /
      ;; the paths are relative to maildir root
@@ -805,16 +806,24 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
      ;; by pressing U
      mu4e-get-mail-command  "mbsync -a"
 
+     mu4e-completing-read-function 'completing-read
      message-send-mail-function   'smtpmail-send-it
      smtpmail-default-smtp-server "smtp.fastmail.com"
-     smtpmail-smtp-server         "smtp.fastmail.com"))
+     smtpmail-smtp-server         "smtp.fastmail.com")
+
+    (display-line-numbers-mode -1))
 #+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25351 60460 76972 135000) :init (25351 60460 76894 826000) :init-secs (0 0 376 464000) :use-package-secs (0 0 471 876000) :config (25351 60460 76875 664000) :config-secs (0 0 330 111000)))
 
 *** Mu4e Dashboard
 #+begin_src emacs-lisp
   (use-package mu4e-dashboard
     :straight (:type git :host github :repo "rougier/mu4e-dashboard")
     :bind ("C-c d" . mu4e-dashboard)
+    :hook
+    (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
     :custom
     (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
     :config
@@ -917,11 +926,9 @@ I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good
 Ok we know our font supports ligatures, let's set that up. Right now, ligature.el is not on MELPA/ELPA so we need to use straight to download this for us.
 #+BEGIN_SRC emacs-lisp
   (use-package ligature
-    :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
-    :defer 10
-    :init (ligature-generate-ligatures)
+    :defer t
     :config
-     ;; Enable the "www" ligature in every possible major mode
+    ;; Enable the "www" ligature in every possible major mode
     (ligature-set-ligatures 't '("www"))
     ;; Enable traditional ligature support in eww-mode, if the
     ;; `variable-pitch' face supports it

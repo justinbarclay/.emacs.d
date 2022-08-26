@@ -1,10 +1,10 @@
-* Mu for Emacs (mu4e)                                        [[mu:flag:unread|%3d Unread][ 16 Unread]]
+* Mu for Emacs (mu4e)                                        [[mu:flag:unread|%3d Unread][216 Unread]]
 
-[[mu:flag:unread][Unread]]  [[mu:flag:unread|%4d][  16]] .... [u]  [[mu:date:today..now][Today]]      [[mu:date:today..now|%4d][   3]] .... [t]  *Compose* ...... [C]
-[[mu:m:/Inbox and flag:unread][Inbox]]   [[mu:m:/Inbox and flag:unread|%4d][   0]] .... [i]  [[mu:date:2d..today and not date:today..now][Yesterday]]  [[mu:date:2d..today and not date:today..now|%4d][ 325]] .... [y]  *Update* ....... [U]
-[[mu:m:/Drafts][Drafts]]  [[mu:m:/Drafts|%4d][   0]] .... [d]  [[mu:date:7d..now][Last week]]  [[mu:date:7d..now|%4d][ 448]] .... [w]  *Switch context* [;]
-[[mu:m:/Sent][Sent]]    [[mu:m:/Sent|%4d][   0]] .... [s]  [[mu:date:4w..now][Last month]] [[mu:date:4w..|%4d][ 466]] .... [m]  *Quit* ......... [q]
-[[mu:m:/Inbox/Github and flag:unread][Github]]  [[mu:m:/Inbox/Github and flag:unread|%4d][   1]] .... [gh]
+[[mu:flag:unread][Unread]]  [[mu:flag:unread|%4d][ 216]] .... [u]  [[mu:date:today..now][Today]]      [[mu:date:today..now|%4d][ 204]] .... [t]  *Compose* ...... [C]
+[[mu:m:/Inbox and flag:unread][Inbox]]   [[mu:m:/Inbox and flag:unread|%4d][   0]] .... [i]  [[mu:date:2d..today and not date:today..now][Yesterday]]  [[mu:date:2d..today and not date:today..now|%4d][ 332]] .... [y]  *Update* ....... [U]
+[[mu:m:/Drafts][Drafts]]  [[mu:m:/Drafts|%4d][   0]] .... [d]  [[mu:date:7d..now][Last week]]  [[mu:date:7d..now|%4d][ 890]] .... [w]  *Switch context* [;]
+[[mu:m:/Sent][Sent]]    [[mu:m:/Sent|%4d][   0]] .... [s]  [[mu:date:4w..now][Last month]] [[mu:date:4w..|%4d][ 977]] .... [m]  *Quit* ......... [q]
+[[mu:m:/Inbox/Github and flag:unread][Github]]  [[mu:m:/Inbox/Github and flag:unread|%4d][   0]] .... [gh]
 
 * Queries
 
@@ -20,24 +20,24 @@ Type *C-c C-c* on the /CALL/ line below to evaluate your query.
 - Michael Heerdegen <michael_heerdegen@web.de> bug#57293: 29.0.50; query-replace with Wdired skips symlink target
 
 * Saved searches
-[[mu:m:/Archive][Archive]]   [[mu:m:/Archive|%4d][  43]] ....... [[mu:m:/Archive||100][100]] - [[mu:m:/Archive||500][500]]  [[mu:flag:attach][ Attachments]] [[mu:flag:attach|%4d][   5]] ...... [[mu:flag:attach||99999][all]] - [[mu:size:10M..][big]]
+[[mu:m:/Archive][Archive]]   [[mu:m:/Archive|%4d][  58]] ....... [[mu:m:/Archive||100][100]] - [[mu:m:/Archive||500][500]]  [[mu:flag:attach][ Attachments]] [[mu:flag:attach|%4d][  16]] ...... [[mu:flag:attach||99999][all]] - [[mu:size:10M..][big]]
 [[mu:flag:flagged][Important]] [[mu:flag:flagged|%4d][   0]] ....... [[mu:flag:flagged||100][100]] - [[mu:flag:flagged||500][500]]   [[mu:flag:encrypted][Encrypted]]   [[mu:flag:encrypted|%4d][   0]] ...... [[mu:flag:encrypted||100][100]] - [[mu:flag:encrypted||500][500]]
-[[mu:m:/Inbox/Github][Github]]    [[mu:m:/Inbox/Github|%4d][ 140]] ....... [[mu:m:/Inbox/Github||100][100]] - [[mu:m:/Inbox/Github||500][500]]
+[[mu:m:/Inbox/Github][Github]]    [[mu:m:/Inbox/Github|%4d][ 252]] ....... [[mu:m:/Inbox/Github||100][100]] - [[mu:m:/Inbox/Github||500][500]]
 
 ** People
-[[mu:from:rms@gnu.org][Richard Stallman]]    [[mu:from:rms@gnu.org|%4d][  17]] ......................... [[mu:mu:from:rms@gnu.org||100][100]] - [[mu:from:rms@gnu.org||500][500]] - [[mu:from:rms@gnu.org||9999][all]]
+[[mu:from:rms@gnu.org][Richard Stallman]]    [[mu:from:rms@gnu.org|%4d][  29]] ......................... [[mu:mu:from:rms@gnu.org||100][100]] - [[mu:from:rms@gnu.org||500][500]] - [[mu:from:rms@gnu.org||9999][all]]
 [[mu:from:djcb@djcbsoftware.nl][Dirk-Jan C. Binnema]] [[mu:from:djcb@djcbsoftware.nl|%4d][   1]] ......................... [[mu:from:djcb@djcbsoftware.nl||100][100]] - [[mu:from:djcb@djcbsoftware.nl||500][500]] - [[mu:from:djcb@djcbsoftware.nl||9999][all]]
 
 ** Date
-[[Year 2022]] [[mu:date:20220101..20221231|%4d][ 466]]         [[mu:date:20210101..20211231][Year 2021]] [[mu:date:20210101..20211231|%4d][   0]]
+[[Year 2022]] [[mu:date:20220101..20221231|%4d][ 977]]         [[mu:date:20210101..20211231][Year 2021]] [[mu:date:20210101..20211231|%4d][   0]]
 [[mu:date:20200101..20201231][Year 2020]] [[mu:date:20200101..20201231|%4d][   0]]         [[mu:date:20190101..20191231][Year 2019]] [[mu:date:20190101..20191231|%4d][   0]]
 [[mu:date:20180101..20181231][Year 2018]] [[mu:date:20180101..20181231|%4d][   0]]
 
 ** Mailing lists
 [[mu:list:emacs-devel.gnu.org
-][Emacs development]] [[mu:list:emacs-devel.gnu.org|%4d][ 130]] ........................... [[mu:list:emacs-devel.gnu .org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-devel.gnu.org||9999][all]]
+][Emacs development]] [[mu:list:emacs-devel.gnu.org|%4d][ 294]] ........................... [[mu:list:emacs-devel.gnu .org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-devel.gnu.org||9999][all]]
 [[mu:list:bug-gnu-emacs.gnu.org
-][Emacs bugs]]        [[mu:list:bug-gnu-emacs.gnu.org|%4d][  97]] ........................... [[mu:list:bug-gnu-emacs.gnu.org||100][100]] - [[mu:list:bug-gnu-emacs.gnu.org||500][500]] - [[mu:list:bug-gnu-emacs.gnu.org||9999][all]]
+][Emacs bugs]]        [[mu:list:bug-gnu-emacs.gnu.org|%4d][ 269]] ........................... [[mu:list:bug-gnu-emacs.gnu.org||100][100]] - [[mu:list:bug-gnu-emacs.gnu.org||500][500]] - [[mu:list:bug-gnu-emacs.gnu.org||9999][all]]
 [[mu:list:emacs-help.gnu.org
 ][Emacs help]]        [[mu:list:emacs-help.gnu.org|%4d][   0]] ........................... [[mu:list:emacs-help.gnu .org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-help.gnu.org||9999][all]]
 [[mu:list:mu-discuss.googlegroups.com][Mu4e discussions]]  [[mu:list:mu-discuss.googlegroups.com|%4d][   0]] ........................... [[mu:list:mu-discuss.googlegroups.com||100][100]] - [[mu:list:mu-discuss.googlegroups.com||500][500]] - [[mu:list:mu-discuss.googlegroups.com||9999][all]]
@@ -76,5 +76,6 @@ mu find -n $count --sortfield=date --reverse --fields "f s" $query
 
 #+KEYMAP: C | mu4e-compose-new
 #+KEYMAP: U | mu4e-dashboard-update
+#+KEYMAP: F | mu4e-update-mail-and-index 't
 #+KEYMAP: ; | mu4e-context-switch
 #+KEYMAP: q | kill-current-buffer
