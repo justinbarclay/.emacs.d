@@ -946,9 +946,10 @@ Ok we know our font supports ligatures, let's set that up. Right now, ligature.e
                                          "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
                                          "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
                                          "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
-                                          "://"))
+                                         "\\\\" "://"))
     ;; Enables ligature checks globally in all buffers. You can also do it
     ;; per mode with `ligature-mode'.
+    :init
     (global-ligature-mode t))
 #+END_SRC
 
@@ -1047,8 +1048,8 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 ** Theme
 *** Elegant Emacs
 #+begin_src emacs-lisp
-  (use-package elegant-emacs-light
-    :straight (:type git :host github :repo "rougier/elegant-emacs"))
+  (use-package nano-theme
+    :straight (nano-theme :type git :host github :repo "rougier/nano-theme"))
 #+end_src
 
 *** Lambda Themes

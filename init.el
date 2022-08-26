@@ -355,6 +355,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 ;; https://github.com/magit/magit
 (use-package magit
   :commands magit-get-top-dir
+  :ensure-system-package git
   :bind (("C-c g" . magit-status)
          ("C-c C-g l" . magit-file-log))
   :init
@@ -450,7 +451,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    mu4e-headers-date-format "%Y/%m/%d"
    mu4e-change-filenames-when-moving t
    mu4e-attachments-dir "~/Downloads"
-
+   mu4e-use-fancy-chars 't
    mu4e-maildir       "~/Maildir"   ;; top-level Maildir
    ;; note that these folders below must start with /
    ;; the paths are relative to maildir root
@@ -463,13 +464,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    ;; by pressing U
    mu4e-get-mail-command  "mbsync -a"
 
+   mu4e-completing-read-function 'completing-read
    message-send-mail-function   'smtpmail-send-it
    smtpmail-default-smtp-server "smtp.fastmail.com"
-   smtpmail-smtp-server         "smtp.fastmail.com"))
+   smtpmail-smtp-server         "smtp.fastmail.com")
+
+  (display-line-numbers-mode -1))
 
 (use-package mu4e-dashboard
   :straight (:type git :host github :repo "rougier/mu4e-dashboard")
   :bind ("C-c d" . mu4e-dashboard)
+  :hook
+  (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
   :custom
   (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
   :config
@@ -499,11 +505,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
               ("<S-right>" . mu4e-headers-unfold-all)))
 
 (use-package ligature
-  :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
-  :defer 10
-  :init (ligature-generate-ligatures)
+  :defer t
   :config
-   ;; Enable the "www" ligature in every possible major mode
+  ;; Enable the "www" ligature in every possible major mode
   (ligature-set-ligatures 't '("www"))
   ;; Enable traditional ligature support in eww-mode, if the
   ;; `variable-pitch' face supports it
@@ -521,9 +525,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                        "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
                                        "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
                                        "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
-                                        "://"))
+                                       "\\\\" "://"))
   ;; Enables ligature checks globally in all buffers. You can also do it
   ;; per mode with `ligature-mode'.
+  :init
   (global-ligature-mode t))
 
 (cond
@@ -542,8 +547,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (blink-cursor-mode 0)
 
-(use-package elegant-emacs-light
-  :straight (:type git :host github :repo "rougier/elegant-emacs"))
+(use-package nano-theme
+  :straight (nano-theme :type git :host github :repo "rougier/nano-theme"))
 
 (use-package lambda-themes
   :straight (:type git :host github :repo "lambda-emacs/lambda-themes") 
