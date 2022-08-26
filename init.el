@@ -1218,50 +1218,17 @@ parses its input."
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
-(use-package corfu
+(use-package company
   :init
-  (global-corfu-mode)
+  (global-company-mode t)
+  :commands (compant-manual-begin)
+  :bind ("C-<tab>" . company-manual-begin)
   :config
-  (setq corfu-auto-delay 0.1
-        corfu-auto 't
-        corfu-auto-prefix 2
-        corfu-min-width 40
-        corfu-min-height 20)
-
-  ;; You can also enable Corfu more generally for every minibuffer, as
-  ;; long as no other completion UI is active. If you use Mct or
-  ;; Vertico as your main minibuffer completion UI, the following
-  ;; snippet should yield the desired result.
-  (defun corfu-enable-always-in-minibuffer ()
-    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-    (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
-                (bound-and-true-p vertico--input))
-      (setq-local corfu-auto nil) ; Ensure auto completion is disabled
-      (corfu-mode 1)))
-  (custom-set-faces '(corfu-current ((t :inherit region :background "#2d2844"))))
-  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
-
-(use-package cape
-  :init
-  ;; Add `completion-at-point-functions', used by `completion-at-point'.
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file))
-
-(use-package kind-icon
-  :init
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
-  :config
-  (setq kind-icon-default-face 'corfu-default ; Have background color be the same as `corfu' face background
-        kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
-
-(use-package corfu-doc
-  :after corfu
-  :hook (corfu-mode . corfu-doc-mode)
-  :config
-  (setq corfu-doc-delay 0.5)
-  (setq corfu-doc-max-width 70)
-  (setq corfu-doc-max-height 20)
-  (setq corfu-echo-documentation nil))
+  (setq company-tooltip-align-annotations t
+        company-minimum-prefix-length 1
+        company-idle-delay 0)
+  ;;(add-to-list 'company-backends 'company-emoji)
+  )
 
 (use-package yasnippet
  :hook (prog-mode . yas-minor-mode))
@@ -1282,8 +1249,6 @@ parses its input."
         lsp-completion-provider :none
         lsp-headerline-breadcrumb-enable nil
         read-process-output-max (* 1024 1024))
-  (defun lsp-completion--looking-back-trigger-characterp (& args)
-    nil)
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1296,120 +1261,7 @@ parses its input."
   (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
 
   ;; Optionally configure the cape-capf-buster.
-  (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
-
-  ;; Hack to help with lsp completions
-  ;;;###autoload
-  (defun lsp-completion-at-point ()
-    "Get lsp completions."
-    (when (or (--some (lsp--client-completion-in-comments? (lsp--workspace-client it))
-                      (lsp-workspaces))
-              (not (nth 4 (syntax-ppss))))
-      (let* ((trigger-chars (->> (lsp--server-capabilities)
-                                 (lsp:server-capabilities-completion-provider?)
-                                 (lsp:completion-options-trigger-characters?)))
-             (bounds-start (or (-some--> (cl-first (bounds-of-thing-at-point 'symbol))
-                                 (save-excursion
-                                   (ignore-errors
-                                     (goto-char (+ it 1))
-                                     (while (lsp-completion--looking-back-trigger-characterp
-                                             trigger-chars)
-                                       (cl-incf it)
-                                       (forward-char))
-                                     it)))
-                               (point)))
-             result done?
-             (candidates
-              (lambda ()
-                (lsp--catch 'input
-                    (let ((lsp--throw-on-input lsp-completion-use-last-result)
-                          (same-session? (and lsp-completion--cache
-                                              ;; Special case for empty prefix and empty result
-                                              (or (cl-second lsp-completion--cache)
-                                                  (not (string-empty-p
-                                                        (plist-get (cddr lsp-completion--cache) :prefix))))
-                                              (equal (cl-first lsp-completion--cache) bounds-start)
-                                              (s-prefix?
-                                               (plist-get (cddr lsp-completion--cache) :prefix)
-                                               (buffer-substring-no-properties bounds-start (point))))))
-                      (cond
-                       ((or done? result) result)
-                       ((and (not lsp-completion-no-cache)
-                             same-session?
-                             (listp (cl-second lsp-completion--cache)))
-                        (setf result (apply #'lsp-completion--filter-candidates
-                                            (cdr lsp-completion--cache))))
-                       (t
-                        (-let* ((resp (lsp-request-while-no-input
-                                       "textDocument/completion"
-                                       (plist-put (lsp--text-document-position-params)
-                                                  :context (lsp-completion--get-context trigger-chars))))
-                                (completed (and resp
-                                                (not (and (lsp-completion-list? resp)
-                                                          (lsp:completion-list-is-incomplete resp)))))
-                                (items (lsp--while-no-input
-                                         (--> (cond
-                                               ((lsp-completion-list? resp)
-                                                (lsp:completion-list-items resp))
-                                               (t resp))
-                                              (if (or completed
-                                                      (seq-some #'lsp:completion-item-sort-text? it))
-                                                  (lsp-completion--sort-completions it)
-                                                it)
-                                              (-map (lambda (item)
-                                                      (lsp-put item
-                                                               :_emacsStartPoint
-                                                               (or (lsp-completion--guess-prefix item)
-                                                                   bounds-start)))
-                                                    it))))
-                                (markers (list bounds-start (copy-marker (point) t)))
-                                (prefix (buffer-substring-no-properties bounds-start (point)))
-                                (lsp-completion--no-reordering (not lsp-completion-sort-initial-results)))
-                          (lsp-completion--clear-cache same-session?)
-                          (setf done? completed
-                                lsp-completion--cache (list bounds-start
-                                                            (cond
-                                                             ((and done? (not (seq-empty-p items)))
-                                                              (lsp-completion--to-internal items))
-                                                             ((not done?) :incomplete))
-                                                            :lsp-items nil
-                                                            :markers markers
-                                                            :prefix prefix)
-                                result (lsp-completion--filter-candidates
-                                        (cond (done?
-                                               (cl-second lsp-completion--cache))
-                                              (lsp-completion-filter-on-incomplete
-                                               (lsp-completion--to-internal items)))
-                                        :lsp-items items
-                                        :markers markers
-                                        :prefix prefix))))))
-                  (:interrupted lsp-completion--last-result)
-                  (`,res (setq lsp-completion--last-result res))))))
-        (list
-         bounds-start
-         (point)
-         ;; changed completion table
-         (lambda (probe pred action)
-           (if (eq action 'metadata)
-               '(metadata (category . lsp-capf)
-                          (display-sort-function . identity)
-                          (cycle-sort-function . identity))
-             (complete-with-action action (funcall candidates) probe pred)))
-         ;; end of changed completion table
-         :annotation-function #'lsp-completion--annotate
-         :company-kind #'lsp-completion--candidate-kind
-         :company-deprecated #'lsp-completion--candidate-deprecated
-         :company-require-match 'never
-         :company-prefix-length
-         (save-excursion
-           (goto-char bounds-start)
-           (and (lsp-completion--looking-back-trigger-characterp trigger-chars) t))
-         :company-match #'lsp-completion--company-match
-         :company-doc-buffer (-compose #'lsp-doc-buffer
-                                       #'lsp-completion--get-documentation)
-         :exit-function
-         (-rpartial #'lsp-completion--exit-fn candidates)))))
-  )
+  (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
