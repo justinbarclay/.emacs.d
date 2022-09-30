@@ -1093,13 +1093,10 @@ Let's use Doom's version instead
   (use-package doom-modeline
     :hook (after-init . doom-modeline-mode)
     :init
-    (progn
-      (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-      ;;(setq doom-modeline-github nil)
-      (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
-                                                                   :inherit 'mode-line))))
-                        '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
-                        '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
+    (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+  
+    (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
+                      '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
 #+END_SRC
 
 ** Line Numbers

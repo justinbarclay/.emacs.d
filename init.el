@@ -202,37 +202,6 @@ This function is called by `org-babel-execute-src-block'"
                                              (cdr info)))
         (message "I'm sorry, I can only generate curl commands for a restclient block."))))
 
-(use-package org-agenda
-  :ensure nil
-  :init
-  (defun air-org-skip-subtree-if-priority (priority)
-    "Skip an agenda subtree if it has a priority of PRIORITY.
-
-PRIORITY may be one of the characters ?A, ?B, or ?C."
-    (let ((subtree-end (save-excursion (org-end-of-subtree t)))
-          (pri-value (* 1000 (- org-lowest-priority priority)))
-          (pri-current (org-get-priority (thing-at-point 'line t))))
-      (if (= pri-value pri-current)
-          subtree-end
-        nil)))
-  (setq initial-buffer-choice (lambda () (org-agenda nil "d")
-                                (buffer-find "*Org Agenda*")))
-  (setq org-agenda-window-setup 'only-window
-        org-agenda-custom-commands
-        '(("d" "Today"
-           ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\"" ;Priority tasks available to do today
-                       ((org-agenda-skip-function
-                         '(org-agenda-skip-entry-if 'todo 'done))
-                        (org-agenda-overriding-header "High-priority unfinished tasks:")))
-            (agenda "" ((org-agenda-span 'day)
-                        (org-scheduled-delay-days -14)
-                        (org-agenda-overriding-header "Schedule")))
-            (tags-todo "SCHEDULED<\"<+1d>\"" ;All tasks available today
-                       ((org-agenda-skip-function
-                         '(or (org-agenda-skip-entry-if 'done)
-                              (air-org-skip-subtree-if-priority ?A)))
-                        (org-agenda-overriding-header "Tasks:"))))))))
-
 (use-package elegant-agenda-mode  
   :hook '(org-agenda-mode . elegant-agenda-mode))
 
@@ -577,13 +546,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package doom-modeline
   :hook (after-init . doom-modeline-mode)
   :init
-  (progn
-    (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-    ;;(setq doom-modeline-github nil)
-    (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e"
-                                                                 :inherit 'mode-line))))
-                      '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))
-                      '(doom-modeline-bar ((t (:background "#cb619e" :inherit 'mode-line)))))))
+  (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+
+  (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
+                    '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
 
 (use-package dirvish
   :init
@@ -1223,17 +1189,50 @@ parses its input."
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
-(use-package company
+(use-package corfu
   :init
-  (global-company-mode t)
-  :commands (compant-manual-begin)
-  :bind ("C-<tab>" . company-manual-begin)
+  (global-corfu-mode)
   :config
-  (setq company-tooltip-align-annotations t
-        company-minimum-prefix-length 1
-        company-idle-delay 0)
-  ;;(add-to-list 'company-backends 'company-emoji)
-  )
+  (setq corfu-auto-delay 0.1
+        corfu-auto 't
+        corfu-auto-prefix 2
+        corfu-min-width 40
+        corfu-min-height 20)
+
+  ;; You can also enable Corfu more generally for every minibuffer, as
+  ;; long as no other completion UI is active. If you use Mct or
+  ;; Vertico as your main minibuffer completion UI, the following
+  ;; snippet should yield the desired result.
+  (defun corfu-enable-always-in-minibuffer ()
+    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+    (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
+                (bound-and-true-p vertico--input))
+      (setq-local corfu-auto nil) ; Ensure auto completion is disabled
+      (corfu-mode 1)))
+  (custom-set-faces '(corfu-current ((t :inherit region :background "#2d2844"))))
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
+
+(use-package cape
+  :init
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file))
+
+(use-package kind-icon
+  :init
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
+  :config
+  (setq kind-icon-default-face 'corfu-default ; Have background color be the same as `corfu' face background
+        kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
+
+(use-package corfu-doc
+  :after corfu
+  :hook (corfu-mode . corfu-doc-mode)
+  :config
+  (setq corfu-doc-delay 0.5)
+  (setq corfu-doc-max-width 70)
+  (setq corfu-doc-max-height 20)
+  (setq corfu-echo-documentation nil))
 
 (use-package yasnippet
  :hook (prog-mode . yas-minor-mode))
