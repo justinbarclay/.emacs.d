@@ -2992,6 +2992,16 @@ DELTA should be a multiple of 10, in the units used by the
     (untabify (region-beginning) (region-end))
     (keyboard-quit))
 #+END_SRC
+** Sudo Save
+For saving root protected files
+#+begin_src emacs-lisp
+  (defun sudo-save ()
+    (interactive)
+    (if (not buffer-file-name)
+        (write-file (concat "/sudo:root@localhost:" (ido-read-file-name "File:")))
+      (write-file (concat "/sudo:root@localhost:" buffer-file-name))))
+#+end_src
+
 ** Rename buffer and file
 #+BEGIN_SRC emacs-lisp
 ;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
