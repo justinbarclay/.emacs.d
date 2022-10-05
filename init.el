@@ -324,7 +324,7 @@ This function is called by `org-babel-execute-src-block'"
 ;; https://github.com/magit/magit
 (use-package magit
   :commands magit-get-top-dir
-  :ensure-system-package git
+  ;; :ensure-system-package git
   :bind (("C-c g" . magit-status)
          ("C-c C-g l" . magit-file-log))
   :init
@@ -404,8 +404,8 @@ This function is called by `org-babel-execute-src-block'"
 
 (use-package mu4e
   :ensure nil
-  :ensure-system-package mu
-  :ensure-system-package (mbsync . isync)
+  ;; :ensure-system-package mu
+  ;; :ensure-system-package (mbsync . isync)
   :commands (mu4e)
   :functions (mu4e--server-filter)
   :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
@@ -554,13 +554,13 @@ This function is called by `org-babel-execute-src-block'"
 (use-package dirvish
   :init
   (dirvish-override-dired-mode)
-  :ensure-system-package
-  ((fd)
-   (pdfopen . poppler)
-   (ffmpegthumbnailer)
-   (mediainfo)
-   (tar)
-   (unzip))
+  ;; :ensure-system-package
+  ;; ((fd)
+  ;;  (pdfopen . poppler)
+  ;;  (ffmpegthumbnailer)
+  ;;  (mediainfo)
+  ;;  (tar)
+  ;;  (unzip))
   :custom
   ;; Go back home? Just press `bh'
   (dirvish-bookmark-entries
@@ -766,8 +766,9 @@ This function is called by `org-babel-execute-src-block'"
   :bind ("C-c s" . avy-goto-char))
 
 (use-package rg
-  :ensure-system-package
-  (rg . ripgrep))
+  ;; :ensure-system-package
+  ;; (rg . ripgrep)
+  )
 
 (use-package multiple-cursors
   :bind
