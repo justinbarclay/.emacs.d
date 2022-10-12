@@ -202,6 +202,37 @@ This function is called by `org-babel-execute-src-block'"
                                              (cdr info)))
         (message "I'm sorry, I can only generate curl commands for a restclient block."))))
 
+(use-package org-agenda
+  :ensure nil
+  :init
+  (defun air-org-skip-subtree-if-priority (priority)
+    "Skip an agenda subtree if it has a priority of PRIORITY.
+
+PRIORITY may be one of the characters ?A, ?B, or ?C."
+    (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+          (pri-value (* 1000 (- org-lowest-priority priority)))
+          (pri-current (org-get-priority (thing-at-point 'line t))))
+      (if (= pri-value pri-current)
+          subtree-end
+        nil)))
+  (setq initial-buffer-choice (lambda () (org-agenda nil "d")
+                                (buffer-find "*Org Agenda*")))
+  (setq org-agenda-window-setup 'only-window
+        org-agenda-custom-commands
+        '(("d" "Today"
+           ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\"" ;Priority tasks available to do today
+                       ((org-agenda-skip-function
+                         '(org-agenda-skip-entry-if 'todo 'done))
+                        (org-agenda-overriding-header "High-priority unfinished tasks:")))
+            (agenda "" ((org-agenda-span 'day)
+                        (org-scheduled-delay-days -14)
+                        (org-agenda-overriding-header "Schedule")))
+            (tags-todo "SCHEDULED<\"<+1d>\"" ;All tasks available today
+                       ((org-agenda-skip-function
+                         '(or (org-agenda-skip-entry-if 'done)
+                              (air-org-skip-subtree-if-priority ?A)))
+                        (org-agenda-overriding-header "Tasks:"))))))))
+
 (use-package elegant-agenda-mode  
   :hook '(org-agenda-mode . elegant-agenda-mode))
 
@@ -1736,6 +1767,12 @@ parses its input."
   (mark-whole-buffer)
   (untabify (region-beginning) (region-end))
   (keyboard-quit))
+
+(defun sudo-save ()
+  (interactive)
+  (if (not buffer-file-name)
+      (write-file (concat "/sudo:root@localhost:" (ido-read-file-name "File:")))
+    (write-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
 ;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
 (defun rename-file-and-buffer (new-name)

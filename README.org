@@ -2225,7 +2225,6 @@ Let's add some documentation. No, we don't need to write any, we just want to sh
           company-idle-delay 0))
     ;;(add-to-list 'company-backends 'company-emoji))
 #+END_SRC
-http://www.google.com
 ** Yas Snippets
 #+begin_src elisp
   (use-package yasnippet
