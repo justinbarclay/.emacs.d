@@ -38,7 +38,6 @@
 
 (use-package diminish)                ;; if you use :diminish
 (use-package bind-key)                ;; if you use any :bind variant
-(use-package use-package-ensure-system-package) ;; So we can specify external programs needed for some packages
 
 (use-package gnu-elpa-keyring-update)
 
@@ -1267,48 +1266,7 @@ parses its input."
   (setq corfu-echo-documentation nil))
 
 (use-package yasnippet
-  :hook (prog-mode . yas-minor-mode)
-  :config
-  (defun yas-annotate-candidates (tables)  
-    (cl-mapcan (lambda (table)
-                 (let ((table-name (yas--table-name table))
-                       (tablehash (yas--table-hash table))
-                       candidates)
-                   (maphash (lambda (key namehash)
-                              (push (propertize key
-                                                'yas-table-name table-name
-                                                'yas-template (car (hash-table-values namehash))
-                                                'yas-name (car (hash-table-keys namehash)))
-                                    candidates))
-                            tablehash)
-                   candidates))
-               tables))
-
-  (defun yas-annotate-completion (&optional candidate) (get-text-property 0 'yas-table-name candidate))
-
-  (defun yas-help-buffer (&optional cand)
-    (with-current-buffer (get-buffer-create "*yas-documentation*")
-      (erase-buffer)
-      (funcall (intern-soft (get-text-property 0 'yas-table-name cand)))
-      (yas-minor-mode 1)    
-      (save-excursion
-        (yas-expand-snippet (yas--template-content (get-text-property 0 'yas-template cand))))
-      (current-buffer)))
-
-  (defun complete-snippets-at-point ()
-    (let ((bounds (bounds-of-thing-at-point 'word)))
-      (when bounds
-        (list (car bounds)
-              (cdr bounds)
-              (yas-annotate-candidates (yas--get-snippet-tables))
-              :exclusive 'no
-              :annotation-function 'yas-annotate-completion
-              :company-doc-buffer 'yas-help-buffer
-              :category 'yasnippets))))
-
-  (add-to-list 'completion-at-point-functions #'complete-snippets-at-point))
-
-
+  :hook (prog-mode . yas-minor-mode))
 
 (use-package lsp-mode
   :commands lsp
