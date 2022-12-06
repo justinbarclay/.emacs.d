@@ -2154,6 +2154,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
   (use-package corfu
     :init
     (global-corfu-mode)
+    :hook (corfu-mode . corfu-popupinfo-mode)
     :config
     (setq corfu-auto-delay 0.1
           corfu-auto 't
@@ -2172,6 +2173,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
         (setq-local corfu-auto nil) ; Ensure auto completion is disabled
         (corfu-mode 1)))
     (custom-set-faces '(corfu-current ((t :inherit region :background "#2d2844"))))
+    (custom-set-faces '(corfu-popupinfo ((t :inherit corfu-default))))
     (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 #+end_src
 
@@ -2195,19 +2197,6 @@ Things are always better when they are prettier, let's add icons to our in buffe
     (setq kind-icon-default-face 'corfu-default ; Have background color be the same as `corfu' face background
           kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 #+end_src
-**** corfu-Doc
-Let's add some documentation. No, we don't need to write any, we just want to show more documentation when we're using auto complete. It's also important that when we're using document corfu-doc that we don't use the natural corfu documentation method that echos in the minibuffer.
-#+begin_src emacs-lisp
-(use-package corfu-doc
-  :after corfu
-  :hook (corfu-mode . corfu-doc-mode)
-  :config
-  (setq corfu-doc-delay 0.5)
-  (setq corfu-doc-max-width 70)
-  (setq corfu-doc-max-height 20)
-  (setq corfu-echo-documentation nil))
-#+end_src
-
 *** Company
 :PROPERTIES:
 :header-args: :tangle no

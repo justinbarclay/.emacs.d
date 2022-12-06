@@ -1223,6 +1223,7 @@ parses its input."
 (use-package corfu
   :init
   (global-corfu-mode)
+  :hook (corfu-mode . corfu-popupinfo-mode)
   :config
   (setq corfu-auto-delay 0.1
         corfu-auto 't
@@ -1241,6 +1242,7 @@ parses its input."
       (setq-local corfu-auto nil) ; Ensure auto completion is disabled
       (corfu-mode 1)))
   (custom-set-faces '(corfu-current ((t :inherit region :background "#2d2844"))))
+  (custom-set-faces '(corfu-popupinfo ((t :inherit corfu-default))))
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 
 (use-package cape
@@ -1255,15 +1257,6 @@ parses its input."
   :config
   (setq kind-icon-default-face 'corfu-default ; Have background color be the same as `corfu' face background
         kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
-
-(use-package corfu-doc
-  :after corfu
-  :hook (corfu-mode . corfu-doc-mode)
-  :config
-  (setq corfu-doc-delay 0.5)
-  (setq corfu-doc-max-width 70)
-  (setq corfu-doc-max-height 20)
-  (setq corfu-echo-documentation nil))
 
 (use-package yasnippet
   :hook (prog-mode . yas-minor-mode))
