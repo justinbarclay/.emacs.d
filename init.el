@@ -874,7 +874,7 @@ See URL `http://stylelint.io/'."
     :command ("stylelint"
               (eval flycheck-stylelint-args)
               (option-flag "--quiet" flycheck-stylelint-quiet)
-              (config-file "--config" flycheck-stylelintrc))
+              (when flycheck-stylelintrc (config-file "--config" flycheck-stylelintrc)))
     :standard-input t
     :error-parser flycheck-parse-stylelint
     :predicate flycheck-buffer-nonempty-p
@@ -1841,3 +1841,4 @@ parses its input."
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
+(put 'narrow-to-region 'disabled nil)
