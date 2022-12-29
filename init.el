@@ -795,6 +795,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package avy
   :bind ("C-c s" . avy-goto-char))
 
+(use-package ace-window
+  :bind ("C-x o" . ace-window))
+
 (use-package rg
   ;; :ensure-system-package
   ;; (rg . ripgrep)

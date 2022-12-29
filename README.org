@@ -1408,6 +1408,12 @@ As Stolen from http://cestlaz.github.io/posts/using-emacs-7-avy/ (January 10, 20
 (use-package avy
   :bind ("C-c s" . avy-goto-char))
 #+END_SRC
+** ace-window
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :bind ("C-x o" . ace-window))
+#+end_src
+
 ** Searching
 #+begin_src emacs-lisp
   (use-package rg
