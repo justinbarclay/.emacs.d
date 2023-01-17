@@ -1057,31 +1057,32 @@ See URL `http://stylelint.io/'."
       (multi-category . ,#'+marginalia-category-truncate-files))
     "Alist mapping category to truncate functions.")
 
-  (defun marginalia--align (cands)
-    "Align annotations of CANDS according to `marginalia-align'."
-    (cl-loop for (cand . ann) in cands do
-             (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
-               (setq marginalia--candw-max
-                     (max marginalia--candw-max
-                          (+ (string-width (+marginalia-truncate-helper cand))
-                             (string-width (substring ann 0 align)))))))
-    (setq marginalia--candw-max (* (ceiling marginalia--candw-max
-                                            marginalia--candw-step)
-                                   marginalia--candw-step))
-    (cl-loop for (cand . ann) in cands collect
-         (progn
-           (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
-             (put-text-property
-              align (1+ align) 'display
-              `(space :align-to
-                      ,(pcase-exhaustive marginalia-align
-                         ('center `(+ center ,marginalia-align-offset))
-                         ('left `(+ left ,(+ marginalia-align-offset marginalia--candw-max)))
-                         ('right `(+ right ,(+ marginalia-align-offset 1
-                                               (- (string-width (substring ann 0 align))
-                                                  (string-width ann)))))))
-              ann))
-           (list (+marginalia-truncate-helper cand) "" ann))))
+  ;; (defun marginalia--align (cands)
+  ;;   "Align annotations of CANDS according to `marginalia-align'."
+  ;;   (cl-loop for (cand . ann) in cands do
+  ;;            (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+  ;;              (setq marginalia--candw-max
+  ;;                    (max marginalia--candw-max
+  ;;                         (+ (string-width (+marginalia-truncate-helper cand))
+  ;;                            (string-width (substring ann 0 align)))))))
+  ;;   (setq marginalia--candw-max (* (ceiling marginalia--candw-max
+  ;;                                           marginalia--candw-step)
+  ;;                                  marginalia--candw-step))
+  ;;   (cl-loop for (cand . ann) in cands collect
+  ;;        (progn
+  ;;          (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+  ;;            (put-text-property
+  ;;             align (1+ align) 'display
+  ;;             `(space :align-to
+  ;;                     ,(pcase-exhaustive marginalia-align
+  ;;                        ('center `(+ center ,marginalia-align-offset))
+  ;;                        ('left `(+ left ,(+ marginalia-align-offset marginalia--candw-max)))
+  ;;                        ('right `(+ right ,(+ marginalia-align-offset 1
+  ;;                                              (- (string-width (substring ann 0 align))
+  ;;                                                 (string-width ann)))))))
+  ;;             ann))
+  ;;          (list (+marginalia-truncate-helper cand) "" ann))))
+
   (defun marginalia-annotate-buffer (cand)
     "Annotate buffer CAND with modification status, file name and major mode."
     (when-let (buffer (get-buffer cand))
