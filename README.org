@@ -1401,14 +1401,8 @@ Turn on recent file mode so that you can more easily switch to recently edited f
     :config
     (setq treemacs-header-function #'treemacs-projectile-create-header))
 #+END_SRC
-** Avy
-Navigate a buffer by visible characters
-As Stolen from http://cestlaz.github.io/posts/using-emacs-7-avy/ (January 10, 2017)
-#+BEGIN_SRC emacs-lisp
-(use-package avy
-  :bind ("C-c s" . avy-goto-char))
-#+END_SRC
 ** ace-window
+Allows one to switch to a buffer based by using numbers, instead of cycling with ~C-x o~. ~ace-window~ only kicks in if there are more than two buffers open.
 #+begin_src emacs-lisp
   (use-package ace-window
     :bind ("C-x o" . ace-window))
@@ -1416,10 +1410,7 @@ As Stolen from http://cestlaz.github.io/posts/using-emacs-7-avy/ (January 10, 20
 
 ** Searching
 #+begin_src emacs-lisp
-  (use-package rg
-    ;; :ensure-system-package
-    ;; (rg . ripgrep)
-    )
+  (use-package rg)
 #+end_src
 
 * Editing
@@ -1431,10 +1422,8 @@ I've put this at the top, because I use this almost everyday and wish it existed
 (use-package multiple-cursors
   :bind
   (("C->" . mc/mark-next-like-this)
-   ("C-<" . mc/mark-previous-like-this)
-   ("C-c C-<" . mc/mark-all-like-this)
-   ("<s-mouse-1>" . mc/add-cursor-on-click))
-  :commands (mc/mark-next-like-this mc/mark-previous-like-this mc/mark-all-like-this))
+   ("C-<" . mc/mark-previous-like-this))
+  :commands (mc/mark-next-like-this mc/mark-previous-like-this))
 #+END_SRC
 
 ** Newline and indent
@@ -1517,12 +1506,6 @@ Emacs doesn’t handle trailing spaces or anything like that very well by defaul
     :commands (ws-butler-mode)
     :hook (prog-mode . ws-butler-mode))
 #+END_SRC
-** Emojis
-Emacs doesn't natively support Emojis, so let's add some.
-#+BEGIN_SRC emacs-lisp
-(use-package emojify)
-#+END_SRC
-
 * Syntax and Error checking
 ** Treesitter
 Treesitter is a system that does syntax highlighting through AST analysis and not through regex
@@ -2225,7 +2208,9 @@ Things are always better when they are prettier, let's add icons to our in buffe
 ** Yas Snippets
 #+begin_src elisp
   (use-package yasnippet
-    :hook (prog-mode . yas-minor-mode))
+    :defer 't
+    :init
+    (yas-minor-mode))
 #+end_src
 
 * Languages
@@ -2243,6 +2228,9 @@ Major mode customizations
             typescript-mode
             web-mode
             js-mode
+            ruby-mode
+            enh-ruby-mode
+            c-mode
             tsx-mode)
            . lsp-deferred)
     (lsp-completion-mode . my/lsp-mode-setup-completion)
@@ -2323,11 +2311,7 @@ Major mode customizations
     :ensure nil
     :config
     (progn ; C mode hook
-      (add-hook 'c-mode-hook 'flycheck-mode)
-      (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
-      (add-hook 'c-mode-hook 'lsp-mode)
-      (eval-after-load 'c-mode '(setq-local eldoc-documentation-function #'ggtags-eldoc-function))
-      (setq-default c-basic-offset 2)))
+      (add-hook 'c-mode-hook 'flycheck-mode)))
 #+END_SRC
 
 c++
@@ -2341,7 +2325,7 @@ c++
   (use-package c-eldoc)
 #+END_SRC
 ** Lispy-languages
-** Enable Paredit or Parinfer
+*** Enable Paredit or Parinfer
 #+BEGIN_SRC emacs-lisp
   (defun enable-paredit ()
     (turn-off-smartparens-mode)
@@ -2357,7 +2341,7 @@ c++
     (turn-off-smartparens-mode)
     (lispy-mode))
 #+END_SRC
-*** paredit
+**** paredit
 #+BEGIN_SRC emacs-lisp
   (use-package paredit
     :commands (paredit-mode)
@@ -2365,13 +2349,13 @@ c++
            (scheme-mode . (lambda () (enable-paredit)))
            (lisp-mode . (lambda () (enable-paredit)))))
 #+END_SRC
-*** lispy
+**** lispy
 We need lispy for some of the excellent bracket based navigation integrations with parinfer
 #+BEGIN_SRC emacs-lisp :tangle no
     (use-package lispy)
 #+END_SRC
 
-*** parinfer-rust-mode
+**** parinfer-rust-mode
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
    :defer 10
@@ -2380,7 +2364,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
    (setq parinfer-rust-auto-download nil))
 #+END_SRC
 
-*** eldoc
+**** eldoc
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
     :ensure nil
@@ -2390,8 +2374,8 @@ We need lispy for some of the excellent bracket based navigation integrations wi
      'paredit-close-round)
     (global-eldoc-mode))
 #+END_SRC
-** Elisp
-*** elisp-mode
+*** Elisp
+**** elisp-mode
 #+BEGIN_SRC emacs-lisp
   (use-package elisp-mode
       :ensure nil
@@ -2399,15 +2383,15 @@ We need lispy for some of the excellent bracket based navigation integrations wi
     (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 #+END_SRC
 
-** Clojure
-*** Flycheck-joker
+*** Clojure
+**** Flycheck-joker
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck-joker
     :defer t
     :init
     (require 'flycheck-joker))
 #+END_SRC
-*** clj-refactor
+**** clj-refactor
 #+BEGIN_SRC emacs-lisp
 
   ;; clojure refactor library
@@ -2419,12 +2403,12 @@ We need lispy for some of the excellent bracket based navigation integrations wi
                                                   (clj-refactor-mode 1)
                                                   (cljr-add-keybindings-with-prefix "C-c C-m")))))
 #+END_SRC
-*** Kibit
+**** Kibit
 #+BEGIN_SRC emacs-lisp
   (use-package kibit-helper
     :defer t)
 #+END_SRC
-*** clojure-mode
+**** clojure-mode
 #+BEGIN_SRC emacs-lisp
   (use-package clojure-mode
     :mode (("\\.clj\\'" . clojure-mode)
@@ -2455,7 +2439,7 @@ Clojure mode also supports extra font locking(for syntax highlighting), but I ha
 (require 'clojure-mode-extra-font-locking)
 #+END_SRC
 
-*** Cider
+**** Cider
 A REPL for Clojure and nrepl for ClojureScript
 #+BEGIN_SRC emacs-lisp
   (use-package cider
@@ -2502,7 +2486,7 @@ A REPL for Clojure and nrepl for ClojureScript
       (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
       (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)))
 #+END_SRC
-**** Custom cider functions
+***** Custom cider functions
 This was suggested by @dpsutton on the slack channel and seems to be really interesting. It creates a little pop-up window by you cursor to show you the meaning of a thing
 #+BEGIN_SRC emacs-lisp
 (defun cider--tooltip-show ()
@@ -2634,13 +2618,6 @@ Autoformatting
     :config
      (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 #+END_SRC
-*** Robe
-#+BEGIN_SRC emacs-lisp
-  (use-package robe
-    :commands (robe-start robe-mode)
-    :hook (enh-ruby-mode . robe-mode))
-#+END_SRC
-
 *** inf-ruby
 #+BEGIN_SRC emacs-lisp
   (use-package inf-ruby
@@ -2723,13 +2700,8 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+BEGIN_SRC emacs-lisp
   (use-package go-mode
     :mode "\\.go\\'"
-    :bind (:map go-mode-map
-                (("M-." . 'godef-jump)
-                 ("M-," . 'pop-tag-mark)))
     :config
-    (progn
-      (add-hook 'go-mode-hook #'lsp-deferred)
-      (add-hook 'before-save-hook 'gofmt-before-save)))
+    (add-hook 'before-save-hook 'gofmt-before-save))
 #+END_SRC
 
 ** JSON
@@ -2831,7 +2803,7 @@ Live preview of MarkDown
 ** Woman
 #+BEGIN_SRC emacs-lisp
   (use-package woman
-      :ensure nil
+    :ensure nil
     :config
     (progn (setq woman-manpath
                 (split-string (shell-command-to-string "man --path") ":" t "\n"))

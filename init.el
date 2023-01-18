@@ -792,24 +792,16 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :config
   (setq treemacs-header-function #'treemacs-projectile-create-header))
 
-(use-package avy
-  :bind ("C-c s" . avy-goto-char))
-
 (use-package ace-window
   :bind ("C-x o" . ace-window))
 
-(use-package rg
-  ;; :ensure-system-package
-  ;; (rg . ripgrep)
-  )
+(use-package rg)
 
 (use-package multiple-cursors
   :bind
   (("C->" . mc/mark-next-like-this)
-   ("C-<" . mc/mark-previous-like-this)
-   ("C-c C-<" . mc/mark-all-like-this)
-   ("<s-mouse-1>" . mc/add-cursor-on-click))
-  :commands (mc/mark-next-like-this mc/mark-previous-like-this mc/mark-all-like-this))
+   ("C-<" . mc/mark-previous-like-this))
+  :commands (mc/mark-next-like-this mc/mark-previous-like-this))
 
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
@@ -853,8 +845,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package ws-butler
   :commands (ws-butler-mode)
   :hook (prog-mode . ws-butler-mode))
-
-(use-package emojify)
 
 (use-package tree-sitter
   :hook ((tsx-mode . tree-sitter-hl-mode)))
@@ -1265,7 +1255,9 @@ parses its input."
         kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 
 (use-package yasnippet
-  :hook (prog-mode . yas-minor-mode))
+  :defer 't
+  :init
+  (yas-minor-mode))
 
 (use-package lsp-mode
   :commands lsp
@@ -1274,6 +1266,9 @@ parses its input."
           typescript-mode
           web-mode
           js-mode
+          ruby-mode
+          enh-ruby-mode
+          c-mode
           tsx-mode)
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
@@ -1323,11 +1318,7 @@ parses its input."
   :ensure nil
   :config
   (progn ; C mode hook
-    (add-hook 'c-mode-hook 'flycheck-mode)
-    (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
-    (add-hook 'c-mode-hook 'lsp-mode)
-    (eval-after-load 'c-mode '(setq-local eldoc-documentation-function #'ggtags-eldoc-function))
-    (setq-default c-basic-offset 2)))
+    (add-hook 'c-mode-hook 'flycheck-mode)))
 
 (use-package c++-mode
     :ensure nil)
@@ -1547,10 +1538,6 @@ parses its input."
   :config
    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
-(use-package robe
-  :commands (robe-start robe-mode)
-  :hook (enh-ruby-mode . robe-mode))
-
 (use-package inf-ruby
   :defer t
   :bind
@@ -1593,13 +1580,8 @@ parses its input."
 
 (use-package go-mode
   :mode "\\.go\\'"
-  :bind (:map go-mode-map
-              (("M-." . 'godef-jump)
-               ("M-," . 'pop-tag-mark)))
   :config
-  (progn
-    (add-hook 'go-mode-hook #'lsp-deferred)
-    (add-hook 'before-save-hook 'gofmt-before-save)))
+  (add-hook 'before-save-hook 'gofmt-before-save))
 
 (use-package json-mode
   :mode "\\.json\\'"
@@ -1664,7 +1646,7 @@ parses its input."
 (use-package flx)
 
 (use-package woman
-    :ensure nil
+  :ensure nil
   :config
   (progn (setq woman-manpath
               (split-string (shell-command-to-string "man --path") ":" t "\n"))
