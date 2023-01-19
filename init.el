@@ -347,82 +347,81 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                       '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
 
 ;; Magit is an Emacs interface to Git.
-;; (It's awesome)
-;; https://github.com/magit/magit
-(use-package magit
-  :commands magit-get-top-dir
-  ;; :ensure-system-package git
-  :bind (("C-c g" . magit-status)
-         ("C-c C-g l" . magit-file-log))
-  :init
-  (progn
-    ;; magit extensions
+  ;; (It's awesome)
+  ;; https://github.com/magit/magit
+  (use-package magit
+    :commands magit-get-top-dir
+    ;; :ensure-system-package git
+    :bind (("C-c g" . magit-status))
+    :init
+    (progn
+      ;; magit extensions
 
-    ;; make magit status go full-screen but remember previous window
-    ;; settings
-    ;; from: http://whattheemacsd.com/setup-magit.el-01.html
-    (defadvice magit-status (around magit-fullscreen activate)
-      (window-configuration-to-register :magit-fullscreen)
-      ad-do-it
-      (delete-other-windows))
-
-    ;; Close popup when commiting - this stops the commit window
-    ;; hanging around
-    ;; From: http://git.io/rPBE0Q
-    (defadvice git-commit-commit (after delete-window activate)
-      (delete-window))
-
-    (defadvice git-commit-abort (after delete-window activate)
-      (delete-window))
-
-    ;; these two force a new line to be inserted into a commit window,
-    ;; which stops the invalid style showing up.
-    ;; From: http://git.io/rPBE0Q
-    (defun magit-commit-mode-init ()
-      (when (looking-at "\n")
-        (open-line 1)))
-
-    (add-hook 'git-commit-mode-hook 'magit-commit-mode-init))
-  :config
-  (progn
-    ;; restore previously hidden windows
-        ;; major mode for editing `git rebase -i`
-    (defadvice magit-quit-window (around magit-restore-screen activate)
-      (let ((current-mode major-mode))
+      ;; make magit status go full-screen but remember previous window
+      ;; settings
+      ;; from: http://whattheemacsd.com/setup-magit.el-01.html
+      (defadvice magit-status (around magit-fullscreen activate)
+        (window-configuration-to-register :magit-fullscreen)
         ad-do-it
-        ;; we only want to jump to register when the last seen buffer
-        ;; was a magit-status buffer.
-        (when (eq 'magit-status-mode current-mode)
-          (jump-to-register :magit-fullscreen))))
+        (delete-other-windows))
 
-    (defun magit-maybe-commit (&optional show-options)
-      "Runs magit-commit unless prefix is passed"
-      (interactive "P")
-      (if show-options
-          (magit-key-mode-popup-committing)
-        (magit-commit)))
-    (define-key magit-mode-map "c" 'magit-maybe-commit)
+      ;; Close popup when commiting - thios stops the commit window
+      ;; hanging around
+      ;; From: http://git.io/rPBE0Q
+      (defadvice git-commit-commit (after delete-window activate)
+        (delete-window))
 
-    ;; Customizing transients
-    ;; This gives us the option to override local branch
-    (transient-insert-suffix 'magit-pull "-r" '("-f" "Overwrite local branch" "--force"))
-    ;; magit settings
-    (setq
-     ;; don't put "origin-" in front of new branch names by default
-     magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
-     ;; open magit status in same window as current buffer
-     magit-status-buffer-switch-function 'switch-to-buffer
-     ;; highlight word/letter changes in hunk diffs
-     magit-diff-refine-hunk t
-     ;; ask me if I want to include a revision when rewriting
-     magit-rewrite-inclusive 'ask
-     ;; ask me to save buffers
-     magit-save-some-buffers nil
-     ;; pop the process buffer if we're taking a while to complete
-     magit-process-popup-time 10
-     ;; ask me if I want a tracking upstream
-     magit-set-upstream-on-push 'askifnotset))
-  )
+      (defadvice git-commit-abort (after delete-window activate)
+        (delete-window))
+
+      ;; these two force a new line to be inserted into a commit window,
+      ;; which stops the invalid style showing up.
+      ;; From: http://git.io/rPBE0Q
+      (defun magit-commit-mode-init ()
+        (when (looking-at "\n")
+          (open-line 1)))
+
+      (add-hook 'git-commit-mode-hook 'magit-commit-mode-init))
+    :config
+    (progn
+g      ;; restore previously hidden windows
+          ;; major mode for editing `git rebase -i`
+      (defadvice magit-quit-window (around magit-restore-screen activate)
+        (let ((current-mode major-mode))
+          ad-do-it
+          ;; we only want to jump to register when the last seen buffer
+          ;; was a magit-status buffer.
+          (when (eq 'magit-status-mode current-mode)
+            (jump-to-register :magit-fullscreen))))
+
+      (defun magit-maybe-commit (&optional show-options)
+        "Runs magit-commit unless prefix is passed"
+        (interactive "P")
+        (if show-options
+            (magit-key-mode-popup-committing)
+          (magit-commit)))
+      (define-key magit-mode-map "c" 'magit-maybe-commit)
+
+      ;; Customizing transients
+      ;; This gives us the option to override local branch
+      (transient-insert-suffix 'magit-pull "-r" '("-f" "Overwrite local branch" "--force"))
+      ;; magit settings
+      (setq
+       ;; don't put "origin-" in front of new branch names by default
+       magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
+       ;; open magit status in same window as current buffer
+       magit-status-buffer-switch-function 'switch-to-buffer
+       ;; highlight word/letter changes in hunk diffs
+       magit-diff-refine-hunk t
+       ;; ask me if I want to include a revision when rewriting
+       magit-rewrite-inclusive 'ask
+       ;; ask me to save buffers
+       magit-save-some-buffers nil
+       ;; pop the process buffer if we're taking a while to complete
+       magit-process-popup-time 10
+       ;; ask me if I want a tracking upstream
+       magit-set-upstream-on-push 'askifnotset))
+    )
 
 (use-package forge
   :after magit
@@ -581,13 +580,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package dirvish
   :init
   (dirvish-override-dired-mode)
-  ;; :ensure-system-package
-  ;; ((fd)
-  ;;  (pdfopen . poppler)
-  ;;  (ffmpegthumbnailer)
-  ;;  (mediainfo)
-  ;;  (tar)
-  ;;  (unzip))
   :custom
   ;; Go back home? Just press `bh'
   (dirvish-bookmark-entries
@@ -621,11 +613,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (("C-c f" . dirvish)
    ;; Dirvish has all the keybindings (except `dired-summary') in `dired-mode-map' already
    :map dirvish-mode-map
-   ("b"   . dirvish-bookmark-jump)
+   ("a"   . dirvish-quick-access)
    ("f"   . dirvish-file-info-menu)
    ("y"   . dirvish-yank-menu)
    ("N"   . dirvish-narrow)
-   ("^"   . dirvish-history-last)
+   ("^"   . dired-up-directory)
    ("h"   . dirvish-history-jump) ; remapped `describe-mode'
    ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
    ("TAB" . dirvish-subtree-toggle)
@@ -1640,7 +1632,11 @@ parses its input."
                           #'alert-burnt-toast-notify)
       (setq alert-default-style 'burnt-toast))
 
-(use-package flx)
+(use-package helpful
+  :defer t
+  :bind  (("C-h f" . helpful-callable)
+          ("C-h v" . helpful-variable)
+          ("C-h k" . helpful-key)))
 
 (use-package woman
   :ensure nil
@@ -1651,8 +1647,6 @@ parses its input."
           "Decode and browse a UN*X man page." t)
         (autoload 'woman-find-file "woman"
           "Find, decode and browse a specific UN*X man-page file." t)))
-
-(use-package deferred)
 
 (use-package esup
   :commands (esup))

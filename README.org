@@ -21,8 +21,9 @@
   - [[#langtool][Langtool]]
   - [[#eshell][EShell]]
   - [[#magit][Magit]]
-  - [[#notmuch][Notmuch]]
+  - [[#email-mu4e][Email (mu4e)]]
 - [[#look-and-feel][Look and Feel]]
+  - [[#nano-emacs][Nano Emacs]]
   - [[#window][Window]]
   - [[#font][Font]]
   - [[#misc][Misc]]
@@ -45,7 +46,8 @@
   - [[#projectile][Projectile]]
   - [[#treemacs][Treemacs]]
   - [[#treemacs-pojectile][Treemacs Pojectile]]
-  - [[#avy][Avy]]
+  - [[#ace-window][ace-window]]
+  - [[#searching][Searching]]
 - [[#editing][Editing]]
   - [[#multiple-cursors][Multiple Cursors]]
   - [[#newline-and-indent][Newline and indent]]
@@ -61,7 +63,6 @@
   - [[#code-folding][Code Folding]]
   - [[#backups][Backups]]
   - [[#whitespace][Whitespace]]
-  - [[#emojis][Emojis]]
 - [[#syntax-and-error-checking][Syntax and Error checking]]
   - [[#treesitter][Treesitter]]
   - [[#flycheck-pos-tip][Flycheck pos-tip]]
@@ -77,9 +78,6 @@
   - [[#csslesssass][CSS/LESS/SASS]]
   - [[#cc][C/C++]]
   - [[#lispy-languages][Lispy-languages]]
-  - [[#enable-paredit-or-parinfer][Enable Paredit or Parinfer]]
-  - [[#elisp][Elisp]]
-  - [[#clojure][Clojure]]
   - [[#javascript][JavaScript]]
   - [[#html][HTML]]
   - [[#ruby][Ruby]]
@@ -97,9 +95,7 @@
 - [[#communication][Communication]]
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
-  - [[#fuzzy-matching][Fuzzy matching]]
   - [[#woman][Woman]]
-  - [[#asynchronous-framework][Asynchronous framework]]
   - [[#profiling][Profiling]]
   - [[#http-client][http client]]
 - [[#custom-functions][Custom Functions]]
@@ -108,6 +104,7 @@
   - [[#run-current-file][Run Current File]]
   - [[#eval-and-replace][Eval and Replace]]
   - [[#replace-tabs][Replace tabs]]
+  - [[#sudo-save][Sudo Save]]
   - [[#rename-buffer-and-file][Rename buffer and file]]
   - [[#stats][Stats]]
   - [[#screenshots][Screenshots]]
@@ -690,8 +687,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
   (use-package magit
     :commands magit-get-top-dir
     ;; :ensure-system-package git
-    :bind (("C-c g" . magit-status)
-           ("C-c C-g l" . magit-file-log))
+    :bind (("C-c g" . magit-status))
     :init
     (progn
       ;; magit extensions
@@ -704,7 +700,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
         ad-do-it
         (delete-other-windows))
 
-      ;; Close popup when commiting - this stops the commit window
+      ;; Close popup when commiting - thios stops the commit window
       ;; hanging around
       ;; From: http://git.io/rPBE0Q
       (defadvice git-commit-commit (after delete-window activate)
@@ -723,7 +719,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
       (add-hook 'git-commit-mode-hook 'magit-commit-mode-init))
     :config
     (progn
-      ;; restore previously hidden windows
+g      ;; restore previously hidden windows
           ;; major mode for editing `git rebase -i`
       (defadvice magit-quit-window (around magit-restore-screen activate)
         (let ((current-mode major-mode))
@@ -1137,13 +1133,6 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
   (use-package dirvish
     :init
     (dirvish-override-dired-mode)
-    ;; :ensure-system-package
-    ;; ((fd)
-    ;;  (pdfopen . poppler)
-    ;;  (ffmpegthumbnailer)
-    ;;  (mediainfo)
-    ;;  (tar)
-    ;;  (unzip))
     :custom
     ;; Go back home? Just press `bh'
     (dirvish-bookmark-entries
@@ -1177,11 +1166,11 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
     (("C-c f" . dirvish)
      ;; Dirvish has all the keybindings (except `dired-summary') in `dired-mode-map' already
      :map dirvish-mode-map
-     ("b"   . dirvish-bookmark-jump)
+     ("a"   . dirvish-quick-access)
      ("f"   . dirvish-file-info-menu)
      ("y"   . dirvish-yank-menu)
      ("N"   . dirvish-narrow)
-     ("^"   . dirvish-history-last)
+     ("^"   . dired-up-directory)
      ("h"   . dirvish-history-jump) ; remapped `describe-mode'
      ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
      ("TAB" . dirvish-subtree-toggle)
@@ -2654,12 +2643,6 @@ Autoformatting
 #+END_SRC
 
 ** Rust
-*** Flycheck-rust
-#+BEGIN_SRC emacs-lisp :tangle no
-    (use-package flycheck-rust
-      :commands (flycheck-rust-setup)
-      :hook rust-mode)
-#+END_SRC
 *** Cargo
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package cargo)
@@ -2791,10 +2774,19 @@ Live preview of MarkDown
         (setq alert-default-style 'burnt-toast))
 #+END_SRC
 * Misc
-** Fuzzy matching
-#+BEGIN_SRC emacs-lisp
-  (use-package flx)
-#+END_SRC
+** Helpful
+A better help buffer experience
+#+begin_src emacs-lisp
+  (use-package helpful
+    :defer t
+    :bind  (("C-h f" . helpful-callable)
+            ("C-h v" . helpful-variable)
+            ("C-h k" . helpful-key)))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25545 3153 260419 994000) :use-package-secs (0 2 360596 548000) :init (25545 3153 260263 645000) :init-secs (0 0 102 669000)))
+
 ** Woman
 #+BEGIN_SRC emacs-lisp
   (use-package woman
@@ -2806,10 +2798,6 @@ Live preview of MarkDown
             "Decode and browse a UN*X man page." t)
           (autoload 'woman-find-file "woman"
             "Find, decode and browse a specific UN*X man-page file." t)))
-#+END_SRC
-** Asynchronous framework
-#+BEGIN_SRC emacs-lisp
-(use-package deferred)
 #+END_SRC
 ** Profiling
 *** Esup
