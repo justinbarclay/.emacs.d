@@ -27,14 +27,11 @@
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 
-(progn ;'use-package
-  (add-to-list 'load-path "~/.emacs.d/site-lisp/use-package")
-  (require 'use-package)
-  (setq use-package-always-ensure t)
-  (setq use-package-verbose nil)
-  (setq use-package-always-defer t)
-  (setq use-package-enable-imenu-support t))
-
+(require 'use-package)
+(setq use-package-always-ensure t)
+(setq use-package-verbose nil)
+(setq use-package-always-defer t)
+(setq use-package-enable-imenu-support t)
 
 (use-package diminish)                ;; if you use :diminish
 (use-package bind-key)                ;; if you use any :bind variant
@@ -900,7 +897,7 @@ See URL `http://stylelint.io/'."
   :init
   (vertico-mode)
   :bind (:map vertico-map
-              ("<escape>" . #'minibuffer-keyboard-quit))
+              ("<escape>" . #'keyboard-escape-quit))
   :config
   (vertico-multiform-mode)
 
