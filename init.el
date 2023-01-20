@@ -338,7 +338,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (add-to-list 'eshell-visual-commands "top")
          (add-to-list 'eshell-visual-commands "tail")
          (add-to-list 'eshell-visual-commands "vim")
-         (add-to-list 'eshell-visual-commands "bower")
          (add-to-list 'eshell-visual-commands "npm")
 
          (add-to-list 'eshell-command-completions-alist
@@ -555,17 +554,18 @@ g      ;; restore previously hidden windows
   ;; load preferred theme 
   (load-theme 'lambda-light))
 
-(use-package doom-themes 
+(use-package doom-everblush-theme
+  :straight (doom-everblush-theme :type git :host github :repo "justinbarclay/doom-everblush-theme.el"))
+
+(use-package doom-themes
+  :defer 1
   :init
-  (load-theme 'doom-outrun-electric t)
+  (load-theme 'doom-everblush t)
   ;; When using doom-themes region is a much better colour for highlighting current line
   (defface custom-hl-line
     '((t (:inherit region :background "#2d2844")))
     "Customized HL line face")
   (setq hl-line-face 'custom-hl-line))
-
-(use-package everblush
-  :straight (everblush-theme :type git :host github :repo "Everblush/emacs"))
 
 (use-package all-the-icons)
 

@@ -671,7 +671,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
          (add-to-list 'eshell-visual-commands "top")
          (add-to-list 'eshell-visual-commands "tail")
          (add-to-list 'eshell-visual-commands "vim")
-         (add-to-list 'eshell-visual-commands "bower")
          (add-to-list 'eshell-visual-commands "npm")
 
          (add-to-list 'eshell-command-completions-alist
@@ -1054,25 +1053,25 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
   ;; load preferred theme 
   (load-theme 'lambda-light))
 #+end_src
+*** Add on doom theme
+#+begin_src emacs-lisp
+  (use-package doom-everblush-theme
+    :straight (doom-everblush-theme :type git :host github :repo "justinbarclay/doom-everblush-theme.el"))
+#+end_src
 
 *** Doom Themes
 Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
-  (use-package doom-themes 
+  (use-package doom-themes
+    :defer 1
     :init
-    (load-theme 'doom-outrun-electric t)
+    (load-theme 'doom-everblush t)
     ;; When using doom-themes region is a much better colour for highlighting current line
     (defface custom-hl-line
       '((t (:inherit region :background "#2d2844")))
       "Customized HL line face")
     (setq hl-line-face 'custom-hl-line))
 #+END_SRC
-**** Add on doom theme
-#+begin_src emacs-lisp
-  (use-package everblush
-    :straight (everblush-theme :type git :host github :repo "Everblush/emacs"))
-#+end_src
-
 ** Modeline
 *** all-the-icons
 #+BEGIN_SRC emacs-lisp
