@@ -2860,78 +2860,15 @@ DELTA should be a multiple of 10, in the units used by the
 (global-set-key (kbd "C-M-=") 'increase-default-font-height)
 (global-set-key (kbd "C-M--") 'decrease-default-font-height)
 #+END_SRC
-** Run Current File
-#+BEGIN_SRC emacs-lisp
-  (defun xah-run-current-file ()
-        "Execute the current file.
-      For example, if the current buffer is the file x.py, then it'll call 「python x.py」 in a shell.
-      The file can be Emacs Lisp, PHP, Perl, Python, Ruby, JavaScript, Bash, Ocaml, Visual Basic, TeX, Java, Clojure.
-      File suffix is used to determine what program to run.
-
-      If the file is modified or not saved, save it automatically before run.
-
-      URL `http://ergoemacs.org/emacs/elisp_run_current_file.html'
-      version 2016-01-28"
-        (interactive)
-        (let* ((-suffix-map
-               ;; (‹extension› . ‹shell program name›)
-               `(("php" . "php")
-                 ("pl" . "perl")
-                 ("py" . "python")
-                 ("py3" . ,(if (string-equal system-type "windows-nt") "c:/Python32/python.exe" "python3"))
-                 ("rb" . "ruby")
-                 ("go" . "go run")
-                 ("js" . "node") ; node.js
-                 ("sh" . "bash")
-                 ("fish" . "fish")
-                 ("rkt" . "racket")
-                 ("ml" . "ocaml")
-                 ("vbs" . "cscript")
-                 ("tex" . "pdflatex")
-                 ("latex" . "pdflatex")
-                 ("java" . "javac")))
-              -fname
-              -fSuffix
-              -prog-name
-              -cmd-str)
-
-          (when (null (buffer-file-name)) (save-buffer))
-          (when (buffer-modified-p) (save-buffer))
-
-          (setq -fname (buffer-file-name))
-          (setq -fSuffix (file-name-extension -fname))
-          (setq -prog-name (cdr (assoc -fSuffix -suffix-map)))
-          (setq -cmd-str (concat -prog-name " \""   -fname "\""))
-
-          (cond
-           ((string-equal -fSuffix "el") (load -fname))
-           ((string-equal -fSuffix "java")
-            (progn
-              (shell-command -cmd-str "*xah-run-current-file output*" )
-              (shell-command
-               (format "java %s" (file-name-sans-extension (file-name-nondirectory -fname))))))
-           (t (if -prog-name
-                  (progn
-                    (message "Running…")
-                    (shell-command -cmd-str "*xah-run-current-file output*" ))
-                (message "No recognized program file suffix for this file."))))))
-    ;;  (global-set-key (kbd "s-r") 'xah-run-current-file)
-#+END_SRC
-** Eval and Replace
-#+BEGIN_SRC emacs-lisp
-  (defun eval-and-replace ()
-    "Replace the preceding sexp with its value."
+** Open init
+#+begin_src emacs-lisp
+  (defun open-config-file ()
     (interactive)
-    (backward-kill-sexp)
-    (condition-case nil
-        (prin1 (eval (read (current-kill 0)))
-               (current-buffer))
-      (error (message "Invalid expression")
-             (insert (current-kill 0)))))
+    (find-file "~/.emacs.d/README.org"))
 
-  (global-unset-key (kbd "C-x C-e"))
-  (global-set-key (kbd "C-x C-e") 'eval-and-replace)
-#+END_SRC
+  (global-set-key (kbd "C-c i") 'open-config-file)    
+#+end_src
+
 ** Replace tabs
 #+BEGIN_SRC emacs-lisp
   ;; use 4 spaces for tabs
