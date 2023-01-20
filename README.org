@@ -23,10 +23,10 @@
   - [[#magit][Magit]]
   - [[#email-mu4e][Email (mu4e)]]
 - [[#look-and-feel][Look and Feel]]
-  - [[#nano-emacs][Nano Emacs]]
   - [[#window][Window]]
   - [[#font][Font]]
   - [[#misc][Misc]]
+  - [[#performance][Performance]]
   - [[#theme][Theme]]
   - [[#modeline][Modeline]]
   - [[#line-numbers][Line Numbers]]
@@ -95,14 +95,14 @@
 - [[#communication][Communication]]
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
+  - [[#helpful][Helpful]]
   - [[#woman][Woman]]
   - [[#profiling][Profiling]]
   - [[#http-client][http client]]
 - [[#custom-functions][Custom Functions]]
   - [[#allow-for-clojure-style-comment-blocks][Allow for clojure style comment blocks]]
   - [[#resize-font-size][Resize font size]]
-  - [[#run-current-file][Run Current File]]
-  - [[#eval-and-replace][Eval and Replace]]
+  - [[#open-init][Open init]]
   - [[#replace-tabs][Replace tabs]]
   - [[#sudo-save][Sudo Save]]
   - [[#rename-buffer-and-file][Rename buffer and file]]
@@ -362,9 +362,9 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 *** Org-bullets
 #+BEGIN_SRC emacs-lisp
   (use-package org-bullets
-    :init
-    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+    :hook (org-mode . org-bullets-mode))
 #+END_SRC
+
 *** org-pdftools
 Before we can install org-pdftools, we need to install pdf-tools
 #+BEGIN_SRC emacs-lisp :tangle no
@@ -402,15 +402,11 @@ In addition to the simple :TOC: tag, you can also use the following tag formats:
 You can also use @ as separator, instead of _.
 #+BEGIN_SRC emacs-lisp
   (use-package toc-org
-    :hook (org-mode-hook . toc-org-enable))
+    :hook (org-mode-mode . toc-org-mode))
 #+END_SRC
 *** SVG Tag Mode
 #+begin_src emacs-lisp :tangle no
-  (use-package svg-tag-mode
-    :straight (svg-tag-mode :type git
-                            :host github
-                            :branch main
-                            :repo "rougier/svg-tag-mode"))
+  (use-package svg-tag-mode)
 #+end_src
 
 *** Org-re-reveal
@@ -603,21 +599,6 @@ Declarative Org Capture Templates
                              :file "~/org/work/calendar.org")))))))
 #+END_SRC
 
-**** Org-trello
-#+BEGIN_SRC emacs-lisp
-  (use-package org-trello
-    :commands (org-trello-sync-buffer org-trello-sync-card)
-    :init
-    (defun org-trello-pull-buffer ()
-       "Synchronize current buffer from trello."
-       (interactive)
-       (org-trello-sync-buffer 'from))
-    (defun org-trello-pull-card ()
-       "Synchronize card at point from trello."
-       (interactive)
-       (org-trello-sync-card 'from)))
-#+END_SRC
-
 **** Org-gcal
 #+BEGIN_SRC emacs-lisp
   (use-package org-gcal
@@ -718,7 +699,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
       (add-hook 'git-commit-mode-hook 'magit-commit-mode-init))
     :config
     (progn
-g      ;; restore previously hidden windows
+      ;; restore previously hidden windows
           ;; major mode for editing `git rebase -i`
       (defadvice magit-quit-window (around magit-restore-screen activate)
         (let ((current-mode major-mode))
@@ -805,9 +786,6 @@ g      ;; restore previously hidden windows
     (display-line-numbers-mode -1))
 #+end_src
 
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25351 60460 76972 135000) :init (25351 60460 76894 826000) :init-secs (0 0 376 464000) :use-package-secs (0 0 471 876000) :config (25351 60460 76875 664000) :config-secs (0 0 330 111000)))
-
 *** Mu4e Dashboard
 #+begin_src emacs-lisp
   (use-package mu4e-dashboard
@@ -848,17 +826,6 @@ g      ;; restore previously hidden windows
 #+end_src
 
 * Look and Feel
-** Nano Emacs
-#+begin_src emacs-lisp :tangle no
-  (use-package nano-emacs
-   :straight '(nano-emacs :type git :host github :repo "rougier/nano-emacs")
-   :init
-   (require 'nano))
-#+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25349 55801 280037 339000) :init (25349 55801 280030 709000) :init-secs (0 0 15835 601000) :use-package-secs (0 0 50579 530000)))
-
 ** Window
 *** Natural colouring from emacs chrome
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
@@ -866,39 +833,32 @@ g      ;; restore previously hidden windows
     (setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil))))
 #+END_SRC
 
-*** Remove toolbar
+*** Simplify the UI
+Remove the tool bar
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
 (tool-bar-mode -1)
 #+END_SRC
-*** Remove title-bar
-Remove title bar but allow resizing of frame
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
-  (when jb/os-linux-p)
-      ;; (add-to-list 'default-frame-alist '(internal-border-width . 5))
-      ;; (add-to-list 'default-frame-alist '(drag-internal-border . 1)))
-      ;;(add-to-list 'default-frame-alist '(undecorated . t)))
 
-#+END_SRC
-*** Remove menu-bar
+Remove the menu bar
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
   (menu-bar-mode -1)
+#+END_SRC
+
+Remove scroll bars
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
 #+END_SRC
 *** Scrolling
 #+begin_src emacs-lisp :tangle early-init.el
   (pixel-scroll-precision-mode 1)
 #+end_src
 
-*** Emacs should take focus when it launches
+*** Emacs should not take focus when it launches
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
   (when (display-graphic-p) ; Start full screen
     (add-to-list 'default-frame-alist '(fullscreen . t))
     (x-focus-frame nil))
-#+END_SRC
-
-*** Don't show native OS scroll bars for buffers because they're redundant
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
-(when (fboundp 'scroll-bar-mode)
-  (scroll-bar-mode -1))
 #+END_SRC
 
 *** Formatting window title
@@ -971,11 +931,6 @@ We can not place this in early-init because it requires the GUI to be initialize
 Now, we want to be able to select emojis. I'd prefer to use the built in emoji selector from the OS but sadly, that is not working for me with X410. I would like to add the emoji selector _here_ in my config, but company is instantiated way down *there*. Instead, I just have a nice link for you [[id:bf963728-dc93-448a-a52e-0cc91d962bcb][Code Completion/company-emoji]].
 
 ** Misc
-Don't pop up font menu
-#+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "s-t") #'(lambda () (interactive)))
-#+END_SRC
-
 No cursor blinking, it's distracting
 #+BEGIN_SRC emacs-lisp
 (blink-cursor-mode 0)
@@ -1030,6 +985,7 @@ display reordering of bidirectional text with embedded parentheses
 (setq bidi-inhibit-bpa t)
 #+END_SRC
 
+** Performance
 Increase the size of read-process-output-max from default of 4k to 1Mb
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
@@ -1056,7 +1012,7 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 *** Add on doom theme
 #+begin_src emacs-lisp
   (use-package doom-everblush-theme
-    :straight (doom-everblush-theme :type git :host github :repo "justinbarclay/doom-everblush-theme.el"))
+    :straight (doom-everblush-theme :type git :host github :repo "Everblush/doomemacs"))
 #+end_src
 
 *** Doom Themes
@@ -1072,6 +1028,7 @@ Let's use Doom's version instead
       "Customized HL line face")
     (setq hl-line-face 'custom-hl-line))
 #+END_SRC
+
 ** Modeline
 *** all-the-icons
 #+BEGIN_SRC emacs-lisp
@@ -2782,9 +2739,6 @@ A better help buffer experience
             ("C-h v" . helpful-variable)
             ("C-h k" . helpful-key)))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25545 3153 260419 994000) :use-package-secs (0 2 360596 548000) :init (25545 3153 260263 645000) :init-secs (0 0 102 669000)))
 
 ** Woman
 #+BEGIN_SRC emacs-lisp

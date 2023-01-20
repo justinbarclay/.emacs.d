@@ -30,21 +30,16 @@
 
 (tool-bar-mode -1)
 
-(when jb/os-linux-p)
-    ;; (add-to-list 'default-frame-alist '(internal-border-width . 5))
-    ;; (add-to-list 'default-frame-alist '(drag-internal-border . 1)))
-    ;;(add-to-list 'default-frame-alist '(undecorated . t)))
-
 (menu-bar-mode -1)
+
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
 
 (pixel-scroll-precision-mode 1)
 
 (when (display-graphic-p) ; Start full screen
   (add-to-list 'default-frame-alist '(fullscreen . t))
   (x-focus-frame nil))
-
-(when (fboundp 'scroll-bar-mode)
-  (scroll-bar-mode -1))
 
 (setq-default frame-title-format "%b (%f)")
 
