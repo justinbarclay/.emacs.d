@@ -526,6 +526,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (blink-cursor-mode 0)
 
+(keymap-global-unset "C-l")
+
+(setq read-process-output-max (* 1024 1024))
+
 (use-package nano-theme
   :straight (nano-theme :type git :host github :repo "rougier/nano-theme"))
 
@@ -709,14 +713,49 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :defer 1
   :commands
   (projectile-find-file projectile-switch-project)
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
   :config
-  (progn
-    (projectile-global-mode)
-    (setq projectile-completion-system 'auto)
-    (setq projectile-enable-caching t)
-    (setq projectile-switch-project-action #'magit-status)))
+  (projectile-global-mode)
+  (setq projectile-completion-system 'auto)
+  (setq projectile-enable-caching t)
+  (setq projectile-switch-project-action #'magit-status)
+
+  (define-key projectile-mode-map (kbd "C-c p") '("projectile" . projectile-command-map))
+
+  (defvar projectile-other-window-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "a") '("find-other-file-other-window" . projectile-find-other-file-other-window))
+      (define-key map (kbd "b") '("switch-to-buffer-other-window" . projectile-switch-to-buffer-other-window))
+      (define-key map (kbd "C-o") '("display-buffer" . projectile-display-buffer))
+      (define-key map (kbd "d") '("find-dir-other-window" . projectile-find-dir-other-window))
+      (define-key map (kbd "D") '("dired-other-window" . projectile-dired-other-window))
+      (define-key map (kbd "f") '("find-file-other-window" . projectile-find-file-other-window))
+      (define-key map (kbd "g") '("find-file-dwim-other-window" . projectile-find-file-dwim-other-window))
+      (define-key map (kbd "t") '("find-implementation-or-test-other-window" . projectile-find-implementation-or-test-other-window))
+      map))
+
+  (defvar projectile-other-frame-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "a") '("find-other-file-other-frame" . projectile-find-other-file-other-frame))
+      (define-key map (kbd "b") '("switch-to-buffer-other-frame" . projectile-switch-to-buffer-other-frame))
+      (define-key map (kbd "d") '("find-dir-other-frame" . projectile-find-dir-other-frame))
+      (define-key map (kbd "D") '("dired-other-frame" . projectile-dired-other-frame))
+      (define-key map (kbd "f") '("find-file-other-frame" . projectile-find-file-other-frame))
+      (define-key map (kbd "g") '("find-file-dwim-other-frame" . projectile-find-file-dwim-other-frame))
+      (define-key map (kbd "t") '("find-implementation-or-test-other-frame" . projectile-find-implementation-or-test-other-frame))
+      map))
+
+  (defvar projectile-search-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "g") '("grep" . projectile-grep))
+      (define-key map (kbd "r") '("ripgrep" . projectile-ripgrep))
+      (define-key map (kbd "s") '("ag" . projectile-ag))
+      (define-key map (kbd "x") '("find-references" . projectile-find-references))
+      map))
+
+  (which-key-add-keymap-based-replacements projectile-command-map
+    "4" (cons "other-window" projectile-other-window-map)
+    "5" (cons "other-frame" projectile-other-frame-map)
+    "s" (cons "search" projectile-search-map)))
 
 (use-package treemacs
   :config
@@ -758,9 +797,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :bind
   (:map global-map
         ([f8]        . treemacs-toggle)
-        ("<C-M-tab>" . treemacs-toggle)
-        ("M-0"       . treemacs-select-window)
-        ("C-c 1"     . treemacs-delete-other-windows)))
+        ("M-0"       . treemacs-select-window)))
 
 (use-package treemacs-projectile
   :config
@@ -1246,12 +1283,14 @@ parses its input."
           tsx-mode)
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
+  (lsp-mode . lsp-enable-which-key-integration)
   :config
   (setq lsp-idle-delay 0.1
         lsp-log-io nil
         lsp-completion-provider :none
         lsp-headerline-breadcrumb-enable nil
-        read-process-output-max (* 1024 1024))
+        lsp-keymap-prefix "C-l")
+  :bind-keymap ("C-l" . lsp-command-map)
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1416,11 +1455,7 @@ parses its input."
     ;; these help me out with the way I usually develop web apps
     (defun cider-refresh ()
       (interactive)
-      (cider-interactive-eval (format "(user/reset)")))
-    (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
-    (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
-    (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
-    (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)))
+      (cider-interactive-eval (format "(user/reset)")))))
 
 (defun cider--tooltip-show ()
   (interactive)
@@ -1432,8 +1467,6 @@ parses its input."
                       nil
                       -1))
     (message "info not found")))
-
-(bind-key "C-c t" 'cider--tooltip-show)
 
 (use-package typescript-mode
   :mode "\\.ts\\'"
@@ -1622,6 +1655,10 @@ parses its input."
   :bind  (("C-h f" . helpful-callable)
           ("C-h v" . helpful-variable)
           ("C-h k" . helpful-key)))
+
+(use-package which-key
+  :defer 't
+  :init (which-key-mode))
 
 (use-package woman
   :ensure nil
