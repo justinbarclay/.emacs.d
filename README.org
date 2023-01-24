@@ -1717,6 +1717,31 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
         (multi-category . ,#'+marginalia-category-truncate-files))
       "Alist mapping category to truncate functions.")
 
+    (defun marginalia--align (cands)
+    "Align annotations of CANDS according to `marginalia-align'."
+    (cl-loop for (cand . ann) in cands do
+             (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+               (setq marginalia--cand-width-max
+                     (max marginalia--cand-width-max
+                          (+ (string-width (+marginalia-truncate-helper cand))
+                             (compat-call string-width ann 0 align))))))
+    (setq marginalia--cand-width-max (* (ceiling marginalia--cand-width-max
+                                                 marginalia--cand-width-step)
+                                        marginalia--cand-width-step))
+    (cl-loop for (cand . ann) in cands collect
+             (progn
+               (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+                 (put-text-property
+                  align (1+ align) 'display
+                  `(space :align-to
+                          ,(pcase-exhaustive marginalia-align
+                             ('center `(+ center ,marginalia-align-offset))
+                             ('left `(+ left ,(+ marginalia-align-offset marginalia--cand-width-max 2)))
+                             ('right `(+ right ,(+ marginalia-align-offset 1
+                                                   (- (compat-call string-width ann 0 align)
+                                                      (string-width ann)))))))
+                  ann))
+               (list (+marginalia-truncate-helper cand) "" ann))))
     ;; (defun marginalia--align (cands)
     ;;   "Align annotations of CANDS according to `marginalia-align'."
     ;;   (cl-loop for (cand . ann) in cands do
