@@ -857,15 +857,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands (ws-butler-mode)
   :hook (prog-mode . ws-butler-mode))
 
-(use-package tree-sitter
-  :hook ((tsx-mode . tree-sitter-hl-mode)))
-
-(use-package tree-sitter-langs
-  :after tree-sitter
-  :init
-  (tree-sitter-require 'tsx)
-  (add-to-list 'tree-sitter-major-mode-language-alist '(tsx-mode . tsx)))
-
 (use-package flycheck-pos-tip)
 
 (use-package flycheck
@@ -1078,31 +1069,6 @@ See URL `http://stylelint.io/'."
                                                     (string-width ann)))))))
                 ann))
              (list (+marginalia-truncate-helper cand) "" ann))))
-  ;; (defun marginalia--align (cands)
-  ;;   "Align annotations of CANDS according to `marginalia-align'."
-  ;;   (cl-loop for (cand . ann) in cands do
-  ;;            (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
-  ;;              (setq marginalia--candw-max
-  ;;                    (max marginalia--candw-max
-  ;;                         (+ (string-width (+marginalia-truncate-helper cand))
-  ;;                            (string-width (substring ann 0 align)))))))
-  ;;   (setq marginalia--candw-max (* (ceiling marginalia--candw-max
-  ;;                                           marginalia--candw-step)
-  ;;                                  marginalia--candw-step))
-  ;;   (cl-loop for (cand . ann) in cands collect
-  ;;        (progn
-  ;;          (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
-  ;;            (put-text-property
-  ;;             align (1+ align) 'display
-  ;;             `(space :align-to
-  ;;                     ,(pcase-exhaustive marginalia-align
-  ;;                        ('center `(+ center ,marginalia-align-offset))
-  ;;                        ('left `(+ left ,(+ marginalia-align-offset marginalia--candw-max)))
-  ;;                        ('right `(+ right ,(+ marginalia-align-offset 1
-  ;;                                              (- (string-width (substring ann 0 align))
-  ;;                                                 (string-width ann)))))))
-  ;;             ann))
-  ;;          (list (+marginalia-truncate-helper cand) "" ann))))
 
   (defun marginalia-annotate-buffer (cand)
     "Annotate buffer CAND with modification status, file name and major mode."
@@ -1217,8 +1183,8 @@ parses its input."
    projectile-find-file
    consult--source-project-recent-file
    :preview-key (kbd "M-."))
-   (autoload 'projectile-project-root "projectile")
-   (setq consult-project-function (lambda (_) (projectile-project-root))))
+  (autoload 'projectile-project-root "projectile")
+  (setq consult-project-function (lambda (_) (projectile-project-root))))
 
 (use-package embark
   :bind
@@ -1281,26 +1247,58 @@ parses its input."
 (use-package kind-icon
   :init
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
-  :config
-  (setq kind-icon-default-face 'corfu-default ; Have background color be the same as `corfu' face background
-        kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
+  :custom
+  (kind-icon-default-face 'corfu-default)  ; Have background color be the same as `corfu' face background
+  (kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 
 (use-package yasnippet
   :defer 't
   :init
   (yas-minor-mode))
 
+(use-package treesit-auto
+  :straight (treesit-auto :type git :host github :repo "renzmann/treesit-auto" :branch "main")
+  :demand t
+  :if (and (require 'treesit)
+           (treesit-available-p))
+  :init (setq treesit-language-source-alist
+              '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+                (c "https://github.com/tree-sitter/tree-sitter-c")
+                (cmake "https://github.com/uyha/tree-sitter-cmake")
+                (common-lisp "https://github.com/theHamsta/tree-sitter-commonlisp")
+                (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+                (css "https://github.com/tree-sitter/tree-sitter-css")
+                (csharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
+                (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+                (go "https://github.com/tree-sitter/tree-sitter-go")
+                (go-mod "https://github.com/camdencheek/tree-sitter-go-mod")
+                (html "https://github.com/tree-sitter/tree-sitter-html")
+                (js . ("https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
+                (json "https://github.com/tree-sitter/tree-sitter-json")
+                (lua "https://github.com/Azganoth/tree-sitter-lua")
+                (make "https://github.com/alemuller/tree-sitter-make")
+                (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+                (python "https://github.com/tree-sitter/tree-sitter-python")
+                (r "https://github.com/r-lib/tree-sitter-r")
+                (rust "https://github.com/tree-sitter/tree-sitter-rust")
+                (toml "https://github.com/tree-sitter/tree-sitter-toml")
+                (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+                (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+                (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+  :config
+  (treesit-auto-apply-remap))
+
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode
           rjsx-mode
-          typescript-mode
           web-mode
           js-mode
           ruby-mode
           enh-ruby-mode
           c-mode
-          tsx-mode)
+          typescript-ts-mode
+          tsx-ts-mode)
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
   (lsp-mode . lsp-enable-which-key-integration)
@@ -1488,25 +1486,25 @@ parses its input."
                       -1))
     (message "info not found")))
 
-(use-package typescript-mode
-  :mode "\\.ts\\'"
-  :custom
-  (typescript-indent-level 2)
-  :config
-  (add-hook 'typescript-mode #'subword-mode)
-  (setq lsp-eslint-enable 't)
-  (flycheck-add-mode 'javascript-eslint 'typescript-mode))
-
-(use-package tsx-mode
+(use-package subword-mode
   :ensure nil
-  :init
-  (require 'web-mode)
-  (define-derived-mode tsx-mode typescript-mode "tsx")
-  (add-hook 'tsx-mode #'subword-mode)
-  (flycheck-add-mode 'javascript-eslint 'tsx-mode)
-  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-mode))
-  :config
-  (setq lsp-eslint-enable 't))
+  :hook typescript-ts-base-mode)
+
+(use-package typescript-ts-base-mode
+    :ensure nil
+    :custom
+    (typescript-indent-level 2)
+    (lsp-eslint-enable 't)
+    :config
+    (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
+
+(use-package typescript-ts-mode
+  :ensure nil
+  :mode "\\.ts\\'")
+
+(use-package tsx-ts-mode
+  :ensure nil
+  :mode "\\.tsx\\'")
 
 (use-package rjsx-mode
   :mode (("\\.jsx\\'" . rjsx-mode)
@@ -1526,7 +1524,7 @@ parses its input."
   (js2r-add-keybindings-with-prefix "C-c C-r"))
 
 (use-package prettier-js
-  :hook ((typescript-mode . prettier-js-mode)
+  :hook ((typescript-ts-base-mode . prettier-js-mode)
          (js-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
 
