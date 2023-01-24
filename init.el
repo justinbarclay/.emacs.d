@@ -915,6 +915,7 @@ See URL `http://stylelint.io/'."
   :config
   (vertico-multiform-mode)
 
+  ;; Custom candidate transforms
   (defun +completion-category-highlight-files (cand)
     (let ((len (length cand)))
       (when (and (> len 0)
@@ -927,46 +928,40 @@ See URL `http://stylelint.io/'."
       (when (and (> len 0)
                  (with-current-buffer (nth 1 (buffer-list)) ; get buffer before minibuffer
                    (or (eq major-mode (intern cand)) ; check major mode
-                       (seq-contains-p local-minor-modes (intern cand))))) ; check minor modes
+                       (seq-contains-p local-minor-modes (intern cand))
+                       (seq-contains-p global-minor-modes (intern cand))))) ; check minor modes
         (add-face-text-property 0 len '(:foreground "red") 'append cand))) ; choose any color or face you like
     cand)
 
   (defun +completion-category-truncate-files (cand)
     (if-let ((type (get-text-property 0 'multi-category cand))
-              ((eq (car-safe type) 'file)))                
-        (ivy-rich-switch-buffer-shorten-path cand 30)
-        cand))
+             ((eq (car-safe type) 'file))
+             (response (ivy-rich-switch-buffer-shorten-path cand 30)))
+        response
+      cand))
 
-  (defvar +completion-category-hl-func-overrides
-    `((file . ,#'+completion-category-highlight-files)
-      (command . ,#'+completion-category-highlight-commands))
-      "Alist mapping category to highlight functions.")
-
-  (advice-add #'vertico--arrange-candidates :around
-              (defun vertico-format-candidates+ (func)
-                (let ((hl-func (or (alist-get (vertico--metadata-get 'category)
-                                              +completion-category-hl-func-overrides)
-                                   #'identity)))
-                  (cl-letf* (((symbol-function 'actual-vertico-format-candidate)
-                              (symbol-function #'vertico--format-candidate))
-                             ((symbol-function #'vertico--format-candidate)
-                              (lambda (cand &rest args)
-                                (apply #'actual-vertico-format-candidate
-                                       (funcall hl-func cand) args))))
-                    (funcall func)))))
-
-  ;; Sort directories before files
+  ;; Custom sorters
   (defun sort-directories-first (files)
     (setq files (vertico-sort-history-length-alpha files))
     (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
            (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
+
+  ;; Extend vertico-multiform abilities
+  (defvar +vertico-transform-functions nil)
+  (defun +vertico-transform (args)
+    (dolist (fun (ensure-list +vertico-transform-functions) args)
+      (setcar args (funcall fun (car args)))))
+  (advice-add #'vertico--format-candidate :filter-args #'+vertico-transform)
 
   (setq vertico-multiform-commands
         '((describe-symbol (vertico-sort-function . vertico-sort-alpha))))
 
   (setq vertico-multiform-categories
         '((symbol (vertico-sort-function . vertico-sort-alpha))
-          (file (vertico-sort-function . sort-directories-first)))))
+          (command (+vertico-transform-functions . +completion-category-highlight-commands))
+          (file (vertico-sort-function . sort-directories-first)
+                (+vertico-transform-functions . +completion-category-highlight-files))
+          (multi-category (+vertico-transform-functions . +completion-category-truncate-files)))))
 
 (use-package savehist
   :ensure nil
