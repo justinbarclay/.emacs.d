@@ -197,7 +197,7 @@ I've decided to experiment with a completely new package manager. The main purpo
   (defvar bootstrap-version)
   (let ((bootstrap-file
          (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 5))
+         (bootstrap-version 5))
     (unless (file-exists-p bootstrap-file)
       (with-current-buffer
           (url-retrieve-synchronously
@@ -207,11 +207,6 @@ I've decided to experiment with a completely new package manager. The main purpo
         (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
 #+END_SRC
-** Customize Straight
-#+BEGIN_SRC emacs-lisp :tangle no
-  (setq straight-use-package-by-default t)
-#+END_SRC
-
 
 * Tent Pole
 For big emacs packages, that help define the experience of Emacs itself
@@ -874,7 +869,7 @@ I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good
 
 *** Ligatures
 
-Ok we know our font supports ligatures, let's set that up. Right now, ligature.el is not on MELPA/ELPA so we need to use straight to download this for us.
+Ok we know our font supports ligatures, let's set that up.
 #+BEGIN_SRC emacs-lisp
   (use-package ligature
     :defer t
@@ -905,9 +900,9 @@ Ok we know our font supports ligatures, let's set that up. Right now, ligature.e
 #+END_SRC
 
 Lets improve our mapping for unicode-fonts
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
 (use-package unicode-fonts
-   :defer 60
+   :defer 't
    :config
    (unicode-fonts-setup))
 #+END_SRC
@@ -927,8 +922,6 @@ We can not place this in early-init because it requires the GUI to be initialize
       (set-fontset-font "fontset-default" 'emoji "Segoe UI Emoji" nil 'prepend)))
    nil)
 #+END_SRC
-
-Now, we want to be able to select emojis. I'd prefer to use the built in emoji selector from the OS but sadly, that is not working for me with X410. I would like to add the emoji selector _here_ in my config, but company is instantiated way down *there*. Instead, I just have a nice link for you [[id:bf963728-dc93-448a-a52e-0cc91d962bcb][Code Completion/company-emoji]].
 
 ** Misc
 No cursor blinking, it's distracting
@@ -2183,37 +2176,46 @@ Things are always better when they are prettier, let's add icons to our in buffe
 Major mode customizations
 ** Tree Sitter support
 #+begin_src emacs-lisp
+  (use-package treesit
+    :ensure nil
+    :config
+    (setq-default treesit-font-lock-level 4))
+#+end_src
+*** Treesit Auto
+We want automatic fall back and to have manually manage `treesit-language-source-alist`.
+#+begin_src emacs-lisp
   (use-package treesit-auto
     :straight (treesit-auto :type git :host github :repo "renzmann/treesit-auto" :branch "main")
-    :demand t
+    :commands treesit-auto-apply-remap
     :if (and (require 'treesit)
              (treesit-available-p))
-    :init (setq treesit-language-source-alist
-                '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-                  (c "https://github.com/tree-sitter/tree-sitter-c")
-                  (cmake "https://github.com/uyha/tree-sitter-cmake")
-                  (common-lisp "https://github.com/theHamsta/tree-sitter-commonlisp")
-                  (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
-                  (css "https://github.com/tree-sitter/tree-sitter-css")
-                  (csharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
-                  (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-                  (go "https://github.com/tree-sitter/tree-sitter-go")
-                  (go-mod "https://github.com/camdencheek/tree-sitter-go-mod")
-                  (html "https://github.com/tree-sitter/tree-sitter-html")
-                  (js . ("https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
-                  (json "https://github.com/tree-sitter/tree-sitter-json")
-                  (lua "https://github.com/Azganoth/tree-sitter-lua")
-                  (make "https://github.com/alemuller/tree-sitter-make")
-                  (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-                  (python "https://github.com/tree-sitter/tree-sitter-python")
-                  (r "https://github.com/r-lib/tree-sitter-r")
-                  (rust "https://github.com/tree-sitter/tree-sitter-rust")
-                  (toml "https://github.com/tree-sitter/tree-sitter-toml")
-                  (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
-                  (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
-                  (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-    :config
+    :init
     (treesit-auto-apply-remap))
+
+  (defun ts-mode-name-from-alist (entry)
+    (intern (concat (symbol-name (car entry)) "-ts-mode")))
+
+  (defun prompt-to-install-package (lang)
+    (if-let* ((repo (alist-get lang treesit-language-source-alist))
+              (response (yes-or-no-p (format "Tree Sitter grammar for %s is missing. Would you like to install it from: %s"
+                                             (symbol-name lang)
+                                             (car repo)))))
+        (treesit-install-language-grammar lang)))
+
+  (defun maybe-install-tree-sitter-grammar ()
+    (when-let* ((mode (symbol-name major-mode))
+                (lang (and (string-match "\\(.*\\)-ts-mode$" mode)
+                           (intern (replace-regexp-in-string
+                                    "\\(.*\\)-ts-mode$" "\\1"
+                                    mode))))
+                (_ (not (treesit-ready-p lang))))
+      (prompt-to-install-package lang)
+      (funcall major-mode)))
+  ;; Idea add advice around treesit-ready-p
+  ;;(advice-add #'maybe-install-tree-sitter-grammar :around #'treesit-ready-p)
+
+  (add-to-list 'prog-mode-hook 'maybe-install-tree-sitter-grammar)
+
 #+end_src
 
 ** General Intellisense

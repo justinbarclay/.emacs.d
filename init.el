@@ -14,7 +14,7 @@
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
+       (bootstrap-version 5))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
@@ -511,6 +511,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   ;; per mode with `ligature-mode'.
   :init
   (global-ligature-mode t))
+
+(use-package unicode-fonts
+   :defer 't
+   :config
+   (unicode-fonts-setup))
 
 (cond
  (jb/os-macos-p
@@ -1256,37 +1261,42 @@ parses its input."
   :init
   (yas-minor-mode))
 
+(use-package treesit
+  :ensure nil
+  :config
+  (setq-default treesit-font-lock-level 4))
+
 (use-package treesit-auto
   :straight (treesit-auto :type git :host github :repo "renzmann/treesit-auto" :branch "main")
-  :demand t
+  :commands treesit-auto-apply-remap
   :if (and (require 'treesit)
            (treesit-available-p))
-  :init (setq treesit-language-source-alist
-              '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-                (c "https://github.com/tree-sitter/tree-sitter-c")
-                (cmake "https://github.com/uyha/tree-sitter-cmake")
-                (common-lisp "https://github.com/theHamsta/tree-sitter-commonlisp")
-                (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
-                (css "https://github.com/tree-sitter/tree-sitter-css")
-                (csharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
-                (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-                (go "https://github.com/tree-sitter/tree-sitter-go")
-                (go-mod "https://github.com/camdencheek/tree-sitter-go-mod")
-                (html "https://github.com/tree-sitter/tree-sitter-html")
-                (js . ("https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
-                (json "https://github.com/tree-sitter/tree-sitter-json")
-                (lua "https://github.com/Azganoth/tree-sitter-lua")
-                (make "https://github.com/alemuller/tree-sitter-make")
-                (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-                (python "https://github.com/tree-sitter/tree-sitter-python")
-                (r "https://github.com/r-lib/tree-sitter-r")
-                (rust "https://github.com/tree-sitter/tree-sitter-rust")
-                (toml "https://github.com/tree-sitter/tree-sitter-toml")
-                (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
-                (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
-                (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-  :config
+  :init
   (treesit-auto-apply-remap))
+
+(defun ts-mode-name-from-alist (entry)
+  (intern (concat (symbol-name (car entry)) "-ts-mode")))
+
+(defun prompt-to-install-package (lang)
+  (if-let* ((repo (alist-get lang treesit-language-source-alist))
+            (response (yes-or-no-p (format "Tree Sitter grammar for %s is missing. Would you like to install it from: %s"
+                                           (symbol-name lang)
+                                           (car repo)))))
+      (treesit-install-language-grammar lang)))
+
+(defun maybe-install-tree-sitter-grammar ()
+  (when-let* ((mode (symbol-name major-mode))
+              (lang (and (string-match "\\(.*\\)-ts-mode$" mode)
+                         (intern (replace-regexp-in-string
+                                  "\\(.*\\)-ts-mode$" "\\1"
+                                  mode))))
+              (_ (not (treesit-ready-p lang))))
+    (prompt-to-install-package lang)
+    (funcall major-mode)))
+;; Idea add advice around treesit-ready-p
+;;(advice-add #'maybe-install-tree-sitter-grammar :around #'treesit-ready-p)
+
+(add-to-list 'prog-mode-hook 'maybe-install-tree-sitter-grammar)
 
 (use-package lsp-mode
   :commands lsp
