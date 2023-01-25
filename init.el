@@ -1257,7 +1257,6 @@ parses its input."
   (kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 
 (use-package yasnippet
-  :defer 't
   :init
   (yas-minor-mode))
 
@@ -1284,19 +1283,24 @@ parses its input."
                                            (car repo)))))
       (treesit-install-language-grammar lang)))
 
-(defun maybe-install-tree-sitter-grammar ()
+(defun maybe-install-tree-sitter-grammar (orig &rest args)
   (when-let* ((mode (symbol-name major-mode))
-              (lang (and (string-match "\\(.*\\)-ts-mode$" mode)
-                         (intern (replace-regexp-in-string
-                                  "\\(.*\\)-ts-mode$" "\\1"
-                                  mode))))
+              (lang (or (car args)
+                        (and (string-match "\\(.*\\)-ts-mode$" mode)
+                             (intern (replace-regexp-in-string
+                                      "\\(.*\\)-ts-mode$" "\\1"
+                                      mode)))))
               (_ (not (treesit-ready-p lang))))
     (prompt-to-install-package lang)
     (funcall major-mode)))
 ;; Idea add advice around treesit-ready-p
-;;(advice-add #'maybe-install-tree-sitter-grammar :around #'treesit-ready-p)
 
-(add-to-list 'prog-mode-hook 'maybe-install-tree-sitter-grammar)
+(advice-add #'maybe-install-tree-sitter-grammar :around 'treesit-ready-p)
+
+(dolist (elt treesit-auto--supported-major-modes)
+  (message "%s" elt))
+
+;;(add-to-list 'prog-mode-hook 'maybe-install-tree-sitter-grammar)
 
 (use-package lsp-mode
   :commands lsp
