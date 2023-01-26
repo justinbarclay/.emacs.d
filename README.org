@@ -1330,7 +1330,7 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 #+END_SRC
 
 ** Treemacs
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package treemacs
     :config
     (progn
@@ -1374,7 +1374,7 @@ Turn on recent file mode so that you can more easily switch to recently edited f
           ("M-0"       . treemacs-select-window)))
 #+END_SRC
 ** Treemacs Pojectile
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package treemacs-projectile
     :config
     (setq treemacs-header-function #'treemacs-projectile-create-header))
@@ -2201,22 +2201,18 @@ We want automatic fall back and to have manually manage `treesit-language-source
                                              (car repo)))))
         (treesit-install-language-grammar lang)))
 
-  (defun maybe-install-tree-sitter-grammar (orig &rest args)
+  (defun maybe-install-tree-sitter-grammar (&rest args)
     (when-let* ((mode (symbol-name major-mode))
                 (lang (or (car args)
                           (and (string-match "\\(.*\\)-ts-mode$" mode)
                                (intern (replace-regexp-in-string
                                         "\\(.*\\)-ts-mode$" "\\1"
                                         mode)))))
-                (_ (not (treesit-ready-p lang))))
+                (_ (not (treesit-ready-p lang 't))))
       (prompt-to-install-package lang)
       (funcall major-mode)))
   ;; Idea add advice around treesit-ready-p
-
-  (advice-add #'maybe-install-tree-sitter-grammar :around 'treesit-ready-p)
-
-  (dolist (elt treesit-auto--supported-major-modes)
-    (message "%s" elt))
+  (add-hook 'prog-mode-hook #'maybe-install-tree-sitter-grammar)
 
   ;;(add-to-list 'prog-mode-hook 'maybe-install-tree-sitter-grammar)
 #+end_src

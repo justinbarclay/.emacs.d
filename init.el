@@ -762,52 +762,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     "5" (cons "other-frame" projectile-other-frame-map)
     "s" (cons "search" projectile-search-map)))
 
-(use-package treemacs
-  :config
-  (progn
-    (setq treemacs-follow-after-init          t
-          treemacs-width                      35
-          treemacs-indentation                2
-          treemacs-git-integration            t
-          treemacs-collapse-dirs              3
-          treemacs-silent-refresh             nil
-          treemacs-change-root-without-asking nil
-          treemacs-sorting                    'alphabetic-desc
-          treemacs-show-hidden-files          t
-          treemacs-never-persist              nil
-          treemacs-is-never-other-window      nil
-          treemacs-goto-tag-strategy          'prefetch-index)
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (setq treemacs-icons-hash (make-hash-table :size 200 :test #'equal)
-          treemacs-icon-fallback (concat
-                                  "  "
-                                  (all-the-icons-faicon "file-o"
-                                                        :face 'all-the-icons-dsilver
-                                                        :height 0.9
-                                                        :v-adjust -0.05)
-                                  " ")
-          treemacs-icon-text treemacs-icon-fallback)
-    (dolist (item all-the-icons-icon-alist)
-      (let* ((extension (car item))
-             (func (cadr item))
-             (args (append (list (caddr item))
-                           '(:height 0.9 :v-adjust -0.05)
-                           (cdddr item)))
-             (icon (apply func args))
-             (key (s-replace-all '(("^" . "") ("\\" . "") ("$" . "") ("." . "")) extension))
-             (value (concat "  " icon " ")))
-        (ht-set! treemacs-icons-hash (s-replace-regexp "\\?" "" key) value)
-        (ht-set! treemacs-icons-hash (s-replace-regexp ".\\?" "" key) value))))
-  :bind
-  (:map global-map
-        ([f8]        . treemacs-toggle)
-        ("M-0"       . treemacs-select-window)))
-
-(use-package treemacs-projectile
-  :config
-  (setq treemacs-header-function #'treemacs-projectile-create-header))
-
 (use-package ace-window
   :bind ("C-x o" . ace-window))
 
@@ -1283,22 +1237,18 @@ parses its input."
                                            (car repo)))))
       (treesit-install-language-grammar lang)))
 
-(defun maybe-install-tree-sitter-grammar (orig &rest args)
+(defun maybe-install-tree-sitter-grammar (&rest args)
   (when-let* ((mode (symbol-name major-mode))
               (lang (or (car args)
                         (and (string-match "\\(.*\\)-ts-mode$" mode)
                              (intern (replace-regexp-in-string
                                       "\\(.*\\)-ts-mode$" "\\1"
                                       mode)))))
-              (_ (not (treesit-ready-p lang))))
+              (_ (not (treesit-ready-p lang 't))))
     (prompt-to-install-package lang)
     (funcall major-mode)))
 ;; Idea add advice around treesit-ready-p
-
-(advice-add #'maybe-install-tree-sitter-grammar :around 'treesit-ready-p)
-
-(dolist (elt treesit-auto--supported-major-modes)
-  (message "%s" elt))
+(add-hook 'prog-mode-hook #'maybe-install-tree-sitter-grammar)
 
 ;;(add-to-list 'prog-mode-hook 'maybe-install-tree-sitter-grammar)
 
