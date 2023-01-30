@@ -1498,7 +1498,7 @@ parses its input."
   (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 
 (use-package rbenv
-  :hook (ruby-mode . global-rbenv-mode)
+  :hook (ruby-ts-mode . global-rbenv-mode)
   :config
    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
@@ -1514,7 +1514,8 @@ parses its input."
         (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
         (setq inf-ruby-default-implementation "pry"))))
 
-(use-package enh-ruby-mode
+(use-package ruby-ts-mode
+  :ensure nil
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
@@ -1525,7 +1526,7 @@ parses its input."
   (progn
     (setq ruby-indent-level 2
           ruby-indent-tabs-mode nil)
-    (add-hook 'enh-ruby-mode 'superword-mode)))
+    (add-hook 'ruby-ts-mode 'superword-mode)))
 
 (use-package rubocopfmt
 :hook (enh-ruby-mode . rubocopfmt-mode))

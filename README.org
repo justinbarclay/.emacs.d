@@ -2591,7 +2591,7 @@ Autoformatting
 *** rbenv
 #+BEGIN_SRC emacs-lisp
   (use-package rbenv
-    :hook (ruby-mode . global-rbenv-mode)
+    :hook (ruby-ts-mode . global-rbenv-mode)
     :config
      (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 #+END_SRC
@@ -2611,7 +2611,8 @@ Autoformatting
 #+END_SRC
 *** ruby-mode
 #+BEGIN_SRC emacs-lisp
-  (use-package enh-ruby-mode
+  (use-package ruby-ts-mode
+    :ensure nil
     :mode "\\.rb\\'"
     :mode "Rakefile\\'"
     :mode "Gemfile\\'"
@@ -2622,7 +2623,7 @@ Autoformatting
     (progn
       (setq ruby-indent-level 2
             ruby-indent-tabs-mode nil)
-      (add-hook 'enh-ruby-mode 'superword-mode)))
+      (add-hook 'ruby-ts-mode 'superword-mode)))
 #+END_SRC
 *** formatter
 #+BEGIN_SRC emacs-lisp
