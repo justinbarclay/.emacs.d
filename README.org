@@ -2168,8 +2168,19 @@ Things are always better when they are prettier, let's add icons to our in buffe
 #+begin_src elisp
   (use-package yasnippet
     :init
-    (yas-minor-mode))
+    (yas-global-mode))
 #+end_src
+**** Additional Snippets
+#+begin_src emacs-lisp
+  (use-package yasnippet-snippets
+    :after yasnippet)
+#+end_src
+**** Yasnippet capf
+#+begin_src emacs-lisp
+  (use-package yasnippet-capf
+    :straight (:type git :host github :repo "justinbarclay/yasnippet-capf"))
+#+end_src
+
 
 * Languages
 Major mode customizations

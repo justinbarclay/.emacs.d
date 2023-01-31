@@ -1212,7 +1212,13 @@ parses its input."
 
 (use-package yasnippet
   :init
-  (yas-minor-mode))
+  (yas-global-mode))
+
+(use-package yasnippet-snippets
+  :after yasnippet)
+
+(use-package yasnippet-capf
+  :straight (:type git :host github :repo "justinbarclay/yasnippet-capf"))
 
 (use-package treesit
   :ensure nil
