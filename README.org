@@ -2184,12 +2184,12 @@ Major mode customizations
 We want automatic fall back and to have manually manage `treesit-language-source-alist`.
 #+begin_src emacs-lisp
   (use-package treesit-auto
-    :straight (treesit-auto :type git :host github :repo "justinbarclay/treesit-auto" :branch "main")
-    :commands treesit-auto-apply-remap
     :if (and (require 'treesit)
              (treesit-available-p))
     :init
-    (treesit-auto-minor-mode))
+    (global-treesit-auto-mode)
+    :custom
+    (treesit-auto-install 'prompt))
 #+end_src
 
 ** General Intellisense

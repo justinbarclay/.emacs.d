@@ -1220,12 +1220,12 @@ parses its input."
   (setq-default treesit-font-lock-level 4))
 
 (use-package treesit-auto
-  :straight (treesit-auto :type git :host github :repo "justinbarclay/treesit-auto" :branch "main")
-  :commands treesit-auto-apply-remap
   :if (and (require 'treesit)
            (treesit-available-p))
   :init
-  (treesit-auto-minor-mode))
+  (global-treesit-auto-mode)
+  :custom
+  (treesit-auto-install 'prompt))
 
 (use-package lsp-mode
   :commands lsp
