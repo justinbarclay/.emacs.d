@@ -1238,12 +1238,10 @@ parses its input."
   :hook ((rustic-mode
           rjsx-mode
           web-mode
-          js-mode
-          ruby-mode
-          enh-ruby-mode
+          ruby-base-mode
           c-mode
-          typescript-ts-mode
-          tsx-ts-mode)
+          javascript-base-mode
+          typescript-base-mode)
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
   (lsp-mode . lsp-enable-which-key-integration)
@@ -1535,7 +1533,7 @@ parses its input."
     (add-hook 'ruby-ts-mode 'superword-mode)))
 
 (use-package rubocopfmt
-:hook (enh-ruby-mode . rubocopfmt-mode))
+:hook (ruby-ts-mode . rubocopfmt-mode))
 
 (use-package rspec-mode)
 
