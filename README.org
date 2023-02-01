@@ -2600,7 +2600,7 @@ Autoformatting
 *** rbenv
 #+BEGIN_SRC emacs-lisp
   (use-package rbenv
-    :hook (ruby-ts-mode . global-rbenv-mode)
+    :hook (ruby-base-mode . global-rbenv-mode)
     :config
      (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 #+END_SRC
@@ -2637,12 +2637,15 @@ Autoformatting
 *** formatter
 #+BEGIN_SRC emacs-lisp
   (use-package rubocopfmt
-  :hook (ruby-ts-mode . rubocopfmt-mode))
+  :hook (ruby-base-mode . rubocopfmt-mode))
 #+END_SRC
 
 *** Test running library
 #+BEGIN_SRC emacs-lisp
-(use-package rspec-mode)
+  (use-package rspec-mode
+   :hook (ruby-base-mode . rspec-enable-appropriate-mode)
+   :config
+   (rspec-install-snippets))
 #+END_SRC
 
 ** Rust

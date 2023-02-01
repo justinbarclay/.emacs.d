@@ -1502,7 +1502,7 @@ parses its input."
   (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 
 (use-package rbenv
-  :hook (ruby-ts-mode . global-rbenv-mode)
+  :hook (ruby-base-mode . global-rbenv-mode)
   :config
    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
@@ -1533,9 +1533,12 @@ parses its input."
     (add-hook 'ruby-ts-mode 'superword-mode)))
 
 (use-package rubocopfmt
-:hook (ruby-ts-mode . rubocopfmt-mode))
+:hook (ruby-base-mode . rubocopfmt-mode))
 
-(use-package rspec-mode)
+(use-package rspec-mode
+ :hook (ruby-base-mode . rspec-enable-appropriate-mode)
+ :config
+ (rspec-install-snippets))
 
 (use-package rustic
   :bind ("C-c r" . rustic-compile)
