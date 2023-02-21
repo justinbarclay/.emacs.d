@@ -134,7 +134,7 @@ Reset garbage collection to emacs default after 5s
 ** Turn off bytecompiler warnings
 They are really noisy and annoying right now. And nothing I can deal with.
 #+begin_src emacs-lisp
-  (setq comp-deferred-compilation-deny-list '())
+  (setq native-comp-deferred-compilation-deny-list '())
   (setq native-comp-async-report-warnings-errors nil)
 #+end_src
 
@@ -1270,12 +1270,12 @@ Ensure that buffers have unique file names
 ** Recentf
 Turn on recent file mode so that you can more easily switch to recently edited files when you first start emacs
 #+BEGIN_SRC emacs-lisp
-(use-package recentf
-  :ensure nil
-  :config
-  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
-  (recentf-mode 1)
-  (setq recentf-max-menu-items 40))
+  (use-package recentf
+    :ensure nil
+    :init
+    (recentf-mode)
+    :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
+             (recentf-max-menu-items 40)))
 #+END_SRC
 
 ** Projectile
@@ -1531,10 +1531,7 @@ Load this before we load Flycheck
 
 * Integrated Debugging
 #+begin_src emacs-lisp
-(use-package dap-mode
- :init
- (require 'dap-lldb)
- (require 'dap-gdb-lldb))
+(use-package dap-mode)
 #+end_src
 * Completion
 ** Minibuffer
@@ -2202,6 +2199,17 @@ We want automatic fall back and to have manually manage `treesit-language-source
     :custom
     (treesit-auto-install 'prompt))
 #+end_src
+*** Combobulate
+Better movement through treesitter
+#+begin_src emacs-lisp
+  (use-package combobulate
+    :straight (:type git :host github :repo "mickeynp/combobulate")
+    :hook (prog-mode . combobulate-mode)
+    :custom (combobulate-js-ts-enable-auto-close-tag . nil))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25583 55115 2218 44000) :init (25583 55115 2215 474000) :init-secs (0 0 15 710000) :use-package-secs (0 0 41091 777000) :config (25583 55115 2209 864000) :config-secs (0 0 3 80000)))
 
 ** General Intellisense
 *** LSP-Mode
@@ -2216,8 +2224,10 @@ We want automatic fall back and to have manually manage `treesit-language-source
             web-mode
             ruby-base-mode
             c-mode
-            javascript-base-mode
-            typescript-base-mode)
+            javascript-ts-mode
+            typescript-ts-mode
+            jsx-ts-mode
+            tsx-ts-mode)
            . lsp-deferred)
     (lsp-completion-mode . my/lsp-mode-setup-completion)
     (lsp-mode . lsp-enable-which-key-integration)
@@ -2226,8 +2236,7 @@ We want automatic fall back and to have manually manage `treesit-language-source
           lsp-log-io nil
           lsp-completion-provider :none
           lsp-headerline-breadcrumb-enable nil
-          lsp-keymap-prefix "C-l")
-    :bind-keymap ("C-l" . lsp-command-map)
+          lsp-solargraph-use-bundler 't)
     :init
     (defun my/orderless-dispatch-flex-first (_pattern index _total)
       (and (eq index 0) 'orderless-flex))
@@ -2235,12 +2244,13 @@ We want automatic fall back and to have manually manage `treesit-language-source
     (defun my/lsp-mode-setup-completion ()
       (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
             '(orderless)))
-
+            
     ;; Optionally configure the first word as flex filtered.
     (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
 
     ;; Optionally configure the cape-capf-buster.
-    (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point))))
+    (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
+    (setq lsp-keymap-prefix "C-l"))
 #+END_SRC
 
 ***** lsp-ui
@@ -2552,6 +2562,8 @@ Autoformatting
 #+begin_src emacs-lisp
   (use-package prettier-js
     :hook ((typescript-ts-base-mode . prettier-js-mode)
+           (js-base-mode . prettier-js-mode)
+           (json-base-mode . prettier-js-mode)
            (js-mode . prettier-js-mode)
            (web-mode . prettier-js-mode)))
 #+end_src
@@ -2628,16 +2640,15 @@ Autoformatting
     :mode "Berksfile\\'"
     :mode "Vagrantfile\\'"
     :interpreter "ruby"
-    :init
-    (progn
-      (setq ruby-indent-level 2
-            ruby-indent-tabs-mode nil)
-      (add-hook 'ruby-ts-mode 'superword-mode)))
+    :hook (ruby-ts-mode . superword-mode)
+    :custom (ruby-indent-level 2)
+            (ruby-indent-tabs-mode nil))
 #+END_SRC
 *** formatter
 #+BEGIN_SRC emacs-lisp
   (use-package rubocopfmt
-  :hook (ruby-base-mode . rubocopfmt-mode))
+    :hook ((ruby-base-mode . rubocopfmt-mode)
+           (ruby-ts-mode . rubocopfmt-mode)))
 #+END_SRC
 
 *** Test running library

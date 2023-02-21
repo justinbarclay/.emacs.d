@@ -1,4 +1,4 @@
-(setq comp-deferred-compilation-deny-list '())
+(setq native-comp-deferred-compilation-deny-list '())
 (setq native-comp-async-report-warnings-errors nil)
 
 (setq
@@ -709,10 +709,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package recentf
   :ensure nil
-  :config
-  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
-  (recentf-mode 1)
-  (setq recentf-max-menu-items 40))
+  :init
+  (recentf-mode)
+  :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
+           (recentf-max-menu-items 40)))
 
 (use-package projectile
   :defer 1
@@ -852,10 +852,7 @@ See URL `http://stylelint.io/'."
   ;; :config (setq flyspell-issue-message-flag nil)
   )
 
-(use-package dap-mode
- :init
- (require 'dap-lldb)
- (require 'dap-gdb-lldb))
+(use-package dap-mode)
 
 (use-package vertico
   :init
@@ -1233,6 +1230,11 @@ parses its input."
   :custom
   (treesit-auto-install 'prompt))
 
+(use-package combobulate
+  :straight (:type git :host github :repo "mickeynp/combobulate")
+  :hook (prog-mode . combobulate-mode)
+  :custom (combobulate-js-ts-enable-auto-close-tag . nil))
+
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode
@@ -1240,8 +1242,10 @@ parses its input."
           web-mode
           ruby-base-mode
           c-mode
-          javascript-base-mode
-          typescript-base-mode)
+          javascript-ts-mode
+          typescript-ts-mode
+          jsx-ts-mode
+          tsx-ts-mode)
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
   (lsp-mode . lsp-enable-which-key-integration)
@@ -1250,8 +1254,7 @@ parses its input."
         lsp-log-io nil
         lsp-completion-provider :none
         lsp-headerline-breadcrumb-enable nil
-        lsp-keymap-prefix "C-l")
-  :bind-keymap ("C-l" . lsp-command-map)
+        lsp-solargraph-use-bundler 't)
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1264,7 +1267,8 @@ parses its input."
   (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
 
   ;; Optionally configure the cape-capf-buster.
-  (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point))))
+  (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
+  (setq lsp-keymap-prefix "C-l"))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -1468,6 +1472,8 @@ parses its input."
 
 (use-package prettier-js
   :hook ((typescript-ts-base-mode . prettier-js-mode)
+         (js-base-mode . prettier-js-mode)
+         (json-base-mode . prettier-js-mode)
          (js-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
 
@@ -1526,14 +1532,13 @@ parses its input."
   :mode "Berksfile\\'"
   :mode "Vagrantfile\\'"
   :interpreter "ruby"
-  :init
-  (progn
-    (setq ruby-indent-level 2
-          ruby-indent-tabs-mode nil)
-    (add-hook 'ruby-ts-mode 'superword-mode)))
+  :hook (ruby-ts-mode . superword-mode)
+  :custom (ruby-indent-level 2)
+          (ruby-indent-tabs-mode nil))
 
 (use-package rubocopfmt
-:hook (ruby-base-mode . rubocopfmt-mode))
+  :hook ((ruby-base-mode . rubocopfmt-mode)
+         (ruby-ts-mode . rubocopfmt-mode)))
 
 (use-package rspec-mode
  :hook (ruby-base-mode . rspec-enable-appropriate-mode)
