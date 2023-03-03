@@ -2207,9 +2207,6 @@ Better movement through treesitter
     :custom (combobulate-js-ts-enable-auto-close-tag . nil))
 #+end_src
 
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25583 55115 2218 44000) :init (25583 55115 2215 474000) :init-secs (0 0 15 710000) :use-package-secs (0 0 41091 777000) :config (25583 55115 2209 864000) :config-secs (0 0 3 80000)))
-
 ** General Intellisense
 *** LSP-Mode
 :PROPERTIES:
@@ -2219,6 +2216,7 @@ Better movement through treesitter
   (use-package lsp-mode
     :commands lsp
     :hook ((rustic-mode
+            rust-ts-mode
             rjsx-mode
             web-mode
             ruby-base-mode
@@ -2666,14 +2664,11 @@ Autoformatting
 *** Rustic
 We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-playground packages are causing rust-mode to shadow rustic-mode.
 #+BEGIN_SRC emacs-lisp
-  (use-package rustic
-    :bind ("C-c r" . rustic-compile)
-    :mode ("\\.rs\\'" . rustic-mode)
+  (use-package rust-ts-mode
+    :ensure nil
     :config
     (progn
-      (setq rustic-lsp-server 'rust-analyzer)
-      (setq rustic-format-on-save nil)
-      (setq rustic-indent-offset 2)
+      (setq rust-ts-mode-indent-offset 2)
       (electric-pair-mode 1)))
 #+END_SRC
 

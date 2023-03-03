@@ -1237,6 +1237,7 @@ parses its input."
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode
+          rust-ts-mode
           rjsx-mode
           web-mode
           ruby-base-mode
@@ -1544,14 +1545,11 @@ parses its input."
  :config
  (rspec-install-snippets))
 
-(use-package rustic
-  :bind ("C-c r" . rustic-compile)
-  :mode ("\\.rs\\'" . rustic-mode)
+(use-package rust-ts-mode
+  :ensure nil
   :config
   (progn
-    (setq rustic-lsp-server 'rust-analyzer)
-    (setq rustic-format-on-save nil)
-    (setq rustic-indent-offset 2)
+    (setq rust-ts-mode-indent-offset 2)
     (electric-pair-mode 1)))
 
 (use-package go-mode
