@@ -2684,6 +2684,20 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
              :upgrade t)))
 #+END_SRC
 
+** Nix
+*** Major Mode
+#+begin_src emacs-lisp
+(use-package nix-mode)
+#+end_src
+*** nixos-options
+#+begin_src emacs-lisp
+(use-package nixos-options)
+#+end_src
+*** nixpkgs-fm
+#+begin_src emacs-lisp
+(use-package nixpkgs-fmt
+ :hook (nix-mode . nixpkgs-fmt-on-save-mode))
+#+end_src
 ** Go
 *** Go Mode
 #+BEGIN_SRC emacs-lisp

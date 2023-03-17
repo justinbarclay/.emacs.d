@@ -1552,6 +1552,13 @@ parses its input."
     (setq rust-ts-mode-indent-offset 2)
     (electric-pair-mode 1)))
 
+(use-package nix-mode)
+
+(use-package nixos-options)
+
+(use-package nixpkgs-fmt
+ :hook (nix-mode . nixpkgs-fmt-on-save-mode))
+
 (use-package go-mode
   :mode "\\.go\\'"
   :config
