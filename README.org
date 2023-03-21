@@ -134,6 +134,7 @@ Reset garbage collection to emacs default after 5s
 ** Turn off bytecompiler warnings
 They are really noisy and annoying right now. And nothing I can deal with.
 #+begin_src emacs-lisp
+  (package-initialize)
   (setq native-comp-deferred-compilation-deny-list '())
   (setq native-comp-async-report-warnings-errors nil)
 #+end_src
@@ -155,6 +156,7 @@ Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-d
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
 
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
+  (setq package-enable-at-startup nil)
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq load-prefer-newer t)
   (setq package-archives
@@ -223,7 +225,6 @@ Boot strap use-package. Because we're running package initalize ourselves, we ca
     (package-refresh-contents)
     (package-install 'use-package))
 #+END_SRC
-
 *** Generate reports based on use-package
 #+BEGIN_SRC emacs-lisp 
 (setq use-package-compute-statistics t)
@@ -1048,6 +1049,22 @@ Let's use Doom's version instead
     (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
                       '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
 #+END_SRC
+*** Feline
+#+begin_src emacs-lisp :tanlge no
+(use-package feline
+  :config (feline-mode)
+  :custom
+  (feline-line-prefix "L")
+  (feline-column-prefix "C")
+  (feline-mode-symbols
+   '(emacs-lisp-mode "λ"
+     python-mode "py"
+     typescript-mode "ts"
+     rustic-mode "🦀"
+     rust-mode "🦀"
+     zig-mode "🦎"
+     scheme-mode "🐔")))
+#+end_src
 
 ** Line Numbers
 As of Emacs 26.0 we have native, perfomant, support for line numbers
@@ -1255,7 +1272,11 @@ Currently turned off due to debugging issues
   (when jb/os-linux-p
     (use-package pinentry
       :defer 10
-      :init (pinentry-start)))
+      :init (pinentry-start))
+      (use-package envrc
+        :defer 2
+        :config
+        (envrc-global-mode)))
 #+END_SRC
 
 * Navigating

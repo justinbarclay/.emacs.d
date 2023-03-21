@@ -1,3 +1,4 @@
+(package-initialize)
 (setq native-comp-deferred-compilation-deny-list '())
 (setq native-comp-async-report-warnings-errors nil)
 
@@ -571,6 +572,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
                     '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
 
+(use-package feline
+  :config (feline-mode)
+  :custom
+  (feline-line-prefix "L")
+  (feline-column-prefix "C")
+  (feline-mode-symbols
+   '(emacs-lisp-mode "λ"
+     python-mode "py"
+     typescript-mode "ts"
+     rustic-mode "🦀"
+     rust-mode "🦀"
+     zig-mode "🦎"
+     scheme-mode "🐔")))
+
 (use-package dirvish
   :init
   (dirvish-override-dired-mode)
@@ -700,7 +715,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (when jb/os-linux-p
   (use-package pinentry
     :defer 10
-    :init (pinentry-start)))
+    :init (pinentry-start))
+    (use-package envrc
+      :defer 2
+      :config
+      (envrc-global-mode)))
 
 (use-package uniquify
   :ensure nil

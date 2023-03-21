@@ -6,6 +6,7 @@
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 
+(setq package-enable-at-startup nil)
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq load-prefer-newer t)
 (setq package-archives
