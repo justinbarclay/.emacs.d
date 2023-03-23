@@ -1243,10 +1243,11 @@ parses its input."
 (use-package treesit-auto
   :if (and (require 'treesit)
            (treesit-available-p))
-  :init
-  (global-treesit-auto-mode)
+  :defer 1
   :custom
-  (treesit-auto-install 'prompt))
+  (treesit-auto-install 'prompt)
+  :config
+  (global-treesit-auto-mode))
 
 (use-package combobulate
   :straight (:type git :host github :repo "mickeynp/combobulate")
@@ -1564,11 +1565,11 @@ parses its input."
  :config
  (rspec-install-snippets))
 
-(use-package rust-ts-mode
-  :ensure nil
+(use-package rustic-mode
+  :mode "\\.rs\\"
   :config
   (progn
-    (setq rust-ts-mode-indent-offset 2)
+    (setq rustic-indent-offset 2)
     (electric-pair-mode 1)))
 
 (use-package nix-mode)

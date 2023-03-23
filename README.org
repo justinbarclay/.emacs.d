@@ -2214,10 +2214,11 @@ We want automatic fall back and to have manually manage `treesit-language-source
   (use-package treesit-auto
     :if (and (require 'treesit)
              (treesit-available-p))
-    :init
-    (global-treesit-auto-mode)
+    :defer 1
     :custom
-    (treesit-auto-install 'prompt))
+    (treesit-auto-install 'prompt)
+    :config
+    (global-treesit-auto-mode))
 #+end_src
 *** Combobulate
 Better movement through treesitter
@@ -2685,12 +2686,12 @@ Autoformatting
 *** Rustic
 We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-playground packages are causing rust-mode to shadow rustic-mode.
 #+BEGIN_SRC emacs-lisp
-  (use-package rust-ts-mode
-    :ensure nil
-    :config
-    (progn
-      (setq rust-ts-mode-indent-offset 2)
-      (electric-pair-mode 1)))
+(use-package rustic-mode
+  :mode "\\.rs\\"
+  :config
+  (progn
+    (setq rustic-indent-offset 2)
+    (electric-pair-mode 1)))
 #+END_SRC
 
 *** Rust repl
