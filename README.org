@@ -2686,12 +2686,13 @@ Autoformatting
 *** Rustic
 We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-playground packages are causing rust-mode to shadow rustic-mode.
 #+BEGIN_SRC emacs-lisp
-(use-package rustic-mode
-  :mode "\\.rs\\"
-  :config
-  (progn
-    (setq rustic-indent-offset 2)
-    (electric-pair-mode 1)))
+  (use-package rustic
+    :mode (("\\.rs\\'" . rustic-mode))
+    :config
+    (progn
+      (setq rustic-lsp-setup-p '())
+      (setq rustic-indent-offset 2)
+      (electric-pair-mode 1)))
 #+END_SRC
 
 *** Rust repl

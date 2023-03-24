@@ -1565,10 +1565,11 @@ parses its input."
  :config
  (rspec-install-snippets))
 
-(use-package rustic-mode
-  :mode "\\.rs\\"
+(use-package rustic
+  :mode (("\\.rs\\'" . rustic-mode))
   :config
   (progn
+    (setq rustic-lsp-setup-p '())
     (setq rustic-indent-offset 2)
     (electric-pair-mode 1)))
 
