@@ -1538,8 +1538,10 @@ parses its input."
   (:map inf-ruby-minor-mode-map
         (("C-c C-z" . run-ruby)
          ("C-c C-b" . ruby-send-buffer)))
+  :init
+  (add-hook 'inf-ruby-mode-hook (lambda () (corfu-mode -1)))
   :config
-  (progn
+    (progn
       (when (executable-find "pry")
         (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
         (setq inf-ruby-default-implementation "pry"))))
