@@ -555,12 +555,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package doom-themes
   :defer 1
   :init
-  (load-theme 'doom-everblush t)
+  (load-theme 'doom-everblush t) 
   ;; When using doom-themes region is a much better colour for highlighting current line
-  (defface custom-hl-line
-    '((t (:inherit region :background "#2d2844")))
-    "Customized HL line face")
-  (setq hl-line-face 'custom-hl-line))
+  ;; (defface custom-hl-line
+  ;;   '((t (:inherit region :background "#2d2844")))
+  ;;"Customized HL line face")
+  ;;(setq hl-line-face 'custom-hl-line)
+  )
 
 (use-package all-the-icons)
 
