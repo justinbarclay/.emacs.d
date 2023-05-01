@@ -617,10 +617,32 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
       (?C :foreground "blue"))
     (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 #+END_SRC
+*** Org Roam
+#+begin_src emacs-lisp
+(use-package org-roam
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/dev/diary")
+  (org-roam-completion-everywhere t)
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
+#+end_src
 
 ** Grammarly
 #+begin_src emacs-lisp
 (use-package flycheck-grammarly)
+#+end_src
+*** lsp
+#+begin_src emacs-lisp
+(use-package lsp-grammarly
+  :ensure t
+  :hook (text-mode . (lambda ()
+                       (require 'lsp-grammarly)
+                       (lsp))))
 #+end_src
 
 ** Langtool

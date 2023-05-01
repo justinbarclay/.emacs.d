@@ -304,7 +304,25 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (?C :foreground "blue"))
   (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 
+(use-package org-roam
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/dev/diary")
+  (org-roam-completion-everywhere t)
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
+
 (use-package flycheck-grammarly)
+
+(use-package lsp-grammarly
+  :ensure t
+  :hook (text-mode . (lambda ()
+                       (require 'lsp-grammarly)
+                       (lsp))))
 
 (use-package langtool
   :init
