@@ -1579,7 +1579,8 @@ parses its input."
 
 (use-package rubocopfmt
   :hook ((ruby-base-mode . rubocopfmt-mode)
-         (ruby-ts-mode . rubocopfmt-mode)))
+         (ruby-ts-mode . rubocopfmt-mode))
+  :custom (rubocopfmt-on-save-use-lsp-format-buffer 't))
 
 (use-package rspec-mode
  :hook (ruby-base-mode . rspec-enable-appropriate-mode)

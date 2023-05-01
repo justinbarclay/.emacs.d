@@ -2694,7 +2694,8 @@ Autoformatting
 #+BEGIN_SRC emacs-lisp
   (use-package rubocopfmt
     :hook ((ruby-base-mode . rubocopfmt-mode)
-           (ruby-ts-mode . rubocopfmt-mode)))
+           (ruby-ts-mode . rubocopfmt-mode))
+    :custom (rubocopfmt-on-save-use-lsp-format-buffer 't))
 #+END_SRC
 
 *** Test running library
