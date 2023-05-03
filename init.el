@@ -75,20 +75,13 @@
     (setq global-company-modes '(not org-mode)))
   :config
   (progn
-    (setq truncate-lines nil
-          org-startup-truncated nil
-          word-wrap t)      
+    (setq-local truncate-lines nil
+                org-startup-truncated nil
+                word-wrap t)
     (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                  (concat org-directory "/work/calendar.org")
                                  (concat org-directory "/personal/tasks.org")
                                  (concat org-directory "/work/tasks.org")))
-    (org-babel-do-load-languages 'org-babel-load-languages
-                                 '((shell . t)
-                                   (dot . t)
-                                   (js . t)
-                                   (sql . t)
-                                   (python . t)
-                                   (ruby . t)))
     (setq org-todo-keywords
           '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
             ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
@@ -99,15 +92,20 @@
             ("DONE" :foreground "forest green" :weight regular)
             ("WAITING" :foreground "orange" :weight regular)
             ("BLOCKED" :foreground "magenta" :weight regular)
-            ("CANCELLED" :foreground "forest green" :weight regular))
-          )
-    (setq org-log-into-drawer t)
-
-    (setq org-default-notes-file (concat org-directory "/notes.org")
+            ("CANCELLED" :foreground "forest green" :weight regular)))
+    (setq org-log-into-drawer t
+          org-default-notes-file (concat org-directory "/notes.org")
           org-export-html-postamble nil
           org-hide-leading-stars t
           org-startup-folded 'overview
-          org-startup-indented t)))
+          org-startup-indented t)
+    (org-babel-do-load-languages 'org-babel-load-languages
+                                 '((shell . t)
+                                   (dot . t)
+                                   (js . t)
+                                   (sql . t)
+                                   (python . t)
+                                   (ruby . t)))))
 
 (use-package org-contrib
 :after org)
@@ -433,8 +431,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
      ;; pop the process buffer if we're taking a while to complete
      magit-process-popup-time 10
      ;; ask me if I want a tracking upstream
-     magit-set-upstream-on-push 'askifnotset))
-  )
+     magit-set-upstream-on-push 'askifnotset)))
 
 (use-package forge
   :after magit
@@ -1301,7 +1298,8 @@ parses its input."
         lsp-log-io nil
         lsp-completion-provider :none
         lsp-headerline-breadcrumb-enable nil
-        lsp-solargraph-use-bundler 't)
+        lsp-solargraph-use-bundler 't
+        lsp-use-plists 't)
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
