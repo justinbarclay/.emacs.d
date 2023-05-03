@@ -631,6 +631,16 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
   :config
   (org-roam-setup))
 #+end_src
+**** Org Roam UI
+#+begin_src emacs-lisp
+(use-package org-roam-ui
+    :after org-roam
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+#+end_src
 
 ** Grammarly
 #+begin_src emacs-lisp
