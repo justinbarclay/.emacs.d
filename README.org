@@ -1070,11 +1070,6 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 #+END_SRC
 
-Increase performance of lsp and others that need to from process buffers
-#+begin_src emacs-lisp
-(setq read-process-output-max (* 1024 1024))
-#+end_src
-
 ** Theme
 *** Elegant Emacs
 #+begin_src emacs-lisp

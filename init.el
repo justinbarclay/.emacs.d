@@ -588,8 +588,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (keymap-global-unset "C-l")
 
-(setq read-process-output-max (* 1024 1024))
-
 (use-package nano-theme
   :elpaca (nano-theme :type git :host github :repo "rougier/nano-theme"))
 
