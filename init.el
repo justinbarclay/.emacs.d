@@ -540,6 +540,23 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
               ("<right>"   . mu4e-headers-unfold-at-point)
               ("<S-right>" . mu4e-headers-unfold-all)))
 
+(use-package elfeed
+ :init
+ (setq elfeed-feeds
+      '(("http://nullprogram.com/feed/" emacs)
+        ("https://sachachua.com/blog/feed/" emacs)
+        ("https://macowners.club/posts/index.xml" emacs)
+        ("https://fasterthanli.me/index.xml" tech rust)
+        ("https://justinbarclay.ca/index.xml" mine)
+        ("https://blog.1password.com/index.xml" security authentication)
+        ("https://www.michaelgeist.ca/blog/feed/" canada law)
+        ("https://popehat.substack.com/feed" law)
+        ("https://www.joelonsoftware.com/feed/" tech)
+        ("https://xeiaso.net/blog.rss" tech nix)
+        ("https://byorgey.wordpress.com/feed/" functional-programming)
+        ("https://mjg59.dreamwidth.org/" tech)
+        ("https://oxide.computer/blog/feed" tech company))))
+
 (use-package ligature
   :defer t
   :config
