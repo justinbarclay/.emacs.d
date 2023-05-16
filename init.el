@@ -55,8 +55,6 @@
   (setq elpaca-use-package-by-default t))
 (elpaca-wait)
 
-(package-initialize)
-
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 
@@ -73,7 +71,8 @@
 
 (use-package org
   :ensure nil
-  :defer
+  :elpaca nil
+  :defer t
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture))
@@ -138,7 +137,7 @@
                                  (ruby . t))))
 
 (use-package org-contrib
-:after org)
+  :after org)
 
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
@@ -227,8 +226,8 @@ This function is called by `org-babel-execute-src-block'"
         (message "I'm sorry, I can only generate curl commands for a restclient block."))))
 
 (use-package org-agenda
-  :elpaca nil
   :ensure nil
+  :elpaca nil
   :config
   (defun air-org-skip-subtree-if-priority (priority)
     "Skip an agenda subtree if it has a priority of PRIORITY.
@@ -363,6 +362,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package eshell
   :ensure nil
+  :elpaca nil
   :config
   (progn
     (eval-after-load 'esh-opt
@@ -466,6 +466,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package mu4e
   :ensure nil
+  :elpaca nil
   ;; :ensure-system-package mu
   ;; :ensure-system-package (mbsync . isync)
   :commands (mu4e)
@@ -619,7 +620,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package doom-themes
   :elpaca t
   :init
-  (load-theme 'doom-everblush t) 
+  (load-theme 'doom-everblush t)
   ;; When using doom-themes region is a much better colour for highlighting current line
   ;; (defface custom-hl-line
   ;;   '((t (:inherit region :background "#2d2844")))
@@ -634,9 +635,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (doom-modeline-mode)
   :config
-  (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-  (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
-                    '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
+  (setq doom-modeline-buffer-file-name-style 'relative-to-project))
 
 (use-package feline
   :config (feline-mode)
@@ -705,6 +704,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package ibuffer
   :ensure nil
+  :elpaca nil
   :defines all-the-icons-icon-alist
   :functions (all-the-icons-icon-for-file
               all-the-icons-icon-for-mode
@@ -767,24 +767,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setenv "SHELL" shell-file-name)
   (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 
-(when jb/os-linux-p
-  (use-package pinentry
-    :defer 10
-    :init (pinentry-start))
-    (use-package envrc
-      :defer 2
-      :config
-      (envrc-global-mode)))
-
 (use-package uniquify
   :ensure nil
+  :elpaca nil
   :config
   (setq uniquify-buffer-name-style 'forward))
 
 (use-package recentf
   :ensure nil
-  :init
-  (recentf-mode)
+  :elpaca nil
+  ;;:init
+  ;;(recentf-mode)
   :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
            (recentf-max-menu-items 40)))
 
@@ -873,7 +866,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package smartparens-config
  :after smartparens
- :ensure nil)
+ :ensure nil
+ :elpaca nil)
 
 (use-package hungry-delete
   :hook (prog-mode . global-hungry-delete-mode))
@@ -896,6 +890,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :after flycheck-pos-tip
   :demand t
   :ensure nil
+  :elpaca nil
   :init
   (flycheck-define-checker less-stylelint
     "A LESS syntax and style checker using stylelint.
@@ -918,9 +913,9 @@ See URL `http://stylelint.io/'."
           (eval-after-load 'flycheck
             (flycheck-pos-tip-mode)))))
 
-(use-package flyspell 
+(use-package flyspell
   :ensure nil
-  :defer 10
+  :elpaca nil
   :hook ((prog-mode . flyspell-prog-mode)
          (text-mode . flyspell-mode))
   ;; :config (setq flyspell-issue-message-flag nil)
@@ -933,6 +928,7 @@ See URL `http://stylelint.io/'."
   (vertico-mode)
   :bind (:map vertico-map
               ("<escape>" . #'keyboard-escape-quit))
+  :elpaca (vertico :files (:defaults "extensions/*"))
   :config
   (vertico-multiform-mode)
 
@@ -986,6 +982,7 @@ See URL `http://stylelint.io/'."
 
 (use-package savehist
   :ensure nil
+  :elpaca nil
   :init
   (savehist-mode))
 
@@ -1243,6 +1240,7 @@ parses its input."
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package corfu
+  :elpaca (corfu :files (:defaults "extensions/*"))
   :init
   (global-corfu-mode)
   :hook (corfu-mode . corfu-popupinfo-mode)
@@ -1291,6 +1289,7 @@ parses its input."
 
 (use-package treesit
   :ensure nil
+  :elpaca nil
   :config
   (setq-default treesit-font-lock-level 4))
 
@@ -1310,7 +1309,6 @@ parses its input."
 
 (use-package copilot
   :elpaca (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-  :defer 10
   :hook (prog-mode . copilot-mode)
   :bind (:map copilot-completion-map
               ("<tab>" . 'copilot-accept-completion)
@@ -1361,11 +1359,13 @@ parses its input."
 
 (use-package css-mode
   :ensure nil
+  :elpaca nil
   :config
   (setq css-indent-offset 2))
 
 (use-package less-css-mode
   :ensure nil
+  :elpaca nil
   :hook (less-css-mode . flycheck-mode)
   :config
   (setq css-indent-offset 2))
@@ -1379,12 +1379,14 @@ parses its input."
 
 (use-package c-mode
   :ensure nil
+  :elpaca nil
   :config
   (progn ; C mode hook
     (add-hook 'c-mode-hook 'flycheck-mode)))
 
 (use-package c++-mode
-    :ensure nil)
+    :ensure nil
+    :elpaca nil)
 
 (use-package c-eldoc)
 
@@ -1416,18 +1418,15 @@ parses its input."
 
 (use-package eldoc
   :ensure nil
+  :elpaca nil
   :config
   (global-eldoc-mode))
 
 (use-package elisp-mode
     :ensure nil
+    :elpaca nil
   :init
   (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
-
-(use-package flycheck-joker
-  :defer t
-  :init
-  (require 'flycheck-joker))
 
 ;; clojure refactor library
 ;; https://github.com/clojure-emacs/clj-refactor.el
@@ -1517,10 +1516,12 @@ parses its input."
 
 (use-package subword-mode
   :ensure nil
+  :elpaca nil
   :hook typescript-ts-base-mode)
 
 (use-package typescript-ts-base-mode
     :ensure nil
+    :elpaca nil
     :custom
     (typescript-indent-level 2)
     (lsp-eslint-enable 't)
@@ -1529,10 +1530,12 @@ parses its input."
 
 (use-package typescript-ts-mode
   :ensure nil
+  :elpaca nil
   :mode "\\.ts\\'")
 
 (use-package tsx-ts-mode
   :ensure nil
+  :elpaca nil
   :mode "\\.tsx\\'")
 
 (use-package rjsx-mode
@@ -1583,6 +1586,7 @@ parses its input."
 
 (use-package sgml-mode
   :ensure nil
+  :elpaca nil
   :after tagedit
   :config
   (require 'tagedit)
@@ -1610,6 +1614,7 @@ parses its input."
 
 (use-package ruby-ts-mode
   :ensure nil
+  :elpaca nil
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
@@ -1688,7 +1693,8 @@ parses its input."
 ;; (use-package sqlint)
 
 (use-package rst
-    :ensure nil
+  :ensure nil
+  :elpaca nil
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
@@ -1722,6 +1728,7 @@ parses its input."
 
 (use-package woman
   :ensure nil
+  :elpaca nil
   :config
   (progn (setq woman-manpath
               (split-string (shell-command-to-string "man --path") ":" t "\n"))
@@ -1735,6 +1742,7 @@ parses its input."
 
 (use-package profiler
   :ensure nil
+  :elpaca nil
   :bind
   (("s-l" . profiler-start)
    ("s-r" . profiler-report)))

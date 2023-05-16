@@ -260,7 +260,7 @@ I've decided to experiment with a completely new package manager. The main purpo
 
 ** post bootstrap
 Now that we've install elpaca we can initialize our packages so normal use-package can work.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (package-initialize)
 #+end_src
 
@@ -329,12 +329,16 @@ This is hidden here to load right after we have use-package to be able to benchm
     (add-hook 'window-setup-hook 'benchmark-init/deactivate))
 #+END_SRC
 ** Org Mode
+:PROPERTIES:
+:header-args:
+:END:
 Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69cb9320811c5ec63409880eadd
 *** Org
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :ensure nil
-    :defer
+    :elpaca nil
+    :defer t
     :bind
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture))
@@ -402,7 +406,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 *** Org Contrib
 #+begin_src emacs-lisp
   (use-package org-contrib
-  :after org)
+    :after org)
 #+end_src
 
 *** Org-bullets
@@ -419,12 +423,12 @@ Before we can install org-pdftools, we need to install pdf-tools
 
 Now that we have that installed we can pull in org-pdftools from github
 #+BEGIN_SRC emacs-lisp :tangle no
-(use-package org-pdftools
-   :ensure nil
-   :quelpa ((org-pdftools
-             :fetcher git
-             :url "https://github.com/fuxialexander/org-pdftools.git"
-             :upgrade nil)))
+  (use-package org-pdftools
+     :ensure nil
+     :elpaca  (org-pdftools
+               :fetcher git
+               :url "https://github.com/fuxialexander/org-pdftools.git"
+               :upgrade nil))
 #+END_SRC
 
 *** Ob-Restclient
@@ -546,8 +550,8 @@ This section includes tooling for organizing ones work or personal life. General
 **** Org Agenda customizations
 #+BEGIN_SRC emacs-lisp
   (use-package org-agenda
-    :elpaca nil
     :ensure nil
+    :elpaca nil
     :config
     (defun air-org-skip-subtree-if-priority (priority)
       "Skip an agenda subtree if it has a priority of PRIORITY.
@@ -713,6 +717,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+BEGIN_SRC emacs-lisp
 (use-package eshell
   :ensure nil
+  :elpaca nil
   :config
   (progn
     (eval-after-load 'esh-opt
@@ -823,6 +828,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+begin_src emacs-lisp
   (use-package mu4e
     :ensure nil
+    :elpaca nil
     ;; :ensure-system-package mu
     ;; :ensure-system-package (mbsync . isync)
     :commands (mu4e)
@@ -1119,7 +1125,7 @@ Let's use Doom's version instead
   (use-package doom-themes
     :elpaca t
     :init
-    (load-theme 'doom-everblush t) 
+    (load-theme 'doom-everblush t)
     ;; When using doom-themes region is a much better colour for highlighting current line
     ;; (defface custom-hl-line
     ;;   '((t (:inherit region :background "#2d2844")))
@@ -1140,12 +1146,10 @@ Let's use Doom's version instead
     :init
     (doom-modeline-mode)
     :config
-    (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-    (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
-                      '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
+    (setq doom-modeline-buffer-file-name-style 'relative-to-project))
 #+END_SRC
 *** Feline
-#+begin_src emacs-lisp :tanlge no
+#+begin_src emacs-lisp
 (use-package feline
   :config (feline-mode)
   :custom
@@ -1190,6 +1194,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package dired
       :ensure nil
+      :elpaca nil
     :bind (:map dired-mode-map
                 ("RET" . dired-find-alternate-file)
                 ("a" . dired-find-file)))
@@ -1264,6 +1269,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 #+BEGIN_SRC emacs-lisp
   (use-package ibuffer
     :ensure nil
+    :elpaca nil
     :defines all-the-icons-icon-alist
     :functions (all-the-icons-icon-for-file
                 all-the-icons-icon-for-mode
@@ -1349,7 +1355,7 @@ Currently turned off due to debugging issues
     (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 #+END_SRC
 ** Linux
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (when jb/os-linux-p
     (use-package pinentry
       :defer 10
@@ -1366,6 +1372,7 @@ Ensure that buffers have unique file names
 #+BEGIN_SRC emacs-lisp
 (use-package uniquify
   :ensure nil
+  :elpaca nil
   :config
   (setq uniquify-buffer-name-style 'forward))
 #+END_SRC
@@ -1374,8 +1381,9 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 #+BEGIN_SRC emacs-lisp
   (use-package recentf
     :ensure nil
-    :init
-    (recentf-mode)
+    :elpaca nil
+    ;;:init
+    ;;(recentf-mode)
     :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
              (recentf-max-menu-items 40)))
 #+END_SRC
@@ -1555,7 +1563,8 @@ Config
 #+begin_src emacs-lisp
 (use-package smartparens-config
  :after smartparens
- :ensure nil)
+ :ensure nil
+ :elpaca nil)
 #+end_src
 
 ** Hungry Delete
@@ -1598,6 +1607,7 @@ Load this before we load Flycheck
     :after flycheck-pos-tip
     :demand t
     :ensure nil
+    :elpaca nil
     :init
     (flycheck-define-checker less-stylelint
       "A LESS syntax and style checker using stylelint.
@@ -1622,9 +1632,9 @@ Load this before we load Flycheck
 #+END_SRC
 ** Flyspell
 #+BEGIN_SRC emacs-lisp
-  (use-package flyspell 
+  (use-package flyspell
     :ensure nil
-    :defer 10
+    :elpaca nil
     :hook ((prog-mode . flyspell-prog-mode)
            (text-mode . flyspell-mode))
     ;; :config (setq flyspell-issue-message-flag nil)
@@ -1644,6 +1654,7 @@ Load this before we load Flycheck
     (vertico-mode)
     :bind (:map vertico-map
                 ("<escape>" . #'keyboard-escape-quit))
+    :elpaca (vertico :files (:defaults "extensions/*"))
     :config
     (vertico-multiform-mode)
 
@@ -1701,6 +1712,7 @@ Save minibuffer history for better integration with orderless
 #+begin_src emacs-lisp
   (use-package savehist
     :ensure nil
+    :elpaca nil
     :init
     (savehist-mode))
 #+end_src
@@ -2201,6 +2213,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 :END:
 #+begin_src emacs-lisp
   (use-package corfu
+    :elpaca (corfu :files (:defaults "extensions/*"))
     :init
     (global-corfu-mode)
     :hook (corfu-mode . corfu-popupinfo-mode)
@@ -2285,6 +2298,7 @@ Major mode customizations
 #+begin_src emacs-lisp
   (use-package treesit
     :ensure nil
+    :elpaca nil
     :config
     (setq-default treesit-font-lock-level 4))
 #+end_src
@@ -2314,7 +2328,6 @@ Better movement through treesitter
 #+begin_src emacs-lisp
   (use-package copilot
     :elpaca (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-    :defer 10
     :hook (prog-mode . copilot-mode)
     :bind (:map copilot-completion-map
                 ("<tab>" . 'copilot-accept-completion)
@@ -2392,6 +2405,7 @@ Better movement through treesitter
 #+begin_src emacs-lisp
   (use-package css-mode
     :ensure nil
+    :elpaca nil
     :config
     (setq css-indent-offset 2))
 #+end_src
@@ -2399,6 +2413,7 @@ Better movement through treesitter
 #+begin_src emacs-lisp
   (use-package less-css-mode
     :ensure nil
+    :elpaca nil
     :hook (less-css-mode . flycheck-mode)
     :config
     (setq css-indent-offset 2))
@@ -2420,6 +2435,7 @@ Better movement through treesitter
 #+BEGIN_SRC emacs-lisp
   (use-package c-mode
     :ensure nil
+    :elpaca nil
     :config
     (progn ; C mode hook
       (add-hook 'c-mode-hook 'flycheck-mode)))
@@ -2428,7 +2444,8 @@ Better movement through treesitter
 c++
 #+BEGIN_SRC emacs-lisp
   (use-package c++-mode
-      :ensure nil)
+      :ensure nil
+      :elpaca nil)
 #+END_SRC
 
 *** c-eldoc
@@ -2479,6 +2496,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
     :ensure nil
+    :elpaca nil
     :config
     (global-eldoc-mode))
 #+END_SRC
@@ -2487,18 +2505,12 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 #+BEGIN_SRC emacs-lisp
   (use-package elisp-mode
       :ensure nil
+      :elpaca nil
     :init
     (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 #+END_SRC
 
 *** Clojure
-**** Flycheck-joker
-#+BEGIN_SRC emacs-lisp
-  (use-package flycheck-joker
-    :defer t
-    :init
-    (require 'flycheck-joker))
-#+END_SRC
 **** clj-refactor
 #+BEGIN_SRC emacs-lisp
 
@@ -2611,12 +2623,14 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+begin_src emacs-lisp
   (use-package subword-mode
     :ensure nil
+    :elpaca nil
     :hook typescript-ts-base-mode)
 #+end_src
 
 #+begin_src emacs-lisp
 (use-package typescript-ts-base-mode
     :ensure nil
+    :elpaca nil
     :custom
     (typescript-indent-level 2)
     (lsp-eslint-enable 't)
@@ -2627,12 +2641,14 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+begin_src emacs-lisp
   (use-package typescript-ts-mode
     :ensure nil
+    :elpaca nil
     :mode "\\.ts\\'")
 #+end_src
 ***  TSX Mode
 #+begin_src emacs-lisp
   (use-package tsx-ts-mode
     :ensure nil
+    :elpaca nil
     :mode "\\.tsx\\'")
 #+end_src
 
@@ -2712,6 +2728,7 @@ Autoformatting
 #+BEGIN_SRC emacs-lisp
   (use-package sgml-mode
     :ensure nil
+    :elpaca nil
     :after tagedit
     :config
     (require 'tagedit)
@@ -2748,6 +2765,7 @@ Autoformatting
 #+BEGIN_SRC emacs-lisp
   (use-package ruby-ts-mode
     :ensure nil
+    :elpaca nil
     :mode "\\.rb\\'"
     :mode "Rakefile\\'"
     :mode "Gemfile\\'"
@@ -2796,6 +2814,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 (use-package evcxr-mode
    :defer t
    :ensure nil
+   :elpaca nil
    :config (add-hook 'rustic-mode-hook 'evcxr-minor-mode)
    :quelpa ((evcxr
              :fetcher git
@@ -2891,7 +2910,8 @@ Live preview of MarkDown
 ** Text modes
 #+BEGIN_SRC emacs-lisp
   (use-package rst
-      :ensure nil
+    :ensure nil
+    :elpaca nil
     :mode (("\\.txt$" . rst-mode)
            ("\\.rst$" . rst-mode)
            ("\\.rest$" . rst-mode)))
@@ -2938,6 +2958,7 @@ A better help buffer experience
 #+BEGIN_SRC emacs-lisp
   (use-package woman
     :ensure nil
+    :elpaca nil
     :config
     (progn (setq woman-manpath
                 (split-string (shell-command-to-string "man --path") ":" t "\n"))
@@ -2956,6 +2977,7 @@ A better help buffer experience
 #+BEGIN_SRC emacs-lisp
   (use-package profiler
     :ensure nil
+    :elpaca nil
     :bind
     (("s-l" . profiler-start)
      ("s-r" . profiler-report)))
