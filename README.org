@@ -13,7 +13,8 @@
   - [[#os][OS]]
 - [[#package-manager][Package Manager]]
   - [[#bootstrapping-straightel][Bootstrapping straight.el]]
-  - [[#customize-straight][Customize Straight]]
+  - [[#bootstrapping-elpaca][Bootstrapping elpaca]]
+  - [[#post-bootstrap][post bootstrap]]
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
   - [[#org-mode][Org Mode]]
@@ -22,6 +23,7 @@
   - [[#eshell][EShell]]
   - [[#magit][Magit]]
   - [[#email-mu4e][Email (mu4e)]]
+  - [[#elfeed][Elfeed]]
 - [[#look-and-feel][Look and Feel]]
   - [[#window][Window]]
   - [[#font][Font]]
@@ -35,7 +37,6 @@
   - [[#dired-all-the-icons][dired all the icons]]
   - [[#dirvish][Dirvish]]
   - [[#ibuffer][ibuffer]]
-  - [[#diminish][Diminish]]
 - [[#os-specific][OS Specific]]
   - [[#macos][MacOS]]
   - [[#windows][Windows]]
@@ -64,7 +65,6 @@
   - [[#backups][Backups]]
   - [[#whitespace][Whitespace]]
 - [[#syntax-and-error-checking][Syntax and Error checking]]
-  - [[#treesitter][Treesitter]]
   - [[#flycheck-pos-tip][Flycheck pos-tip]]
   - [[#flycheck][Flycheck]]
   - [[#flyspell][Flyspell]]
@@ -74,6 +74,7 @@
   - [[#code-completion][Code Completion]]
   - [[#yas-snippets][Yas Snippets]]
 - [[#languages][Languages]]
+  - [[#tree-sitter-support][Tree Sitter support]]
   - [[#general-intellisense][General Intellisense]]
   - [[#csslesssass][CSS/LESS/SASS]]
   - [[#cc][C/C++]]
@@ -82,6 +83,7 @@
   - [[#html][HTML]]
   - [[#ruby][Ruby]]
   - [[#rust][Rust]]
+  - [[#nix][Nix]]
   - [[#go][Go]]
   - [[#json][JSON]]
   - [[#docker][Docker]]
@@ -96,6 +98,7 @@
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
   - [[#helpful][Helpful]]
+  - [[#which-key][Which Key]]
   - [[#woman][Woman]]
   - [[#profiling][Profiling]]
   - [[#http-client][http client]]
@@ -250,7 +253,8 @@ I've decided to experiment with a completely new package manager. The main purpo
   ;; Install use-package support
   (elpaca elpaca-use-package
     ;; Enable :elpaca use-package keyword.
-    (elpaca-use-package-mode))
+    (elpaca-use-package-mode)
+    (setq elpaca-use-package-by-default t))
   (elpaca-wait)
 #+end_src
 
@@ -330,71 +334,69 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :ensure nil
+    :defer
     :bind
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture))
     :init
-    (progn
-      (setq org-src-tab-acts-natively nil)
-      (global-unset-key "\C-c\C-v\C-c")
-      (defun jb/org-narrow-to-parent ()
-        "Narrow buffer to the current subtree."
-        (interactive)
-        (widen)
-        (org-up-element)
-        (save-excursion
-          (save-match-data
-            (org-with-limited-levels
-             (narrow-to-region
-              (progn
-                (org-back-to-heading t) (point))
-              (progn (org-end-of-subtree t t)
-                     (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
-                     (point)))))))
-      (defun jb/org-clear-results ()
-        (interactive)
-        (org-babel-remove-result-one-or-many 't))
-      (defun run-org-block ()
-        (interactive)
-        (save-excursion
-          (goto-char
-           (org-babel-find-named-block
-            (completing-read "Code Block: " (org-babel-src-block-names))))
-          (org-babel-execute-src-block-maybe)))
-      (setq global-company-modes '(not org-mode)))
+    (setq org-src-tab-acts-natively nil)
+    (global-unset-key "\C-c\C-v\C-c")
+    (defun jb/org-narrow-to-parent ()
+      "Narrow buffer to the current subtree."
+      (interactive)
+      (widen)
+      (org-up-element)
+      (save-excursion
+        (save-match-data
+          (org-with-limited-levels
+           (narrow-to-region
+            (progn
+              (org-back-to-heading t) (point))
+            (progn (org-end-of-subtree t t)
+                   (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
+                   (point)))))))
+    (defun jb/org-clear-results ()
+      (interactive)
+      (org-babel-remove-result-one-or-many 't))
+    (defun run-org-block ()
+      (interactive)
+      (save-excursion
+        (goto-char
+         (org-babel-find-named-block
+          (completing-read "Code Block: " (org-babel-src-block-names))))
+        (org-babel-execute-src-block-maybe)))
     :config
-    (progn
-      (setq-local truncate-lines nil
-                  org-startup-truncated nil
-                  word-wrap t)
-      (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
-                                   (concat org-directory "/work/calendar.org")
-                                   (concat org-directory "/personal/tasks.org")
-                                   (concat org-directory "/work/tasks.org")))
-      (setq org-todo-keywords
-            '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
-              ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
+    (setq-local truncate-lines nil
+                org-startup-truncated nil
+                word-wrap t)
+    (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
+                                 (concat org-directory "/work/calendar.org")
+                                 (concat org-directory "/personal/tasks.org")
+                                 (concat org-directory "/work/tasks.org")))
+    (setq org-todo-keywords
+          '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
+            ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
-            org-todo-keyword-faces
-            '(("TODO" :foreground "red" :weight regular)
-              ("INPROGRESS" :foreground "blue" :weight regular)
-              ("DONE" :foreground "forest green" :weight regular)
-              ("WAITING" :foreground "orange" :weight regular)
-              ("BLOCKED" :foreground "magenta" :weight regular)
-              ("CANCELLED" :foreground "forest green" :weight regular)))
-      (setq org-log-into-drawer t
-            org-default-notes-file (concat org-directory "/notes.org")
-            org-export-html-postamble nil
-            org-hide-leading-stars t
-            org-startup-folded 'overview
-            org-startup-indented t)
-      (org-babel-do-load-languages 'org-babel-load-languages
-                                   '((shell . t)
-                                     (dot . t)
-                                     (js . t)
-                                     (sql . t)
-                                     (python . t)
-                                     (ruby . t)))))
+          org-todo-keyword-faces
+          '(("TODO" :foreground "red" :weight regular)
+            ("INPROGRESS" :foreground "blue" :weight regular)
+            ("DONE" :foreground "forest green" :weight regular)
+            ("WAITING" :foreground "orange" :weight regular)
+            ("BLOCKED" :foreground "magenta" :weight regular)
+            ("CANCELLED" :foreground "forest green" :weight regular)))
+    (setq org-log-into-drawer t
+          org-default-notes-file (concat org-directory "/notes.org")
+          org-export-html-postamble nil
+          org-hide-leading-stars t
+          org-startup-folded 'overview
+          org-startup-indented t)
+    (org-babel-do-load-languages 'org-babel-load-languages
+                                 '((shell . t)
+                                   (dot . t)
+                                   (js . t)
+                                   (sql . t)
+                                   (python . t)
+                                   (ruby . t))))
     #+END_SRC
 
 *** Org Contrib
@@ -446,7 +448,7 @@ In addition to the simple :TOC: tag, you can also use the following tag formats:
 You can also use @ as separator, instead of _.
 #+BEGIN_SRC emacs-lisp
   (use-package toc-org
-    :hook (org-mode-mode . toc-org-mode))
+    :hook (org-mode . toc-org-mode))
 #+END_SRC
 *** SVG Tag Mode
 #+begin_src emacs-lisp :tangle no
@@ -544,8 +546,9 @@ This section includes tooling for organizing ones work or personal life. General
 **** Org Agenda customizations
 #+BEGIN_SRC emacs-lisp
   (use-package org-agenda
+    :elpaca nil
     :ensure nil
-    :init
+    :config
     (defun air-org-skip-subtree-if-priority (priority)
       "Skip an agenda subtree if it has a priority of PRIORITY.
 
@@ -556,8 +559,8 @@ This section includes tooling for organizing ones work or personal life. General
         (if (= pri-value pri-current)
             subtree-end
           nil)))
-    (setq initial-buffer-choice (lambda () (org-agenda nil "d")
-                                  (buffer-find "*Org Agenda*")))
+    ;; (setq initial-buffer-choice (lambda () (org-agenda nil "d")
+    ;;                               (buffer-find "*Org Agenda*")))
     (setq org-agenda-window-setup 'only-window
           org-agenda-custom-commands
           '(("d" "Today"
@@ -656,7 +659,6 @@ Declarative Org Capture Templates
 Change priority cookies from alphanumeric cookies into symbols and explicitly colours them
 #+BEGIN_SRC emacs-lisp
   (use-package org-fancy-priorities
-    :ensure t
     :hook 
     (org-mode . org-fancy-priorities-mode)
     :config
@@ -696,11 +698,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 *** lsp
 #+begin_src emacs-lisp
-(use-package lsp-grammarly
-  :ensure t
-  :hook (text-mode . (lambda ()
-                       (require 'lsp-grammarly)
-                       (lsp))))
+(use-package lsp-grammarly)
 #+end_src
 
 ** Langtool
@@ -852,7 +850,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 
      ;; this setting allows to re-sync and re-index mail
      ;; by pressing U
-     mu4e-get-mail-command  "mbsync -a"
+     mu4e-get-mail-command "mbsync -a"
 
      mu4e-completing-read-function 'completing-read
      message-send-mail-function   'smtpmail-send-it
@@ -1138,10 +1136,11 @@ Let's use Doom's version instead
 *** Doom-modeline
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
-    :hook (after-init . doom-modeline-mode)
+    :elpaca t
     :init
+    (doom-modeline-mode)
+    :config
     (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-  
     (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
                       '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
 #+END_SRC
@@ -1204,8 +1203,6 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 ** Dirvish
 #+begin_src emacs-lisp
   (use-package dirvish
-    :init
-    (dirvish-override-dired-mode)
     :custom
     ;; Go back home? Just press `bh'
     (dirvish-bookmark-entries
@@ -1321,18 +1318,6 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
                                       :height 1.1)
                " ")
             "Project: ")))
-#+END_SRC
-
-** Diminish
-#+BEGIN_SRC emacs-lisp
-  (use-package diminish
-    :demand t
-    :config (progn
-              ;;            (diminish 'auto-revert-mode)
-              ;;            (diminish 'outline-minor-mode)
-              ;;            (diminish 'amd-mode)
-              (diminish 'js2-refactor-mode)
-              (diminish 'tern-mode)))
 #+END_SRC
 
 * OS Specific
@@ -2280,8 +2265,7 @@ Things are always better when they are prettier, let's add icons to our in buffe
 ** Yas Snippets
 #+begin_src elisp
   (use-package yasnippet
-    :init
-    (yas-global-mode))
+    :hook (prog-mode . yas-minor-mode))
 #+end_src
 **** Additional Snippets
 #+begin_src emacs-lisp
@@ -2328,17 +2312,16 @@ Better movement through treesitter
 ** General Intellisense
 *** copilot
 #+begin_src emacs-lisp
-(use-package copilot
-  :elpaca (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
-              ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word)))
+  (use-package copilot
+    :elpaca (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+    :defer 10
+    :hook (prog-mode . copilot-mode)
+    :bind (:map copilot-completion-map
+                ("<tab>" . 'copilot-accept-completion)
+                ("TAB" . 'copilot-accept-completion)
+                ("C-TAB" . 'copilot-accept-completion-by-word)
+                ("C-<tab>" . 'copilot-accept-completion-by-word)))
 #+end_src
-
-
 
 *** LSP-Mode
 :PROPERTIES:
@@ -2497,9 +2480,6 @@ We need lispy for some of the excellent bracket based navigation integrations wi
   (use-package eldoc
     :ensure nil
     :config
-    (eldoc-add-command
-     'paredit-backward-delete
-     'paredit-close-round)
     (global-eldoc-mode))
 #+END_SRC
 *** Elisp

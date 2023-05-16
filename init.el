@@ -51,7 +51,8 @@
 ;; Install use-package support
 (elpaca elpaca-use-package
   ;; Enable :elpaca use-package keyword.
-  (elpaca-use-package-mode))
+  (elpaca-use-package-mode)
+  (setq elpaca-use-package-by-default t))
 (elpaca-wait)
 
 (package-initialize)
@@ -72,71 +73,69 @@
 
 (use-package org
   :ensure nil
+  :defer
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture))
   :init
-  (progn
-    (setq org-src-tab-acts-natively nil)
-    (global-unset-key "\C-c\C-v\C-c")
-    (defun jb/org-narrow-to-parent ()
-      "Narrow buffer to the current subtree."
-      (interactive)
-      (widen)
-      (org-up-element)
-      (save-excursion
-        (save-match-data
-          (org-with-limited-levels
-           (narrow-to-region
-            (progn
-              (org-back-to-heading t) (point))
-            (progn (org-end-of-subtree t t)
-                   (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
-                   (point)))))))
-    (defun jb/org-clear-results ()
-      (interactive)
-      (org-babel-remove-result-one-or-many 't))
-    (defun run-org-block ()
-      (interactive)
-      (save-excursion
-        (goto-char
-         (org-babel-find-named-block
-          (completing-read "Code Block: " (org-babel-src-block-names))))
-        (org-babel-execute-src-block-maybe)))
-    (setq global-company-modes '(not org-mode)))
+  (setq org-src-tab-acts-natively nil)
+  (global-unset-key "\C-c\C-v\C-c")
+  (defun jb/org-narrow-to-parent ()
+    "Narrow buffer to the current subtree."
+    (interactive)
+    (widen)
+    (org-up-element)
+    (save-excursion
+      (save-match-data
+        (org-with-limited-levels
+         (narrow-to-region
+          (progn
+            (org-back-to-heading t) (point))
+          (progn (org-end-of-subtree t t)
+                 (when (and (org-at-heading-p) (not (eobp))) (backward-char 1))
+                 (point)))))))
+  (defun jb/org-clear-results ()
+    (interactive)
+    (org-babel-remove-result-one-or-many 't))
+  (defun run-org-block ()
+    (interactive)
+    (save-excursion
+      (goto-char
+       (org-babel-find-named-block
+        (completing-read "Code Block: " (org-babel-src-block-names))))
+      (org-babel-execute-src-block-maybe)))
   :config
-  (progn
-    (setq-local truncate-lines nil
-                org-startup-truncated nil
-                word-wrap t)
-    (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
-                                 (concat org-directory "/work/calendar.org")
-                                 (concat org-directory "/personal/tasks.org")
-                                 (concat org-directory "/work/tasks.org")))
-    (setq org-todo-keywords
-          '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
-            ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
+  (setq-local truncate-lines nil
+              org-startup-truncated nil
+              word-wrap t)
+  (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
+                               (concat org-directory "/work/calendar.org")
+                               (concat org-directory "/personal/tasks.org")
+                               (concat org-directory "/work/tasks.org")))
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
+          ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
-          org-todo-keyword-faces
-          '(("TODO" :foreground "red" :weight regular)
-            ("INPROGRESS" :foreground "blue" :weight regular)
-            ("DONE" :foreground "forest green" :weight regular)
-            ("WAITING" :foreground "orange" :weight regular)
-            ("BLOCKED" :foreground "magenta" :weight regular)
-            ("CANCELLED" :foreground "forest green" :weight regular)))
-    (setq org-log-into-drawer t
-          org-default-notes-file (concat org-directory "/notes.org")
-          org-export-html-postamble nil
-          org-hide-leading-stars t
-          org-startup-folded 'overview
-          org-startup-indented t)
-    (org-babel-do-load-languages 'org-babel-load-languages
-                                 '((shell . t)
-                                   (dot . t)
-                                   (js . t)
-                                   (sql . t)
-                                   (python . t)
-                                   (ruby . t)))))
+        org-todo-keyword-faces
+        '(("TODO" :foreground "red" :weight regular)
+          ("INPROGRESS" :foreground "blue" :weight regular)
+          ("DONE" :foreground "forest green" :weight regular)
+          ("WAITING" :foreground "orange" :weight regular)
+          ("BLOCKED" :foreground "magenta" :weight regular)
+          ("CANCELLED" :foreground "forest green" :weight regular)))
+  (setq org-log-into-drawer t
+        org-default-notes-file (concat org-directory "/notes.org")
+        org-export-html-postamble nil
+        org-hide-leading-stars t
+        org-startup-folded 'overview
+        org-startup-indented t)
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '((shell . t)
+                                 (dot . t)
+                                 (js . t)
+                                 (sql . t)
+                                 (python . t)
+                                 (ruby . t))))
 
 (use-package org-contrib
 :after org)
@@ -151,7 +150,7 @@
    '((restclient . t))))
 
 (use-package toc-org
-  :hook (org-mode-mode . toc-org-mode))
+  :hook (org-mode . toc-org-mode))
 
 (use-package org-re-reveal)
 
@@ -228,8 +227,9 @@ This function is called by `org-babel-execute-src-block'"
         (message "I'm sorry, I can only generate curl commands for a restclient block."))))
 
 (use-package org-agenda
+  :elpaca nil
   :ensure nil
-  :init
+  :config
   (defun air-org-skip-subtree-if-priority (priority)
     "Skip an agenda subtree if it has a priority of PRIORITY.
 
@@ -240,8 +240,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       (if (= pri-value pri-current)
           subtree-end
         nil)))
-  (setq initial-buffer-choice (lambda () (org-agenda nil "d")
-                                (buffer-find "*Org Agenda*")))
+  ;; (setq initial-buffer-choice (lambda () (org-agenda nil "d")
+  ;;                               (buffer-find "*Org Agenda*")))
   (setq org-agenda-window-setup 'only-window
         org-agenda-custom-commands
         '(("d" "Today"
@@ -324,7 +324,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                               ("justin.barclay@tidalmigrations.com" . "~/org/work/calendar.org"))))
 
 (use-package org-fancy-priorities
-  :ensure t
   :hook 
   (org-mode . org-fancy-priorities-mode)
   :config
@@ -355,11 +354,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package flycheck-grammarly)
 
-(use-package lsp-grammarly
-  :ensure t
-  :hook (text-mode . (lambda ()
-                       (require 'lsp-grammarly)
-                       (lsp))))
+(use-package lsp-grammarly)
 
 (use-package langtool
   :init
@@ -498,7 +493,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
    ;; this setting allows to re-sync and re-index mail
    ;; by pressing U
-   mu4e-get-mail-command  "mbsync -a"
+   mu4e-get-mail-command "mbsync -a"
 
    mu4e-completing-read-function 'completing-read
    message-send-mail-function   'smtpmail-send-it
@@ -635,10 +630,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package all-the-icons)
 
 (use-package doom-modeline
-  :hook (after-init . doom-modeline-mode)
+  :elpaca t
   :init
+  (doom-modeline-mode)
+  :config
   (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-
   (custom-set-faces '(doom-modeline-eyebrowse ((t (:background "#cb619e" :inherit 'mode-line))))
                     '(doom-modeline-inactive-bar ((t (:background "#cb619e" :inherit 'mode-line))))))
 
@@ -657,8 +653,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
      scheme-mode "🐔")))
 
 (use-package dirvish
-  :init
-  (dirvish-override-dired-mode)
   :custom
   ;; Go back home? Just press `bh'
   (dirvish-bookmark-entries
@@ -762,15 +756,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     :height 1.1)
              " ")
           "Project: ")))
-
-(use-package diminish
-  :demand t
-  :config (progn
-            ;;            (diminish 'auto-revert-mode)
-            ;;            (diminish 'outline-minor-mode)
-            ;;            (diminish 'amd-mode)
-            (diminish 'js2-refactor-mode)
-            (diminish 'tern-mode)))
 
 (when jb/os-windows-p
   (setq package-check-signature nil)
@@ -1296,8 +1281,7 @@ parses its input."
   (kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 
 (use-package yasnippet
-  :init
-  (yas-global-mode))
+  :hook (prog-mode . yas-minor-mode))
 
 (use-package yasnippet-snippets
   :after yasnippet)
@@ -1326,6 +1310,7 @@ parses its input."
 
 (use-package copilot
   :elpaca (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+  :defer 10
   :hook (prog-mode . copilot-mode)
   :bind (:map copilot-completion-map
               ("<tab>" . 'copilot-accept-completion)
@@ -1432,9 +1417,6 @@ parses its input."
 (use-package eldoc
   :ensure nil
   :config
-  (eldoc-add-command
-   'paredit-backward-delete
-   'paredit-close-round)
   (global-eldoc-mode))
 
 (use-package elisp-mode
