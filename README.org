@@ -343,8 +343,9 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture))
     :init
-    (setq org-src-tab-acts-natively nil)
     (global-unset-key "\C-c\C-v\C-c")
+    :config
+    (setq org-src-tab-acts-natively nil)
     (defun jb/org-narrow-to-parent ()
       "Narrow buffer to the current subtree."
       (interactive)
@@ -369,7 +370,6 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
          (org-babel-find-named-block
           (completing-read "Code Block: " (org-babel-src-block-names))))
         (org-babel-execute-src-block-maybe)))
-    :config
     (setq-local truncate-lines nil
                 org-startup-truncated nil
                 word-wrap t)
@@ -394,23 +394,26 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
           org-hide-leading-stars t
           org-startup-folded 'overview
           org-startup-indented t)
-    (org-babel-do-load-languages 'org-babel-load-languages
-                                 '((shell . t)
-                                   (dot . t)
-                                   (js . t)
-                                   (sql . t)
-                                   (python . t)
-                                   (ruby . t))))
+    ;; `org-babel-do-load-languages' significantly slows loading time,
+    ;; so let's run this well after we've loaded
+    (run-at-time "1 min" nil (lambda ()
+                               (org-babel-do-load-languages 'org-babel-load-languages
+                                                            '((shell . t)
+                                                              (dot . t)
+                                                              (js . t)
+                                                              (sql . t)
+                                                              (python . t)
+                                                              (ruby . t))))))
     #+END_SRC
 
 *** Org Contrib
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package org-contrib
     :after org)
 #+end_src
 
 *** Org-bullets
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package org-bullets
     :hook (org-mode . org-bullets-mode))
 #+END_SRC

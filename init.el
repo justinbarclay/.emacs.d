@@ -77,8 +77,9 @@
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture))
   :init
-  (setq org-src-tab-acts-natively nil)
   (global-unset-key "\C-c\C-v\C-c")
+  :config
+  (setq org-src-tab-acts-natively nil)
   (defun jb/org-narrow-to-parent ()
     "Narrow buffer to the current subtree."
     (interactive)
@@ -103,7 +104,6 @@
        (org-babel-find-named-block
         (completing-read "Code Block: " (org-babel-src-block-names))))
       (org-babel-execute-src-block-maybe)))
-  :config
   (setq-local truncate-lines nil
               org-startup-truncated nil
               word-wrap t)
@@ -128,19 +128,16 @@
         org-hide-leading-stars t
         org-startup-folded 'overview
         org-startup-indented t)
-  (org-babel-do-load-languages 'org-babel-load-languages
-                               '((shell . t)
-                                 (dot . t)
-                                 (js . t)
-                                 (sql . t)
-                                 (python . t)
-                                 (ruby . t))))
-
-(use-package org-contrib
-  :after org)
-
-(use-package org-bullets
-  :hook (org-mode . org-bullets-mode))
+  ;; `org-babel-do-load-languages' significantly slows loading time,
+  ;; so let's run this well after we've loaded
+  (run-at-time "1 min" nil (lambda ()
+                             (org-babel-do-load-languages 'org-babel-load-languages
+                                                          '((shell . t)
+                                                            (dot . t)
+                                                            (js . t)
+                                                            (sql . t)
+                                                            (python . t)
+                                                            (ruby . t))))))
 
 (use-package ob-restclient
   :config
