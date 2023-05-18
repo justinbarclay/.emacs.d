@@ -5,6 +5,7 @@
 - [[#setup][Setup]]
   - [[#turn-off-garbage-collection][Turn off garbage collection]]
   - [[#turn-off-bytecompiler-warnings][Turn off bytecompiler warnings]]
+  - [[#move-customizations-to-their-own-file][Move customizations to their own file]]
   - [[#lets-make-the-emacs-start-up-run-fast][Let's make the Emacs start up run fast]]
   - [[#package-repositories][Package repositories]]
   - [[#personal-information][Personal information]]
@@ -139,6 +140,11 @@ They are really noisy and annoying right now. And nothing I can deal with.
 #+begin_src emacs-lisp
   (setq native-comp-deferred-compilation-deny-list '())
   (setq native-comp-async-report-warnings-errors nil)
+#+end_src
+** Move customizations to their own file
+#+begin_src emacs-lisp :tangle early-init.el
+(setq custom-file (expand-file-name "customs.el" user-emacs-directory))
+(add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 #+end_src
 
 ** Let's make the Emacs start up run fast
