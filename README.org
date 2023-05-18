@@ -336,8 +336,6 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 *** Org
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :ensure nil
-    :elpaca nil
     :defer t
     :bind
     (("C-c a" . org-agenda)
@@ -404,7 +402,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
                                                               (sql . t)
                                                               (python . t)
                                                               (ruby . t))))))
-    #+END_SRC
+#+END_SRC
 
 *** Org Contrib
 #+begin_src emacs-lisp :tangle no
@@ -2373,7 +2371,7 @@ Better movement through treesitter
     (defun my/lsp-mode-setup-completion ()
       (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
             '(orderless)))
-
+ 
     ;; Optionally configure the first word as flex filtered.
     (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
 

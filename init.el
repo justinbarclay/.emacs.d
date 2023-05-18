@@ -70,8 +70,6 @@
 (use-package gnu-elpa-keyring-update)
 
 (use-package org
-  :ensure nil
-  :elpaca nil
   :defer t
   :bind
   (("C-c a" . org-agenda)
