@@ -623,7 +623,16 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   ;;(setq hl-line-face 'custom-hl-line)
   )
 
-(use-package all-the-icons)
+(use-package nerd-icons)
+
+(use-package nerd-icons-completion
+  :after (nerd-icons marginalia)
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :config
+  (nerd-icons-completion-mode))
+
+(use-package nerd-icons-ibuffer
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 (use-package doom-modeline
   :elpaca t
@@ -657,13 +666,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (dirvish-mode-line-format ; it's ok to place string inside
    '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
   ;; Don't worry, Dirvish is still performant even you enable all these attributes
-  (dirvish-attributes '(all-the-icons file-size collapse subtree-state vc-state git-msg))
+  (dirvish-attributes '(nerd-icons file-size collapse subtree-state vc-state git-msg))
   ;; Maybe the icons are too big to your eyes
-  ;; (dirvish-all-the-icons-height 0.8)
+  (dirvish-nerd-icons-height 0.8)
   ;; In case you want the details at startup like `dired'
   ;; (dirvish-hide-details nil)
   :config
   (dirvish-peek-mode)
+  (dirvish-override-dired-mode)
   ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
   (setq dired-dwim-target t)
   (setq delete-by-moving-to-trash t)
@@ -700,39 +710,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package ibuffer
   :ensure nil
   :elpaca nil
-  :defines all-the-icons-icon-alist
-  :functions (all-the-icons-icon-for-file
-              all-the-icons-icon-for-mode
-              all-the-icons-match-to-alist
-              all-the-icons-faicon)
   :commands (ibuffer-current-buffer
              ibuffer-find-file
              ibuffer-do-sort-by-alphabetic)
   :bind ("C-x C-b" . ibuffer)
   :init
   (setq ibuffer-filter-group-name-face '(:inherit (font-lock-string-face bold)))
-
-  ;; Display buffer icons on GUI
-  (when (display-graphic-p)
-    (define-ibuffer-column icon (:name " ")
-      (let ((icon (if (and buffer-file-name
-                           (all-the-icons-match-to-alist buffer-file-name
-                                                         all-the-icons-icon-alist))
-                      (all-the-icons-icon-for-file (file-name-nondirectory buffer-file-name)
-                                                   :height 0.9 :v-adjust -0.05)
-                    (all-the-icons-icon-for-mode major-mode :height 0.9 :v-adjust -0.05))))
-        (if (symbolp icon)
-            (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
-          icon)))
-
-    (setq ibuffer-formats '((mark modified read-only locked
-                                  " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
-                                  " " (size 9 -1 :right)
-                                  " " (mode 16 16 :left :elide) " " filename-and-process)
-                            (mark " " (name 16 -1) " " filename))))
+  (setq ibuffer-formats '((mark modified read-only locked
+                                " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
+                                " " (size 9 -1 :right)
+                                " " (mode 16 16 :left :elide) " " filename-and-process)
+                          (mark " " (name 16 -1) " " filename)))
   :config
-  (with-eval-after-load 'counsel
-    (defalias 'ibuffer-find-file 'counsel-find-file)))
+  (with-eval-after-load 'consult
+    (defalias 'ibuffer-find-file 'consult-find-file)))
 
 (use-package ibuffer-projectile
   :init
@@ -742,15 +733,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
               (unless (eq ibuffer-sorting-mode 'alphabetic)
                 (ibuffer-do-sort-by-alphabetic))))
   :config
-  (setq ibuffer-projectile-prefix
-        (if (display-graphic-p)
-            (concat
-             (all-the-icons-octicon "file-directory"
-                                    :face ibuffer-filter-group-name-face
-                                    :v-adjust -0.1
-                                    :height 1.1)
-             " ")
-          "Project: ")))
+  (setq ibuffer-projectile-prefix (concat
+                                   (nerd-icons-octicon "nf-oct-file_directory" 
+                                                       :face ibuffer-filter-group-name-face
+                                                       :v-adjust 0.1
+                                                       :height 1.0)
+                                   " ")))
 
 (when jb/os-windows-p
   (setq package-check-signature nil)
@@ -1108,12 +1096,6 @@ See URL `http://stylelint.io/'."
   (("M-A" . marginalia-cycle))
   :init
   (marginalia-mode))
-
-(use-package all-the-icons-completion
-  :after (marginalia all-the-icons)
-  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
-  :init
-  (all-the-icons-completion-mode))
 
 (use-package orderless
   :config

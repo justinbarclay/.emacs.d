@@ -31,11 +31,11 @@
   - [[#misc][Misc]]
   - [[#performance][Performance]]
   - [[#theme][Theme]]
+  - [[#icons][Icons]]
   - [[#modeline][Modeline]]
   - [[#line-numbers][Line Numbers]]
   - [[#rainbow-delimiters][Rainbow delimiters]]
   - [[#dired][dired]]
-  - [[#dired-all-the-icons][dired all the icons]]
   - [[#dirvish][Dirvish]]
   - [[#ibuffer][ibuffer]]
 - [[#os-specific][OS Specific]]
@@ -1141,11 +1141,27 @@ Let's use Doom's version instead
     )
 #+END_SRC
 
+** Icons
+*** Nerd Icons
+#+begin_src emacs-lisp
+(use-package nerd-icons)
+#+end_src
+
+**** Completion
+#+begin_src emacs-lisp
+(use-package nerd-icons-completion
+  :after (nerd-icons marginalia)
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :config
+  (nerd-icons-completion-mode))
+#+end_src
+**** iBuffer
+#+begin_src emacs-lisp
+(use-package nerd-icons-ibuffer
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+#+end_src
+
 ** Modeline
-*** all-the-icons
-#+BEGIN_SRC emacs-lisp
-(use-package all-the-icons)
-#+END_SRC
 *** Doom-modeline
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
@@ -1206,12 +1222,6 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
                 ("RET" . dired-find-alternate-file)
                 ("a" . dired-find-file)))
 #+END_SRC
-** dired all the icons
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package all-the-icons-dired
-    :hook (dired-mode . all-the-icons-dired-mode))
-#+END_SRC
-
 ** Dirvish
 #+begin_src emacs-lisp
   (use-package dirvish
@@ -1225,13 +1235,14 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
     (dirvish-mode-line-format ; it's ok to place string inside
      '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
     ;; Don't worry, Dirvish is still performant even you enable all these attributes
-    (dirvish-attributes '(all-the-icons file-size collapse subtree-state vc-state git-msg))
+    (dirvish-attributes '(nerd-icons file-size collapse subtree-state vc-state git-msg))
     ;; Maybe the icons are too big to your eyes
-    ;; (dirvish-all-the-icons-height 0.8)
+    (dirvish-nerd-icons-height 0.8)
     ;; In case you want the details at startup like `dired'
     ;; (dirvish-hide-details nil)
     :config
     (dirvish-peek-mode)
+    (dirvish-override-dired-mode)
     ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
     (setq dired-dwim-target t)
     (setq delete-by-moving-to-trash t)
@@ -1277,39 +1288,20 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
   (use-package ibuffer
     :ensure nil
     :elpaca nil
-    :defines all-the-icons-icon-alist
-    :functions (all-the-icons-icon-for-file
-                all-the-icons-icon-for-mode
-                all-the-icons-match-to-alist
-                all-the-icons-faicon)
     :commands (ibuffer-current-buffer
                ibuffer-find-file
                ibuffer-do-sort-by-alphabetic)
     :bind ("C-x C-b" . ibuffer)
     :init
     (setq ibuffer-filter-group-name-face '(:inherit (font-lock-string-face bold)))
-
-    ;; Display buffer icons on GUI
-    (when (display-graphic-p)
-      (define-ibuffer-column icon (:name " ")
-        (let ((icon (if (and buffer-file-name
-                             (all-the-icons-match-to-alist buffer-file-name
-                                                           all-the-icons-icon-alist))
-                        (all-the-icons-icon-for-file (file-name-nondirectory buffer-file-name)
-                                                     :height 0.9 :v-adjust -0.05)
-                      (all-the-icons-icon-for-mode major-mode :height 0.9 :v-adjust -0.05))))
-          (if (symbolp icon)
-              (setq icon (all-the-icons-faicon "file-o" :face 'all-the-icons-dsilver :height 0.9 :v-adjust -0.05))
-            icon)))
-
-      (setq ibuffer-formats '((mark modified read-only locked
-                                    " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
-                                    " " (size 9 -1 :right)
-                                    " " (mode 16 16 :left :elide) " " filename-and-process)
-                              (mark " " (name 16 -1) " " filename))))
+    (setq ibuffer-formats '((mark modified read-only locked
+                                  " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
+                                  " " (size 9 -1 :right)
+                                  " " (mode 16 16 :left :elide) " " filename-and-process)
+                            (mark " " (name 16 -1) " " filename)))
     :config
-    (with-eval-after-load 'counsel
-      (defalias 'ibuffer-find-file 'counsel-find-file)))
+    (with-eval-after-load 'consult
+      (defalias 'ibuffer-find-file 'consult-find-file)))
 #+END_SRC
 
 *** ibuffer-projectile
@@ -1322,15 +1314,12 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
                 (unless (eq ibuffer-sorting-mode 'alphabetic)
                   (ibuffer-do-sort-by-alphabetic))))
     :config
-    (setq ibuffer-projectile-prefix
-          (if (display-graphic-p)
-              (concat
-               (all-the-icons-octicon "file-directory"
-                                      :face ibuffer-filter-group-name-face
-                                      :v-adjust -0.1
-                                      :height 1.1)
-               " ")
-            "Project: ")))
+    (setq ibuffer-projectile-prefix (concat
+                                     (nerd-icons-octicon "nf-oct-file_directory" 
+                                                         :face ibuffer-filter-group-name-face
+                                                         :v-adjust 0.1
+                                                         :height 1.0)
+                                     " ")))
 #+END_SRC
 
 * OS Specific
@@ -1468,13 +1457,13 @@ Turn on recent file mode so that you can more easily switch to recently edited f
       (setq treemacs-icons-hash (make-hash-table :size 200 :test #'equal)
             treemacs-icon-fallback (concat
                                     "  "
-                                    (all-the-icons-faicon "file-o"
-                                                          :face 'all-the-icons-dsilver
-                                                          :height 0.9
-                                                          :v-adjust -0.05)
+                                    (nerd-icons-faicon "nf-fa-file_o"
+                                                       :face 'nerd-icons-dsilver
+                                                       :height 0.9
+                                                       :v-adjust -0.05)
                                     " ")
             treemacs-icon-text treemacs-icon-fallback)
-      (dolist (item all-the-icons-icon-alist)
+      (dolist (item nerd-icons/octicon-alist)
         (let* ((extension (car item))
                (func (cadr item))
                (args (append (list (caddr item))
@@ -1856,15 +1845,6 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
     (("M-A" . marginalia-cycle))
     :init
     (marginalia-mode))
-#+end_src
-
-***** All the icons completion
-#+begin_src emacs-lisp
-  (use-package all-the-icons-completion
-    :after (marginalia all-the-icons)
-    :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
-    :init
-    (all-the-icons-completion-mode))
 #+end_src
 
 ***** Orderless
