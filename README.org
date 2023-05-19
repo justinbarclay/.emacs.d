@@ -98,6 +98,7 @@
 - [[#communication][Communication]]
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
+  - [[#1password][1Password]]
   - [[#helpful][Helpful]]
   - [[#which-key][Which Key]]
   - [[#woman][Woman]]
@@ -831,6 +832,11 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
+*** Git-link
+#+begin_src emacs-lisp
+(use-package git-link)
+#+end_src
+
 ** Email (mu4e)
 #+begin_src emacs-lisp
   (use-package mu4e
@@ -2925,6 +2931,12 @@ Live preview of MarkDown
         (setq alert-default-style 'burnt-toast))
 #+END_SRC
 * Misc
+** 1Password
+#+begin_src emacs-lisp
+  (use-package 1password
+    :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main"))
+#+end_src
+
 ** Helpful
 A better help buffer experience
 #+begin_src emacs-lisp

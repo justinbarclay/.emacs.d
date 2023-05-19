@@ -459,6 +459,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
+(use-package git-link)
+
 (use-package mu4e
   :ensure nil
   :elpaca nil
@@ -1692,6 +1694,9 @@ parses its input."
                           :notifier
                           #'alert-burnt-toast-notify)
       (setq alert-default-style 'burnt-toast))
+
+(use-package 1password
+  :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main"))
 
 (use-package helpful
   :defer t
