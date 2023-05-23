@@ -1696,7 +1696,8 @@ parses its input."
       (setq alert-default-style 'burnt-toast))
 
 (use-package 1password
-  :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main"))
+  :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main")
+  :commands (1password-password 1password-search-id 1password-enable-auth-source))
 
 (use-package helpful
   :defer t

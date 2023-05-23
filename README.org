@@ -2934,7 +2934,8 @@ Live preview of MarkDown
 ** 1Password
 #+begin_src emacs-lisp
   (use-package 1password
-    :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main"))
+    :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main")
+    :commands (1password-password 1password-search-id 1password-enable-auth-source))
 #+end_src
 
 ** Helpful
