@@ -1697,7 +1697,11 @@ parses its input."
 
 (use-package 1password
   :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main")
-  :commands (1password-password 1password-search-id 1password-enable-auth-source))
+  :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
+  :custom
+  (1password-executable (if (executable-find "op.exe")
+                            "op.exe"
+                          "op")))
 
 (use-package helpful
   :defer t
