@@ -90,6 +90,7 @@
   - [[#docker][Docker]]
   - [[#markdown][Markdown]]
   - [[#powershell][Powershell]]
+  - [[#nushell-config][NuShell Config]]
   - [[#terraform][Terraform]]
   - [[#yaml][YAML]]
   - [[#ssh][SSH]]
@@ -2878,6 +2879,11 @@ Live preview of MarkDown
   (use-package powershell
     :mode "\\.ps\\'")
 #+END_SRC
+** NuShell Config
+#+begin_src emacs-lisp
+(use-package nushell-mode
+ :elpaca (nushell-mode :type git :host github :repo "azzamsa/emacs-nushell"))
+#+end_src
 ** Terraform
 *** Terraform mode
 #+BEGIN_SRC emacs-lisp

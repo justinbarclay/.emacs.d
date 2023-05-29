@@ -1660,6 +1660,9 @@ parses its input."
 (use-package powershell
   :mode "\\.ps\\'")
 
+(use-package nushell-mode
+ :elpaca (nushell-mode :type git :host github :repo "azzamsa/emacs-nushell"))
+
 (use-package terraform-mode
 :mode "\\.tf\\'" )
 
