@@ -752,6 +752,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setenv "SHELL" shell-file-name)
   (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 
+(when jb/os-linux-p
+  (use-package envrc
+    :defer 2
+    :config
+    (envrc-global-mode)))
+
 (use-package uniquify
   :ensure nil
   :elpaca nil

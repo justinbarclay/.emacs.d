@@ -1358,15 +1358,12 @@ Currently turned off due to debugging issues
     (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 #+END_SRC
 ** Linux
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (when jb/os-linux-p
-    (use-package pinentry
-      :defer 10
-      :init (pinentry-start))
-      (use-package envrc
-        :defer 2
-        :config
-        (envrc-global-mode)))
+    (use-package envrc
+      :defer 2
+      :config
+      (envrc-global-mode)))
 #+END_SRC
 
 * Navigating
