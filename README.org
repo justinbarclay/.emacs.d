@@ -15,7 +15,8 @@
 - [[#package-manager][Package Manager]]
   - [[#bootstrapping-straightel][Bootstrapping straight.el]]
   - [[#bootstrapping-elpaca][Bootstrapping elpaca]]
-  - [[#post-bootstrap][post bootstrap]]
+  - [[#post-bootstrap-integration-with-packageel][post bootstrap integration with package.el]]
+  - [[#enable-garbage-collection-stats-tracking][Enable garbage collection stats tracking]]
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
   - [[#org-mode][Org Mode]]
@@ -174,11 +175,10 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
           ("gnu" . "https://elpa.gnu.org/packages/")
           ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 #+END_SRC
-
 ** Personal information
 #+BEGIN_SRC emacs-lisp
   (setq user-full-name "Justin Barclay"
-        user-mail-address "me@justincbarclay.ca")
+        user-mail-address "github@justincbarclay.ca")
 #+END_SRC
 
 ** Function for making README.org work
@@ -221,7 +221,7 @@ I've decided to experiment with a completely new package manager. The main purpo
 #+END_SRC
 ** Bootstrapping elpaca
 #+begin_src emacs-lisp
-  (defvar elpaca-installer-version 0.4)
+  (defvar elpaca-installer-version 0.5)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -266,10 +266,16 @@ I've decided to experiment with a completely new package manager. The main purpo
   (elpaca-wait)
 #+end_src
 
-** post bootstrap
-Now that we've install elpaca we can initialize our packages so normal use-package can work.
+** post bootstrap integration with package.el
+Now that we've installed elpaca we can initialize our packages so normal use-package can work.
 #+begin_src emacs-lisp :tangle no
 (package-initialize)
+#+end_src
+** Enable garbage collection stats tracking
+Now that we have elpaca installed we can set up our GC tracking.
+#+begin_src emacs-lisp
+  (use-package emacs-gc-stats
+    :init (emacs-gc-stats-mode +1))
 #+end_src
 
 * Tent Pole
@@ -1604,32 +1610,32 @@ Load this before we load Flycheck
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
-    :after flycheck-pos-tip
-    :demand t
-    :ensure nil
-    :elpaca nil
     :init
-    (flycheck-define-checker less-stylelint
-      "A LESS syntax and style checker using stylelint.
+    ;; (flycheck-define-checker less-stylelint
+    ;;   "A LESS syntax and style checker using stylelint.
 
-  See URL `http://stylelint.io/'."
-      :command ("stylelint"
-                (eval flycheck-stylelint-args)
-                (option-flag "--quiet" flycheck-stylelint-quiet)
-                (when flycheck-stylelintrc (config-file "--config" flycheck-stylelintrc)))
-      :standard-input t
-      :error-parser flycheck-parse-stylelint
-      :predicate flycheck-buffer-nonempty-p
-      :modes (less-css-mode))
+    ;; See URL `http://stylelint.io/'."
+    ;;   :command ("stylelint"
+    ;;             (eval flycheck-stylelint-args)
+    ;;             (option-flag "--quiet" flycheck-stylelint-quiet)
+    ;;             (when flycheck-stylelintrc (config-file "--config" flycheck-stylelintrc)))
+    ;;   :standard-input t
+    ;;   :error-parser flycheck-parse-stylelint
+    ;;   :predicate flycheck-buffer-nonempty-p
+    ;;   :modes (less-css-mode))
+    (global-flycheck-mode)
+    :custom
+    (flycheck-javascript-eslint-executable "eslint_d")
+    (flycheck-typescript-tslint-executable "eslint_d")
+    (flycheck-check-syntax-automatically '(save mode-enabled))
+    (flycheck-standard-error-navigation nil)
     :config
-    (progn
-      (global-flycheck-mode)
-      (setq flycheck-check-syntax-automatically '(save mode-enabled))
-      (setq flycheck-standard-error-navigation nil)
-      (when 'display-graphic-p (selected-frame)
-            (eval-after-load 'flycheck
-              (flycheck-pos-tip-mode)))))
+    (require 'flycheck-pos-tip)
+    (when 'display-graphic-p (selected-frame)
+          (eval-after-load 'flycheck
+            (flycheck-pos-tip-mode))))
 #+END_SRC
+
 ** Flyspell
 #+BEGIN_SRC emacs-lisp
   (use-package flyspell
@@ -2387,7 +2393,6 @@ Better movement through treesitter
            ("C-c o" . eglot-code-action-organize-imports)
            ("C-c h" . eldoc))
     :custom
-
     (eglot-send-changes-idle-time 0.1))
 #+end_src
 
@@ -2704,9 +2709,7 @@ Autoformatting
           web-mode-enable-css-colorization t
           web-mode-enable-auto-pairing t
           web-mode-enable-comment-keywords t
-          web-mode-enable-current-element-highlight t
-          flycheck-javascript-eslint-executable "eslint_d"
-          flycheck-typescript-tslint-executable "eslint_d")
+          web-mode-enable-current-element-highlight t)
     (flycheck-add-mode 'javascript-eslint 'web-mode))
 #+end_src
 

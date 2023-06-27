@@ -9,9 +9,9 @@
 (setq file-name-handler-alist nil)
 
 (setq user-full-name "Justin Barclay"
-      user-mail-address "me@justincbarclay.ca")
+      user-mail-address "github@justincbarclay.ca")
 
-(defvar elpaca-installer-version 0.4)
+(defvar elpaca-installer-version 0.5)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -54,6 +54,9 @@
   (elpaca-use-package-mode)
   (setq elpaca-use-package-by-default t))
 (elpaca-wait)
+
+(use-package emacs-gc-stats
+  :init (emacs-gc-stats-mode +1))
 
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
@@ -878,31 +881,30 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package flycheck-pos-tip)
 
 (use-package flycheck
-  :after flycheck-pos-tip
-  :demand t
-  :ensure nil
-  :elpaca nil
   :init
-  (flycheck-define-checker less-stylelint
-    "A LESS syntax and style checker using stylelint.
+  ;; (flycheck-define-checker less-stylelint
+  ;;   "A LESS syntax and style checker using stylelint.
 
-See URL `http://stylelint.io/'."
-    :command ("stylelint"
-              (eval flycheck-stylelint-args)
-              (option-flag "--quiet" flycheck-stylelint-quiet)
-              (when flycheck-stylelintrc (config-file "--config" flycheck-stylelintrc)))
-    :standard-input t
-    :error-parser flycheck-parse-stylelint
-    :predicate flycheck-buffer-nonempty-p
-    :modes (less-css-mode))
+  ;; See URL `http://stylelint.io/'."
+  ;;   :command ("stylelint"
+  ;;             (eval flycheck-stylelint-args)
+  ;;             (option-flag "--quiet" flycheck-stylelint-quiet)
+  ;;             (when flycheck-stylelintrc (config-file "--config" flycheck-stylelintrc)))
+  ;;   :standard-input t
+  ;;   :error-parser flycheck-parse-stylelint
+  ;;   :predicate flycheck-buffer-nonempty-p
+  ;;   :modes (less-css-mode))
+  (global-flycheck-mode)
+  :custom
+  (flycheck-javascript-eslint-executable "eslint_d")
+  (flycheck-typescript-tslint-executable "eslint_d")
+  (flycheck-check-syntax-automatically '(save mode-enabled))
+  (flycheck-standard-error-navigation nil)
   :config
-  (progn
-    (global-flycheck-mode)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (setq flycheck-standard-error-navigation nil)
-    (when 'display-graphic-p (selected-frame)
-          (eval-after-load 'flycheck
-            (flycheck-pos-tip-mode)))))
+  (require 'flycheck-pos-tip)
+  (when 'display-graphic-p (selected-frame)
+        (eval-after-load 'flycheck
+          (flycheck-pos-tip-mode))))
 
 (use-package flyspell
   :ensure nil
@@ -1561,9 +1563,7 @@ parses its input."
         web-mode-enable-css-colorization t
         web-mode-enable-auto-pairing t
         web-mode-enable-comment-keywords t
-        web-mode-enable-current-element-highlight t
-        flycheck-javascript-eslint-executable "eslint_d"
-        flycheck-typescript-tslint-executable "eslint_d")
+        web-mode-enable-current-element-highlight t)
   (flycheck-add-mode 'javascript-eslint 'web-mode))
 
 (use-package tagedit
