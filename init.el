@@ -1296,11 +1296,6 @@ parses its input."
   :config
   (global-treesit-auto-mode))
 
-(use-package combobulate
-  :elpaca (:type git :host github :repo "mickeynp/combobulate")
-  :hook (prog-mode . combobulate-mode)
-  :custom (combobulate-js-ts-enable-auto-close-tag . nil))
-
 (use-package copilot
   :elpaca (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :hook (prog-mode . copilot-mode)

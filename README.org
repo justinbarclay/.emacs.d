@@ -2315,7 +2315,7 @@ We want automatic fall back and to have manually manage `treesit-language-source
 #+end_src
 *** Combobulate
 Better movement through treesitter
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package combobulate
     :elpaca (:type git :host github :repo "mickeynp/combobulate")
     :hook (prog-mode . combobulate-mode)
