@@ -1388,8 +1388,8 @@ Turn on recent file mode so that you can more easily switch to recently edited f
   (use-package recentf
     :ensure nil
     :elpaca nil
-    ;;:init
-    ;;(recentf-mode)
+    :init
+    (recentf-mode)
     :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
              (recentf-max-menu-items 40)))
 #+END_SRC

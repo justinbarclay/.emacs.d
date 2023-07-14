@@ -770,8 +770,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package recentf
   :ensure nil
   :elpaca nil
-  ;;:init
-  ;;(recentf-mode)
+  :init
+  (recentf-mode)
   :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
            (recentf-max-menu-items 40)))
 
