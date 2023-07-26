@@ -197,9 +197,9 @@ Tangle and Compile init file
 Let's describe some variables to help determine how to configure Emacs
 ** OS
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-(defvar jb/os-linux-p (eq system-type 'gnu/linux))
-(defvar jb/os-windows-p (eq system-type 'windows-nt))
-(defvar jb/os-macos-p (eq system-type 'darwin))
+  (defvar jb/os-linux-p (eq system-type 'gnu/linux))
+  (defvar jb/os-windows-p (eq system-type 'windows-nt))
+  (defvar jb/os-macos-p (eq system-type 'darwin))
 #+END_SRC
 * Package Manager
 I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
@@ -985,11 +985,17 @@ Remove scroll bars
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
 (setq-default frame-title-format "%b (%f)")
 #+END_SRC
+*** Precision Framing
+Emacs keeps a margin between itself and other windows, but if we enable pixelwise resizing it keeps everything nice and snug
+#+begin_src emacs-lisp :tangle early-init.el
+  (setq frame-resize-pixelwise 't)
+#+end_src
+
 ** Font
 I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good and has great ligature support.
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
   (set-face-attribute 'default nil
-                      :family "CaskaydiaCove Nerd Font Mono" :height 160 :weight 'normal)
+                      :family "CaskaydiaCove Nerd Font Mono" :height 170 :weight 'normal)
 #+END_SRC
 
 *** Ligatures
@@ -1339,17 +1345,13 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 ** MacOS
 In OS X, when Emacs is started from the GUI it inherits a default set of environment variables. Let's fix that.
 Currently turned off due to debugging issues
-#+BEGIN_SRC emacs-lisp :tangle no
-    (use-package exec-path-from-shell
-      :if jb/os-macos-p
-      :demand t
-      :init
-      (progn
-        (setq exec-path-from-shell-debug t))
-      :config
-      (exec-path-from-shell-initialize))
-    ;;   ;; (exec-path-from-shell-copy-envs
-    ;;   ;;  '("PATH" "RUST_SRC_PATH")))
+#+BEGIN_SRC emacs-lisp
+  (use-package exec-path-from-shell
+    :if jb/os-macos-p
+    :init
+    (setq exec-path-from-shell-debug t)
+    :config
+    (exec-path-from-shell-initialize))
 #+END_SRC
 ** Windows
 #+BEGIN_SRC emacs-lisp

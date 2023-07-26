@@ -745,6 +745,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                                        :height 1.0)
                                    " ")))
 
+(use-package exec-path-from-shell
+  :if jb/os-macos-p
+  :init
+  (setq exec-path-from-shell-debug t)
+  :config
+  (exec-path-from-shell-initialize))
+
 (when jb/os-windows-p
   (setq package-check-signature nil)
   (require 'gnutls)

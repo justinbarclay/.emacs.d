@@ -47,8 +47,10 @@
 
 (setq-default frame-title-format "%b (%f)")
 
+(setq frame-resize-pixelwise 't)
+
 (set-face-attribute 'default nil
-                    :family "CaskaydiaCove Nerd Font Mono" :height 160 :weight 'normal)
+                    :family "CaskaydiaCove Nerd Font Mono" :height 170 :weight 'normal)
 
 ;; These settings relate to how emacs interacts with your operating system
 (setq ;; makes killing/yanking interact with the clipboard
