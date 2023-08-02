@@ -23,6 +23,7 @@
   - [[#grammarly][Grammarly]]
   - [[#langtool][Langtool]]
   - [[#eshell][EShell]]
+  - [[#eat][Eat]]
   - [[#magit][Magit]]
   - [[#email-mu4e][Email (mu4e)]]
   - [[#elfeed][Elfeed]]
@@ -87,6 +88,7 @@
   - [[#rust][Rust]]
   - [[#nix][Nix]]
   - [[#go][Go]]
+  - [[#lua][Lua]]
   - [[#json][JSON]]
   - [[#docker][Docker]]
   - [[#markdown][Markdown]]
@@ -753,6 +755,17 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
          (add-to-list 'eshell-command-completions-alist
                       '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
 #+END_SRC
+** Eat
+#+begin_src emacs-lisp
+  (use-package eat
+    :init
+    (add-hook 'eshell-load-hook #'eat-eshell-mode)
+    :hook (eat-mode . (lambda () (setq display-line-numbers nil))))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25800 5180 218838 0) :use-package-secs (0 0 2536 0) :init (25800 5140 546343 0) :init-secs (0 0 15 0) :config (25800 5140 546338 0) :config-secs (0 0 2 0)))
+
 ** Magit
 #+BEGIN_SRC emacs-lisp
   ;; Magit is an Emacs interface to Git.
@@ -2350,6 +2363,7 @@ Better movement through treesitter
             c-mode
             javascript-ts-mode
             typescript-ts-mode
+            lua-mode
             jsx-ts-mode
             tsx-ts-mode)
            . lsp-deferred)
@@ -2369,7 +2383,7 @@ Better movement through treesitter
     (defun my/lsp-mode-setup-completion ()
       (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
             '(orderless)))
- 
+
     ;; Optionally configure the first word as flex filtered.
     (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
 
@@ -2840,6 +2854,11 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
     :config
     (add-hook 'before-save-hook 'gofmt-before-save))
 #+END_SRC
+
+** Lua
+#+begin_src emacs-lisp
+(use-package lua-mode)
+#+end_src
 
 ** JSON
 #+BEGIN_SRC emacs-lisp

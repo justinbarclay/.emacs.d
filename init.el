@@ -381,6 +381,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (add-to-list 'eshell-command-completions-alist
                       '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
 
+(use-package eat
+  :init
+  (add-hook 'eshell-load-hook #'eat-eshell-mode)
+  :hook (eat-mode . (lambda () (setq display-line-numbers nil))))
+
 ;; Magit is an Emacs interface to Git.
 ;; (It's awesome)
 ;; https://github.com/magit/magit
@@ -1315,6 +1320,7 @@ parses its input."
           c-mode
           javascript-ts-mode
           typescript-ts-mode
+          lua-mode
           jsx-ts-mode
           tsx-ts-mode)
          . lsp-deferred)
@@ -1641,6 +1647,8 @@ parses its input."
   :mode "\\.go\\'"
   :config
   (add-hook 'before-save-hook 'gofmt-before-save))
+
+(use-package lua-mode)
 
 (use-package json-mode
   :mode "\\.json\\'"
