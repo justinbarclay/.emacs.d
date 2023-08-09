@@ -176,6 +176,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
         '(("melpa" . "http://melpa.org/packages/")
           ("gnu" . "https://elpa.gnu.org/packages/")
           ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+
 #+END_SRC
 ** Personal information
 #+BEGIN_SRC emacs-lisp
@@ -2964,6 +2965,7 @@ Live preview of MarkDown
     :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main")
     :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
     :custom
+    (1password-results-formatter '1password-colour-formatter)
     (1password-executable (if (executable-find "op.exe")
                               "op.exe"
                             "op")))

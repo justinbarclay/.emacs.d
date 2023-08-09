@@ -1718,6 +1718,7 @@ parses its input."
   :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main")
   :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
   :custom
+  (1password-results-formatter '1password-colour-formatter)
   (1password-executable (if (executable-find "op.exe")
                             "op.exe"
                           "op")))
