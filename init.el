@@ -254,7 +254,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                               (air-org-skip-subtree-if-priority ?A)))
                         (org-agenda-overriding-header "Tasks:"))))))))
 
-(use-package elegant-agenda-mode  
+(use-package elegant-agenda-mode
   :hook '(org-agenda-mode . elegant-agenda-mode))
 
 (use-package org-alert)
@@ -276,7 +276,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                         ("Appointment"  :keys "a"
                          :template ("* %^{Description}"
                                     "SCHEDULED: %T"
-                                    ":PROPERTIES:"                                    
+                                    ":PROPERTIES:"
                                     ":calendar-id: justincbarclay@gmail.com"
                                     ":END:")
                          :file "~/org/personal/calendar.org")
@@ -307,7 +307,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                         ("Appointment"  :keys "a"
                          :template ("* %^{Description}"
                                     "SCHEDULED: %T"
-                                    ":PROPERTIES:"                                      
+                                    ":PROPERTIES:"
                                     ":calendar-id: justin.barclay@tidalmigrations.com"
                                     ":END:")
                          :file "~/org/work/calendar.org")))))))
@@ -320,7 +320,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                               ("justin.barclay@tidalmigrations.com" . "~/org/work/calendar.org"))))
 
 (use-package org-fancy-priorities
-  :hook 
+  :hook
   (org-mode . org-fancy-priorities-mode)
   :config
   '((?A :foreground "red" )
@@ -478,7 +478,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
   :bind (:map mu4e-headers-mode-map
               ("q" . kill-current-buffer))
-  :config 
+  :config
   (setq mu4e-headers-skip-duplicates  t
    mu4e-view-show-images t
    mu4e-view-show-addresses t
@@ -609,13 +609,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :elpaca (nano-theme :type git :host github :repo "rougier/nano-theme"))
 
 (use-package lambda-themes
-  :elpaca (:type git :host github :repo "lambda-emacs/lambda-themes") 
+  :elpaca (:type git :host github :repo "lambda-emacs/lambda-themes")
   :custom
   (lambda-themes-set-italic-comments nil)
   (lambda-themes-set-italic-keywords nil)
-  (lambda-themes-set-variable-pitch nil) 
+  (lambda-themes-set-variable-pitch nil)
   :config
-  ;; load preferred theme 
+  ;; load preferred theme
   (load-theme 'lambda-light))
 
 (use-package doom-everblush-theme
@@ -743,7 +743,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                 (ibuffer-do-sort-by-alphabetic))))
   :config
   (setq ibuffer-projectile-prefix (concat
-                                   (nerd-icons-octicon "nf-oct-file_directory" 
+                                   (nerd-icons-octicon "nf-oct-file_directory"
                                                        :face ibuffer-filter-group-name-face
                                                        :v-adjust 0.1
                                                        :height 1.0)
@@ -751,10 +751,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package exec-path-from-shell
   :if jb/os-macos-p
+  :defer 1
   :init
-  (setq exec-path-from-shell-debug t)
-  :config
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+  :custom
+  (exec-path-from-shell-arguments '("-l")))
 
 (when jb/os-windows-p
   (setq package-check-signature nil)
@@ -766,7 +767,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setenv "SHELL" shell-file-name)
   (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 
-(when jb/os-linux-p
+(when (not jb/os-windows-p)
   (use-package envrc
     :defer 2
     :config
@@ -1283,7 +1284,10 @@ parses its input."
   :after yasnippet)
 
 (use-package yasnippet-capf
-  :elpaca (:type git :host github :repo "justinbarclay/yasnippet-capf"))
+  :commands yas-capf-minor-mode
+  :elpaca (:type git :host github :repo "justinbarclay/yasnippet-capf")
+  :init
+  (add-hook 'yas-minor-mode-hook #'yas-capf-minor-mode))
 
 (use-package treesit
   :ensure nil
@@ -1565,7 +1569,7 @@ parses its input."
         web-mode-css-indent-offset 2
         web-mode-code-indent-offset 2
         web-mode-block-padding 2
-        web-mode-comment-style 2 
+        web-mode-comment-style 2
 
         web-mode-enable-css-colorization t
         web-mode-enable-auto-pairing t
@@ -1825,13 +1829,13 @@ parses its input."
 
 (defun count-repititions ()
   (interactive)
-  ;; 
+  ;;
   (let ((tracker (make-hash-table :test 'equal))
         (buffer (current-buffer)))
     (with-temp-buffer
       (insert-buffer buffer)
       (goto-char (point-min))
-      (replace-regexp "^[0-9]+:[0-9][0-9]" "")        
+      (replace-regexp "^[0-9]+:[0-9][0-9]" "")
       (delete-blank-lines)
       (sort-lines nil (point-min) (point-max))
       (goto-char (point-min))

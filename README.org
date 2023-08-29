@@ -123,7 +123,7 @@
 * About
   "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
   This Config file is inspired by:
-  + [[http://pages.sachachua.com/.emacs.d/Sacha.html]] 
+  + [[http://pages.sachachua.com/.emacs.d/Sacha.html]]
   + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
 ** Note for making Elisp Blocks
 I've forgotten this before so this seems like the perfect place to put it but ~C-c C-v d~ or ~org-babel-demarcate-block~ creates a code-block for the language of your choice
@@ -190,7 +190,7 @@ Tangle and Compile init file
   (defun my/tangle-dotfiles ()
     "If the current file is this file, the code blocks are tangled"
     (when (equal (buffer-file-name)
-		 (expand-file-name "~/.emacs.d/README.org"))
+     (expand-file-name "~/.emacs.d/README.org"))
       (org-babel-tangle nil (expand-file-name "~/.emacs.d/init.el"))))
       ;;(byte-compile-file "~/.emacs.d/init.el")
   (add-hook 'after-save-hook #'my/tangle-dotfiles)
@@ -297,7 +297,7 @@ Boot strap use-package. Because we're running package initalize ourselves, we ca
     (package-install 'use-package))
 #+END_SRC
 *** Generate reports based on use-package
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 #+END_SRC
@@ -600,7 +600,7 @@ This section includes tooling for organizing ones work or personal life. General
 #+END_SRC
 ***** elegant-agenda-mode
 #+begin_src emacs-lisp
-  (use-package elegant-agenda-mode  
+  (use-package elegant-agenda-mode
     :hook '(org-agenda-mode . elegant-agenda-mode))
 #+end_src
 
@@ -630,7 +630,7 @@ Declarative Org Capture Templates
                             ("Appointment"  :keys "a"
                              :template ("* %^{Description}"
                                         "SCHEDULED: %T"
-                                        ":PROPERTIES:"                                    
+                                        ":PROPERTIES:"
                                         ":calendar-id: justincbarclay@gmail.com"
                                         ":END:")
                              :file "~/org/personal/calendar.org")
@@ -661,7 +661,7 @@ Declarative Org Capture Templates
                             ("Appointment"  :keys "a"
                              :template ("* %^{Description}"
                                         "SCHEDULED: %T"
-                                        ":PROPERTIES:"                                      
+                                        ":PROPERTIES:"
                                         ":calendar-id: justin.barclay@tidalmigrations.com"
                                         ":END:")
                              :file "~/org/work/calendar.org")))))))
@@ -680,7 +680,7 @@ Declarative Org Capture Templates
 Change priority cookies from alphanumeric cookies into symbols and explicitly colours them
 #+BEGIN_SRC emacs-lisp
   (use-package org-fancy-priorities
-    :hook 
+    :hook
     (org-mode . org-fancy-priorities-mode)
     :config
     '((?A :foreground "red" )
@@ -869,7 +869,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
     :bind (:map mu4e-headers-mode-map
                 ("q" . kill-current-buffer))
-    :config 
+    :config
     (setq mu4e-headers-skip-duplicates  t
      mu4e-view-show-images t
      mu4e-view-show-addresses t
@@ -935,7 +935,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
                 ("<left>"    . mu4e-headers-fold-at-point)
                 ("<S-left>"  . mu4e-headers-fold-all)
                 ("<right>"   . mu4e-headers-unfold-at-point)
-                ("<S-right>" . mu4e-headers-unfold-all)))                            
+                ("<S-right>" . mu4e-headers-unfold-all)))
 #+end_src
 
 ** Elfeed
@@ -1143,13 +1143,13 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 *** Lambda Themes
 #+begin_src emacs-lisp
 (use-package lambda-themes
-  :elpaca (:type git :host github :repo "lambda-emacs/lambda-themes") 
+  :elpaca (:type git :host github :repo "lambda-emacs/lambda-themes")
   :custom
   (lambda-themes-set-italic-comments nil)
   (lambda-themes-set-italic-keywords nil)
-  (lambda-themes-set-variable-pitch nil) 
+  (lambda-themes-set-variable-pitch nil)
   :config
-  ;; load preferred theme 
+  ;; load preferred theme
   (load-theme 'lambda-light))
 #+end_src
 *** Add on doom theme
@@ -1233,7 +1233,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode)
     :config
-     (custom-set-faces 
+     (custom-set-faces
       '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
       '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
       '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
@@ -1347,7 +1347,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
                   (ibuffer-do-sort-by-alphabetic))))
     :config
     (setq ibuffer-projectile-prefix (concat
-                                     (nerd-icons-octicon "nf-oct-file_directory" 
+                                     (nerd-icons-octicon "nf-oct-file_directory"
                                                          :face ibuffer-filter-group-name-face
                                                          :v-adjust 0.1
                                                          :height 1.0)
@@ -1361,10 +1361,11 @@ Currently turned off due to debugging issues
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
     :if jb/os-macos-p
+    :defer 1
     :init
-    (setq exec-path-from-shell-debug t)
-    :config
-    (exec-path-from-shell-initialize))
+    (exec-path-from-shell-initialize)
+    :custom
+    (exec-path-from-shell-arguments '("-l")))
 #+END_SRC
 ** Windows
 #+BEGIN_SRC emacs-lisp
@@ -1378,9 +1379,9 @@ Currently turned off due to debugging issues
     (setenv "SHELL" shell-file-name)
     (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 #+END_SRC
-** Linux
+** Linux && Darwin
 #+BEGIN_SRC emacs-lisp
-  (when jb/os-linux-p
+  (when (not jb/os-windows-p)
     (use-package envrc
       :defer 2
       :config
@@ -2004,13 +2005,13 @@ Consult users will also want the embark-consult package.
 #+end_src
 
 *** Ivy Ecosystem
-As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017) 
+As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017)
 it looks like counsel is a requirement for swiper
 **** Ivy-rich
 Let's pretty up ivy
 This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emacs.d/blob/master/lisp/init-ivy.el
 #+BEGIN_SRC emacs-lisp :tangle no
-  (use-package ivy-rich 
+  (use-package ivy-rich
     :defines (all-the-icons-icon-alist
               all-the-icons-dir-icon-alist
               bookmark-alist)
@@ -2679,7 +2680,7 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package js2-mode
     :mode "\\.js\\'"
-    :config    
+    :config
     (add-hook 'js-mode-hook 'subword-mode)
     (add-hook 'html-mode-hook 'subword-mode)
     (setq js-indent-level 2)
@@ -2720,7 +2721,7 @@ Autoformatting
           web-mode-css-indent-offset 2
           web-mode-code-indent-offset 2
           web-mode-block-padding 2
-          web-mode-comment-style 2 
+          web-mode-comment-style 2
 
           web-mode-enable-css-colorization t
           web-mode-enable-auto-pairing t
@@ -3068,7 +3069,7 @@ DELTA should be a multiple of 10, in the units used by the
     (interactive)
     (find-file "~/.emacs.d/README.org"))
 
-  (global-set-key (kbd "C-c i") 'open-config-file)    
+  (global-set-key (kbd "C-c i") 'open-config-file)
 #+end_src
 
 ** Replace tabs
@@ -3220,13 +3221,13 @@ Count line repititions
 #+begin_src emacs-lisp
   (defun count-repititions ()
     (interactive)
-    ;; 
+    ;;
     (let ((tracker (make-hash-table :test 'equal))
           (buffer (current-buffer)))
       (with-temp-buffer
         (insert-buffer buffer)
         (goto-char (point-min))
-        (replace-regexp "^[0-9]+:[0-9][0-9]" "")        
+        (replace-regexp "^[0-9]+:[0-9][0-9]" "")
         (delete-blank-lines)
         (sort-lines nil (point-min) (point-max))
         (goto-char (point-min))
