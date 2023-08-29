@@ -2305,9 +2305,11 @@ Things are always better when they are prettier, let's add icons to our in buffe
 **** Yasnippet capf
 #+begin_src emacs-lisp
   (use-package yasnippet-capf
-    :elpaca (:type git :host github :repo "justinbarclay/yasnippet-capf"))
+    :commands yas-capf-minor-mode
+    :elpaca (:type git :host github :repo "justinbarclay/yasnippet-capf")
+    :init
+    (add-hook 'yas-minor-mode-hook #'yas-capf-minor-mode))
 #+end_src
-
 
 * Languages
 Major mode customizations
