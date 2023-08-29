@@ -79,6 +79,7 @@
    ("C-c c" . org-capture))
   :init
   (global-unset-key "\C-c\C-v\C-c")
+  :hook (org-mode . visual-line-mode)
   :config
   (setq org-src-tab-acts-natively nil)
   (defun jb/org-narrow-to-parent ()
@@ -105,9 +106,6 @@
        (org-babel-find-named-block
         (completing-read "Code Block: " (org-babel-src-block-names))))
       (org-babel-execute-src-block-maybe)))
-  (setq-local truncate-lines nil
-              org-startup-truncated nil
-              word-wrap t)
   (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                (concat org-directory "/work/calendar.org")
                                (concat org-directory "/personal/tasks.org")
@@ -123,12 +121,13 @@
           ("WAITING" :foreground "orange" :weight regular)
           ("BLOCKED" :foreground "magenta" :weight regular)
           ("CANCELLED" :foreground "forest green" :weight regular)))
-  (setq org-log-into-drawer t
+  (setq org-log-into-drawer 't
+        org-startup-truncated nil
         org-default-notes-file (concat org-directory "/notes.org")
         org-export-html-postamble nil
-        org-hide-leading-stars t
+        org-hide-leading-stars 't
         org-startup-folded 'overview
-        org-startup-indented t)
+        org-startup-indented 't)
   ;; `org-babel-do-load-languages' significantly slows loading time,
   ;; so let's run this well after we've loaded
   (run-at-time "1 min" nil (lambda ()
