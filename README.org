@@ -1152,6 +1152,11 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
   ;; load preferred theme
   (load-theme 'lambda-light))
 #+end_src
+#+begin_src emacs-lisp
+(use-package catppuccin-theme
+  :init (load-theme 'catppuccin t))
+#+end_src
+
 *** Add on doom theme
 #+begin_src emacs-lisp
   (use-package doom-everblush-theme
@@ -1162,9 +1167,8 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes
-    :elpaca t
     :init
-    (load-theme 'doom-everblush t)
+    ;; (load-theme 'doom-everblush t)
     ;; When using doom-themes region is a much better colour for highlighting current line
     ;; (defface custom-hl-line
     ;;   '((t (:inherit region :background "#2d2844")))

@@ -618,13 +618,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   ;; load preferred theme
   (load-theme 'lambda-light))
 
+(use-package catppuccin-theme
+  :init (load-theme 'catppuccin t))
+
 (use-package doom-everblush-theme
   :elpaca (doom-everblush-theme :type git :host github :repo "Everblush/doomemacs"))
 
 (use-package doom-themes
-  :elpaca t
   :init
-  (load-theme 'doom-everblush t)
+  ;; (load-theme 'doom-everblush t)
   ;; When using doom-themes region is a much better colour for highlighting current line
   ;; (defface custom-hl-line
   ;;   '((t (:inherit region :background "#2d2844")))
