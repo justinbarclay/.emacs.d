@@ -13,10 +13,7 @@
 - [[#vars][Vars]]
   - [[#os][OS]]
 - [[#package-manager][Package Manager]]
-  - [[#bootstrapping-straightel][Bootstrapping straight.el]]
   - [[#bootstrapping-elpaca][Bootstrapping elpaca]]
-  - [[#post-bootstrap-integration-with-packageel][post bootstrap integration with package.el]]
-  - [[#enable-garbage-collection-stats-tracking][Enable garbage collection stats tracking]]
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
   - [[#org-mode][Org Mode]]
@@ -207,21 +204,6 @@ Let's describe some variables to help determine how to configure Emacs
 * Package Manager
 I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
 
-** Bootstrapping straight.el
-#+BEGIN_SRC emacs-lisp :tangle no
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-         (bootstrap-version 5))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
-#+END_SRC
 ** Bootstrapping elpaca
 #+begin_src emacs-lisp
   (defvar elpaca-installer-version 0.5)
@@ -266,19 +248,7 @@ I've decided to experiment with a completely new package manager. The main purpo
     ;; Enable :elpaca use-package keyword.
     (elpaca-use-package-mode)
     (setq elpaca-use-package-by-default t))
-  (elpaca-wait)
-#+end_src
-
-** post bootstrap integration with package.el
-Now that we've installed elpaca we can initialize our packages so normal use-package can work.
-#+begin_src emacs-lisp :tangle no
-(package-initialize)
-#+end_src
-** Enable garbage collection stats tracking
-Now that we have elpaca installed we can set up our GC tracking.
-#+begin_src emacs-lisp
-  (use-package emacs-gc-stats
-    :init (emacs-gc-stats-mode +1))
+    (elpaca-wait)
 #+end_src
 
 * Tent Pole
@@ -296,12 +266,6 @@ Boot strap use-package. Because we're running package initalize ourselves, we ca
     (package-refresh-contents)
     (package-install 'use-package))
 #+END_SRC
-*** Generate reports based on use-package
-#+BEGIN_SRC emacs-lisp
-(setq use-package-compute-statistics t)
-(setq use-package-minimum-reported-time 0.01)
-#+END_SRC
-
 *** Performance improvements
 It's a god send, UsePackage landed in Emacs master, no bootstrapping required, just up and go.
 #+BEGIN_SRC emacs-lisp
@@ -314,6 +278,12 @@ It's a god send, UsePackage landed in Emacs master, no bootstrapping required, j
   (use-package diminish)                ;; if you use :diminish
   (use-package bind-key)                ;; if you use any :bind variant
 #+END_SRC
+*** Generate reports based on use-package
+#+BEGIN_SRC emacs-lisp
+(setq use-package-compute-statistics t)
+(setq use-package-minimum-reported-time 0.01)
+#+END_SRC
+
 *** Using use-package
 The plan is to use a copious amount of deferral to speed up emacs boot time.
 Use the :init keyword to execute code before a package is loaded. It accepts one or more forms, up until the next keyword
