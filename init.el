@@ -56,13 +56,12 @@
   (elpaca-wait)
 
 (require 'use-package)
-(setq use-package-always-ensure t)
-(setq use-package-verbose nil)
-(setq use-package-always-defer t)
-(setq use-package-enable-imenu-support t)
-
-(use-package diminish)                ;; if you use :diminish
-(use-package bind-key)                ;; if you use any :bind variant
+  (setq use-package-always-ensure t)
+  (setq use-package-verbose nil)
+  (setq use-package-always-defer t)
+  (setq use-package-enable-imenu-support t)
+  
+;;  (use-package bind-key)                ;; if you use any :bind variant
 
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
@@ -663,6 +662,21 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
      zig-mode "🦎"
      scheme-mode "🐔")))
 
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode)
+  :config
+   (custom-set-faces
+    '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
+    '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
+    '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
+    '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
+    '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
+    '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
+    '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
+    '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
+    '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
+    '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
+
 (use-package dirvish
   :custom
   ;; Go back home? Just press `bh'
@@ -839,11 +853,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package rg)
 
-(use-package multiple-cursors
-  :bind
-  (("C->" . mc/mark-next-like-this)
-   ("C-<" . mc/mark-previous-like-this))
-  :commands (mc/mark-next-like-this mc/mark-previous-like-this))
+(use-package emacs
+  :ensure nil
+  :elpaca nil
+  :config
+
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
 
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
@@ -865,6 +883,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
 
+(setq backup-directory-alist `(("." . ,(concat user-emacs-directory
+                                               "backups"))))
+(setq auto-save-default nil)
+
+)
+
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
   :bind (:map smartparens-mode-map ("M-<backspace>" . 'backward-kill-word)))
@@ -874,20 +898,22 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  :ensure nil
  :elpaca nil)
 
-(use-package hungry-delete
-  :hook (prog-mode . global-hungry-delete-mode))
+(use-package ws-butler
+  :commands (ws-butler-mode)
+  :hook (prog-mode . ws-butler-mode))
 
 (use-package origami
   :bind ("C-<tab>" . origami-recursively-toggle-node)
   :hook (prog-mode . origami-mode))
 
-(setq backup-directory-alist `(("." . ,(concat user-emacs-directory
-                                               "backups"))))
-(setq auto-save-default nil)
+(use-package hungry-delete
+  :hook (prog-mode . global-hungry-delete-mode))
 
-(use-package ws-butler
-  :commands (ws-butler-mode)
-  :hook (prog-mode . ws-butler-mode))
+(use-package multiple-cursors
+  :bind
+  (("C->" . mc/mark-next-like-this)
+   ("C-<" . mc/mark-previous-like-this))
+  :commands (mc/mark-next-like-this mc/mark-previous-like-this))
 
 (use-package flycheck-pos-tip)
 
@@ -1613,7 +1639,6 @@ parses its input."
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
-  :mode "Berksfile\\'"
   :mode "Vagrantfile\\'"
   :interpreter "ruby"
   :hook (ruby-ts-mode . superword-mode)
@@ -1698,6 +1723,13 @@ parses its input."
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
+
+(use-package tramp
+  :ensure nil
+  :elpaca nil
+  :custom
+  (tramp-default-method "ssh")
+  (tramp-copy-size-limit nil))
 
 (use-package alert
       :commands (alert alert-define-style)

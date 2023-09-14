@@ -50,7 +50,7 @@
   - [[#ace-window][ace-window]]
   - [[#searching][Searching]]
 - [[#editing][Editing]]
-  - [[#multiple-cursors][Multiple Cursors]]
+  - [[#buffer-encoding][Buffer Encoding]]
   - [[#newline-and-indent][Newline and indent]]
   - [[#truncate-lines][Truncate lines]]
   - [[#highlight-current-line][Highlight current line]]
@@ -59,11 +59,13 @@
   - [[#set-base-indent][Set base indent]]
   - [[#save-place-in-file][Save place in file]]
   - [[#comment-or-uncomment-region][Comment or Uncomment region]]
-  - [[#parens-balancing][Parens Balancing]]
-  - [[#hungry-delete][Hungry Delete]]
-  - [[#code-folding][Code Folding]]
   - [[#backups][Backups]]
+  - [[#end-emacs-specific-config][end emacs specific config]]
+  - [[#parens-balancing][Parens Balancing]]
   - [[#whitespace][Whitespace]]
+  - [[#code-folding][Code Folding]]
+  - [[#hungry-delete][Hungry Delete]]
+  - [[#multiple-cursors][Multiple Cursors]]
 - [[#syntax-and-error-checking][Syntax and Error checking]]
   - [[#flycheck-pos-tip][Flycheck pos-tip]]
   - [[#flycheck][Flycheck]]
@@ -97,6 +99,7 @@
   - [[#sql][SQL]]
   - [[#text-modes][Text modes]]
 - [[#communication][Communication]]
+  - [[#tramp][Tramp]]
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
   - [[#1password][1Password]]
@@ -274,9 +277,8 @@ It's a god send, UsePackage landed in Emacs master, no bootstrapping required, j
   (setq use-package-verbose nil)
   (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t)
-
-  (use-package diminish)                ;; if you use :diminish
-  (use-package bind-key)                ;; if you use any :bind variant
+  
+;;  (use-package bind-key)                ;; if you use any :bind variant
 #+END_SRC
 *** Generate reports based on use-package
 #+BEGIN_SRC emacs-lisp
@@ -1203,7 +1205,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+END_SRC
 
 ** Rainbow delimiters
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode)
     :config
@@ -1499,16 +1501,19 @@ Allows one to switch to a buffer based by using numbers, instead of cycling with
 
 * Editing
 General config to make editing text feel nice
-** Multiple Cursors
-Thank you Magnar Sveen!
-I've put this at the top, because I use this almost everyday and wish it existed in more places.
-#+BEGIN_SRC emacs-lisp
-(use-package multiple-cursors
-  :bind
-  (("C->" . mc/mark-next-like-this)
-   ("C-<" . mc/mark-previous-like-this))
-  :commands (mc/mark-next-like-this mc/mark-previous-like-this))
-#+END_SRC
+#+begin_src emacs-lisp
+(use-package emacs
+  :ensure nil
+  :elpaca nil
+  :config
+#+end_src
+** Buffer Encoding
+#+begin_src emacs-lisp
+  (prefer-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+#+end_src
 
 ** Newline and indent
 #+BEGIN_SRC emacs-lisp
@@ -1516,38 +1521,50 @@ I've put this at the top, because I use this almost everyday and wish it existed
 #+END_SRC
 ** Truncate lines
 #+BEGIN_SRC emacs-lisp
-(set-default 'truncate-lines t)
+  (set-default 'truncate-lines t)
 #+END_SRC
 ** Highlight current line
 #+BEGIN_SRC emacs-lisp
-(global-hl-line-mode 1)
+  (global-hl-line-mode 1)
 #+END_SRC
 ** Highlight matching parens
 #+BEGIN_SRC emacs-lisp
-(show-paren-mode 1)
+  (show-paren-mode 1)
 #+END_SRC
 ** No tabs
 #+BEGIN_SRC emacs-lisp
-(setq-default indent-tabs-mode nil)
+  (setq-default indent-tabs-mode nil)
 #+END_SRC
 ** Set base indent
 #+BEGIN_SRC emacs-lisp
-(setq-default tab-width 2)
+  (setq-default tab-width 2)
 
-(setq c-basic-offset 2)
+  (setq c-basic-offset 2)
 #+END_SRC
 
 ** Save place in file
 Remember where point was when I come back to a file
 #+BEGIN_SRC emacs-lisp
-(save-place-mode 1)
-;; keep track of saved places in ~/.emacs.d/places
-(setq save-place-file (concat user-emacs-directory "places"))
+  (save-place-mode 1)
+  ;; keep track of saved places in ~/.emacs.d/places
+  (setq save-place-file (concat user-emacs-directory "places"))
 #+END_SRC
 ** Comment or Uncomment region
 #+BEGIN_SRC emacs-lisp
-(global-set-key (kbd "C-;") 'comment-or-uncomment-region)
+  (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
 #+END_SRC
+** Backups
+Emacs can automatically create backup files. This tells Emacs to put all backups in ~/.emacs.d/backups. More [[http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html][info]].
+#+BEGIN_SRC emacs-lisp
+  (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
+                                                 "backups"))))
+  (setq auto-save-default nil)
+#+END_SRC
+** end emacs specific config
+#+begin_src emacs-lisp
+)
+#+end_src
+
 ** Parens Balancing
 #+BEGIN_SRC emacs-lisp
   (use-package smartparens
@@ -1563,12 +1580,13 @@ Config
  :elpaca nil)
 #+end_src
 
-** Hungry Delete
+** Whitespace
+Emacs doesn’t handle trailing spaces or anything like that very well by default, it’s far too aggressive for my tastes, so we’ll use ws-butler to fix this.
 #+BEGIN_SRC emacs-lisp
-  (use-package hungry-delete
-    :hook (prog-mode . global-hungry-delete-mode))
+  (use-package ws-butler
+    :commands (ws-butler-mode)
+    :hook (prog-mode . ws-butler-mode))
 #+END_SRC
-
 ** Code Folding
 Emacs by default doesn't have a good story for folding text so we have to add one.
 #+BEGIN_SRC emacs-lisp
@@ -1577,20 +1595,23 @@ Emacs by default doesn't have a good story for folding text so we have to add on
   :hook (prog-mode . origami-mode))
 #+END_SRC
 
-** Backups
-Emacs can automatically create backup files. This tells Emacs to put all backups in ~/.emacs.d/backups. More [[http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html][info]].
+** Hungry Delete
 #+BEGIN_SRC emacs-lisp
-  (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
-                                                 "backups"))))
-  (setq auto-save-default nil)
+  (use-package hungry-delete
+    :hook (prog-mode . global-hungry-delete-mode))
 #+END_SRC
-** Whitespace
-Emacs doesn’t handle trailing spaces or anything like that very well by default, it’s far too aggressive for my tastes, so we’ll use ws-butler to fix this.
+
+** Multiple Cursors
+Thank you Magnar Sveen!
+I've put this at the top, because I use this almost everyday and wish it existed in more places.
 #+BEGIN_SRC emacs-lisp
-  (use-package ws-butler
-    :commands (ws-butler-mode)
-    :hook (prog-mode . ws-butler-mode))
+(use-package multiple-cursors
+  :bind
+  (("C->" . mc/mark-next-like-this)
+   ("C-<" . mc/mark-previous-like-this))
+  :commands (mc/mark-next-like-this mc/mark-previous-like-this))
 #+END_SRC
+
 * Syntax and Error checking
 ** Flycheck pos-tip
 Load this before we load Flycheck
@@ -2756,7 +2777,6 @@ Autoformatting
     :mode "\\.rb\\'"
     :mode "Rakefile\\'"
     :mode "Gemfile\\'"
-    :mode "Berksfile\\'"
     :mode "Vagrantfile\\'"
     :interpreter "ruby"
     :hook (ruby-ts-mode . superword-mode)
@@ -2915,6 +2935,16 @@ Live preview of MarkDown
 #+END_SRC
 
 * Communication
+** Tramp
+#+begin_src emacs-lisp
+(use-package tramp
+  :ensure nil
+  :elpaca nil
+  :custom
+  (tramp-default-method "ssh")
+  (tramp-copy-size-limit nil))
+#+end_src
+
 ** Alert
 #+BEGIN_SRC emacs-lisp
   (use-package alert
