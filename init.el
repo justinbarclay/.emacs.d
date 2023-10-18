@@ -951,7 +951,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   ;; :config (setq flyspell-issue-message-flag nil)
   )
 
-(use-package dap-mode)
+(use-package dap-mode
+  :custom
+  (go-ts-mode-indent-offset 2)
+  :hook (go-ts-mode . (require 'dap-dlv-go)))
 
 (use-package vertico
   :init
@@ -1350,7 +1353,8 @@ parses its input."
           typescript-ts-mode
           lua-mode
           jsx-ts-mode
-          tsx-ts-mode)
+          tsx-ts-mode
+          go-ts-mode)
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
   (lsp-mode . lsp-enable-which-key-integration)
@@ -1537,10 +1541,13 @@ parses its input."
                       -1))
     (message "info not found")))
 
-(use-package subword-mode
-  :ensure nil
-  :elpaca nil
-  :hook typescript-ts-base-mode)
+(use-package js-ts-mode
+ :ensure nil
+ :elpaca nil
+ :mode "\\.js\\'"
+ :custom
+ (js-indent-level 2)
+ (lsp-eslint-enable 't))
 
 (use-package typescript-ts-base-mode
     :ensure nil
@@ -1560,23 +1567,6 @@ parses its input."
   :ensure nil
   :elpaca nil
   :mode "\\.tsx\\'")
-
-(use-package rjsx-mode
-  :mode (("\\.jsx\\'" . rjsx-mode)
-         ("\\.js\\'" . rjsx-mode))
-  :bind (:map js2-mode-map ("M-." . xref-find-definitions))
-  :config
-  (add-hook 'rjsx-mode #'subword-mode)
-  (setq js-indent-level 2)
-  (setq js2-basic-offset 2))
-
-(use-package js2-refactor
-  :bind
-  (:map js2-mode-map
-        ("C-k" . js2r-kill))
-  :config
-  (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
-  (js2r-add-keybindings-with-prefix "C-c C-r"))
 
 (use-package prettier-js
   :hook ((typescript-ts-base-mode . prettier-js-mode)
@@ -1670,9 +1660,11 @@ parses its input."
 (use-package nixpkgs-fmt
  :hook (nix-mode . nixpkgs-fmt-on-save-mode))
 
-(use-package go-mode
+(use-package go-ts-mode
+  :ensure nil
+  :elpaca nil
   :mode "\\.go\\'"
-  :config
+  :config  
   (add-hook 'before-save-hook 'gofmt-before-save))
 
 (use-package lua-mode)

@@ -81,7 +81,7 @@
   - [[#csslesssass][CSS/LESS/SASS]]
   - [[#cc][C/C++]]
   - [[#lispy-languages][Lispy-languages]]
-  - [[#javascript][JavaScript]]
+  - [[#javascript-land][JavaScript Land]]
   - [[#html][HTML]]
   - [[#ruby][Ruby]]
   - [[#rust][Rust]]
@@ -189,9 +189,10 @@ Tangle and Compile init file
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
   (defun my/tangle-dotfiles ()
     "If the current file is this file, the code blocks are tangled"
+    (interactive)
     (when (equal (buffer-file-name)
      (expand-file-name "~/.emacs.d/README.org"))
-      (org-babel-tangle nil (expand-file-name "~/.emacs.d/init.el"))))
+      (org-babel-tangle '() (expand-file-name "~/.emacs.d/init.el"))))
       ;;(byte-compile-file "~/.emacs.d/init.el")
   (add-hook 'after-save-hook #'my/tangle-dotfiles)
 #+END_SRC
@@ -581,7 +582,7 @@ Have alerts pop up from your org agenda
 #+BEGIN_SRC emacs-lisp
 (use-package org-alert)
 #+END_SRC
-e
+
 **** DOCT
 Declarative Org Capture Templates
 #+BEGIN_SRC emacs-lisp
@@ -734,9 +735,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (add-hook 'eshell-load-hook #'eat-eshell-mode)
     :hook (eat-mode . (lambda () (setq display-line-numbers nil))))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (25800 5180 218838 0) :use-package-secs (0 0 2536 0) :init (25800 5140 546343 0) :init-secs (0 0 15 0) :config (25800 5140 546338 0) :config-secs (0 0 2 0)))
 
 ** Magit
 #+BEGIN_SRC emacs-lisp
@@ -1660,7 +1658,10 @@ Load this before we load Flycheck
 
 * Integrated Debugging
 #+begin_src emacs-lisp
-(use-package dap-mode)
+  (use-package dap-mode
+    :custom
+    (go-ts-mode-indent-offset 2)
+    :hook (go-ts-mode . (require 'dap-dlv-go)))
 #+end_src
 * Completion
 ** Minibuffer
@@ -2363,7 +2364,8 @@ Better movement through treesitter
             typescript-ts-mode
             lua-mode
             jsx-ts-mode
-            tsx-ts-mode)
+            tsx-ts-mode
+            go-ts-mode)
            . lsp-deferred)
     (lsp-completion-mode . my/lsp-mode-setup-completion)
     (lsp-mode . lsp-enable-which-key-integration)
@@ -2627,15 +2629,19 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
     (message "info not found")))
 #+END_SRC
 
-** JavaScript
-Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-setup-javascript.html
-*** Typescript
+** JavaScript Land
+*** Javascript
 #+begin_src emacs-lisp
-  (use-package subword-mode
-    :ensure nil
-    :elpaca nil
-    :hook typescript-ts-base-mode)
+(use-package js-ts-mode
+ :ensure nil
+ :elpaca nil
+ :mode "\\.js\\'"
+ :custom
+ (js-indent-level 2)
+ (lsp-eslint-enable 't))
 #+end_src
+
+*** Typescript
 
 #+begin_src emacs-lisp
 (use-package typescript-ts-base-mode
@@ -2662,37 +2668,6 @@ Package inspired by https://emacs.cafe/emacs/javascript/setup/2017/04/23/emacs-s
     :mode "\\.tsx\\'")
 #+end_src
 
-*** JS/JSX dev environment
-#+begin_src emacs-lisp
-  (use-package rjsx-mode
-    :mode (("\\.jsx\\'" . rjsx-mode)
-           ("\\.js\\'" . rjsx-mode))
-    :bind (:map js2-mode-map ("M-." . xref-find-definitions))
-    :config
-    (add-hook 'rjsx-mode #'subword-mode)
-    (setq js-indent-level 2)
-    (setq js2-basic-offset 2))
-#+end_src
-*** js2-Mode
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package js2-mode
-    :mode "\\.js\\'"
-    :config
-    (add-hook 'js-mode-hook 'subword-mode)
-    (add-hook 'html-mode-hook 'subword-mode)
-    (setq js-indent-level 2)
-    (setq js2-basic-offset 2))
-#+END_SRC
-*** js2-refactor
-#+BEGIN_SRC emacs-lisp
-  (use-package js2-refactor
-    :bind
-    (:map js2-mode-map
-          ("C-k" . js2r-kill))
-    :config
-    (define-key js2-mode-map (kbd "C-k") #'js2r-kill)
-    (js2r-add-keybindings-with-prefix "C-c C-r"))
-#+END_SRC
 *** Prettier
 Autoformatting
 #+begin_src emacs-lisp
@@ -2846,9 +2821,11 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 ** Go
 *** Go Mode
 #+BEGIN_SRC emacs-lisp
-  (use-package go-mode
+  (use-package go-ts-mode
+    :ensure nil
+    :elpaca nil
     :mode "\\.go\\'"
-    :config
+    :config  
     (add-hook 'before-save-hook 'gofmt-before-save))
 #+END_SRC
 

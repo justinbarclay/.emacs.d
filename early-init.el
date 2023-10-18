@@ -19,9 +19,10 @@
 
 (defun my/tangle-dotfiles ()
   "If the current file is this file, the code blocks are tangled"
+  (interactive)
   (when (equal (buffer-file-name)
    (expand-file-name "~/.emacs.d/README.org"))
-    (org-babel-tangle nil (expand-file-name "~/.emacs.d/init.el"))))
+    (org-babel-tangle '() (expand-file-name "~/.emacs.d/init.el"))))
     ;;(byte-compile-file "~/.emacs.d/init.el")
 (add-hook 'after-save-hook #'my/tangle-dotfiles)
 
