@@ -12,55 +12,59 @@
       user-mail-address "github@justincbarclay.ca")
 
 (defvar elpaca-installer-version 0.5)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil
-                              :files (:defaults (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-       (build (expand-file-name "elpaca/" elpaca-builds-directory))
-       (order (cdr elpaca-order))
-       (default-directory repo))
-  (add-to-list 'load-path (if (file-exists-p build) build repo))
-  (unless (file-exists-p repo)
-    (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
-    (condition-case-unless-debug err
-        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (call-process "git" nil buffer t "clone"
-                                       (plist-get order :repo) repo)))
-                 ((zerop (call-process "git" nil buffer t "checkout"
-                                       (or (plist-get order :ref) "--"))))
-                 (emacs (concat invocation-directory invocation-name))
-                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                 ((require 'elpaca))
-                 ((elpaca-generate-autoloads "elpaca" repo)))
-            (kill-buffer buffer)
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-  (unless (require 'elpaca-autoloads nil t)
-    (require 'elpaca)
-    (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
-(add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
+  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                                :ref "b45a626f784fe3b2a0d49143b3070cb0347f4454"
+                                :pin 't
+                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                                :build (:not elpaca--activate-package)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+         (build (expand-file-name "elpaca/" elpaca-builds-directory))
+         (order (cdr elpaca-order))
+         (default-directory repo))
+    (add-to-list 'load-path (if (file-exists-p build) build repo))
+    (unless (file-exists-p repo)
+      (make-directory repo t)
+      (when (< emacs-major-version 28) (require 'subr-x))
+      (condition-case-unless-debug err
+          (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                   ((zerop (call-process "git" nil buffer t "clone"
+                                         (plist-get order :repo) repo)))
+                   ((zerop (call-process "git" nil buffer t "checkout"
+                                         (or (plist-get order :ref) "--"))))
+                   (emacs (concat invocation-directory invocation-name))
+                   ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                         "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                   ((require 'elpaca))
+                   ((elpaca-generate-autoloads "elpaca" repo)))
+              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+            (error "%s" (with-current-buffer buffer (buffer-string))))
+        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+    (unless (require 'elpaca-autoloads nil t)
+      (require 'elpaca)
+      (elpaca-generate-autoloads "elpaca" repo)
+      (load "./elpaca-autoloads")))
+  (add-hook 'after-init-hook #'elpaca-process-queues)
+  (elpaca `(,@elpaca-order))
 
 ;; Install use-package support
 (elpaca elpaca-use-package
   ;; Enable :elpaca use-package keyword.
   (elpaca-use-package-mode)
+  ;; Assume :elpaca t unless otherwise specified.
   (setq elpaca-use-package-by-default t))
-  (elpaca-wait)
+
+;; Block until current queue processed.
+(elpaca-wait)
 
 (require 'use-package)
   (setq use-package-always-ensure t)
   (setq use-package-verbose nil)
   (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t)
-  
+
 ;;  (use-package bind-key)                ;; if you use any :bind variant
 
 (setq use-package-compute-statistics t)
@@ -956,6 +960,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (go-ts-mode-indent-offset 2)
   :hook (go-ts-mode . (require 'dap-dlv-go)))
 
+(use-package dape
+  :elpaca (:fetcher git
+  :url "https://github.com/svaante/dape"))
+
 (use-package vertico
   :init
   (vertico-mode)
@@ -1664,7 +1672,7 @@ parses its input."
   :ensure nil
   :elpaca nil
   :mode "\\.go\\'"
-  :config  
+  :config
   (add-hook 'before-save-hook 'gofmt-before-save))
 
 (use-package lua-mode)
@@ -1781,6 +1789,56 @@ parses its input."
    ("s-r" . profiler-report)))
 
 (use-package restclient)
+
+(defun git-sync--sentinel-fn (process event)
+  "Sentinel function for the git-sync process."
+  (with-current-buffer (process-buffer process)
+    (ansi-color-apply-on-region (point-min) (point-max))
+    (ansi-osc-apply-on-region (point-min) (point-max))
+    (goto-char (point-min))
+    (special-mode)))
+
+(defun git-sync--execute ()
+  (when-let ((buffer (get-buffer "*git-sync*")))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (special-mode))))
+  (make-process :name "git-sync"
+                :buffer (get-buffer-create "*git-sync*")
+                :command '("git-sync" "-n" "-s")
+                :sentinel 'git-sync--sentinel-fn))
+
+(defun git-sync--allowed-directory (current-file allowed-dirs)
+  "Return t if CURRENT-FILE is in one of the ALLOWED-SUBDIRS."
+  (cl-reduce (lambda (any-p allowed-dir)
+               (or any-p
+                   (string-prefix-p allowed-dir current-file)))
+             allowed-dirs
+             :initial-value nil))
+
+(defun git-sync--global-after-save ()
+  "Run git-sync on-save if the current buffer is in a subdirectory of one of the allowed directories."
+  (when (git-sync--allowed-subdirectory (buffer-file-name))
+    (git-sync--execute)))
+
+(define-minor-mode git-sync-global-mode
+  "A global minor mode to run git-sync."
+  :lighter " git-sync"
+  :global 't
+  :after-hook (if git-sync-mode
+                  (setq-local after-save-hook (cons 'git-sync-after-save-hook after-save-hook))
+                (setq-local after-save-hook (remove 'git-sync-after-save-hook after-save-hook))))
+
+(defun git-sync--after-save ()
+  (git-sync--execute))
+
+(define-minor-mode git-sync-mode
+  "Run git-sync on-save"
+  :lighter " git-sync"
+  (if git-sync-mode
+      (setq-local after-save-hook (cons 'git-sync--after-save after-save-hook))
+    (setq-local after-save-hook (remove 'git-sync--after-save after-save-hook))))
 
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"
