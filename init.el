@@ -1790,6 +1790,12 @@ parses its input."
 
 (use-package restclient)
 
+(defcustom git-sync-allow-list nil
+  "List of directories to sync with git-sync."
+  :type '(repeat directory)
+  :group 'git-sync
+  :safe #'listp)
+
 (defun git-sync--sentinel-fn (process event)
   "Sentinel function for the git-sync process."
   (with-current-buffer (process-buffer process)
@@ -1827,11 +1833,11 @@ parses its input."
   :lighter " git-sync"
   :global 't
   :after-hook (if git-sync-mode
-                  (setq-local after-save-hook (cons 'git-sync-after-save-hook after-save-hook))
-                (setq-local after-save-hook (remove 'git-sync-after-save-hook after-save-hook))))
+                  (setq-local after-save-hook (cons 'git-sync--global-after-save after-save-hook))
+                (setq-local after-save-hook (remove 'git-sync--global-after-save after-save-hook))))
 
 (defun git-sync--after-save ()
-  (git-sync--execute))
+  (async-shell-command "git-sync -n -s"))
 
 (define-minor-mode git-sync-mode
   "Run git-sync on-save"
