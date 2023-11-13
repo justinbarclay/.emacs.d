@@ -1655,8 +1655,6 @@ Load this before we load Flycheck
 * Integrated Debugging
 #+begin_src emacs-lisp
   (use-package dap-mode
-    :custom
-    (go-ts-mode-indent-offset 2)
     :hook (go-ts-mode . (require 'dap-dlv-go)))
 #+end_src
 ** Dape
@@ -2829,6 +2827,8 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
     :ensure nil
     :elpaca nil
     :mode "\\.go\\'"
+    :custom
+    (go-ts-mode-indent-offset 2)
     :config
     (add-hook 'before-save-hook 'gofmt-before-save))
 #+END_SRC

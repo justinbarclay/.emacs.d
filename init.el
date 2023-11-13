@@ -956,8 +956,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   )
 
 (use-package dap-mode
-  :custom
-  (go-ts-mode-indent-offset 2)
   :hook (go-ts-mode . (require 'dap-dlv-go)))
 
 (use-package dape
@@ -1672,6 +1670,8 @@ parses its input."
   :ensure nil
   :elpaca nil
   :mode "\\.go\\'"
+  :custom
+  (go-ts-mode-indent-offset 2)
   :config
   (add-hook 'before-save-hook 'gofmt-before-save))
 
