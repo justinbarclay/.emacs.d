@@ -390,9 +390,17 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 #+END_SRC
 
 *** Org Contrib
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package org-contrib
     :after org)
+#+end_src
+
+*** ox-md
+#+begin_src emacs-lisp
+  (use-package ox-md
+    :after org
+    :ensure nil
+    :elpaca nil)
 #+end_src
 
 *** Org-bullets

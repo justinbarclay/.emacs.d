@@ -139,6 +139,14 @@
                                                             (python . t)
                                                             (ruby . t))))))
 
+(use-package org-contrib
+  :after org)
+
+(use-package ox-md
+  :after org
+  :ensure nil
+  :elpaca nil)
+
 (use-package ob-restclient
   :config
   (org-babel-do-load-languages
