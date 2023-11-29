@@ -3016,7 +3016,7 @@ A better help buffer experience
 #+END_SRC
 ** git-sync
 #+begin_src emacs-lisp
-    (defcustom git-sync-allow-list nil
+  (defcustom git-sync-allow-list nil
     "List of directories to sync with git-sync."
     :type '(repeat directory)
     :group 'git-sync
@@ -3063,7 +3063,7 @@ A better help buffer experience
                   (setq-local after-save-hook (remove 'git-sync--global-after-save after-save-hook))))
 
   (defun git-sync--after-save ()
-    (async-shell-command "git-sync -n -s"))
+    (git-sync--execute))
 
   (define-minor-mode git-sync-mode
     "Run git-sync on-save"

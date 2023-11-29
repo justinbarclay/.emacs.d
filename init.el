@@ -1845,7 +1845,8 @@ parses its input."
                 (setq-local after-save-hook (remove 'git-sync--global-after-save after-save-hook))))
 
 (defun git-sync--after-save ()
-  (async-shell-command "git-sync -n -s"))
+  "Execute git-sync after saving the current buffer."
+  (git-sync--execute))
 
 (define-minor-mode git-sync-mode
   "Run git-sync on-save"
