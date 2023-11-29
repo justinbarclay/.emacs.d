@@ -1645,6 +1645,9 @@ parses its input."
   :mode "Gemfile\\'"
   :mode "Vagrantfile\\'"
   :interpreter "ruby"
+  :bind (:map ruby-ts-mode-map
+              ("C-c r b" . 'ruby-beginning-of-block)
+              ("C-c r e" . 'ruby-end-of-block))
   :hook (ruby-ts-mode . superword-mode)
   :custom (ruby-indent-level 2)
           (ruby-indent-tabs-mode nil))
