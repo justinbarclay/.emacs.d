@@ -393,6 +393,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (add-hook 'eshell-load-hook #'eat-eshell-mode)
   :hook (eat-mode . (lambda () (setq display-line-numbers nil))))
 
+(use-package transient)
+
 ;; Magit is an Emacs interface to Git.
 ;; (It's awesome)
 ;; https://github.com/magit/magit
@@ -1848,7 +1850,6 @@ parses its input."
                 (setq-local after-save-hook (remove 'git-sync--global-after-save after-save-hook))))
 
 (defun git-sync--after-save ()
-  "Execute git-sync after saving the current buffer."
   (git-sync--execute))
 
 (define-minor-mode git-sync-mode

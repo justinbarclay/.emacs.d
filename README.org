@@ -741,6 +741,10 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 ** Magit
+#+begin_src elisp
+(use-package transient)
+#+end_src
+
 #+BEGIN_SRC emacs-lisp
   ;; Magit is an Emacs interface to Git.
   ;; (It's awesome)
