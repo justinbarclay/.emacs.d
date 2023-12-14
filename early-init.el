@@ -2,7 +2,7 @@
 (run-with-idle-timer
  5 nil
  (lambda ()
-   (setq gc-cons-threshold (* 1024 1024 100))
+   (setq-default gc-cons-threshold (* 1024 1024 100))
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 
@@ -54,7 +54,7 @@
                     :family "CaskaydiaCove Nerd Font Mono" :height 170 :weight 'normal)
 
 ;; These settings relate to how emacs interacts with your operating system
-(setq ;; makes killing/yanking interact with the clipboard
+(setq-default ;; makes killing/yanking interact with the clipboard
  select-enable-clipboard t
 
  ;; I'm actually not sure what this does but it's recommended?
@@ -73,7 +73,7 @@
  ;; Mouse yank commands yank at point instead of at click.
  mouse-yank-at-point t)
 
-(setq ring-bell-function 'ignore)
+(setq-default ring-bell-function 'ignore)
 
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -83,18 +83,18 @@
 (setq-default sh-indentation 2)
 
 ;; No need for ~ files when editing
-(setq create-lockfiles nil)
+(setq-default create-lockfiles nil)
 
 ;; Go straight to scratch buffer on startup
-(setq inhibit-startup-message t)
+(setq-default inhibit-startup-message t)
 
 (setq bidi-inhibit-bpa t)
 
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
+(setq-default read-process-output-max (* 1024 1024)) ;; 1mb
 
 (global-display-line-numbers-mode)
 (set-default 'display-line-numbers-type 't)
-(setq display-line-numbers-current-absolute t)
+(set-default 'display-line-numbers-current-absolute 't)
 
 (defun font-name-replace-size (font-name new-size)
   (let ((parts (split-string font-name "-")))

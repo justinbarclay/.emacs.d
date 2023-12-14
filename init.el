@@ -1,15 +1,15 @@
 (setq native-comp-deferred-compilation-deny-list '())
 (setq native-comp-async-report-warnings-errors nil)
 
-(setq
+(setq-default
  lexical-binding t
  load-prefer-newer t)
 
 (defvar doom--file-name-handler-alist file-name-handler-alist)
 (setq file-name-handler-alist nil)
 
-(setq user-full-name "Justin Barclay"
-      user-mail-address "github@justincbarclay.ca")
+(setq-default user-full-name "Justin Barclay"
+              user-mail-address "github@justincbarclay.ca")
 
 (defvar elpaca-installer-version 0.5)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -489,7 +489,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :bind (:map mu4e-headers-mode-map
               ("q" . kill-current-buffer))
   :config
-  (setq mu4e-headers-skip-duplicates  t
+  (setq
+   mu4e-headers-skip-duplicates  t
    mu4e-view-show-images t
    mu4e-view-show-addresses t
    mu4e-compose-format-flowed nil
@@ -551,8 +552,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
               ("<S-right>" . mu4e-headers-unfold-all)))
 
 (use-package elfeed
- :init
- (setq elfeed-feeds
+ :custom
+ (elfeed-feeds
       '(("http://nullprogram.com/feed/" emacs)
         ("https://sachachua.com/blog/feed/" emacs)
         ("https://macowners.club/posts/index.xml" emacs)
@@ -634,15 +635,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package doom-everblush-theme
   :elpaca (doom-everblush-theme :type git :host github :repo "Everblush/doomemacs"))
 
-(use-package doom-themes
-  :init
-  ;; (load-theme 'doom-everblush t)
-  ;; When using doom-themes region is a much better colour for highlighting current line
-  ;; (defface custom-hl-line
-  ;;   '((t (:inherit region :background "#2d2844")))
-  ;;"Customized HL line face")
-  ;;(setq hl-line-face 'custom-hl-line)
-  )
+(use-package doom-themes)
 
 (use-package nerd-icons)
 
@@ -656,11 +649,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 (use-package doom-modeline
-  :elpaca t
-  :init
-  (doom-modeline-mode)
-  :config
-  (setq doom-modeline-buffer-file-name-style 'relative-to-project))
+  :hook
+  (emacs-startup . doom-modeline-mode)
+  :custom
+  (doom-modeline-buffer-file-name-style 'relative-to-project))
 
 (use-package feline
   :config (feline-mode)
@@ -690,6 +682,39 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
     '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
     '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
+
+(use-package ibuffer
+  :ensure nil
+  :elpaca nil
+  :commands (ibuffer-current-buffer
+             ibuffer-find-file
+             ibuffer-do-sort-by-alphabetic)
+  :bind ("C-x C-b" . ibuffer)
+  :init
+  (setq ibuffer-filter-group-name-face '(:inherit (font-lock-string-face bold)))
+  (setq ibuffer-formats '((mark modified read-only locked
+                                " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
+                                " " (size 9 -1 :right)
+                                " " (mode 16 16 :left :elide) " " filename-and-process)
+                          (mark " " (name 16 -1) " " filename)))
+  :config
+  (with-eval-after-load 'consult
+    (defalias 'ibuffer-find-file 'consult-find-file)))
+
+(use-package ibuffer-projectile
+  :init
+  (add-hook 'ibuffer-hook
+            (lambda ()
+              (ibuffer-projectile-set-filter-groups)
+              (unless (eq ibuffer-sorting-mode 'alphabetic)
+                (ibuffer-do-sort-by-alphabetic))))
+  :config
+  (setq ibuffer-projectile-prefix (concat
+                                   (nerd-icons-octicon "nf-oct-file_directory"
+                                                       :face ibuffer-filter-group-name-face
+                                                       :v-adjust 0.1
+                                                       :height 1.0)
+                                   " ")))
 
 (use-package dirvish
   :custom
@@ -742,39 +767,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    ("M-s" . dirvish-setup-menu)
    ("M-e" . dirvish-emerge-menu)
    ("M-j" . dirvish-fd-jump)))
-
-(use-package ibuffer
-  :ensure nil
-  :elpaca nil
-  :commands (ibuffer-current-buffer
-             ibuffer-find-file
-             ibuffer-do-sort-by-alphabetic)
-  :bind ("C-x C-b" . ibuffer)
-  :init
-  (setq ibuffer-filter-group-name-face '(:inherit (font-lock-string-face bold)))
-  (setq ibuffer-formats '((mark modified read-only locked
-                                " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
-                                " " (size 9 -1 :right)
-                                " " (mode 16 16 :left :elide) " " filename-and-process)
-                          (mark " " (name 16 -1) " " filename)))
-  :config
-  (with-eval-after-load 'consult
-    (defalias 'ibuffer-find-file 'consult-find-file)))
-
-(use-package ibuffer-projectile
-  :init
-  (add-hook 'ibuffer-hook
-            (lambda ()
-              (ibuffer-projectile-set-filter-groups)
-              (unless (eq ibuffer-sorting-mode 'alphabetic)
-                (ibuffer-do-sort-by-alphabetic))))
-  :config
-  (setq ibuffer-projectile-prefix (concat
-                                   (nerd-icons-octicon "nf-oct-file_directory"
-                                                       :face ibuffer-filter-group-name-face
-                                                       :v-adjust 0.1
-                                                       :height 1.0)
-                                   " ")))
 
 (use-package exec-path-from-shell
   :if jb/os-macos-p
@@ -1396,9 +1388,7 @@ parses its input."
   (defun my/lsp-mode-setup-completion ()
     (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
           '(orderless)))
-  ;; Disable for now, maybe it's not needed
-  ;;(setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
-  
+
   ;; Optionally configure the first word as flex filtered.
   (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local))
 
@@ -1627,10 +1617,24 @@ parses its input."
   (tagedit-add-paredit-like-keybindings)
   (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 
+(use-package ruby-ts-mode
+  :ensure nil
+  :elpaca nil
+  :mode "\\.rb\\'"
+  :mode "Rakefile\\'"
+  :mode "Gemfile\\'"
+  :mode "Vagrantfile\\'"
+  :interpreter "ruby"
+  :bind (:map ruby-ts-mode-map
+              ("C-c r b" . 'treesit-beginning-of-defun)
+              ("C-c r e" . 'treesit-end-of-defun))
+  :hook (ruby-base-mode . subword-mode)
+  :custom (ruby-indent-level 2)
+          (ruby-indent-tabs-mode nil))
+
 (use-package rbenv
-  :hook (ruby-base-mode . global-rbenv-mode)
   :config
-   (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
+  (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 
 (use-package inf-ruby
   :defer t
@@ -1645,21 +1649,6 @@ parses its input."
       (when (executable-find "pry")
         (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
         (setq inf-ruby-default-implementation "pry"))))
-
-(use-package ruby-ts-mode
-  :ensure nil
-  :elpaca nil
-  :mode "\\.rb\\'"
-  :mode "Rakefile\\'"
-  :mode "Gemfile\\'"
-  :mode "Vagrantfile\\'"
-  :interpreter "ruby"
-  :bind (:map ruby-ts-mode-map
-              ("C-c r b" . 'treesit-beginning-of-defun)
-              ("C-c r e" . 'treesit-end-of-defun))
-  :hook (ruby-ts-mode . superword-mode)
-  :custom (ruby-indent-level 2)
-          (ruby-indent-tabs-mode nil))
 
 (use-package rubocopfmt
   :hook ((ruby-base-mode . rubocopfmt-mode)

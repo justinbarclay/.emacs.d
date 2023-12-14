@@ -29,14 +29,15 @@
   - [[#font][Font]]
   - [[#misc][Misc]]
   - [[#performance][Performance]]
+  - [[#line-numbers][Line Numbers]]
   - [[#theme][Theme]]
   - [[#icons][Icons]]
   - [[#modeline][Modeline]]
-  - [[#line-numbers][Line Numbers]]
   - [[#rainbow-delimiters][Rainbow delimiters]]
+  - [[#ibuffer][ibuffer]]
+- [[#directory-management][Directory Management]]
   - [[#dired][dired]]
   - [[#dirvish][Dirvish]]
-  - [[#ibuffer][ibuffer]]
 - [[#os-specific][OS Specific]]
   - [[#macos][MacOS]]
   - [[#windows][Windows]]
@@ -138,7 +139,7 @@ Reset garbage collection to emacs default after 5s
   (run-with-idle-timer
    5 nil
    (lambda ()
-     (setq gc-cons-threshold (* 1024 1024 100))
+     (setq-default gc-cons-threshold (* 1024 1024 100))
      (message "gc-cons-threshold restored to %S"
               gc-cons-threshold)))
 #+END_SRC
@@ -156,7 +157,7 @@ They are really noisy and annoying right now. And nothing I can deal with.
 
 ** Let's make the Emacs start up run fast
 #+BEGIN_SRC emacs-lisp
-  (setq
+  (setq-default
    lexical-binding t
    load-prefer-newer t)
 #+END_SRC
@@ -182,8 +183,8 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
 #+END_SRC
 ** Personal information
 #+BEGIN_SRC emacs-lisp
-  (setq user-full-name "Justin Barclay"
-        user-mail-address "github@justincbarclay.ca")
+  (setq-default user-full-name "Justin Barclay"
+                user-mail-address "github@justincbarclay.ca")
 #+END_SRC
 
 ** Function for making README.org work
@@ -848,7 +849,8 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :bind (:map mu4e-headers-mode-map
                 ("q" . kill-current-buffer))
     :config
-    (setq mu4e-headers-skip-duplicates  t
+    (setq
+     mu4e-headers-skip-duplicates  t
      mu4e-view-show-images t
      mu4e-view-show-addresses t
      mu4e-compose-format-flowed nil
@@ -919,8 +921,8 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 ** Elfeed
 #+begin_src elisp
   (use-package elfeed
-   :init
-   (setq elfeed-feeds
+   :custom
+   (elfeed-feeds
         '(("http://nullprogram.com/feed/" emacs)
           ("https://sachachua.com/blog/feed/" emacs)
           ("https://macowners.club/posts/index.xml" emacs)
@@ -1053,7 +1055,7 @@ No cursor blinking, it's distracting
 
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
   ;; These settings relate to how emacs interacts with your operating system
-  (setq ;; makes killing/yanking interact with the clipboard
+  (setq-default ;; makes killing/yanking interact with the clipboard
    select-enable-clipboard t
 
    ;; I'm actually not sure what this does but it's recommended?
@@ -1075,7 +1077,7 @@ No cursor blinking, it's distracting
 
 My name isn't "Tinker", so I don't need a bell.
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-(setq ring-bell-function 'ignore)
+(setq-default ring-bell-function 'ignore)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
@@ -1087,10 +1089,10 @@ My name isn't "Tinker", so I don't need a bell.
 (setq-default sh-indentation 2)
 
 ;; No need for ~ files when editing
-(setq create-lockfiles nil)
+(setq-default create-lockfiles nil)
 
 ;; Go straight to scratch buffer on startup
-(setq inhibit-startup-message t)
+(setq-default inhibit-startup-message t)
 #+END_SRC
 
 Note:
@@ -1108,7 +1110,15 @@ We want to unbind ~C-l~ so we can use it later
 ** Performance
 Increase the size of read-process-output-max from default of 4k to 1Mb
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (setq-default read-process-output-max (* 1024 1024)) ;; 1mb
+#+END_SRC
+
+** Line Numbers
+As of Emacs 26.0 we have native, perfomant, support for line numbers
+#+BEGIN_SRC emacs-lisp :tangle early-init.el
+(global-display-line-numbers-mode)
+(set-default 'display-line-numbers-type 't)
+(set-default 'display-line-numbers-current-absolute 't)
 #+END_SRC
 
 ** Theme
@@ -1130,6 +1140,7 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
   ;; load preferred theme
   (load-theme 'lambda-light))
 #+end_src
+*** Catpuccin
 #+begin_src emacs-lisp
 (use-package catppuccin-theme
   :init (load-theme 'catppuccin t))
@@ -1144,15 +1155,7 @@ Increase the size of read-process-output-max from default of 4k to 1Mb
 *** Doom Themes
 Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
-  (use-package doom-themes
-    :init
-    ;; (load-theme 'doom-everblush t)
-    ;; When using doom-themes region is a much better colour for highlighting current line
-    ;; (defface custom-hl-line
-    ;;   '((t (:inherit region :background "#2d2844")))
-    ;;"Customized HL line face")
-    ;;(setq hl-line-face 'custom-hl-line)
-    )
+  (use-package doom-themes)
 #+END_SRC
 
 ** Icons
@@ -1179,11 +1182,10 @@ Let's use Doom's version instead
 *** Doom-modeline
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
-    :elpaca t
-    :init
-    (doom-modeline-mode)
-    :config
-    (setq doom-modeline-buffer-file-name-style 'relative-to-project))
+    :hook
+    (emacs-startup . doom-modeline-mode)
+    :custom
+    (doom-modeline-buffer-file-name-style 'relative-to-project))
 #+END_SRC
 *** Feline
 #+begin_src emacs-lisp
@@ -1202,14 +1204,6 @@ Let's use Doom's version instead
      scheme-mode "🐔")))
 #+end_src
 
-** Line Numbers
-As of Emacs 26.0 we have native, perfomant, support for line numbers
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
-(global-display-line-numbers-mode)
-(set-default 'display-line-numbers-type 't)
-(setq display-line-numbers-current-absolute t)
-#+END_SRC
-
 ** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
@@ -1227,11 +1221,57 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
       '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
       '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
 #+END_SRC
+** ibuffer
+*** ibuffer
+Keybindings
+We're prettying up ibuffer after
+
+This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/master/lisp/init-ibuffer.el (April 12, 2019)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ibuffer
+    :ensure nil
+    :elpaca nil
+    :commands (ibuffer-current-buffer
+               ibuffer-find-file
+               ibuffer-do-sort-by-alphabetic)
+    :bind ("C-x C-b" . ibuffer)
+    :init
+    (setq ibuffer-filter-group-name-face '(:inherit (font-lock-string-face bold)))
+    (setq ibuffer-formats '((mark modified read-only locked
+                                  " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
+                                  " " (size 9 -1 :right)
+                                  " " (mode 16 16 :left :elide) " " filename-and-process)
+                            (mark " " (name 16 -1) " " filename)))
+    :config
+    (with-eval-after-load 'consult
+      (defalias 'ibuffer-find-file 'consult-find-file)))
+#+END_SRC
+
+*** ibuffer-projectile
+#+BEGIN_SRC emacs-lisp
+  (use-package ibuffer-projectile
+    :init
+    (add-hook 'ibuffer-hook
+              (lambda ()
+                (ibuffer-projectile-set-filter-groups)
+                (unless (eq ibuffer-sorting-mode 'alphabetic)
+                  (ibuffer-do-sort-by-alphabetic))))
+    :config
+    (setq ibuffer-projectile-prefix (concat
+                                     (nerd-icons-octicon "nf-oct-file_directory"
+                                                         :face ibuffer-filter-group-name-face
+                                                         :v-adjust 0.1
+                                                         :height 1.0)
+                                     " ")))
+#+END_SRC
+
+* Directory Management
 ** dired
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package dired
-      :ensure nil
-      :elpaca nil
+    :ensure nil
+    :elpaca nil
     :bind (:map dired-mode-map
                 ("RET" . dired-find-alternate-file)
                 ("a" . dired-find-file)))
@@ -1290,51 +1330,6 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
      ("M-e" . dirvish-emerge-menu)
      ("M-j" . dirvish-fd-jump)))
 #+end_src
-
-** ibuffer
-*** ibuffer
-Keybindings
-We're prettying up ibuffer after
-
-This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/master/lisp/init-ibuffer.el (April 12, 2019)
-
-#+BEGIN_SRC emacs-lisp
-  (use-package ibuffer
-    :ensure nil
-    :elpaca nil
-    :commands (ibuffer-current-buffer
-               ibuffer-find-file
-               ibuffer-do-sort-by-alphabetic)
-    :bind ("C-x C-b" . ibuffer)
-    :init
-    (setq ibuffer-filter-group-name-face '(:inherit (font-lock-string-face bold)))
-    (setq ibuffer-formats '((mark modified read-only locked
-                                  " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
-                                  " " (size 9 -1 :right)
-                                  " " (mode 16 16 :left :elide) " " filename-and-process)
-                            (mark " " (name 16 -1) " " filename)))
-    :config
-    (with-eval-after-load 'consult
-      (defalias 'ibuffer-find-file 'consult-find-file)))
-#+END_SRC
-
-*** ibuffer-projectile
-#+BEGIN_SRC emacs-lisp
-  (use-package ibuffer-projectile
-    :init
-    (add-hook 'ibuffer-hook
-              (lambda ()
-                (ibuffer-projectile-set-filter-groups)
-                (unless (eq ibuffer-sorting-mode 'alphabetic)
-                  (ibuffer-do-sort-by-alphabetic))))
-    :config
-    (setq ibuffer-projectile-prefix (concat
-                                     (nerd-icons-octicon "nf-oct-file_directory"
-                                                         :face ibuffer-filter-group-name-face
-                                                         :v-adjust 0.1
-                                                         :height 1.0)
-                                     " ")))
-#+END_SRC
 
 * OS Specific
 ** MacOS
@@ -2683,7 +2678,8 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
   (use-package tsx-ts-mode
     :ensure nil
     :elpaca nil
-    :mode "\\.tsx\\'")
+    :mode "\\.tsx\\'"
+    :config (flycheck-add-mode 'javascript-eslint tsx-ts-mode))
 #+end_src
 
 *** Prettier
@@ -2717,7 +2713,7 @@ Autoformatting
           web-mode-enable-auto-pairing t
           web-mode-enable-comment-keywords t
           web-mode-enable-current-element-highlight t)
-    (flycheck-add-mode 'javascript-eslint 'web-mode))
+          (flycheck-add-mode 'javascript-eslint 'web-mode))
 #+end_src
 
 *** tagedit
@@ -2737,12 +2733,29 @@ Autoformatting
     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 #+END_SRC
 ** Ruby
+*** ruby-mode
+#+BEGIN_SRC emacs-lisp
+  (use-package ruby-ts-mode
+    :ensure nil
+    :elpaca nil
+    :mode "\\.rb\\'"
+    :mode "Rakefile\\'"
+    :mode "Gemfile\\'"
+    :mode "Vagrantfile\\'"
+    :interpreter "ruby"
+    :bind (:map ruby-ts-mode-map
+                ("C-c r b" . 'treesit-beginning-of-defun)
+                ("C-c r e" . 'treesit-end-of-defun))
+    :hook (ruby-base-mode . subword-mode)
+    :custom (ruby-indent-level 2)
+            (ruby-indent-tabs-mode nil))
+#+END_SRC
+
 *** rbenv
 #+BEGIN_SRC emacs-lisp
   (use-package rbenv
-    :hook (ruby-base-mode . global-rbenv-mode)
     :config
-     (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
+    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
 #+END_SRC
 *** inf-ruby
 #+BEGIN_SRC emacs-lisp
@@ -2761,24 +2774,6 @@ Autoformatting
           (setq inf-ruby-default-implementation "pry"))))
 
           #+END_SRC
-
-*** ruby-mode
-#+BEGIN_SRC emacs-lisp
-  (use-package ruby-ts-mode
-    :ensure nil
-    :elpaca nil
-    :mode "\\.rb\\'"
-    :mode "Rakefile\\'"
-    :mode "Gemfile\\'"
-    :mode "Vagrantfile\\'"
-    :interpreter "ruby"
-    :bind (:map ruby-ts-mode-map
-                ("C-c r b" . 'treesit-beginning-of-defun)
-                ("C-c r e" . 'treesit-end-of-defun))
-    :hook (ruby-ts-mode . superword-mode)
-    :custom (ruby-indent-level 2)
-            (ruby-indent-tabs-mode nil))
-#+END_SRC
 
 *** formatter
 #+BEGIN_SRC emacs-lisp
@@ -2900,8 +2895,10 @@ Live preview of MarkDown
 #+END_SRC
 ** NuShell Config
 #+begin_src emacs-lisp
-(use-package nushell-mode
- :elpaca (nushell-mode :type git :host github :repo "azzamsa/emacs-nushell"))
+  (use-package nushell-ts-mode
+    :mode "\\.nu\\'"
+    :config
+    (add-to-list 'treesit-language-source-alist '(nu "https://github.com/nushell/tree-sitter-nu")))
 #+end_src
 ** Terraform
 *** Terraform mode
