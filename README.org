@@ -2334,8 +2334,16 @@ We want automatic fall back and to have manually manage `treesit-language-source
     :if (and (require 'treesit)
              (treesit-available-p))
     :defer 1
+    :commands (make-treesit-auto-recipe)
     :custom
     (treesit-auto-install 'prompt)
+    :init
+    (add-to-list 'treesit-auto-recipe-list (make-treesit-auto-recipe
+                                            :lang 'nu
+                                            :ts-mode 'nushell-ts-mode
+                                            :remap 'nushell-mode
+                                            :url "https://github.com/nushell/tree-sitter-nu"
+                                            :ext "\\.nu\\'"))
     :config
     (global-treesit-auto-mode))
 #+end_src
@@ -2383,13 +2391,13 @@ Better movement through treesitter
            . lsp-deferred)
     (lsp-completion-mode . my/lsp-mode-setup-completion)
     (lsp-mode . lsp-enable-which-key-integration)
-    :config
-    (setq lsp-idle-delay 0.1
-          lsp-log-io nil
-          lsp-completion-provider :none
-          lsp-headerline-breadcrumb-enable nil
-          lsp-solargraph-use-bundler 't)
-          ;;lsp-use-plists 't)
+    :custom
+    (lsp-idle-delay 0.1)
+    (lsp-log-io nil)
+    (lsp-completion-provider :none)
+    (lsp-headerline-breadcrumb-enable nil)
+    (lsp-solargraph-use-bundler 't)
+    (lsp-keymap-prefix "C-c l")
     :init
     (defun my/orderless-dispatch-flex-first (_pattern index _total)
       (and (eq index 0) 'orderless-flex))
@@ -2399,11 +2407,7 @@ Better movement through treesitter
             '(orderless)))
 
     ;; Optionally configure the first word as flex filtered.
-    (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
-
-    ;; Optionally configure the cape-capf-buster.
-    (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
-    (setq lsp-keymap-prefix "C-l"))
+    (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local))
 #+END_SRC
 
 ***** lsp-ui

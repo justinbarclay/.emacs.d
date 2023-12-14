@@ -1343,8 +1343,16 @@ parses its input."
   :if (and (require 'treesit)
            (treesit-available-p))
   :defer 1
+  :commands (make-treesit-auto-recipe)
   :custom
   (treesit-auto-install 'prompt)
+  :init
+  (add-to-list 'treesit-auto-recipe-list (make-treesit-auto-recipe
+                                          :lang 'nu
+                                          :ts-mode 'nushell-ts-mode
+                                          :remap 'nushell-mode
+                                          :url "https://github.com/nushell/tree-sitter-nu"
+                                          :ext "\\.nu\\'"))
   :config
   (global-treesit-auto-mode))
 
@@ -1374,13 +1382,13 @@ parses its input."
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
   (lsp-mode . lsp-enable-which-key-integration)
-  :config
-  (setq lsp-idle-delay 0.1
-        lsp-log-io nil
-        lsp-completion-provider :none
-        lsp-headerline-breadcrumb-enable nil
-        lsp-solargraph-use-bundler 't)
-        ;;lsp-use-plists 't)
+  :custom
+  (lsp-idle-delay 0.1)
+  (lsp-log-io nil)
+  (lsp-completion-provider :none)
+  (lsp-headerline-breadcrumb-enable nil)
+  (lsp-solargraph-use-bundler 't)
+  (lsp-keymap-prefix "C-c l")
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1388,13 +1396,11 @@ parses its input."
   (defun my/lsp-mode-setup-completion ()
     (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
           '(orderless)))
-
+  ;; Disable for now, maybe it's not needed
+  ;;(setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
+  
   ;; Optionally configure the first word as flex filtered.
-  (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
-
-  ;; Optionally configure the cape-capf-buster.
-  (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
-  (setq lsp-keymap-prefix "C-l"))
+  (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -1582,7 +1588,8 @@ parses its input."
 (use-package tsx-ts-mode
   :ensure nil
   :elpaca nil
-  :mode "\\.tsx\\'")
+  :mode "\\.tsx\\'"
+  :config (flycheck-add-mode 'javascript-eslint tsx-ts-mode))
 
 (use-package prettier-js
   :hook ((typescript-ts-base-mode . prettier-js-mode)
@@ -1606,7 +1613,7 @@ parses its input."
         web-mode-enable-auto-pairing t
         web-mode-enable-comment-keywords t
         web-mode-enable-current-element-highlight t)
-  (flycheck-add-mode 'javascript-eslint 'web-mode))
+        (flycheck-add-mode 'javascript-eslint 'web-mode))
 
 (use-package tagedit
  :defer t)
@@ -1716,8 +1723,10 @@ parses its input."
 (use-package powershell
   :mode "\\.ps\\'")
 
-(use-package nushell-mode
- :elpaca (nushell-mode :type git :host github :repo "azzamsa/emacs-nushell"))
+(use-package nushell-ts-mode
+  :mode "\\.nu\\'"
+  :config
+  (add-to-list 'treesit-language-source-alist '(nu "https://github.com/nushell/tree-sitter-nu")))
 
 (use-package terraform-mode
 :mode "\\.tf\\'" )

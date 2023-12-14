@@ -1,5 +1,6 @@
 .cache/
 .cask/
+.DS_STORE
 .lsp-session-v1
 .mc-lists.el
 .org-id-locations
@@ -32,3 +33,7 @@ url
 var
 .extension/
 elpaca/
+tramp
+org-roam.db
+tree-sitter
+history
