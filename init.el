@@ -358,12 +358,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package flycheck-grammarly)
 
-(use-package lsp-grammarly)
-
-(use-package langtool
-  :init
-  (setq langtool-default-language "en-US")
-  (setq langtool-bin "/usr/sbin/languagetool"))
+(use-package lsp-grammarly
+  :custom
+  (lsp-grammarly-dialect "canadian"))
 
 (use-package eshell
   :ensure nil
@@ -1360,17 +1357,18 @@ parses its input."
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode
-          rust-ts-mode
+          rust-base-mode
           rjsx-mode
           web-mode
           ruby-base-mode
           c-mode
-          javascript-ts-mode
+          javascript-base-mode
           typescript-ts-mode
           lua-mode
           jsx-ts-mode
           tsx-ts-mode
-          go-ts-mode)
+          go-base-mode
+          org-mode)
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
   (lsp-mode . lsp-enable-which-key-integration)
@@ -1380,7 +1378,7 @@ parses its input."
   (lsp-completion-provider :none)
   (lsp-headerline-breadcrumb-enable nil)
   (lsp-solargraph-use-bundler 't)
-  (lsp-keymap-prefix "C-c l")
+  (lsp-keymap-prefix "C-l")
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1553,7 +1551,7 @@ parses its input."
                       -1))
     (message "info not found")))
 
-(use-package js-ts-mode
+(use-package js-base-mode
  :ensure nil
  :elpaca nil
  :mode "\\.js\\'"
@@ -1569,11 +1567,6 @@ parses its input."
     (lsp-eslint-enable 't)
     :config
     (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
-
-(use-package typescript-ts-mode
-  :ensure nil
-  :elpaca nil
-  :mode "\\.ts\\'")
 
 (use-package tsx-ts-mode
   :ensure nil

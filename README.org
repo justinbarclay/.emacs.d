@@ -18,7 +18,6 @@
   - [[#use-package][use-package]]
   - [[#org-mode][Org Mode]]
   - [[#grammarly][Grammarly]]
-  - [[#langtool][Langtool]]
   - [[#eshell][EShell]]
   - [[#eat][Eat]]
   - [[#magit][Magit]]
@@ -697,16 +696,10 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 *** lsp
 #+begin_src emacs-lisp
-(use-package lsp-grammarly)
+  (use-package lsp-grammarly
+    :custom
+    (lsp-grammarly-dialect "canadian"))
 #+end_src
-
-** Langtool
-#+BEGIN_SRC emacs-lisp
-  (use-package langtool
-    :init
-    (setq langtool-default-language "en-US")
-    (setq langtool-bin "/usr/sbin/languagetool"))
-#+END_SRC
 
 ** EShell
 #+BEGIN_SRC emacs-lisp
@@ -2372,17 +2365,18 @@ Better movement through treesitter
   (use-package lsp-mode
     :commands lsp
     :hook ((rustic-mode
-            rust-ts-mode
+            rust-base-mode
             rjsx-mode
             web-mode
             ruby-base-mode
             c-mode
-            javascript-ts-mode
+            javascript-base-mode
             typescript-ts-mode
             lua-mode
             jsx-ts-mode
             tsx-ts-mode
-            go-ts-mode)
+            go-base-mode
+            org-mode)
            . lsp-deferred)
     (lsp-completion-mode . my/lsp-mode-setup-completion)
     (lsp-mode . lsp-enable-which-key-integration)
@@ -2392,7 +2386,7 @@ Better movement through treesitter
     (lsp-completion-provider :none)
     (lsp-headerline-breadcrumb-enable nil)
     (lsp-solargraph-use-bundler 't)
-    (lsp-keymap-prefix "C-c l")
+    (lsp-keymap-prefix "C-l")
     :init
     (defun my/orderless-dispatch-flex-first (_pattern index _total)
       (and (eq index 0) 'orderless-flex))
@@ -2417,7 +2411,6 @@ Better movement through treesitter
 :END:
 #+begin_src emacs-lisp
   (use-package eglot
-    :hook (prog-mode . (lambda () (eglot-ensure)))
     :bind (("C-c r" . eglot-rename)
            ("C-c o" . eglot-code-action-organize-imports)
            ("C-c h" . eldoc))
@@ -2645,7 +2638,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 ** JavaScript Land
 *** Javascript
 #+begin_src emacs-lisp
-(use-package js-ts-mode
+(use-package js-base-mode
  :ensure nil
  :elpaca nil
  :mode "\\.js\\'"
@@ -2665,13 +2658,6 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
     (lsp-eslint-enable 't)
     :config
     (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
-#+end_src
-
-#+begin_src emacs-lisp
-  (use-package typescript-ts-mode
-    :ensure nil
-    :elpaca nil
-    :mode "\\.ts\\'")
 #+end_src
 ***  TSX Mode
 #+begin_src emacs-lisp
