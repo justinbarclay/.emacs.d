@@ -680,6 +680,19 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
     '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
 
+(use-package vundo
+  :elpaca (vundo :host github :repo "jdtsmith/vundo" :branch "fix-cleanup")
+  :custom
+  (vundo-glyph-alist vundo-unicode-symbols))
+
+(use-package undo-fu)
+
+(use-package undo-fu-session
+  :init
+  (undo-fu-session-global-mode)
+  :custom
+  (undo-fu-session-file-limit 10))
+
 (use-package ibuffer
   :ensure nil
   :elpaca nil

@@ -33,6 +33,7 @@
   - [[#icons][Icons]]
   - [[#modeline][Modeline]]
   - [[#rainbow-delimiters][Rainbow delimiters]]
+  - [[#undo][undo]]
   - [[#ibuffer][ibuffer]]
 - [[#directory-management][Directory Management]]
   - [[#dired][dired]]
@@ -1214,6 +1215,30 @@ Let's use Doom's version instead
       '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
       '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
 #+END_SRC
+** undo
+*** Vundo
+Sometimes you have to quickly jump through you undo-history
+#+begin_src emacs-lisp
+  (use-package vundo
+    :elpaca (vundo :host github :repo "jdtsmith/vundo" :branch "fix-cleanup")
+    :custom
+    (vundo-glyph-alist vundo-unicode-symbols))
+#+end_src
+
+*** undo-fu
+#+begin_src emacs-lisp
+(use-package undo-fu)
+#+end_src
+*** undo-fu-sessions
+And sometimes you want that undo-history to persist over a couple of days
+#+begin_src emacs-lisp
+  (use-package undo-fu-session
+    :init
+    (undo-fu-session-global-mode)
+    :custom
+    (undo-fu-session-file-limit 10))
+#+end_src
+
 ** ibuffer
 *** ibuffer
 Keybindings
