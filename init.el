@@ -72,6 +72,14 @@
 
 (use-package gnu-elpa-keyring-update)
 
+(defmacro use-feature (name &rest args)
+  "Like `use-package' but accounting for asynchronous installation.
+  NAME and ARGS are in `use-package'."
+  (declare (indent defun))
+  `(use-package ,name
+     :elpaca nil
+     ,@args))
+
 (use-package org
   :defer t
   :bind
@@ -1802,6 +1810,14 @@ parses its input."
           "Decode and browse a UN*X man page." t)
         (autoload 'woman-find-file "woman"
           "Find, decode and browse a specific UN*X man-page file." t)))
+
+(add-hook 'elpaca-after-init-hook
+          (lambda ()
+            (message "Emacs loaded in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract (current-time) before-init-time)))
+                     gcs-done)))
 
 (use-package esup
   :commands (esup))

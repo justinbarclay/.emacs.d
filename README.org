@@ -295,6 +295,17 @@ In almost all cases you don't need to manually specify :defer t. This is implied
 #+BEGIN_SRC emacs-lisp
 (use-package gnu-elpa-keyring-update)
 #+END_SRC
+*** Supporting built in features
+As stolen from [[https://github.com/progfolio/.emacs.d/blob/cff07d4454d327a4df1915a2cdf8ac6bc5dfde23/init.org?plain=1#L276][progfolio]]
+#+begin_src elisp
+(defmacro use-feature (name &rest args)
+  "Like `use-package' but accounting for asynchronous installation.
+  NAME and ARGS are in `use-package'."
+  (declare (indent defun))
+  `(use-package ,name
+     :elpaca nil
+     ,@args))
+#+end_src
 
 *** Debugging
 The :disabled keyword can turn off a module you're having difficulties with, or stop loading something you're not using at the present time:
@@ -3027,6 +3038,17 @@ A better help buffer experience
             "Find, decode and browse a specific UN*X man-page file." t)))
 #+END_SRC
 ** Profiling
+This function displays how long Emacs took to start. It’s a rough way of knowing when/if I need to optimize my init file.
+#+begin_src elisp
+(add-hook 'elpaca-after-init-hook
+          (lambda ()
+            (message "Emacs loaded in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract (current-time) before-init-time)))
+                     gcs-done)))
+#+end_src
+
 *** Esup
 #+BEGIN_SRC emacs-lisp
 (use-package esup
