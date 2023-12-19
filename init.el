@@ -109,8 +109,8 @@
   (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                (concat org-directory "/work/calendar.org")
                                (concat org-directory "/personal/tasks.org")
-                               (concat org-directory "/work/tasks.org")))
-  (setq org-todo-keywords
+                               (concat org-directory "/work/tasks.org"))
+        org-todo-keywords
         '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
           ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
@@ -120,8 +120,8 @@
           ("DONE" :foreground "forest green" :weight regular)
           ("WAITING" :foreground "orange" :weight regular)
           ("BLOCKED" :foreground "magenta" :weight regular)
-          ("CANCELLED" :foreground "forest green" :weight regular)))
-  (setq org-log-into-drawer 't
+          ("CANCELLED" :foreground "forest green" :weight regular))
+        org-log-into-drawer 't
         org-startup-truncated nil
         org-default-notes-file (concat org-directory "/notes.org")
         org-export-html-postamble nil
@@ -155,6 +155,12 @@
 
 (use-package toc-org
   :hook (org-mode . toc-org-mode))
+
+(use-package svg-tag-mode)
+
+(use-package org-modern-indent
+  :elpaca (:type git :host github :repo "jdtsmith/org-modern-indent")
+  :hook (org-mode . org-modern-indent-mode))
 
 (use-package org-re-reveal)
 
@@ -891,7 +897,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (setq-default tab-width 2)
 
-(setq c-basic-offset 2)
+(setq-default c-basic-offset 2)
 
 (save-place-mode 1)
 ;; keep track of saved places in ~/.emacs.d/places
@@ -902,6 +908,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
 (setq auto-save-default nil)
+
+(setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
 
 )
 
@@ -1872,14 +1880,6 @@ parses its input."
   (find-file "~/.emacs.d/README.org"))
 
 (global-set-key (kbd "C-c i") 'open-config-file)
-
-;; use 4 spaces for tabs
-(defun die-tabs ()
-  (interactive)
-  (set-variable 'tab-width 2)
-  (mark-whole-buffer)
-  (untabify (region-beginning) (region-end))
-  (keyboard-quit))
 
 (defun sudo-save ()
   (interactive)

@@ -61,6 +61,7 @@
   - [[#save-place-in-file][Save place in file]]
   - [[#comment-or-uncomment-region][Comment or Uncomment region]]
   - [[#backups][Backups]]
+  - [[#disable-superfluous-warnings][Disable Superfluous warnings]]
   - [[#end-emacs-specific-config][end emacs specific config]]
   - [[#parens-balancing][Parens Balancing]]
   - [[#whitespace][Whitespace]]
@@ -115,7 +116,6 @@
   - [[#allow-for-clojure-style-comment-blocks][Allow for clojure style comment blocks]]
   - [[#resize-font-size][Resize font size]]
   - [[#open-init][Open init]]
-  - [[#replace-tabs][Replace tabs]]
   - [[#sudo-save][Sudo Save]]
   - [[#rename-buffer-and-file][Rename buffer and file]]
   - [[#stats][Stats]]
@@ -359,8 +359,8 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
     (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                  (concat org-directory "/work/calendar.org")
                                  (concat org-directory "/personal/tasks.org")
-                                 (concat org-directory "/work/tasks.org")))
-    (setq org-todo-keywords
+                                 (concat org-directory "/work/tasks.org"))
+          org-todo-keywords
           '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
             ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
@@ -370,8 +370,8 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
             ("DONE" :foreground "forest green" :weight regular)
             ("WAITING" :foreground "orange" :weight regular)
             ("BLOCKED" :foreground "magenta" :weight regular)
-            ("CANCELLED" :foreground "forest green" :weight regular)))
-    (setq org-log-into-drawer 't
+            ("CANCELLED" :foreground "forest green" :weight regular))
+          org-log-into-drawer 't
           org-startup-truncated nil
           org-default-notes-file (concat org-directory "/notes.org")
           org-export-html-postamble nil
@@ -450,8 +450,15 @@ You can also use @ as separator, instead of _.
     :hook (org-mode . toc-org-mode))
 #+END_SRC
 *** SVG Tag Mode
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package svg-tag-mode)
+#+end_src
+
+*** Org modern Indent
+#+begin_src emacs-lisp
+  (use-package org-modern-indent
+    :elpaca (:type git :host github :repo "jdtsmith/org-modern-indent")
+    :hook (org-mode . org-modern-indent-mode))
 #+end_src
 
 *** Org-re-reveal
@@ -1558,7 +1565,7 @@ General config to make editing text feel nice
 #+BEGIN_SRC emacs-lisp
   (setq-default tab-width 2)
 
-  (setq c-basic-offset 2)
+  (setq-default c-basic-offset 2)
 #+END_SRC
 
 ** Save place in file
@@ -1579,6 +1586,11 @@ Emacs can automatically create backup files. This tells Emacs to put all backups
                                                  "backups"))))
   (setq auto-save-default nil)
 #+END_SRC
+** Disable Superfluous warnings
+#+begin_src emacs-lisp
+  (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
+#+end_src
+
 ** end emacs specific config
 #+begin_src emacs-lisp
 )
@@ -2423,7 +2435,6 @@ Better movement through treesitter
     ;; Optionally configure the first word as flex filtered.
     (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local))
 #+END_SRC
-
 ***** lsp-ui
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-ui
@@ -3146,16 +3157,7 @@ DELTA should be a multiple of 10, in the units used by the
   (global-set-key (kbd "C-c i") 'open-config-file)
 #+end_src
 
-** Replace tabs
-#+BEGIN_SRC emacs-lisp
-  ;; use 4 spaces for tabs
-  (defun die-tabs ()
-    (interactive)
-    (set-variable 'tab-width 2)
-    (mark-whole-buffer)
-    (untabify (region-beginning) (region-end))
-    (keyboard-quit))
-#+END_SRC
+
 ** Sudo Save
 For saving root protected files
 #+begin_src emacs-lisp
