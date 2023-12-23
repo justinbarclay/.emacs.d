@@ -77,6 +77,7 @@
   NAME and ARGS are in `use-package'."
   (declare (indent defun))
   `(use-package ,name
+     :ensure nil
      :elpaca nil
      ,@args))
 
@@ -244,9 +245,7 @@ This function is called by `org-babel-execute-src-block'"
                                              (cdr info)))
         (message "I'm sorry, I can only generate curl commands for a restclient block."))))
 
-(use-package org-agenda
-  :ensure nil
-  :elpaca nil
+(use-feature org-agenda
   :config
   (defun air-org-skip-subtree-if-priority (priority)
     "Skip an agenda subtree if it has a priority of PRIORITY.
@@ -376,9 +375,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :custom
   (lsp-grammarly-dialect "canadian"))
 
-(use-package eshell
-  :ensure nil
-  :elpaca nil
+(use-feature eshell
   :config
   (progn
     (eval-after-load 'esh-opt

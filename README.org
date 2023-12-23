@@ -303,6 +303,7 @@ As stolen from [[https://github.com/progfolio/.emacs.d/blob/cff07d4454d327a4df19
   NAME and ARGS are in `use-package'."
   (declare (indent defun))
   `(use-package ,name
+     :ensure nil
      :elpaca nil
      ,@args))
 #+end_src
@@ -562,9 +563,7 @@ as such need both of these modes loaded before they'll work.
 This section includes tooling for organizing ones work or personal life. Generally the tools and setup is pretty straight forward but should that not be the case I'll add more details about the purpose and how to use.
 **** Org Agenda customizations
 #+BEGIN_SRC emacs-lisp
-  (use-package org-agenda
-    :ensure nil
-    :elpaca nil
+  (use-feature org-agenda
     :config
     (defun air-org-skip-subtree-if-priority (priority)
       "Skip an agenda subtree if it has a priority of PRIORITY.
@@ -722,9 +721,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 
 ** EShell
 #+BEGIN_SRC emacs-lisp
-(use-package eshell
-  :ensure nil
-  :elpaca nil
+(use-feature eshell
   :config
   (progn
     (eval-after-load 'esh-opt
