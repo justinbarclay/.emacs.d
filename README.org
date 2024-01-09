@@ -21,6 +21,7 @@
   - [[#eshell][EShell]]
   - [[#eat][Eat]]
   - [[#magit][Magit]]
+  - [[#jsonrpc][jsonrpc]]
   - [[#email-mu4e][Email (mu4e)]]
   - [[#elfeed][Elfeed]]
 - [[#look-and-feel][Look and Feel]]
@@ -172,7 +173,7 @@ Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-d
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
 
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
-  (setq package-enable-at-startup nil)
+  ;;(setq package-enable-at-startup nil)
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq load-prefer-newer t)
   (setq package-archives
@@ -212,14 +213,13 @@ Let's describe some variables to help determine how to configure Emacs
 I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
 
 ** Bootstrapping elpaca
-#+begin_src emacs-lisp
-  (defvar elpaca-installer-version 0.5)
+#+begin_src emacs-lisp :tangle nil
+  (defvar elpaca-installer-version 0.6)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
   (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                                :ref "b45a626f784fe3b2a0d49143b3070cb0347f4454"
-                                :pin 't
+                                :ref nil
                                 :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                                 :build (:not elpaca--activate-package)))
   (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
@@ -251,15 +251,15 @@ I've decided to experiment with a completely new package manager. The main purpo
   (add-hook 'after-init-hook #'elpaca-process-queues)
   (elpaca `(,@elpaca-order))
 
-;; Install use-package support
-(elpaca elpaca-use-package
-  ;; Enable :elpaca use-package keyword.
-  (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
-  (setq elpaca-use-package-by-default t))
+  ;; Install use-package support
+  (elpaca elpaca-use-package
+    ;; Enable :elpaca use-package keyword.
+    (elpaca-use-package-mode)
+    ;; Assume :elpaca t unless otherwise specified.
+    (setq elpaca-use-package-by-default t))
 
-;; Block until current queue processed.
-(elpaca-wait)
+  ;; Block until current queue processed.
+  (elpaca-wait)
 #+end_src
 
 * Tent Pole
@@ -304,7 +304,6 @@ As stolen from [[https://github.com/progfolio/.emacs.d/blob/cff07d4454d327a4df19
   (declare (indent defun))
   `(use-package ,name
      :ensure nil
-     :elpaca nil
      ,@args))
 #+end_src
 
@@ -413,7 +412,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
   (use-package ox-md
     :after org
     :ensure nil
-    :elpaca nil)
+    )
 #+end_src
 
 *** Org-bullets
@@ -469,7 +468,7 @@ You can also use @ as separator, instead of _.
 *** Org modern Indent
 #+begin_src emacs-lisp
   (use-package org-modern-indent
-    :elpaca (:type git :host github :repo "jdtsmith/org-modern-indent")
+    :vc (:url "https://github.com/jdtsmith/org-modern-indent")
     :hook (org-mode . org-modern-indent-mode))
 #+end_src
 
@@ -844,14 +843,15 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+begin_src emacs-lisp
 (use-package git-link)
 #+end_src
+** jsonrpc
+#+begin_src emacs-lisp
+(use-package jsonrpc)
+#+end_src
 
 ** Email (mu4e)
 #+begin_src emacs-lisp
   (use-package mu4e
     :ensure nil
-    :elpaca nil
-    ;; :ensure-system-package mu
-    ;; :ensure-system-package (mbsync . isync)
     :commands (mu4e)
     :functions (mu4e--server-filter)
     :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
@@ -888,10 +888,13 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (display-line-numbers-mode -1))
 #+end_src
 
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (26012 22994 467924 635000) :init (26012 22994 467902 873000) :init-secs (0 0 105 148000) :use-package-secs (0 0 137 433000)))
+
 *** Mu4e Dashboard
 #+begin_src emacs-lisp
   (use-package mu4e-dashboard
-    :elpaca (:type git :host github :repo "rougier/mu4e-dashboard")
+    :vc (:url "https://github.com/rougier/mu4e-dashboard")
     :bind ("C-c d" . mu4e-dashboard)
     :hook
     (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
@@ -903,10 +906,10 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 *** Mu4e Theading
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package mu4e-thread-folding
     :after mu4e
-    :elpaca (:type git :host github :repo "rougier/mu4e-thread-folding")
+    :vc (:url "https://github.com/rougier/mu4e-thread-folding")
     :init
     (add-to-list 'mu4e-header-info-custom
                  '(:empty . (:name "Empty"
@@ -1132,13 +1135,13 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 
 ** Theme
 *** Elegant Emacs
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package nano-theme
     :elpaca (nano-theme :type git :host github :repo "rougier/nano-theme"))
 #+end_src
 
 *** Lambda Themes
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package lambda-themes
   :elpaca (:type git :host github :repo "lambda-emacs/lambda-themes")
   :custom
@@ -1156,7 +1159,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+end_src
 
 *** Add on doom theme
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package doom-everblush-theme
     :elpaca (doom-everblush-theme :type git :host github :repo "Everblush/doomemacs"))
 #+end_src
@@ -1235,7 +1238,6 @@ Let's use Doom's version instead
 Sometimes you have to quickly jump through you undo-history
 #+begin_src emacs-lisp
   (use-package vundo
-    :elpaca (vundo :host github :repo "jdtsmith/vundo" :branch "fix-cleanup")
     :custom
     (vundo-glyph-alist vundo-unicode-symbols))
 #+end_src
@@ -1264,7 +1266,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 #+BEGIN_SRC emacs-lisp
   (use-package ibuffer
     :ensure nil
-    :elpaca nil
+    
     :commands (ibuffer-current-buffer
                ibuffer-find-file
                ibuffer-do-sort-by-alphabetic)
@@ -1304,7 +1306,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package dired
     :ensure nil
-    :elpaca nil
+    
     :bind (:map dired-mode-map
                 ("RET" . dired-find-alternate-file)
                 ("a" . dired-find-file)))
@@ -1404,7 +1406,7 @@ Ensure that buffers have unique file names
 #+BEGIN_SRC emacs-lisp
 (use-package uniquify
   :ensure nil
-  :elpaca nil
+  
   :config
   (setq uniquify-buffer-name-style 'forward))
 #+END_SRC
@@ -1413,7 +1415,7 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 #+BEGIN_SRC emacs-lisp
   (use-package recentf
     :ensure nil
-    :elpaca nil
+    
     :init
     (recentf-mode)
     :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -1538,7 +1540,7 @@ General config to make editing text feel nice
 #+begin_src emacs-lisp
 (use-package emacs
   :ensure nil
-  :elpaca nil
+  
   :config
 #+end_src
 ** Buffer Encoding
@@ -1615,8 +1617,7 @@ Config
 #+begin_src emacs-lisp
   (use-package smartparens-config
    :after smartparens
-   :ensure nil
-   :elpaca nil)
+   :ensure nil)
 #+end_src
 
 ** Whitespace
@@ -1690,7 +1691,6 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package flyspell
     :ensure nil
-    :elpaca nil
     :hook ((prog-mode . flyspell-prog-mode)
            (text-mode . flyspell-mode))
     ;; :config (setq flyspell-issue-message-flag nil)
@@ -1703,7 +1703,7 @@ Load this before we load Flycheck
     :hook (go-ts-mode . (require 'dap-dlv-go)))
 #+end_src
 ** Dape
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package dape
     :elpaca (:fetcher git
     :url "https://github.com/svaante/dape"))
@@ -1719,7 +1719,6 @@ Load this before we load Flycheck
     (vertico-mode)
     :bind (:map vertico-map
                 ("<escape>" . #'keyboard-escape-quit))
-    :elpaca (vertico :files (:defaults "extensions/*"))
     :config
     (vertico-multiform-mode)
 
@@ -1777,7 +1776,7 @@ Save minibuffer history for better integration with orderless
 #+begin_src emacs-lisp
   (use-package savehist
     :ensure nil
-    :elpaca nil
+    
     :init
     (savehist-mode))
 #+end_src
@@ -2269,7 +2268,6 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 :END:
 #+begin_src emacs-lisp
   (use-package corfu
-    :elpaca (corfu :files (:defaults "extensions/*"))
     :init
     (global-corfu-mode)
     :hook (corfu-mode . corfu-popupinfo-mode)
@@ -2342,7 +2340,7 @@ Things are always better when they are prettier, let's add icons to our in buffe
     :after yasnippet)
 #+end_src
 **** Yasnippet capf
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package yasnippet-capf
     :commands yas-capf-minor-mode
     :elpaca (:type git :host github :repo "justinbarclay/yasnippet-capf")
@@ -2356,7 +2354,7 @@ Major mode customizations
 #+begin_src emacs-lisp
   (use-package treesit
     :ensure nil
-    :elpaca nil
+    
     :config
     (setq-default treesit-font-lock-level 4))
 #+end_src
@@ -2391,9 +2389,10 @@ Better movement through treesitter
 
 ** General Intellisense
 *** copilot
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package copilot
-    :elpaca (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+    :after jsonrpc
+    :vc (copilot :url "https://github.com/zerolfx/copilot.el")
     :hook (prog-mode . copilot-mode)
     :bind (:map copilot-completion-map
                 ("<tab>" . 'copilot-accept-completion)
@@ -2467,7 +2466,7 @@ Better movement through treesitter
 #+begin_src emacs-lisp
   (use-package css-mode
     :ensure nil
-    :elpaca nil
+    
     :config
     (setq css-indent-offset 2))
 #+end_src
@@ -2475,7 +2474,7 @@ Better movement through treesitter
 #+begin_src emacs-lisp
   (use-package less-css-mode
     :ensure nil
-    :elpaca nil
+    
     :hook (less-css-mode . flycheck-mode)
     :config
     (setq css-indent-offset 2))
@@ -2497,7 +2496,7 @@ Better movement through treesitter
 #+BEGIN_SRC emacs-lisp
   (use-package c-mode
     :ensure nil
-    :elpaca nil
+    
     :config
     (progn ; C mode hook
       (add-hook 'c-mode-hook 'flycheck-mode)))
@@ -2507,7 +2506,7 @@ c++
 #+BEGIN_SRC emacs-lisp
   (use-package c++-mode
       :ensure nil
-      :elpaca nil)
+      )
 #+END_SRC
 
 *** c-eldoc
@@ -2558,7 +2557,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 #+BEGIN_SRC emacs-lisp
   (use-package eldoc
     :ensure nil
-    :elpaca nil
+    
     :config
     (global-eldoc-mode))
 #+END_SRC
@@ -2567,7 +2566,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 #+BEGIN_SRC emacs-lisp
   (use-package elisp-mode
       :ensure nil
-      :elpaca nil
+      
     :init
     (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 #+END_SRC
@@ -2684,7 +2683,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 #+begin_src emacs-lisp
 (use-package js-base-mode
  :ensure nil
- :elpaca nil
+ 
  :mode "\\.js\\'"
  :custom
  (js-indent-level 2)
@@ -2696,7 +2695,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 #+begin_src emacs-lisp
 (use-package typescript-ts-base-mode
     :ensure nil
-    :elpaca nil
+    
     :custom
     (typescript-indent-level 2)
     (lsp-eslint-enable 't)
@@ -2707,7 +2706,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 #+begin_src emacs-lisp
   (use-package tsx-ts-mode
     :ensure nil
-    :elpaca nil
+    
     :mode "\\.tsx\\'"
     :config (flycheck-add-mode 'javascript-eslint tsx-ts-mode))
 #+end_src
@@ -2755,7 +2754,7 @@ Autoformatting
 #+BEGIN_SRC emacs-lisp
   (use-package sgml-mode
     :ensure nil
-    :elpaca nil
+    
     :after tagedit
     :config
     (require 'tagedit)
@@ -2767,7 +2766,7 @@ Autoformatting
 #+BEGIN_SRC emacs-lisp
   (use-package ruby-ts-mode
     :ensure nil
-    :elpaca nil
+    
     :mode "\\.rb\\'"
     :mode "Rakefile\\'"
     :mode "Gemfile\\'"
@@ -2843,7 +2842,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 (use-package evcxr-mode
    :defer t
    :ensure nil
-   :elpaca nil
+   
    :config (add-hook 'rustic-mode-hook 'evcxr-minor-mode)
    :quelpa ((evcxr
              :fetcher git
@@ -2870,7 +2869,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+BEGIN_SRC emacs-lisp
   (use-package go-ts-mode
     :ensure nil
-    :elpaca nil
+    
     :mode "\\.go\\'"
     :custom
     (go-ts-mode-indent-offset 2)
@@ -2956,7 +2955,7 @@ Live preview of MarkDown
 #+BEGIN_SRC emacs-lisp
   (use-package rst
     :ensure nil
-    :elpaca nil
+    
     :mode (("\\.txt$" . rst-mode)
            ("\\.rst$" . rst-mode)
            ("\\.rest$" . rst-mode)))
@@ -2967,7 +2966,7 @@ Live preview of MarkDown
 #+begin_src emacs-lisp
 (use-package tramp
   :ensure nil
-  :elpaca nil
+  
   :custom
   (tramp-default-method "ssh")
   (tramp-copy-size-limit nil))
@@ -2996,7 +2995,7 @@ Live preview of MarkDown
 ** 1Password
 #+begin_src emacs-lisp
   (use-package 1password
-    :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main")
+    :vc (1password :url "https://github.com/justinbarclay/1password.el" :branch "main")
     :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
     :custom
     (1password-results-formatter '1password-colour-formatter)
@@ -3025,7 +3024,7 @@ A better help buffer experience
 #+BEGIN_SRC emacs-lisp
   (use-package woman
     :ensure nil
-    :elpaca nil
+    
     :config
     (progn (setq woman-manpath
                 (split-string (shell-command-to-string "man --path") ":" t "\n"))
@@ -3055,7 +3054,7 @@ This function displays how long Emacs took to start. It’s a rough way of knowi
 #+BEGIN_SRC emacs-lisp
   (use-package profiler
     :ensure nil
-    :elpaca nil
+    
     :bind
     (("s-l" . profiler-start)
      ("s-r" . profiler-report)))

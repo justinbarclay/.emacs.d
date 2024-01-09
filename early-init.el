@@ -9,7 +9,7 @@
 (setq custom-file (expand-file-name "customs.el" user-emacs-directory))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
 
-(setq package-enable-at-startup nil)
+;;(setq package-enable-at-startup nil)
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq load-prefer-newer t)
 (setq package-archives

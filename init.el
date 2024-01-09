@@ -11,54 +11,6 @@
 (setq-default user-full-name "Justin Barclay"
               user-mail-address "github@justincbarclay.ca")
 
-(defvar elpaca-installer-version 0.5)
-  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                                :ref "b45a626f784fe3b2a0d49143b3070cb0347f4454"
-                                :pin 't
-                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                                :build (:not elpaca--activate-package)))
-  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-         (build (expand-file-name "elpaca/" elpaca-builds-directory))
-         (order (cdr elpaca-order))
-         (default-directory repo))
-    (add-to-list 'load-path (if (file-exists-p build) build repo))
-    (unless (file-exists-p repo)
-      (make-directory repo t)
-      (when (< emacs-major-version 28) (require 'subr-x))
-      (condition-case-unless-debug err
-          (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                   ((zerop (call-process "git" nil buffer t "clone"
-                                         (plist-get order :repo) repo)))
-                   ((zerop (call-process "git" nil buffer t "checkout"
-                                         (or (plist-get order :ref) "--"))))
-                   (emacs (concat invocation-directory invocation-name))
-                   ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                         "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                   ((require 'elpaca))
-                   ((elpaca-generate-autoloads "elpaca" repo)))
-              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-            (error "%s" (with-current-buffer buffer (buffer-string))))
-        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-    (unless (require 'elpaca-autoloads nil t)
-      (require 'elpaca)
-      (elpaca-generate-autoloads "elpaca" repo)
-      (load "./elpaca-autoloads")))
-  (add-hook 'after-init-hook #'elpaca-process-queues)
-  (elpaca `(,@elpaca-order))
-
-;; Install use-package support
-(elpaca elpaca-use-package
-  ;; Enable :elpaca use-package keyword.
-  (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
-  (setq elpaca-use-package-by-default t))
-
-;; Block until current queue processed.
-(elpaca-wait)
-
 (require 'use-package)
   (setq use-package-always-ensure t)
   (setq use-package-verbose nil)
@@ -78,7 +30,6 @@
   (declare (indent defun))
   `(use-package ,name
      :ensure nil
-     :elpaca nil
      ,@args))
 
 (use-package org
@@ -154,7 +105,7 @@
 (use-package ox-md
   :after org
   :ensure nil
-  :elpaca nil)
+  )
 
 (use-package ob-restclient
   :config
@@ -168,7 +119,7 @@
 (use-package svg-tag-mode)
 
 (use-package org-modern-indent
-  :elpaca (:type git :host github :repo "jdtsmith/org-modern-indent")
+  :vc (:url "https://github.com/jdtsmith/org-modern-indent")
   :hook (org-mode . org-modern-indent-mode))
 
 (use-package org-re-reveal)
@@ -486,11 +437,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package git-link)
 
+(use-package jsonrpc)
+
 (use-package mu4e
   :ensure nil
-  :elpaca nil
-  ;; :ensure-system-package mu
-  ;; :ensure-system-package (mbsync . isync)
   :commands (mu4e)
   :functions (mu4e--server-filter)
   :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
@@ -527,7 +477,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (display-line-numbers-mode -1))
 
 (use-package mu4e-dashboard
-  :elpaca (:type git :host github :repo "rougier/mu4e-dashboard")
+  :vc (:url "https://github.com/rougier/mu4e-dashboard")
   :bind ("C-c d" . mu4e-dashboard)
   :hook
   (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
@@ -536,28 +486,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :config
   (display-line-numbers-mode -1)
   (flyspell-mode -1))
-
-(use-package mu4e-thread-folding
-  :after mu4e
-  :elpaca (:type git :host github :repo "rougier/mu4e-thread-folding")
-  :init
-  (add-to-list 'mu4e-header-info-custom
-               '(:empty . (:name "Empty"
-                           :shortname ""
-                           :function (lambda (msg) "  "))))
-  :custom
-  (mu4e-headers-fields '((:empty         .    2)
-                         (:human-date    .   12)
-                         (:flags         .    6)
-                         (:mailing-list  .   10)
-                         (:from          .   22)
-                         (:subject       .   nil)))
-  :bind (:map mu4e-headers-mode-map
-              ("<tab>"     . mu4e-headers-toggle-at-point)
-              ("<left>"    . mu4e-headers-fold-at-point)
-              ("<S-left>"  . mu4e-headers-fold-all)
-              ("<right>"   . mu4e-headers-unfold-at-point)
-              ("<S-right>" . mu4e-headers-unfold-all)))
 
 (use-package elfeed
  :custom
@@ -624,24 +552,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (keymap-global-unset "C-l")
 
-(use-package nano-theme
-  :elpaca (nano-theme :type git :host github :repo "rougier/nano-theme"))
-
-(use-package lambda-themes
-  :elpaca (:type git :host github :repo "lambda-emacs/lambda-themes")
-  :custom
-  (lambda-themes-set-italic-comments nil)
-  (lambda-themes-set-italic-keywords nil)
-  (lambda-themes-set-variable-pitch nil)
-  :config
-  ;; load preferred theme
-  (load-theme 'lambda-light))
-
 (use-package catppuccin-theme
   :init (load-theme 'catppuccin t))
-
-(use-package doom-everblush-theme
-  :elpaca (doom-everblush-theme :type git :host github :repo "Everblush/doomemacs"))
 
 (use-package doom-themes)
 
@@ -692,7 +604,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
 
 (use-package vundo
-  :elpaca (vundo :host github :repo "jdtsmith/vundo" :branch "fix-cleanup")
   :custom
   (vundo-glyph-alist vundo-unicode-symbols))
 
@@ -706,7 +617,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package ibuffer
   :ensure nil
-  :elpaca nil
+
   :commands (ibuffer-current-buffer
              ibuffer-find-file
              ibuffer-do-sort-by-alphabetic)
@@ -815,13 +726,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package uniquify
   :ensure nil
-  :elpaca nil
+  
   :config
   (setq uniquify-buffer-name-style 'forward))
 
 (use-package recentf
   :ensure nil
-  :elpaca nil
+
   :init
   (recentf-mode)
   :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -882,7 +793,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package emacs
   :ensure nil
-  :elpaca nil
+  
   :config
 
 (prefer-coding-system 'utf-8)
@@ -924,8 +835,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package smartparens-config
  :after smartparens
- :ensure nil
- :elpaca nil)
+ :ensure nil)
 
 (use-package ws-butler
   :commands (ws-butler-mode)
@@ -974,7 +884,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package flyspell
   :ensure nil
-  :elpaca nil
   :hook ((prog-mode . flyspell-prog-mode)
          (text-mode . flyspell-mode))
   ;; :config (setq flyspell-issue-message-flag nil)
@@ -983,16 +892,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package dap-mode
   :hook (go-ts-mode . (require 'dap-dlv-go)))
 
-(use-package dape
-  :elpaca (:fetcher git
-  :url "https://github.com/svaante/dape"))
-
 (use-package vertico
   :init
   (vertico-mode)
   :bind (:map vertico-map
               ("<escape>" . #'keyboard-escape-quit))
-  :elpaca (vertico :files (:defaults "extensions/*"))
   :config
   (vertico-multiform-mode)
 
@@ -1046,7 +950,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package savehist
   :ensure nil
-  :elpaca nil
+
   :init
   (savehist-mode))
 
@@ -1298,7 +1202,6 @@ parses its input."
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package corfu
-  :elpaca (corfu :files (:defaults "extensions/*"))
   :init
   (global-corfu-mode)
   :hook (corfu-mode . corfu-popupinfo-mode)
@@ -1342,15 +1245,9 @@ parses its input."
 (use-package yasnippet-snippets
   :after yasnippet)
 
-(use-package yasnippet-capf
-  :commands yas-capf-minor-mode
-  :elpaca (:type git :host github :repo "justinbarclay/yasnippet-capf")
-  :init
-  (add-hook 'yas-minor-mode-hook #'yas-capf-minor-mode))
-
 (use-package treesit
   :ensure nil
-  :elpaca nil
+
   :config
   (setq-default treesit-font-lock-level 4))
 
@@ -1370,15 +1267,6 @@ parses its input."
                                           :ext "\\.nu\\'"))
   :config
   (global-treesit-auto-mode))
-
-(use-package copilot
-  :elpaca (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
-              ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word)))
 
 (use-package lsp-mode
   :commands lsp
@@ -1422,13 +1310,13 @@ parses its input."
 
 (use-package css-mode
   :ensure nil
-  :elpaca nil
+
   :config
   (setq css-indent-offset 2))
 
 (use-package less-css-mode
   :ensure nil
-  :elpaca nil
+
   :hook (less-css-mode . flycheck-mode)
   :config
   (setq css-indent-offset 2))
@@ -1442,14 +1330,14 @@ parses its input."
 
 (use-package c-mode
   :ensure nil
-  :elpaca nil
+
   :config
   (progn ; C mode hook
     (add-hook 'c-mode-hook 'flycheck-mode)))
 
 (use-package c++-mode
     :ensure nil
-    :elpaca nil)
+    )
 
 (use-package c-eldoc)
 
@@ -1481,13 +1369,13 @@ parses its input."
 
 (use-package eldoc
   :ensure nil
-  :elpaca nil
+
   :config
   (global-eldoc-mode))
 
 (use-package elisp-mode
     :ensure nil
-    :elpaca nil
+
   :init
   (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
 
@@ -1579,7 +1467,7 @@ parses its input."
 
 (use-package js-base-mode
  :ensure nil
- :elpaca nil
+ 
  :mode "\\.js\\'"
  :custom
  (js-indent-level 2)
@@ -1587,7 +1475,7 @@ parses its input."
 
 (use-package typescript-ts-base-mode
     :ensure nil
-    :elpaca nil
+    
     :custom
     (typescript-indent-level 2)
     (lsp-eslint-enable 't)
@@ -1596,7 +1484,7 @@ parses its input."
 
 (use-package tsx-ts-mode
   :ensure nil
-  :elpaca nil
+
   :mode "\\.tsx\\'"
   :config (flycheck-add-mode 'javascript-eslint tsx-ts-mode))
 
@@ -1629,7 +1517,7 @@ parses its input."
 
 (use-package sgml-mode
   :ensure nil
-  :elpaca nil
+
   :after tagedit
   :config
   (require 'tagedit)
@@ -1638,7 +1526,7 @@ parses its input."
 
 (use-package ruby-ts-mode
   :ensure nil
-  :elpaca nil
+
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
@@ -1696,7 +1584,7 @@ parses its input."
 
 (use-package go-ts-mode
   :ensure nil
-  :elpaca nil
+
   :mode "\\.go\\'"
   :custom
   (go-ts-mode-indent-offset 2)
@@ -1749,14 +1637,14 @@ parses its input."
 
 (use-package rst
   :ensure nil
-  :elpaca nil
+
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
 
 (use-package tramp
   :ensure nil
-  :elpaca nil
+  
   :custom
   (tramp-default-method "ssh")
   (tramp-copy-size-limit nil))
@@ -1779,7 +1667,7 @@ parses its input."
       (setq alert-default-style 'burnt-toast))
 
 (use-package 1password
-  :elpaca (1password :host github :repo "justinbarclay/1password.el" :branch "main")
+  :vc (1password :url "https://github.com/justinbarclay/1password.el" :branch "main")
   :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
   :custom
   (1password-results-formatter '1password-colour-formatter)
@@ -1799,7 +1687,7 @@ parses its input."
 
 (use-package woman
   :ensure nil
-  :elpaca nil
+
   :config
   (progn (setq woman-manpath
               (split-string (shell-command-to-string "man --path") ":" t "\n"))
@@ -1821,7 +1709,7 @@ parses its input."
 
 (use-package profiler
   :ensure nil
-  :elpaca nil
+
   :bind
   (("s-l" . profiler-start)
    ("s-r" . profiler-report)))
