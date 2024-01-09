@@ -118,6 +118,9 @@
 
 (use-package svg-tag-mode)
 
+(use-package org-modern
+  :hook (org-mode . org-modern-mode))
+
 (use-package org-modern-indent
   :vc (:url "https://github.com/jdtsmith/org-modern-indent")
   :hook (org-mode . org-modern-indent-mode))
@@ -443,7 +446,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :ensure nil
   :commands (mu4e)
   :functions (mu4e--server-filter)
-  :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
   :bind (:map mu4e-headers-mode-map
               ("q" . kill-current-buffer))
   :config
@@ -457,7 +459,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    mu4e-change-filenames-when-moving t
    mu4e-attachments-dir "~/Downloads"
    mu4e-use-fancy-chars 't
-   mu4e-maildir       "~/Maildir"   ;; top-level Maildir
+   mu4e-maildir       "~/Maildir/fastmail/"   ;; top-level Maildir
    ;; note that these folders below must start with /
    ;; the paths are relative to maildir root
    mu4e-refile-folder "/Archive"
@@ -486,6 +488,28 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :config
   (display-line-numbers-mode -1)
   (flyspell-mode -1))
+
+(use-package mu4e-thread-folding
+  :vc (:url "https://github.com/rougier/mu4e-thread-folding")
+  :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
+  :config
+  (add-to-list 'mu4e-header-info-custom
+               '(:empty . (:name "Empty"
+                           :shortname ""
+                           :function (lambda (msg) "  "))))
+  :custom
+  (mu4e-headers-fields '((:empty         .    2)
+                         (:human-date    .   12)
+                         (:flags         .    6)
+                         (:mailing-list  .   10)
+                         (:from          .   22)
+                         (:subject       .   nil)))
+  :bind (:map mu4e-headers-mode-map
+              ("<tab>"     . mu4e-headers-toggle-at-point)
+              ("<left>"    . mu4e-headers-fold-at-point)
+              ("<S-left>"  . mu4e-headers-fold-all)
+              ("<right>"   . mu4e-headers-unfold-at-point)
+              ("<S-right>" . mu4e-headers-unfold-all)))
 
 (use-package elfeed
  :custom

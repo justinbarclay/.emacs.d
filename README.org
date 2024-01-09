@@ -154,7 +154,8 @@ They are really noisy and annoying right now. And nothing I can deal with.
 ** Move customizations to their own file
 #+begin_src emacs-lisp :tangle early-init.el
 (setq custom-file (expand-file-name "customs.el" user-emacs-directory))
-(add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
+
+(add-hook 'after-init-hook (lambda () (load custom-file 'noerror)))
 #+end_src
 
 ** Let's make the Emacs start up run fast
@@ -464,6 +465,11 @@ You can also use @ as separator, instead of _.
 *** SVG Tag Mode
 #+begin_src emacs-lisp
   (use-package svg-tag-mode)
+#+end_src
+*** Org Modern
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :hook (org-mode . org-modern-mode))
 #+end_src
 
 *** Org modern Indent
@@ -855,7 +861,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :ensure nil
     :commands (mu4e)
     :functions (mu4e--server-filter)
-    :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
     :bind (:map mu4e-headers-mode-map
                 ("q" . kill-current-buffer))
     :config
@@ -869,7 +874,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
      mu4e-change-filenames-when-moving t
      mu4e-attachments-dir "~/Downloads"
      mu4e-use-fancy-chars 't
-     mu4e-maildir       "~/Maildir"   ;; top-level Maildir
+     mu4e-maildir       "~/Maildir/fastmail/"   ;; top-level Maildir
      ;; note that these folders below must start with /
      ;; the paths are relative to maildir root
      mu4e-refile-folder "/Archive"
@@ -889,9 +894,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (display-line-numbers-mode -1))
 #+end_src
 
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (26012 22994 467924 635000) :init (26012 22994 467902 873000) :init-secs (0 0 105 148000) :use-package-secs (0 0 137 433000)))
-
 *** Mu4e Dashboard
 #+begin_src emacs-lisp
   (use-package mu4e-dashboard
@@ -907,11 +909,11 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 *** Mu4e Theading
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package mu4e-thread-folding
-    :after mu4e
     :vc (:url "https://github.com/rougier/mu4e-thread-folding")
-    :init
+    :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
+    :config
     (add-to-list 'mu4e-header-info-custom
                  '(:empty . (:name "Empty"
                              :shortname ""
