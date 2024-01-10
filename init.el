@@ -486,6 +486,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :custom
   (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
   :config
+  (defun mu4e-dashboard-edit ()
+    (interactive)
+    (make-indirect-buffer (current-buffer) "*edit-mu4e-dashboard*")
+    (switch-to-buffer-other-window (get-buffer "*edit-mu4e-dashboard*")))
   (display-line-numbers-mode -1)
   (flyspell-mode -1))
 
