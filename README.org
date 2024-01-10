@@ -472,13 +472,6 @@ You can also use @ as separator, instead of _.
     :hook (org-mode . org-modern-mode))
 #+end_src
 
-*** Org modern Indent
-#+begin_src emacs-lisp
-  (use-package org-modern-indent
-    :vc (:url "https://github.com/jdtsmith/org-modern-indent")
-    :hook (org-mode . org-modern-indent-mode))
-#+end_src
-
 *** Org-re-reveal
 Creating presentation using org mode and the web
 #+BEGIN_SRC emacs-lisp

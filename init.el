@@ -121,10 +121,6 @@
 (use-package org-modern
   :hook (org-mode . org-modern-mode))
 
-(use-package org-modern-indent
-  :vc (:url "https://github.com/jdtsmith/org-modern-indent")
-  :hook (org-mode . org-modern-indent-mode))
-
 (use-package org-re-reveal)
 
 (use-package org-tree-slide
