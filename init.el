@@ -484,8 +484,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :config
   (defun mu4e-dashboard-edit ()
     (interactive)
-    (make-indirect-buffer (current-buffer) "*edit-mu4e-dashboard*")
-    (switch-to-buffer-other-window (get-buffer "*edit-mu4e-dashboard*")))
+    (let ((edit-buffer "*edit-mu4e-dashboard*"))
+      (when (get-buffer "*edit-mu4e-dashboard*")
+        (kill-buffer (get-buffer "*edit-mu4e-dashboard*")))
+      (make-indirect-buffer (current-buffer) "*edit-mu4e-dashboard*")
+      (switch-to-buffer-other-window (get-buffer "*edit-mu4e-dashboard*"))))
   (display-line-numbers-mode -1)
   (flyspell-mode -1))
 

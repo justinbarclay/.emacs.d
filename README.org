@@ -899,14 +899,14 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :config
     (defun mu4e-dashboard-edit ()
       (interactive)
-      (make-indirect-buffer (current-buffer) "*edit-mu4e-dashboard*")
-      (switch-to-buffer-other-window (get-buffer "*edit-mu4e-dashboard*")))
+      (let ((edit-buffer "*edit-mu4e-dashboard*"))
+        (when (get-buffer "*edit-mu4e-dashboard*")
+          (kill-buffer (get-buffer "*edit-mu4e-dashboard*")))
+        (make-indirect-buffer (current-buffer) "*edit-mu4e-dashboard*")
+        (switch-to-buffer-other-window (get-buffer "*edit-mu4e-dashboard*"))))
     (display-line-numbers-mode -1)
     (flyspell-mode -1))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (26014 11403 453901 0) :init (26014 11403 412178 0) :init-secs (0 0 439 0) :use-package-secs (0 0 42303 0) :config (26014 11403 412144 0) :config-secs (0 0 263 0)))
 
 *** Mu4e Theading
 #+begin_src emacs-lisp
