@@ -102,10 +102,8 @@
 (use-package org-contrib
   :after org)
 
-(use-package ox-md
-  :after org
-  :ensure nil
-  )
+(use-feature ox-md
+  :after org)
 
 (use-package ob-restclient
   :config
@@ -438,8 +436,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package jsonrpc)
 
-(use-package mu4e
-  :ensure nil
+(use-feature mu4e
   :commands (mu4e)
   :functions (mu4e--server-filter)
   :bind (:map mu4e-headers-mode-map
@@ -642,9 +639,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :custom
   (undo-fu-session-file-limit 10))
 
-(use-package ibuffer
-  :ensure nil
-
+(use-feature ibuffer
   :commands (ibuffer-current-buffer
              ibuffer-find-file
              ibuffer-do-sort-by-alphabetic)
@@ -751,15 +746,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     :config
     (envrc-global-mode)))
 
-(use-package uniquify
-  :ensure nil
-  
+(use-feature uniquify
   :config
   (setq uniquify-buffer-name-style 'forward))
 
-(use-package recentf
-  :ensure nil
-
+(use-feature recentf
   :init
   (recentf-mode)
   :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -819,8 +810,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package rg)
 
 (use-package emacs
-  :ensure nil
-  
+  :ensure nil  
   :config
 
 (prefer-coding-system 'utf-8)
@@ -860,9 +850,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook (prog-mode . smartparens-mode)
   :bind (:map smartparens-mode-map ("M-<backspace>" . 'backward-kill-word)))
 
-(use-package smartparens-config
- :after smartparens
- :ensure nil)
+(use-feature smartparens-config
+  :after smartparens)
 
 (use-package ws-butler
   :commands (ws-butler-mode)
@@ -913,8 +902,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         (eval-after-load 'flycheck
           (flycheck-pos-tip-mode))))
 
-(use-package flyspell
-  :ensure nil
+(use-feature flyspell
   :hook ((prog-mode . flyspell-prog-mode)
          (text-mode . flyspell-mode))
   ;; :config (setq flyspell-issue-message-flag nil)
@@ -979,9 +967,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                 (+vertico-transform-functions . +completion-category-highlight-files))
           (multi-category (+vertico-transform-functions . +completion-category-truncate-files)))))
 
-(use-package savehist
-  :ensure nil
-
+(use-feature savehist
   :init
   (savehist-mode))
 
@@ -1276,9 +1262,7 @@ parses its input."
 (use-package yasnippet-snippets
   :after yasnippet)
 
-(use-package treesit
-  :ensure nil
-
+(use-feature treesit
   :config
   (setq-default treesit-font-lock-level 4))
 
@@ -1339,15 +1323,11 @@ parses its input."
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
-(use-package css-mode
-  :ensure nil
-
+(use-feature css-mode
   :config
   (setq css-indent-offset 2))
 
-(use-package less-css-mode
-  :ensure nil
-
+(use-feature less-css-mode
   :hook (less-css-mode . flycheck-mode)
   :config
   (setq css-indent-offset 2))
@@ -1359,16 +1339,12 @@ parses its input."
 (use-package sass-mode
   :mode "\\.sass\\'")
 
-(use-package c-mode
-  :ensure nil
-
+(use-feature c-ts-base-mode
   :config
   (progn ; C mode hook
     (add-hook 'c-mode-hook 'flycheck-mode)))
 
-(use-package c++-mode
-    :ensure nil
-    )
+(use-feature c++-ts-mode)
 
 (use-package c-eldoc)
 
@@ -1398,17 +1374,12 @@ parses its input."
  :init
  (setq parinfer-rust-auto-download nil))
 
-(use-package eldoc
-  :ensure nil
-
+(use-feature eldoc
   :config
   (global-eldoc-mode))
 
-(use-package elisp-mode
-    :ensure nil
-
-  :init
-  (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
+(use-feature elisp-mode
+  :hook (emacs-lisp . enable-paredit))
 
 ;; clojure refactor library
 ;; https://github.com/clojure-emacs/clj-refactor.el
@@ -1504,18 +1475,14 @@ parses its input."
  (js-indent-level 2)
  (lsp-eslint-enable 't))
 
-(use-package typescript-ts-base-mode
-    :ensure nil
-    
-    :custom
-    (typescript-indent-level 2)
-    (lsp-eslint-enable 't)
-    :config
-    (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
+(use-feature typescript-ts-base-mode    
+  :custom
+  (typescript-indent-level 2)
+  (lsp-eslint-enable 't)
+  :config
+  (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 
-(use-package tsx-ts-mode
-  :ensure nil
-
+(use-feature tsx-ts-mode
   :mode "\\.tsx\\'"
   :config (flycheck-add-mode 'javascript-eslint tsx-ts-mode))
 
@@ -1546,18 +1513,14 @@ parses its input."
 (use-package tagedit
  :defer t)
 
-(use-package sgml-mode
-  :ensure nil
-
+(use-feature sgml-mode
   :after tagedit
   :config
   (require 'tagedit)
   (tagedit-add-paredit-like-keybindings)
   (add-hook 'html-mode-hook (lambda () (tagedit-mode 1))))
 
-(use-package ruby-ts-mode
-  :ensure nil
-
+(use-feature ruby-ts-mode
   :mode "\\.rb\\'"
   :mode "Rakefile\\'"
   :mode "Gemfile\\'"
@@ -1613,9 +1576,7 @@ parses its input."
 (use-package nixpkgs-fmt
  :hook (nix-mode . nixpkgs-fmt-on-save-mode))
 
-(use-package go-ts-mode
-  :ensure nil
-
+(use-feature go-ts-mode
   :mode "\\.go\\'"
   :custom
   (go-ts-mode-indent-offset 2)
@@ -1666,16 +1627,12 @@ parses its input."
 
 ;; (use-package sqlint)
 
-(use-package rst
-  :ensure nil
-
+(use-feature rst
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
 
-(use-package tramp
-  :ensure nil
-  
+(use-feature tramp
   :custom
   (tramp-default-method "ssh")
   (tramp-copy-size-limit nil))
@@ -1716,9 +1673,7 @@ parses its input."
   :defer 't
   :init (which-key-mode))
 
-(use-package woman
-  :ensure nil
-
+(use-feature woman
   :config
   (progn (setq woman-manpath
               (split-string (shell-command-to-string "man --path") ":" t "\n"))
@@ -1738,9 +1693,7 @@ parses its input."
 (use-package esup
   :commands (esup))
 
-(use-package profiler
-  :ensure nil
-
+(use-feature profiler
   :bind
   (("s-l" . profiler-start)
    ("s-r" . profiler-report)))

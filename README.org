@@ -411,10 +411,8 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 
 *** ox-md
 #+begin_src emacs-lisp
-  (use-package ox-md
-    :after org
-    :ensure nil
-    )
+  (use-feature ox-md
+    :after org)
 #+end_src
 
 *** Org-bullets
@@ -850,8 +848,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 
 ** Email (mu4e)
 #+begin_src emacs-lisp
-  (use-package mu4e
-    :ensure nil
+  (use-feature mu4e
     :commands (mu4e)
     :functions (mu4e--server-filter)
     :bind (:map mu4e-headers-mode-map
@@ -1267,9 +1264,7 @@ We're prettying up ibuffer after
 This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/master/lisp/init-ibuffer.el (April 12, 2019)
 
 #+BEGIN_SRC emacs-lisp
-  (use-package ibuffer
-    :ensure nil
-    
+  (use-feature ibuffer
     :commands (ibuffer-current-buffer
                ibuffer-find-file
                ibuffer-do-sort-by-alphabetic)
@@ -1307,8 +1302,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 * Directory Management
 ** dired
 #+BEGIN_SRC emacs-lisp :tangle no
-  (use-package dired
-    :ensure nil
+  (use-feature dired
     :bind (:map dired-mode-map
                 ("RET" . dired-find-alternate-file)
                 ("a" . dired-find-file)))
@@ -1406,18 +1400,14 @@ Currently turned off due to debugging issues
 ** Uniquify
 Ensure that buffers have unique file names
 #+BEGIN_SRC emacs-lisp
-(use-package uniquify
-  :ensure nil
-  
+(use-feature uniquify
   :config
   (setq uniquify-buffer-name-style 'forward))
 #+END_SRC
 ** Recentf
 Turn on recent file mode so that you can more easily switch to recently edited files when you first start emacs
 #+BEGIN_SRC emacs-lisp
-  (use-package recentf
-    :ensure nil
-    
+  (use-feature recentf
     :init
     (recentf-mode)
     :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -1541,8 +1531,7 @@ Allows one to switch to a buffer based by using numbers, instead of cycling with
 General config to make editing text feel nice
 #+begin_src emacs-lisp
 (use-package emacs
-  :ensure nil
-  
+  :ensure nil  
   :config
 #+end_src
 ** Buffer Encoding
@@ -1617,9 +1606,8 @@ Emacs can automatically create backup files. This tells Emacs to put all backups
 
 Config
 #+begin_src emacs-lisp
-  (use-package smartparens-config
-   :after smartparens
-   :ensure nil)
+  (use-feature smartparens-config
+    :after smartparens)
 #+end_src
 
 ** Whitespace
@@ -1698,8 +1686,7 @@ Load this before we load Flycheck
 
 ** Flyspell
 #+BEGIN_SRC emacs-lisp
-  (use-package flyspell
-    :ensure nil
+  (use-feature flyspell
     :hook ((prog-mode . flyspell-prog-mode)
            (text-mode . flyspell-mode))
     ;; :config (setq flyspell-issue-message-flag nil)
@@ -1783,9 +1770,7 @@ Load this before we load Flycheck
 ***** savehist
 Save minibuffer history for better integration with orderless
 #+begin_src emacs-lisp
-  (use-package savehist
-    :ensure nil
-    
+  (use-feature savehist
     :init
     (savehist-mode))
 #+end_src
@@ -2361,9 +2346,7 @@ Things are always better when they are prettier, let's add icons to our in buffe
 Major mode customizations
 ** Tree Sitter support
 #+begin_src emacs-lisp
-  (use-package treesit
-    :ensure nil
-    
+  (use-feature treesit
     :config
     (setq-default treesit-font-lock-level 4))
 #+end_src
@@ -2473,17 +2456,13 @@ Better movement through treesitter
 ** CSS/LESS/SASS
 *** CSS
 #+begin_src emacs-lisp
-  (use-package css-mode
-    :ensure nil
-    
+  (use-feature css-mode
     :config
     (setq css-indent-offset 2))
 #+end_src
 *** Less
 #+begin_src emacs-lisp
-  (use-package less-css-mode
-    :ensure nil
-    
+  (use-feature less-css-mode
     :hook (less-css-mode . flycheck-mode)
     :config
     (setq css-indent-offset 2))
@@ -2503,9 +2482,7 @@ Better movement through treesitter
 ** C/C++
 *** Add hooks and customizations
 #+BEGIN_SRC emacs-lisp
-  (use-package c-mode
-    :ensure nil
-    
+  (use-feature c-ts-base-mode
     :config
     (progn ; C mode hook
       (add-hook 'c-mode-hook 'flycheck-mode)))
@@ -2513,9 +2490,7 @@ Better movement through treesitter
 
 c++
 #+BEGIN_SRC emacs-lisp
-  (use-package c++-mode
-      :ensure nil
-      )
+  (use-feature c++-ts-mode)
 #+END_SRC
 
 *** c-eldoc
@@ -2564,20 +2539,15 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 
 **** eldoc
 #+BEGIN_SRC emacs-lisp
-  (use-package eldoc
-    :ensure nil
-    
+  (use-feature eldoc
     :config
     (global-eldoc-mode))
 #+END_SRC
 *** Elisp
 **** elisp-mode
 #+BEGIN_SRC emacs-lisp
-  (use-package elisp-mode
-      :ensure nil
-      
-    :init
-    (add-hook 'emacs-lisp-mode-hook (lambda () (enable-paredit))))
+  (use-feature elisp-mode
+    :hook (emacs-lisp . enable-paredit))
 #+END_SRC
 
 *** Clojure
@@ -2702,9 +2672,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 *** Typescript
 
 #+begin_src emacs-lisp
-(use-package typescript-ts-base-mode
-    :ensure nil
-    
+  (use-feature typescript-ts-base-mode    
     :custom
     (typescript-indent-level 2)
     (lsp-eslint-enable 't)
@@ -2713,9 +2681,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 #+end_src
 ***  TSX Mode
 #+begin_src emacs-lisp
-  (use-package tsx-ts-mode
-    :ensure nil
-    
+  (use-feature tsx-ts-mode
     :mode "\\.tsx\\'"
     :config (flycheck-add-mode 'javascript-eslint tsx-ts-mode))
 #+end_src
@@ -2761,9 +2727,7 @@ Autoformatting
 #+END_SRC
 *** sgml-mode
 #+BEGIN_SRC emacs-lisp
-  (use-package sgml-mode
-    :ensure nil
-    
+  (use-feature sgml-mode
     :after tagedit
     :config
     (require 'tagedit)
@@ -2773,9 +2737,7 @@ Autoformatting
 ** Ruby
 *** ruby-mode
 #+BEGIN_SRC emacs-lisp
-  (use-package ruby-ts-mode
-    :ensure nil
-    
+  (use-feature ruby-ts-mode
     :mode "\\.rb\\'"
     :mode "Rakefile\\'"
     :mode "Gemfile\\'"
@@ -2876,9 +2838,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 ** Go
 *** Go Mode
 #+BEGIN_SRC emacs-lisp
-  (use-package go-ts-mode
-    :ensure nil
-    
+  (use-feature go-ts-mode
     :mode "\\.go\\'"
     :custom
     (go-ts-mode-indent-offset 2)
@@ -2962,9 +2922,7 @@ Live preview of MarkDown
 #+END_SRC
 ** Text modes
 #+BEGIN_SRC emacs-lisp
-  (use-package rst
-    :ensure nil
-    
+  (use-feature rst
     :mode (("\\.txt$" . rst-mode)
            ("\\.rst$" . rst-mode)
            ("\\.rest$" . rst-mode)))
@@ -2973,9 +2931,7 @@ Live preview of MarkDown
 * Communication
 ** Tramp
 #+begin_src emacs-lisp
-(use-package tramp
-  :ensure nil
-  
+(use-feature tramp
   :custom
   (tramp-default-method "ssh")
   (tramp-copy-size-limit nil))
@@ -3031,9 +2987,7 @@ A better help buffer experience
 
 ** Woman
 #+BEGIN_SRC emacs-lisp
-  (use-package woman
-    :ensure nil
-    
+  (use-feature woman
     :config
     (progn (setq woman-manpath
                 (split-string (shell-command-to-string "man --path") ":" t "\n"))
@@ -3061,9 +3015,7 @@ This function displays how long Emacs took to start. It’s a rough way of knowi
 #+END_SRC
 *** profiler
 #+BEGIN_SRC emacs-lisp
-  (use-package profiler
-    :ensure nil
-    
+  (use-feature profiler
     :bind
     (("s-l" . profiler-start)
      ("s-r" . profiler-report)))
