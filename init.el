@@ -1612,9 +1612,7 @@ parses its input."
   :mode "\\.ps\\'")
 
 (use-package nushell-ts-mode
-  :mode "\\.nu\\'"
-  :config
-  (add-to-list 'treesit-language-source-alist '(nu "https://github.com/nushell/tree-sitter-nu")))
+  :mode "\\.nu\\'")
 
 (use-package terraform-mode
 :mode "\\.tf\\'" )
