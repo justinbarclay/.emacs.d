@@ -490,7 +490,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (flyspell-mode -1))
 
 (use-package mu4e-thread-folding
-  :vc (:url "https://github.com/rougier/mu4e-thread-folding")
+  :vc (:url "https://github.com/rougier/mu4e-thread-folding" :branch "master")
   :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
   :config
   (add-to-list 'mu4e-header-info-custom

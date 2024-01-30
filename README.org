@@ -937,7 +937,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 *** Mu4e Theading
 #+begin_src emacs-lisp
   (use-package mu4e-thread-folding
-    :vc (:url "https://github.com/rougier/mu4e-thread-folding")
+    :vc (:url "https://github.com/rougier/mu4e-thread-folding" :branch "master")
     :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
     :config
     (add-to-list 'mu4e-header-info-custom
@@ -2877,7 +2877,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 
 ** Lua
 #+begin_src emacs-lisp
-(use-package lua-mode)
+  (use-package lua-mode)
 #+end_src
 
 ** JSON
