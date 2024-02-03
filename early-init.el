@@ -10,7 +10,7 @@
 
 (add-hook 'after-init-hook (lambda () (load custom-file 'noerror)))
 
-;;(setq package-enable-at-startup nil)
+(setq package-enable-at-startup nil)
 (setq package-user-dir "~/.emacs.d/elpa")
 (setq load-prefer-newer t)
 (setq package-archives

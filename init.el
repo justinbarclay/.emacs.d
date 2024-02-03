@@ -11,6 +11,53 @@
 (setq-default user-full-name "Justin Barclay"
               user-mail-address "github@justincbarclay.ca")
 
+(defvar elpaca-installer-version 0.6)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                 ((zerop (call-process "git" nil buffer t "clone"
+                                       (plist-get order :repo) repo)))
+                 ((zerop (call-process "git" nil buffer t "checkout"
+                                       (or (plist-get order :ref) "--"))))
+                 (emacs (concat invocation-directory invocation-name))
+                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                 ((require 'elpaca))
+                 ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+
+;; Install use-package support
+(elpaca elpaca-use-package
+        ;; Enable :elpaca use-package keyword.
+        (elpaca-use-package-mode)
+        ;; Assume :elpaca t unless otherwise specified.
+        (setq elpaca-use-package-by-default t))
+
+;; Block until current queue processed.
+(elpaca-wait)
+
 (require 'use-package)
   (setq use-package-always-ensure t)
   (setq use-package-verbose nil)
@@ -30,7 +77,23 @@
   (declare (indent defun))
   `(use-package ,name
      :ensure nil
+     :elpaca nil
      ,@args))
+
+(defun +elpaca-unload-seq (e)
+  (and (featurep 'seq) (unload-feature 'seq t))
+  (elpaca--continue-build e))
+
+;; You could embed this code directly in the reicpe, I just abstracted it into a function.
+(defun +elpaca-seq-build-steps ()
+  (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
+                       elpaca--pre-built-steps elpaca-build-steps))
+          (list '+elpaca-unload-seq 'elpaca--activate-package)))
+
+(use-package seq
+  :init
+  (require 'seq)
+  :elpaca `(seq :build ,(+elpaca-seq-build-steps)))
 
 (use-package org
   :defer t
@@ -103,6 +166,7 @@
   :after org)
 
 (use-feature ox-md
+  :elpaca nil
   :after org)
 
 (use-package ob-restclient
@@ -434,10 +498,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package git-link)
 
+(use-package pos-tip)
+
 (use-package jsonrpc)
 
 (use-feature mu4e
-  :commands (mu4e)
   :functions (mu4e--server-filter)
   :bind (:map mu4e-headers-mode-map
               ("q" . kill-current-buffer))
@@ -471,8 +536,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
   (display-line-numbers-mode -1))
 
+(push 'mu4e elpaca-ignored-dependencies)
 (use-package mu4e-dashboard
-  :vc (:url "https://github.com/rougier/mu4e-dashboard")
+  :elpaca (:type git :host github :repo "rougier/mu4e-dashboard")
   :bind ("C-c d" . mu4e-dashboard)
   :hook
   (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
@@ -490,7 +556,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (flyspell-mode -1))
 
 (use-package mu4e-thread-folding
-  :vc (:url "https://github.com/rougier/mu4e-thread-folding" :branch "master")
+  :elpaca (:type git :host github :repo "rougier/mu4e-thread-folding")
   :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
   :config
   (add-to-list 'mu4e-header-info-custom
@@ -809,8 +875,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package rg)
 
-(use-package emacs
-  :ensure nil  
+(use-feature emacs
   :config
 
 (prefer-coding-system 'utf-8)
@@ -870,8 +935,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    ("C-<" . mc/mark-previous-like-this))
   :commands (mc/mark-next-like-this mc/mark-previous-like-this))
 
-(use-package flycheck-pos-tip)
-
 (use-package flycheck-package
   :init
   (use-package package-lint))
@@ -897,10 +960,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (flycheck-check-syntax-automatically '(save mode-enabled))
   (flycheck-standard-error-navigation nil)
   :config
-  (require 'flycheck-pos-tip)
-  (when 'display-graphic-p (selected-frame)
-        (eval-after-load 'flycheck
-          (flycheck-pos-tip-mode))))
+  ;; (require 'flycheck-pos-tip)
+  ;; (when 'display-graphic-p (selected-frame)
+  ;;       (eval-after-load 'flycheck
+  ;;         (flycheck-pos-tip-mode)))
+  )
 
 (use-feature flyspell
   :hook ((prog-mode . flyspell-prog-mode)
@@ -1283,6 +1347,16 @@ parses its input."
   :config
   (global-treesit-auto-mode))
 
+(use-package copilot
+  :after jsonrpc
+  :elpaca (copilot :type git :host github :repo "zerolfx/copilot.el")
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)))
+
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode
@@ -1381,15 +1455,6 @@ parses its input."
 (use-feature elisp-mode
   :hook (emacs-lisp . enable-paredit))
 
-;; clojure refactor library
-;; https://github.com/clojure-emacs/clj-refactor.el
-(use-package clj-refactor
-  :after clojure-mode
-  :config (progn (setq cljr-suppress-middleware-warnings t)
-                 (add-hook 'clojure-mode-hook (lambda ()
-                                                (clj-refactor-mode 1)
-                                                (cljr-add-keybindings-with-prefix "C-c C-m")))))
-
 (use-package kibit-helper
   :defer t)
 
@@ -1467,9 +1532,7 @@ parses its input."
                       -1))
     (message "info not found")))
 
-(use-package js-base-mode
- :ensure nil
- 
+(use-feature js-base-mode
  :mode "\\.js\\'"
  :custom
  (js-indent-level 2)
@@ -1653,7 +1716,7 @@ parses its input."
       (setq alert-default-style 'burnt-toast))
 
 (use-package 1password
-  :vc (1password :url "https://github.com/justinbarclay/1password.el" :branch "main")
+  :elpaca (1password :type git :host github :repo "justinbarclay/1password.el")
   :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
   :custom
   (1password-results-formatter '1password-colour-formatter)
@@ -1698,63 +1761,9 @@ parses its input."
 
 (use-package restclient)
 
-(defcustom git-sync-allow-list nil
-    "List of directories to sync with git-sync."
-    :type '(repeat directory)
-    :group 'git-sync
-    :safe #'listp)
-
-  (defun git-sync--sentinel-fn (process event)
-    "Sentinel function for the git-sync process."
-    (with-current-buffer (process-buffer process)
-      (ansi-osc-apply-on-region (point-min) (point-max))
-      (read-only-mode -1)
-      (replace-regexp-in-region "" "
-" (point-min) (point-max))
-      (goto-char (point-min))
-      (special-mode)))
-
-  (defun git-sync--execute ()
-    (when-let ((buffer (get-buffer "*git-sync*")))
-      (with-current-buffer buffer
-        (let ((inhibit-read-only t))
-          (erase-buffer)
-          (special-mode))))
-    (make-process :name "git-sync"
-                  :buffer (get-buffer-create "*git-sync*")
-                  :command '("git-sync" "-n" "-s")
-                  :sentinel 'git-sync--sentinel-fn))
-
-  (defun git-sync--allowed-directory (current-file allowed-dirs)
-    "Return t if CURRENT-FILE is in one of the ALLOWED-SUBDIRS."
-    (cl-reduce (lambda (any-p allowed-dir)
-                 (or any-p
-                     (string-prefix-p allowed-dir current-file)))
-               allowed-dirs
-               :initial-value nil))
-
-  (defun git-sync--global-after-save ()
-    "Run git-sync on-save if the current buffer is in a subdirectory of one of the allowed directories."
-    (when (git-sync--allowed-subdirectory (buffer-file-name))
-      (git-sync--execute)))
-
-  (define-minor-mode git-sync-global-mode
-    "A global minor mode to run git-sync."
-    :lighter " git-sync"
-    :global 't
-    :after-hook (if git-sync-mode
-                    (setq-local after-save-hook (cons 'git-sync--global-after-save after-save-hook))
-                  (setq-local after-save-hook (remove 'git-sync--global-after-save after-save-hook))))
-
-  (defun git-sync--after-save ()
-    (git-sync--execute))
-
-  (define-minor-mode git-sync-mode
-    "Run git-sync on-save"
-    :lighter " git-sync"
-    (if git-sync-mode
-        (setq-local after-save-hook (cons 'git-sync--after-save after-save-hook))
-      (setq-local after-save-hook (remove 'git-sync--after-save after-save-hook))))
+(use-package git-sync-mode
+  :commands (git-sync-mode git-sync-global-mode)
+  :elpaca (:type git :host github :repo "justinbarclay/git-sync-mode"))
 
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"
