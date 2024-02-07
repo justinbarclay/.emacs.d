@@ -60,7 +60,7 @@
   - [[#highlight-current-line][Highlight current line]]
   - [[#highlight-matching-parens][Highlight matching parens]]
   - [[#no-tabs][No tabs]]
-  - [[#set-base-indent][Set base indent]]
+  - [[#set-base-indentation][Set base indentation]]
   - [[#save-place-in-file][Save place in file]]
   - [[#comment-or-uncomment-region][Comment or Uncomment region]]
   - [[#backups][Backups]]
@@ -115,6 +115,7 @@
   - [[#woman][Woman]]
   - [[#profiling][Profiling]]
   - [[#http-client][http client]]
+  - [[#git-link][Git-link]]
   - [[#git-sync][git-sync]]
 - [[#custom-functions][Custom Functions]]
   - [[#allow-for-clojure-style-comment-blocks][Allow for clojure style comment blocks]]
@@ -768,7 +769,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 ** Magit
-#+begin_src elisp
+#+begin_src emacs-lisp
 (use-package transient)
 #+end_src
 
@@ -857,10 +858,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
-*** Git-link
-#+begin_src emacs-lisp
-(use-package git-link)
-#+end_src
 ** pos-top
 #+begin_src emacs-lisp
 (use-package pos-tip)
@@ -956,7 +953,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 ** Elfeed
-#+begin_src elisp
+#+begin_src emacs-lisp
   (use-package elfeed
    :custom
    (elfeed-feeds
@@ -1572,7 +1569,7 @@ General config to make editing text feel nice
 #+END_SRC
 ** Truncate lines
 #+BEGIN_SRC emacs-lisp
-  (set-default 'truncate-lines t)
+  (setq-default truncate-lines t)
 #+END_SRC
 ** Highlight current line
 #+BEGIN_SRC emacs-lisp
@@ -1583,10 +1580,12 @@ General config to make editing text feel nice
   (show-paren-mode 1)
 #+END_SRC
 ** No tabs
+I prefer spaces like some sort of monster
 #+BEGIN_SRC emacs-lisp
   (setq-default indent-tabs-mode nil)
 #+END_SRC
-** Set base indent
+** Set base indentation
+It's all about space efficiency
 #+BEGIN_SRC emacs-lisp
   (setq-default tab-width 2)
 
@@ -1669,12 +1668,12 @@ I've put this at the top, because I use this almost everyday and wish it existed
 * Syntax and Error checking
 ** Flycheck pos-tip
 Load this before we load Flycheck
-#+BEGIN_SRC emacs-lisp :tangle nil
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package flycheck-pos-tip
   :elpaca t)
 #+END_SRC
 ** Flycheck package
-#+begin_src elisp 
+#+begin_src emacs-lisp 
 (use-package flycheck-package
   :init
   (use-package package-lint))
@@ -2350,7 +2349,7 @@ Things are always better when they are prettier, let's add icons to our in buffe
     ;;(add-to-list 'company-backends 'company-emoji))
 #+END_SRC
 ** Yas Snippets
-#+begin_src elisp
+#+begin_src emacs-lisp
   (use-package yasnippet
     :hook (prog-mode . yas-minor-mode))
 #+end_src
@@ -2578,7 +2577,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 
 *** Clojure
 **** clj-refactor
-#+BEGIN_SRC emacs-lisp :tangle nil
+#+BEGIN_SRC emacs-lisp :tangle no
 
   ;; clojure refactor library
   ;; https://github.com/clojure-emacs/clj-refactor.el
@@ -2703,6 +2702,10 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
     :config
     (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 #+end_src
+
+#+RESULTS:
+: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (26050 34302 931404 0) :init (26050 34302 931380 0) :init-secs (0 0 105 0) :use-package-secs (0 0 270 0)))
+
 ***  TSX Mode
 #+begin_src emacs-lisp
   (use-feature tsx-ts-mode
@@ -3020,7 +3023,7 @@ A better help buffer experience
 #+END_SRC
 ** Profiling
 This function displays how long Emacs took to start. It’s a rough way of knowing when/if I need to optimize my init file.
-#+begin_src elisp
+#+begin_src emacs-lisp
 (add-hook 'elpaca-after-init-hook
           (lambda ()
             (message "Emacs loaded in %s with %d garbage collections."
@@ -3046,6 +3049,12 @@ This function displays how long Emacs took to start. It’s a rough way of knowi
 #+BEGIN_SRC emacs-lisp
   (use-package restclient)
 #+END_SRC
+** Git-link
+For when you want to link to the current file from github or gitlab
+#+begin_src emacs-lisp
+(use-package git-link)
+#+end_src
+
 ** git-sync
 #+begin_src emacs-lisp
   (use-package git-sync-mode
@@ -3172,7 +3181,7 @@ For saving root protected files
 #+END_SRC
 ** Playground
 Pomodoro timer
-#+BEGIN_SRC elisp :tangle no
+#+BEGIN_src emacs-lisp :tangle no
   (require 'alert)
   (require 'seq)
   (require 'zone)

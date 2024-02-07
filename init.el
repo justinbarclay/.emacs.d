@@ -496,8 +496,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
-(use-package git-link)
-
 (use-package pos-tip)
 
 (use-package jsonrpc)
@@ -885,7 +883,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
-(set-default 'truncate-lines t)
+(setq-default truncate-lines t)
 
 (global-hl-line-mode 1)
 
@@ -1760,6 +1758,8 @@ parses its input."
    ("s-r" . profiler-report)))
 
 (use-package restclient)
+
+(use-package git-link)
 
 (use-package git-sync-mode
   :commands (git-sync-mode git-sync-global-mode)
