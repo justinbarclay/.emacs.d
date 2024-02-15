@@ -1,5 +1,5 @@
 [[./logo_512x512.png]]
-* Table of Contents                                                      :TOC:
+* Table of Contents                                                    :TOC:
 - [[#about][About]]
   - [[#note-for-making-elisp-blocks][Note for making Elisp Blocks]]
 - [[#setup][Setup]]
@@ -156,16 +156,17 @@ They are really noisy and annoying right now. And nothing I can deal with.
 #+end_src
 ** Move customizations to their own file
 #+begin_src emacs-lisp :tangle early-init.el
-(setq custom-file (expand-file-name "customs.el" user-emacs-directory))
+  (when (featurep 'jsonrpsc)
+      (unload-feature 'jsonrpc))
+  (setq custom-file (expand-file-name "customs.el" user-emacs-directory))
 
-(add-hook 'after-init-hook (lambda () (load custom-file 'noerror)))
+  (add-hook 'after-init-hook (lambda () (load custom-file 'noerror)))
 #+end_src
 
 ** Let's make the Emacs start up run fast
 #+BEGIN_SRC emacs-lisp
-  (setq-default
-   lexical-binding t
-   load-prefer-newer t)
+  (setq-default lexical-binding t
+                load-prefer-newer t)
 #+END_SRC
 
 Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-dooms-startup-so-fast
@@ -279,8 +280,6 @@ It's a god send, UsePackage landed in Emacs master, no bootstrapping required, j
   (setq use-package-verbose nil)
   (setq use-package-always-defer t)
   (setq use-package-enable-imenu-support t)
-
-;;  (use-package bind-key)                ;; if you use any :bind variant
 #+END_SRC
 *** Generate reports based on use-package
 #+BEGIN_SRC emacs-lisp
@@ -308,7 +307,6 @@ As stolen from [[https://github.com/progfolio/.emacs.d/blob/cff07d4454d327a4df19
   (declare (indent defun))
   `(use-package ,name
      :ensure nil
-     :elpaca nil
      ,@args))
 #+end_src
 
@@ -346,7 +344,7 @@ This is hidden here to load right after we have use-package to be able to benchm
   (use-package seq
     :init
     (require 'seq)
-    :elpaca `(seq :build ,(+elpaca-seq-build-steps)))
+    :ensure `(seq :build ,(+elpaca-seq-build-steps)))
 #+end_src
 ** Org Mode
 :PROPERTIES:
@@ -432,7 +430,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 *** ox-md
 #+begin_src emacs-lisp
   (use-feature ox-md
-    :elpaca nil
+    :ensure nil
     :after org)
 #+end_src
 
@@ -452,7 +450,7 @@ Now that we have that installed we can pull in org-pdftools from github
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package org-pdftools
      :ensure nil
-     :elpaca  (org-pdftools
+     :ensure  (org-pdftools
                :fetcher git
                :url "https://github.com/fuxialexander/org-pdftools.git"
                :upgrade nil))
@@ -867,7 +865,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+begin_src emacs-lisp
 (use-package jsonrpc)
 #+end_src
-
 ** Email (mu4e)
 #+begin_src emacs-lisp
   (use-feature mu4e
@@ -909,7 +906,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+begin_src emacs-lisp
   (push 'mu4e elpaca-ignored-dependencies)
   (use-package mu4e-dashboard
-    :elpaca (:type git :host github :repo "rougier/mu4e-dashboard")
+    :ensure (:type git :host github :repo "rougier/mu4e-dashboard")
     :bind ("C-c d" . mu4e-dashboard)
     :hook
     (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
@@ -930,7 +927,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 *** Mu4e Theading
 #+begin_src emacs-lisp
   (use-package mu4e-thread-folding
-    :elpaca (:type git :host github :repo "rougier/mu4e-thread-folding")
+    :ensure (:type git :host github :repo "rougier/mu4e-thread-folding")
     :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
     :config
     (add-to-list 'mu4e-header-info-custom
@@ -1159,13 +1156,13 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 *** Elegant Emacs
 #+begin_src emacs-lisp :tangle no
   (use-package nano-theme
-    :elpaca (nano-theme :type git :host github :repo "rougier/nano-theme"))
+    :ensure (nano-theme :type git :host github :repo "rougier/nano-theme"))
 #+end_src
 
 *** Lambda Themes
 #+begin_src emacs-lisp :tangle no
 (use-package lambda-themes
-  :elpaca (:type git :host github :repo "lambda-emacs/lambda-themes")
+  :ensure (:type git :host github :repo "lambda-emacs/lambda-themes")
   :custom
   (lambda-themes-set-italic-comments nil)
   (lambda-themes-set-italic-keywords nil)
@@ -1183,7 +1180,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 *** Add on doom theme
 #+begin_src emacs-lisp :tangle no
   (use-package doom-everblush-theme
-    :elpaca (doom-everblush-theme :type git :host github :repo "Everblush/doomemacs"))
+    :ensure (doom-everblush-theme :type git :host github :repo "Everblush/doomemacs"))
 #+end_src
 
 *** Doom Themes
@@ -1670,7 +1667,7 @@ I've put this at the top, because I use this almost everyday and wish it existed
 Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package flycheck-pos-tip
-  :elpaca t)
+  :ensure t)
 #+END_SRC
 ** Flycheck package
 #+begin_src emacs-lisp 
@@ -1726,7 +1723,7 @@ Load this before we load Flycheck
 ** Dape
 #+begin_src emacs-lisp :tangle no
   (use-package dape
-    :elpaca (:fetcher git
+    :ensure (:fetcher git
     :url "https://github.com/svaante/dape"))
 
 #+end_src
@@ -1968,46 +1965,36 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
     ;; Replace bindings. Lazily loaded due by `use-package'.
     :bind ;; C-c bindings (mode-specific-map)
     (("C-c h" . consult-history)
-    ("C-c m" . consult-mode-command)
-    ("C-c k" . consult-kmacro)
-    ("C-s" . consult-line)
-    ;; C-x bindings (ctl-x-map)
-    ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-    ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-    ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-    ;; Custom M-# bindings for fast register access
-    ("M-#" . consult-register-load)
-    ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-    ("C-M-#" . consult-register)
-    ;; Other custom bindings
-    ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-    ("<help> a" . consult-apropos)            ;; orig. apropos-command
-    ;; M-g bindings (goto-map)
-    ("M-g g" . consult-goto-line)             ;; orig. goto-line
-    ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-    ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-    ;; M-s bindings (search-map)
-    ("M-s d" . consult-find)
-    ("M-s D" . consult-locate)
-    ("M-s r" . consult-ripgrep)
+     ("C-c m" . consult-mode-command)
+     ("C-c k" . consult-kmacro)
+     ("C-s" . consult-line)
+     ;; C-x bindings (ctl-x-map)
+     ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+     ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+     ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+     ;; Custom M-# bindings for fast register access
+     ("M-#" . consult-register-load)
+     ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+     ("C-M-#" . consult-register)
+     ;; Other custom bindings
+     ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+     ("<help> a" . consult-apropos)            ;; orig. apropos-command
+     ;; M-g bindings (goto-map)
+     ("M-g g" . consult-goto-line)             ;; orig. goto-line
+     ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+     ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+     ;; M-s bindings (search-map)
+     ("M-s d" . consult-find)
+     ("M-s D" . consult-locate)
+     ("M-s r" . consult-ripgrep)
 
-    ("M-s u" . consult-focus-lines))
+     ("M-s u" . consult-focus-lines))
 
     ;; Enable automatic preview at point in the *Completions* buffer. This is
     ;; relevant when you use the default completion UI.
     :hook (completion-list-mode . consult-preview-at-point-mode)
 
     :init
-    ;; Optionally configure the register formatting. This improves the register
-    ;; preview for `consult-register', `consult-register-load',
-    ;; `consult-register-store' and the Emacs built-ins.
-    (setq register-preview-delay 0.5
-          register-preview-function #'consult-register-format)
-
-    ;; Optionally tweak the register preview window.
-    ;; This adds thin lines, sorting and hides the mode line of the window.
-    (advice-add #'register-preview :override #'consult-register-window)
-
     ;; Use Consult to select xref locations with preview
     (setq xref-show-xrefs-function #'consult-xref
           xref-show-definitions-function #'consult-xref)
@@ -2362,7 +2349,7 @@ Things are always better when they are prettier, let's add icons to our in buffe
 #+begin_src emacs-lisp :tangle no
   (use-package yasnippet-capf
     :commands yas-capf-minor-mode
-    :elpaca (:type git :host github :repo "justinbarclay/yasnippet-capf")
+    :ensure (:type git :host github :repo "justinbarclay/yasnippet-capf")
     :init
     (add-hook 'yas-minor-mode-hook #'yas-capf-minor-mode))
 #+end_src
@@ -2399,7 +2386,7 @@ We want automatic fall back and to have manually manage `treesit-language-source
 Better movement through treesitter
 #+begin_src emacs-lisp :tangle no
   (use-package combobulate
-    :elpaca (:type git :host github :repo "mickeynp/combobulate")
+    :ensure (:type git :host github :repo "mickeynp/combobulate")
     :hook (prog-mode . combobulate-mode)
     :custom (combobulate-js-ts-enable-auto-close-tag . nil))
 #+end_src
@@ -2409,13 +2396,15 @@ Better movement through treesitter
 #+begin_src emacs-lisp
   (use-package copilot
     :after jsonrpc
-    :elpaca (copilot :type git :host github :repo "zerolfx/copilot.el")
     :hook (prog-mode . copilot-mode)
+    :ensure (copilot
+             :files ("dist" "*.el")
+             :type git
+             :host github
+             :repo "copilot-emacs/copilot.el")
     :bind (:map copilot-completion-map
-                ("<tab>" . 'copilot-accept-completion)
                 ("TAB" . 'copilot-accept-completion)
-                ("C-TAB" . 'copilot-accept-completion-by-word)
-                ("C-<tab>" . 'copilot-accept-completion-by-word)))
+                ("C-TAB" . 'copilot-accept-completion-by-word)))
 #+end_src
 
 *** LSP-Mode
@@ -2985,7 +2974,7 @@ Live preview of MarkDown
 ** 1Password
 #+begin_src emacs-lisp
   (use-package 1password
-    :elpaca (1password :type git :host github :repo "justinbarclay/1password.el")
+    :ensure (1password :type git :host github :repo "justinbarclay/1password.el")
     :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
     :custom
     (1password-results-formatter '1password-colour-formatter)
@@ -3059,7 +3048,7 @@ For when you want to link to the current file from github or gitlab
 #+begin_src emacs-lisp
   (use-package git-sync-mode
     :commands (git-sync-mode git-sync-global-mode)
-    :elpaca (:type git :host github :repo "justinbarclay/git-sync-mode"))
+    :ensure (:type git :host github :repo "justinbarclay/git-sync-mode"))
 #+end_src
 
 * Custom Functions

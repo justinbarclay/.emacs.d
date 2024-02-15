@@ -1,9 +1,8 @@
 (setq native-comp-deferred-compilation-deny-list '())
 (setq native-comp-async-report-warnings-errors nil)
 
-(setq-default
- lexical-binding t
- load-prefer-newer t)
+(setq-default lexical-binding t
+              load-prefer-newer t)
 
 (defvar doom--file-name-handler-alist file-name-handler-alist)
 (setq file-name-handler-alist nil)
@@ -59,12 +58,10 @@
 (elpaca-wait)
 
 (require 'use-package)
-  (setq use-package-always-ensure t)
-  (setq use-package-verbose nil)
-  (setq use-package-always-defer t)
-  (setq use-package-enable-imenu-support t)
-
-;;  (use-package bind-key)                ;; if you use any :bind variant
+(setq use-package-always-ensure t)
+(setq use-package-verbose nil)
+(setq use-package-always-defer t)
+(setq use-package-enable-imenu-support t)
 
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
@@ -77,7 +74,6 @@
   (declare (indent defun))
   `(use-package ,name
      :ensure nil
-     :elpaca nil
      ,@args))
 
 (defun +elpaca-unload-seq (e)
@@ -93,7 +89,7 @@
 (use-package seq
   :init
   (require 'seq)
-  :elpaca `(seq :build ,(+elpaca-seq-build-steps)))
+  :ensure `(seq :build ,(+elpaca-seq-build-steps)))
 
 (use-package org
   :defer t
@@ -166,7 +162,7 @@
   :after org)
 
 (use-feature ox-md
-  :elpaca nil
+  :ensure nil
   :after org)
 
 (use-package ob-restclient
@@ -536,7 +532,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (push 'mu4e elpaca-ignored-dependencies)
 (use-package mu4e-dashboard
-  :elpaca (:type git :host github :repo "rougier/mu4e-dashboard")
+  :ensure (:type git :host github :repo "rougier/mu4e-dashboard")
   :bind ("C-c d" . mu4e-dashboard)
   :hook
   (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
@@ -554,7 +550,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (flyspell-mode -1))
 
 (use-package mu4e-thread-folding
-  :elpaca (:type git :host github :repo "rougier/mu4e-thread-folding")
+  :ensure (:type git :host github :repo "rougier/mu4e-thread-folding")
   :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
   :config
   (add-to-list 'mu4e-header-info-custom
@@ -1190,46 +1186,36 @@ parses its input."
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind ;; C-c bindings (mode-specific-map)
   (("C-c h" . consult-history)
-  ("C-c m" . consult-mode-command)
-  ("C-c k" . consult-kmacro)
-  ("C-s" . consult-line)
-  ;; C-x bindings (ctl-x-map)
-  ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-  ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-  ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-  ;; Custom M-# bindings for fast register access
-  ("M-#" . consult-register-load)
-  ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-  ("C-M-#" . consult-register)
-  ;; Other custom bindings
-  ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-  ("<help> a" . consult-apropos)            ;; orig. apropos-command
-  ;; M-g bindings (goto-map)
-  ("M-g g" . consult-goto-line)             ;; orig. goto-line
-  ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-  ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-  ;; M-s bindings (search-map)
-  ("M-s d" . consult-find)
-  ("M-s D" . consult-locate)
-  ("M-s r" . consult-ripgrep)
+   ("C-c m" . consult-mode-command)
+   ("C-c k" . consult-kmacro)
+   ("C-s" . consult-line)
+   ;; C-x bindings (ctl-x-map)
+   ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+   ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+   ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+   ;; Custom M-# bindings for fast register access
+   ("M-#" . consult-register-load)
+   ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+   ("C-M-#" . consult-register)
+   ;; Other custom bindings
+   ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+   ("<help> a" . consult-apropos)            ;; orig. apropos-command
+   ;; M-g bindings (goto-map)
+   ("M-g g" . consult-goto-line)             ;; orig. goto-line
+   ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+   ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+   ;; M-s bindings (search-map)
+   ("M-s d" . consult-find)
+   ("M-s D" . consult-locate)
+   ("M-s r" . consult-ripgrep)
 
-  ("M-s u" . consult-focus-lines))
+   ("M-s u" . consult-focus-lines))
 
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
   :hook (completion-list-mode . consult-preview-at-point-mode)
 
   :init
-  ;; Optionally configure the register formatting. This improves the register
-  ;; preview for `consult-register', `consult-register-load',
-  ;; `consult-register-store' and the Emacs built-ins.
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
-  (advice-add #'register-preview :override #'consult-register-window)
-
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
@@ -1347,13 +1333,15 @@ parses its input."
 
 (use-package copilot
   :after jsonrpc
-  :elpaca (copilot :type git :host github :repo "zerolfx/copilot.el")
   :hook (prog-mode . copilot-mode)
+  :ensure (copilot
+           :files ("dist" "*.el")
+           :type git
+           :host github
+           :repo "copilot-emacs/copilot.el")
   :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
               ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word)))
+              ("C-TAB" . 'copilot-accept-completion-by-word)))
 
 (use-package lsp-mode
   :commands lsp
@@ -1714,7 +1702,7 @@ parses its input."
       (setq alert-default-style 'burnt-toast))
 
 (use-package 1password
-  :elpaca (1password :type git :host github :repo "justinbarclay/1password.el")
+  :ensure (1password :type git :host github :repo "justinbarclay/1password.el")
   :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
   :custom
   (1password-results-formatter '1password-colour-formatter)
@@ -1763,7 +1751,7 @@ parses its input."
 
 (use-package git-sync-mode
   :commands (git-sync-mode git-sync-global-mode)
-  :elpaca (:type git :host github :repo "justinbarclay/git-sync-mode"))
+  :ensure (:type git :host github :repo "justinbarclay/git-sync-mode"))
 
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"
