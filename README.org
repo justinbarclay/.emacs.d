@@ -347,9 +347,6 @@ This is hidden here to load right after we have use-package to be able to benchm
     :ensure `(seq :build ,(+elpaca-seq-build-steps)))
 #+end_src
 ** Org Mode
-:PROPERTIES:
-:header-args:
-:END:
 Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69cb9320811c5ec63409880eadd
 *** Org
 #+BEGIN_SRC emacs-lisp
@@ -853,6 +850,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+BEGIN_SRC emacs-lisp
   (use-package forge
     :after magit
+    :ensure (:ref "716bc8fffba81d57e4d349680e94892352cb6175")
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
@@ -2691,9 +2689,6 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
     :config
     (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (:use-package (26050 34302 931404 0) :init (26050 34302 931380 0) :init-secs (0 0 105 0) :use-package-secs (0 0 270 0)))
 
 ***  TSX Mode
 #+begin_src emacs-lisp

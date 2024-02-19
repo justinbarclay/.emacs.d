@@ -489,6 +489,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package forge
   :after magit
+  :ensure (:ref "716bc8fffba81d57e4d349680e94892352cb6175")
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
