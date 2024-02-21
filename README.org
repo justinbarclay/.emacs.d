@@ -871,6 +871,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
                 ("q" . kill-current-buffer))
     :config
     (setq
+     mu4e-update-interval (* 5 60)
      mu4e-headers-skip-duplicates  t
      mu4e-view-show-images t
      mu4e-view-show-addresses t
@@ -903,6 +904,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 *** Mu4e Dashboard
 #+begin_src emacs-lisp
   (push 'mu4e elpaca-ignored-dependencies)
+
   (use-package mu4e-dashboard
     :ensure (:type git :host github :repo "rougier/mu4e-dashboard")
     :bind ("C-c d" . mu4e-dashboard)
@@ -914,10 +916,11 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (defun mu4e-dashboard-edit ()
       (interactive)
       (let ((edit-buffer "*edit-mu4e-dashboard*"))
-        (when (get-buffer "*edit-mu4e-dashboard*")
-          (kill-buffer (get-buffer "*edit-mu4e-dashboard*")))
-        (make-indirect-buffer (current-buffer) "*edit-mu4e-dashboard*")
-        (switch-to-buffer-other-window (get-buffer "*edit-mu4e-dashboard*"))))
+        (when (get-buffer edit-buffer)
+          (kill-buffer (get-buffer edit-buffer)))
+        (make-indirect-buffer (current-buffer) edit-buffer)
+        (switch-to-buffer-other-window (get-buffer edit-buffer))
+        (org-mode 1)))
     (display-line-numbers-mode -1)
     (flyspell-mode -1))
 #+end_src

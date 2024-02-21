@@ -1,32 +1,27 @@
-* Fastmail[f]  [[mu:flag:unread|%3d Unread][  6 Unread]]
+* Fastmail[f]  [[mu:flag:unread|%3d Unread][  0 Unread]]
 
-[[mu:m:/fastmail/* and flag:unread][Unread]]  [[mu:m:/fastmail/* and flag:unread|%4d][   6]] .... [u]  [[mu:m:/fastmail/* and date:today..now][Today]]      [[mu:m:/fastmail/* and date:today..now|%4d][   1]] .... [t]  *Compose* ...... [C]
-[[mu:m:m:/fastmail/Inbox and flag:unread][Inbox]]   [[mu:m:/fastmail/Inbox and flag:unread|%4d][   1]] .... [i]  [[mu:m:/fastmail/* and date:2d..today and not date:today..now][Yesterday]]  [[mu:m:/fastmail/* and date:2d..today and not date:today..now|%4d][ 231]] .... [y]  *Update* ....... [U]
-[[mu:m:/Drafts][Drafts]]  [[mu:m:/Drafts|%4d][   1]] .... [d]  [[mu:date:7d..now][Last week]]  [[mu:date:7d..now|%4d][ 788]] .... [w]  *Switch context* [;]
-[[mu:m:/Sent][Sent]]    [[mu:m:/Sent|%4d][   0]] .... [s]  [[mu:date:4w..now][Last month]] [[mu:date:4w..|%4d][2941]] .... [m]  *Quit* ......... [q]
+[[mu:m:/fastmail/* and flag:unread][Unread]]  [[mu:m:/fastmail/* and flag:unread|%4d][   0]] .... [u]  [[mu:m:/fastmail/* and date:today..now][Today]]      [[mu:m:/fastmail/* and date:today..now|%4d][  81]] .... [t]  *Compose* ...... [C]
+[[mu:m:/fastmail/Inbox and flag:unread][Inbox]]   [[mu:m:/fastmail/Inbox and flag:unread|%4d][   0]] .... [i]  [[mu:m:/fastmail/* and date:2d..today and not date:today..now][Yesterday]]  [[mu:m:/fastmail/* and date:2d..today and not date:today..now|%4d][ 144]] .... [y]  *Update* ....... [U]
+[[mu:m:/Drafts][Drafts]]  [[mu:m:/Drafts|%4d][   0]] .... [d]  [[mu:date:7d..now][Last week]]  [[mu:date:7d..now|%4d][ 659]] .... [w]  *Switch context* [;]
+[[mu:m:/Sent][Sent]]    [[mu:m:/Sent|%4d][   0]] .... [s]  [[mu:date:4w..now][Last month]] [[mu:date:4w..|%4d][3095]] .... [m]  *Quit* ......... [q]
 [[mu:m:/Inbox/Github and flag:unread][Github]]  [[mu:m:/Inbox/Github and flag:unread|%4d][   0]] .... [gh]
 
 * Saved searches
-[[mu:m:/**/Archive][Archive]]   [[mu:m:/**/Archive|%4d][   0]] ....... [[mu:m:/Archive||100][100]] - [[mu:m:/Archive||500][500]]  [[mu:flag:attach][ Attachments]] [[mu:flag:attach|%4d][3572]] ...... [[mu:flag:attach||99999][all]] - [[mu:size:10M..][big]]
-[[mu:flag:flagged][Important]] [[mu:flag:flagged|%4d][   6]] ....... [[mu:flag:flagged||100][100]] - [[mu:flag:flagged||500][500]]   [[mu:flag:encrypted][Encrypted]]   [[mu:flag:encrypted|%4d][   1]] ...... [[mu:flag:encrypted||100][100]] - [[mu:flag:encrypted||500][500]]
+[[mu:m:/**/Archive][Archive]]   [[mu:m:/**/Archive|%4d][   0]] ....... [[mu:m:/Archive||100][100]] - [[mu:m:/Archive||500][500]]  [[mu:flag:attach][ Attachments]] [[mu:flag:attach|%4d][3853]] ...... [[mu:flag:attach||99999][all]] - [[mu:size:10M..][big]]
+[[mu:flag:flagged][Important]] [[mu:flag:flagged|%4d][   6]] ....... [[mu:flag:flagged||100][100]] - [[mu:flag:flagged||500][500]]   [[mu:flag:encrypted][Encrypted]]   [[mu:flag:encrypted|%4d][   2]] ...... [[mu:flag:encrypted||100][100]] - [[mu:flag:encrypted||500][500]]
 [[mu:m:/Inbox/Github][Github]]    [[mu:m:/Inbox/Github|%4d][   0]] ....... [[mu:m:/Inbox/Github||100][100]] - [[mu:m:/Inbox/Github||500][500]]
 
 ** Date
-[[Year 2024]] [[mu:date:20240101..20241231|%6d][   977]]         [[mu:date:20230101..20211231][Year 2023]] [[mu:date:20230101..20231231|%6d][ 46732]]
-[[Year 2022]] [[mu:date:20220101..20221231|%6d][ 26654]]         [[mu:date:20210101..20211231][Year 2021]] [[mu:date:20210101..20211231|%6d][     0]]
+[[Year 2024]] [[mu:date:20240101..20241231|%6d][  5807]]         [[mu:date:20230101..20211231][Year 2023]] [[mu:date:20230101..20231231|%6d][ 46737]]
+[[Year 2022]] [[mu:date:20220101..20221231|%6d][ 26656]]         [[mu:date:20210101..20211231][Year 2021]] [[mu:date:20210101..20211231|%6d][     0]]
 [[mu:date:20200101..20201231][Year 2020]] [[mu:date:20200101..20201231|%6d][     0]]         [[mu:date:20190101..20191231][Year 2019]] [[mu:date:20190101..20191231|%6d][     0]]
 [[mu:date:20180101..20181231][Year 2018]] [[mu:date:20180101..20181231|%6d][     0]]
 
 ** Mailing lists
-[[mu:from:noreply@notifs.matrix.org][Matrix]]            [[mu:from:noreply@notifs.matrix.org|%6d][   187]] ........................... [[mu:from:noreply@notifs.matrix.org||100][100]] - [[mu:from:noreply@notifs.matrix.org||500][500]] - [[mu:from:noreply@notifs.matrix.org||9999][all]] 
-[[mu:list:emacs-devel.gnu.org][Emacs development]] [[mu:list:emacs-devel.gnu.org|%6d][ 20956]] ........................... [[mu:list:emacs-devel.gnu.org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-devel.gnu.org||9999][all]]
-[[mu:list:bug-gnu-emacs.gnu.org][Emacs bugs]]        [[mu:list:bug-gnu-emacs.gnu.org|%6d][ 37195]] ........................... [[mu:list:bug-gnu-emacs.gnu.org||100][100]] - [[mu:list:bug-gnu-emacs.gnu.org||500][500]] - [[mu:list:bug-gnu-emacs.gnu.org||9999][all]]
-[[mu:list:help-gnu-emacs.gnu.org][Emacs help]]        [[mu:list:help-gnu-emacs.gnu.org|%6d][  6730]] ........................... [[mu:list:help-gnu-emacs.gnu.org||100][100]] - [[mu:list:help-gnu-emacs.gnu.org||500][500]] - [[mu:list:help-gnu-emacs.gnu.org||9999][all]]
-
-* Information
-
-*Database*  : ~/.cache/mu/xapian
-*Maildir*   : ~/Maildir/
+[[mu:from:noreply@notifs.matrix.org][Matrix]]            [[mu:from:noreply@notifs.matrix.org|%6d][   235]] ........................... [[mu:from:noreply@notifs.matrix.org||100][100]] - [[mu:from:noreply@notifs.matrix.org||500][500]] - [[mu:from:noreply@notifs.matrix.org||9999][all]] 
+[[mu:list:emacs-devel.gnu.org][Emacs development]] [[mu:list:emacs-devel.gnu.org|%6d][ 22559]] ........................... [[mu:list:emacs-devel.gnu.org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-devel.gnu.org||9999][all]]
+[[mu:list:bug-gnu-emacs.gnu.org][Emacs bugs]]        [[mu:list:bug-gnu-emacs.gnu.org|%6d][ 39878]] ........................... [[mu:list:bug-gnu-emacs.gnu.org||100][100]] - [[mu:list:bug-gnu-emacs.gnu.org||500][500]] - [[mu:list:bug-gnu-emacs.gnu.org||9999][all]]
+[[mu:list:help-gnu-emacs.gnu.org][Emacs help]]        [[mu:list:help-gnu-emacs.gnu.org|%6d][  6975]] ........................... [[mu:list:help-gnu-emacs.gnu.org||100][100]] - [[mu:list:help-gnu-emacs.gnu.org||500][500]] - [[mu:list:help-gnu-emacs.gnu.org||9999][all]]
 
 * Configuration
 :PROPERTIES:
@@ -35,19 +30,13 @@
 
 #+STARTUP: showall showstars indent
 
-#+NAME: query
-#+BEGIN_SRC sh :results list raw :var query="flag:unread" count=5 
-export LANG="en_US.UTF-8"; export LC_ALL="en_US.UTF-8";
-mu find -n $count --sortfield=date --reverse --fields "f s" $query
-#+END_SRC
-
-#+KEYMAP: fu | mu4e-search "m:/fastmail/* and flag:unread" | test
-#+KEYMAP: fi | mu4e-search "m:/fastmail/Inbox and flag:unread"
-#+KEYMAP: fI | mu4e-search "m:/fastmail/Inbox"
-#+KEYMAP: fd | mu4e-search "m:/Drafts"
-#+KEYMAP: fs | mu4e-search "m:/Sent"
-#+KEYMAP: fgh | mu4e-search "m:/fastmail/Inbox/Github and flag:unread"
-#+KEYMAP: fGh | mu4e-search "m:/fastmail/Inbox/Github"
+#+KEYMAP: fu | mu4e-headers-search "m:/fastmail/* and flag:unread"
+#+KEYMAP: fi | mu4e-headers-search "m:/fastmail/Inbox and flag:unread"
+#+KEYMAP: fI | mu4e-headers-search "m:/fastmail/Inbox"
+#+KEYMAP: fd | mu4e-headers-search "m:/fastmail/Drafts"
+#+KEYMAP: fs | mu4e-headers-search "m:/fastmail/Sent"
+#+KEYMAP: fgh | mu4e-headers-search "m:/fastmail/Inbox/Github and flag:unread"
+#+KEYMAP: fGh | mu4e-headers-search "m:/fastmail/Inbox/Github"
 
 #+KEYMAP: ft | mu4e-headers-search "m:/fastmail/* and date:today..now"
 #+KEYMAP: fy | mu4e-headers-search "m:/fastmail/* and date:2d..today and not date:today..now"
