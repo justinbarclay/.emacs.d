@@ -284,7 +284,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                         (org-agenda-overriding-header "Tasks:"))))))))
 
 (use-package elegant-agenda-mode
-  :hook '(org-agenda-mode . elegant-agenda-mode))
+  :hook (org-agenda-mode . elegant-agenda-mode))
 
 (use-package org-alert)
 
@@ -418,6 +418,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands magit-get-top-dir
   ;; :ensure-system-package git
   :bind (("C-c g" . magit-status))
+  :hook
+  (git-commit-mode . magit-commit-mode-init)
   :init
   (progn
     ;; magit extensions
@@ -444,9 +446,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     ;; From: http://git.io/rPBE0Q
     (defun magit-commit-mode-init ()
       (when (looking-at "\n")
-        (open-line 1)))
-
-    (add-hook 'git-commit-mode-hook 'magit-commit-mode-init))
+        (open-line 1))))
   :config
   (progn
     ;; restore previously hidden windows
@@ -489,7 +489,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package forge
   :after magit
-  :ensure (:ref "716bc8fffba81d57e4d349680e94892352cb6175")
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
@@ -503,32 +502,62 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
               ("q" . kill-current-buffer))
   :config
   (setq
-   mu4e-update-interval (* 5 60)
    mu4e-headers-skip-duplicates  t
    mu4e-view-show-images t
    mu4e-view-show-addresses t
+   mu4e-use-fancy-chars t
    mu4e-compose-format-flowed nil
    mu4e-date-format "%y/%m/%d"
    mu4e-headers-date-format "%Y/%m/%d"
    mu4e-change-filenames-when-moving t
    mu4e-attachments-dir "~/Downloads"
-   mu4e-use-fancy-chars 't
-   mu4e-maildir       "~/Maildir/fastmail/"   ;; top-level Maildir
+   mu4e-maildir       "~/Maildir/"   ;; top-level Maildir
    ;; note that these folders below must start with /
    ;; the paths are relative to maildir root
-   mu4e-refile-folder "/Archive"
-   mu4e-sent-folder   "/Sent"
-   mu4e-drafts-folder "/Drafts"
-   mu4e-trash-folder  "/Trash"
 
    ;; this setting allows to re-sync and re-index mail
    ;; by pressing U
    mu4e-get-mail-command "mbsync -a"
 
    mu4e-completing-read-function 'completing-read
-   message-send-mail-function   'smtpmail-send-it
-   smtpmail-default-smtp-server "smtp.fastmail.com"
-   smtpmail-smtp-server         "smtp.fastmail.com")
+   mu4e-context-policy 'pick-first
+   mu4e-contexts (list
+                  (make-mu4e-context
+                   :name "fastmail"
+                   :match-func
+                   (lambda (msg)
+                     (when msg
+                       (string-prefix-p "/fastmail" (mu4e-message-field msg :maildir))))
+                   :vars '((user-mail-address . "github@justinbarclay.ca")
+                           (user-full-name    . "Justin Barclay")
+                           (mu4e-drafts-folder  . "/fastmail/Drafts")
+                           (mu4e-sent-folder  . "/fastmail/Sent")
+                           (mu4e-refile-folder  . "/fastmail/Archive")
+                           (sendmail-program . "msmtp")
+                           (send-mail-function . smtpmail-send-it)
+                           (message-sendmail-f-is-evil . t)
+                           (message-sendmail-extra-arguments . ("--read-envelope-from"))
+                           (message-send-mail-function . message-send-mail-with-sendmail)
+                           (smtpmail-default-smtp-server . "smtp.fastmail.com")
+                           (smtpmail-smtp-server  . "smtp.fastmail.com")
+                           (mu4e-trash-folder  . "/fastmail/Trash")))
+
+                  (make-mu4e-context
+                   :name "gmail"
+                   :match-func (lambda (msg)
+                                 (when msg
+                                   (string-prefix-p "/gmail" (mu4e-message-field msg :maildir))))
+                   :vars '((user-mail-address . "justincbarclay@gmail.com")
+                           (user-full-name    . "Justin Barclay")
+                           (mu4e-drafts-folder  . "/gmail/[Gmail]/Drafts")
+                           (mu4e-sent-folder  . "/gmail/[Gmail]/Sent Mail")
+                           (mu4e-refile-folder  . "/gmail/[Gmail]/All Mail")
+                           (mu4e-trash-folder  . "/gmail/[Gmail]/Trash")
+                           (sendmail-program . "msmtp")
+                           (send-mail-function . smtpmail-send-it)
+                           (message-sendmail-f-is-evil . t)
+                           (message-sendmail-extra-arguments . ("--read-envelope-from"))
+                           (message-send-mail-function . message-send-mail-with-sendmail)))))
 
   (display-line-numbers-mode -1))
 
@@ -537,11 +566,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package mu4e-dashboard
   :ensure (:type git :host github :repo "rougier/mu4e-dashboard")
   :bind ("C-c d" . mu4e-dashboard)
+  :after mu4e
   :hook
   (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
   :custom
   (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
   :config
+  (require 'mu4e)
   (defun mu4e-dashboard-edit ()
     (interactive)
     (let ((edit-buffer "*edit-mu4e-dashboard*"))
@@ -555,12 +586,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package mu4e-thread-folding
   :ensure (:type git :host github :repo "rougier/mu4e-thread-folding")
-  :hook (mu4e-headers-mode . mu4e-thread-folding-mode)
+  :hook
+  ((mu4e-headers-mode . mu4e-thread-folding-mode)
+   (mu4e-headers-mode . (lambda () (display-line-numbers-mode -1))))
   :config
   (add-to-list 'mu4e-header-info-custom
                '(:empty . (:name "Empty"
-                           :shortname ""
-                           :function (lambda (msg) "  "))))
+                                 :shortname ""
+                                 :function (lambda (msg) "  "))))
   :custom
   (mu4e-headers-fields '((:empty         .    2)
                          (:human-date    .   12)
@@ -1309,7 +1342,7 @@ parses its input."
   (kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 
 (use-package yasnippet
-  :hook (prog-mode . yas-minor-mode))
+ :init (yas-global-mode))
 
 (use-package yasnippet-snippets
   :after yasnippet)
@@ -1361,6 +1394,7 @@ parses its input."
           jsx-ts-mode
           tsx-ts-mode
           go-base-mode
+          LaTeX-mode
           org-mode)
          . lsp-deferred)
   (lsp-completion-mode . my/lsp-mode-setup-completion)
@@ -1677,6 +1711,42 @@ parses its input."
   :defer t)
 
 ;; (use-package sqlint)
+
+(use-feature auctex
+    :mode (("\\.tex\\'" . TeX-latex-mode)
+           ("\\.tex\\.erb\\'" . TeX-latex-mode)
+           ("\\.etx\\'" . TeX-latex-mode))
+    :hook
+    ((LaTeX-mode . turn-on-auto-fill)
+     (LaTeX-mode . TeX-source-correlate-mode))
+    :config
+    (setq-default TeX-master nil)
+    (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+    :custom
+    (LaTeX-item-indent 0)
+    (TeX-auto-local ".auctex-auto")
+    (TeX-style-local ".auctex-style")
+    (TeX-auto-save t)
+    (TeX-parse-self t)
+    (TeX-save-query nil)
+    ;; use pdflatex
+    (TeX-PDF-mode t)
+    (TeX-source-correlate-start-server nil)
+    (TeX-source-correlate-method 'synctex)
+    ;; use evince for dvi and pdf viewer
+    ;; evince-dvi backend should be installed
+    (TeX-view-program-selection
+     '((output-dvi "DVI Viewer")
+       (output-pdf "PDF Tools")
+       (output-html "Firefox")))
+    (TeX-view-program-list
+     '(("DVI Viewer" "evince %o")
+       ("PDF Tools" TeX-pdf-tools-sync-view))))
+
+(use-package pdf-tools
+ :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
+ :init
+ (pdf-loader-install))
 
 (use-feature rst
   :mode (("\\.txt$" . rst-mode)

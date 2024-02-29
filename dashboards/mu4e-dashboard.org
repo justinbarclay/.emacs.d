@@ -1,27 +1,27 @@
-* Fastmail[f]  [[mu:flag:unread|%3d Unread][  0 Unread]]
+* Fastmail[f]  [[mu:m:/fastmail/* and flag:unread|%3d Unread][ 34 Unread]]
 
-[[mu:m:/fastmail/* and flag:unread][Unread]]  [[mu:m:/fastmail/* and flag:unread|%4d][   0]] .... [u]  [[mu:m:/fastmail/* and date:today..now][Today]]      [[mu:m:/fastmail/* and date:today..now|%4d][  81]] .... [t]  *Compose* ...... [C]
-[[mu:m:/fastmail/Inbox and flag:unread][Inbox]]   [[mu:m:/fastmail/Inbox and flag:unread|%4d][   0]] .... [i]  [[mu:m:/fastmail/* and date:2d..today and not date:today..now][Yesterday]]  [[mu:m:/fastmail/* and date:2d..today and not date:today..now|%4d][ 144]] .... [y]  *Update* ....... [U]
-[[mu:m:/Drafts][Drafts]]  [[mu:m:/Drafts|%4d][   0]] .... [d]  [[mu:date:7d..now][Last week]]  [[mu:date:7d..now|%4d][ 659]] .... [w]  *Switch context* [;]
-[[mu:m:/Sent][Sent]]    [[mu:m:/Sent|%4d][   0]] .... [s]  [[mu:date:4w..now][Last month]] [[mu:date:4w..|%4d][3095]] .... [m]  *Quit* ......... [q]
+[[mu:m:/fastmail/* and flag:unread][Unread]]  [[mu:m:/fastmail/* and flag:unread|%4d][   4]] .... [u]  [[mu:m:/fastmail/* and date:today..now][Today]]      [[mu:m:/fastmail/* and date:today..now|%4d][  74]] .... [t]  *Compose* ...... [C]
+[[mu:m:/fastmail/Inbox and flag:unread][Inbox]]   [[mu:m:/fastmail/Inbox and flag:unread|%4d][   0]] .... [i]  [[mu:m:/fastmail/* and date:2d..today and not date:today..now][Yesterday]]  [[mu:m:/fastmail/* and date:2d..today and not date:today..now|%4d][ 143]] .... [y]  *Update* ....... [U]
+[[mu:m:/Drafts][Drafts]]  [[mu:m:/Drafts|%4d][   0]] .... [d]  [[mu:date:7d..now][Last week]]  [[mu:date:7d..now|%4d][ 903]] .... [w]  *Switch context* [;]
+[[mu:m:/Sent][Sent]]    [[mu:m:/Sent|%4d][   0]] .... [s]  [[mu:date:4w..now][Last month]] [[mu:date:4w..|%4d][3792]] .... [m]  *Quit* ......... [q]
 [[mu:m:/Inbox/Github and flag:unread][Github]]  [[mu:m:/Inbox/Github and flag:unread|%4d][   0]] .... [gh]
 
 * Saved searches
-[[mu:m:/**/Archive][Archive]]   [[mu:m:/**/Archive|%4d][   0]] ....... [[mu:m:/Archive||100][100]] - [[mu:m:/Archive||500][500]]  [[mu:flag:attach][ Attachments]] [[mu:flag:attach|%4d][3853]] ...... [[mu:flag:attach||99999][all]] - [[mu:size:10M..][big]]
-[[mu:flag:flagged][Important]] [[mu:flag:flagged|%4d][   6]] ....... [[mu:flag:flagged||100][100]] - [[mu:flag:flagged||500][500]]   [[mu:flag:encrypted][Encrypted]]   [[mu:flag:encrypted|%4d][   2]] ...... [[mu:flag:encrypted||100][100]] - [[mu:flag:encrypted||500][500]]
+[[mu:m:/**/Archive][Archive]]   [[mu:m:/**/Archive|%4d][   0]] ....... [[mu:m:/Archive||100][100]] - [[mu:m:/Archive||500][500]]  [[mu:flag:attach][ Attachments]] [[mu:flag:attach|%4d][9596]] ...... [[mu:flag:attach||99999][all]] - [[mu:size:10M..][big]]
+[[mu:flag:flagged][Important]] [[mu:flag:flagged|%4d][  63]] ....... [[mu:flag:flagged||100][100]] - [[mu:flag:flagged||500][500]]   [[mu:flag:encrypted][Encrypted]]   [[mu:flag:encrypted|%4d][   5]] ...... [[mu:flag:encrypted||100][100]] - [[mu:flag:encrypted||500][500]]
 [[mu:m:/Inbox/Github][Github]]    [[mu:m:/Inbox/Github|%4d][   0]] ....... [[mu:m:/Inbox/Github||100][100]] - [[mu:m:/Inbox/Github||500][500]]
 
 ** Date
-[[Year 2024]] [[mu:date:20240101..20241231|%6d][  5807]]         [[mu:date:20230101..20211231][Year 2023]] [[mu:date:20230101..20231231|%6d][ 46737]]
-[[Year 2022]] [[mu:date:20220101..20221231|%6d][ 26656]]         [[mu:date:20210101..20211231][Year 2021]] [[mu:date:20210101..20211231|%6d][     0]]
-[[mu:date:20200101..20201231][Year 2020]] [[mu:date:20200101..20201231|%6d][     0]]         [[mu:date:20190101..20191231][Year 2019]] [[mu:date:20190101..20191231|%6d][     0]]
-[[mu:date:20180101..20181231][Year 2018]] [[mu:date:20180101..20181231|%6d][     0]]
+[[Year 2024]] [[mu:date:20240101..20241231|%6d][  7372]]         [[mu:date:20230101..20211231][Year 2023]] [[mu:date:20230101..20231231|%6d][ 56365]]
+[[Year 2022]] [[mu:date:20220101..20221231|%6d][ 46970]]         [[mu:date:20210101..20211231][Year 2021]] [[mu:date:20210101..20211231|%6d][ 20554]]
+[[mu:date:20200101..20201231][Year 2020]] [[mu:date:20200101..20201231|%6d][ 15329]]         [[mu:date:20190101..20191231][Year 2019]] [[mu:date:20190101..20191231|%6d][ 12268]]
+[[mu:date:20180101..20181231][Year 2018]] [[mu:date:20180101..20181231|%6d][  7141]]
 
 ** Mailing lists
-[[mu:from:noreply@notifs.matrix.org][Matrix]]            [[mu:from:noreply@notifs.matrix.org|%6d][   235]] ........................... [[mu:from:noreply@notifs.matrix.org||100][100]] - [[mu:from:noreply@notifs.matrix.org||500][500]] - [[mu:from:noreply@notifs.matrix.org||9999][all]] 
-[[mu:list:emacs-devel.gnu.org][Emacs development]] [[mu:list:emacs-devel.gnu.org|%6d][ 22559]] ........................... [[mu:list:emacs-devel.gnu.org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-devel.gnu.org||9999][all]]
-[[mu:list:bug-gnu-emacs.gnu.org][Emacs bugs]]        [[mu:list:bug-gnu-emacs.gnu.org|%6d][ 39878]] ........................... [[mu:list:bug-gnu-emacs.gnu.org||100][100]] - [[mu:list:bug-gnu-emacs.gnu.org||500][500]] - [[mu:list:bug-gnu-emacs.gnu.org||9999][all]]
-[[mu:list:help-gnu-emacs.gnu.org][Emacs help]]        [[mu:list:help-gnu-emacs.gnu.org|%6d][  6975]] ........................... [[mu:list:help-gnu-emacs.gnu.org||100][100]] - [[mu:list:help-gnu-emacs.gnu.org||500][500]] - [[mu:list:help-gnu-emacs.gnu.org||9999][all]]
+[[mu:from:noreply@notifs.matrix.org][Matrix]]            [[mu:from:noreply@notifs.matrix.org|%6d][   239]] ........................... [[mu:from:noreply@notifs.matrix.org||100][100]] - [[mu:from:noreply@notifs.matrix.org||500][500]] - [[mu:from:noreply@notifs.matrix.org||9999][all]] 
+[[mu:list:emacs-devel.gnu.org][Emacs development]] [[mu:list:emacs-devel.gnu.org|%6d][ 30171]] ........................... [[mu:list:emacs-devel.gnu.org||100][100]] - [[mu:list:emacs-devel.gnu.org||500][500]] - [[mu:list:emacs-devel.gnu.org||9999][all]]
+[[mu:list:bug-gnu-emacs.gnu.org][Emacs bugs]]        [[mu:list:bug-gnu-emacs.gnu.org|%6d][ 39981]] ........................... [[mu:list:bug-gnu-emacs.gnu.org||100][100]] - [[mu:list:bug-gnu-emacs.gnu.org||500][500]] - [[mu:list:bug-gnu-emacs.gnu.org||9999][all]]
+[[mu:list:help-gnu-emacs.gnu.org][Emacs help]]        [[mu:list:help-gnu-emacs.gnu.org|%6d][ 10483]] ........................... [[mu:list:help-gnu-emacs.gnu.org||100][100]] - [[mu:list:help-gnu-emacs.gnu.org||500][500]] - [[mu:list:help-gnu-emacs.gnu.org||9999][all]]
 
 * Configuration
 :PROPERTIES:
