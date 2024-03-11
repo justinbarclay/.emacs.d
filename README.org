@@ -87,7 +87,7 @@
   - [[#general-intellisense][General Intellisense]]
   - [[#csslesssass][CSS/LESS/SASS]]
   - [[#cc][C/C++]]
-  - [[#lispy-languages][Lispy-languages]]
+  - [[#plispy-languages][pLispy-languages]]
   - [[#javascript-land][JavaScript Land]]
   - [[#html][HTML]]
   - [[#ruby][Ruby]]
@@ -220,7 +220,7 @@ Let's describe some variables to help determine how to configure Emacs
 I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
 ** Bootstrapping elpaca
 #+begin_src emacs-lisp
-  (defvar elpaca-installer-version 0.6)
+  (defvar elpaca-installer-version 0.7)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -2711,12 +2711,15 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 *** Javascript
 #+begin_src emacs-lisp
 (use-feature js-base-mode
- :mode "\\.js\\'"
  :custom
  (js-indent-level 2)
  (lsp-eslint-enable 't))
 #+end_src
 
+#+begin_src emacs-lisp
+  (use-feature js-ts-mode
+    :mode "\\.js\\'")
+#+end_src
 *** Typescript
 
 #+begin_src emacs-lisp
@@ -2726,6 +2729,11 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
     (lsp-eslint-enable 't)
     :config
     (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-feature typescript-ts-mode
+    :mode "\\.ts\\'")
 #+end_src
 
 ***  TSX Mode

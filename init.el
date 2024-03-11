@@ -10,7 +10,7 @@
 (setq-default user-full-name "Justin Barclay"
               user-mail-address "github@justincbarclay.ca")
 
-(defvar elpaca-installer-version 0.6)
+(defvar elpaca-installer-version 0.7)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -1557,10 +1557,12 @@ parses its input."
     (message "info not found")))
 
 (use-feature js-base-mode
- :mode "\\.js\\'"
  :custom
  (js-indent-level 2)
  (lsp-eslint-enable 't))
+
+(use-feature js-ts-mode
+  :mode "\\.js\\'")
 
 (use-feature typescript-ts-base-mode    
   :custom
@@ -1568,6 +1570,9 @@ parses its input."
   (lsp-eslint-enable 't)
   :config
   (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
+
+(use-feature typescript-ts-mode
+  :mode "\\.ts\\'")
 
 (use-feature tsx-ts-mode
   :mode "\\.tsx\\'"
