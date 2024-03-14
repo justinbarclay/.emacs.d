@@ -971,25 +971,32 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (use-package package-lint))
 
 (use-package flycheck
+  :ensure (:type git :host github :repo "justinbarclay/flycheck" :branch "fix/stylecheck-syntax-arg")
   :init
-  ;; (flycheck-define-checker less-stylelint
-  ;;   "A LESS syntax and style checker using stylelint.
+  (defun flycheck-node-modules-executable-find (executable)
+    (or
+     (let* ((base (locate-dominating-file buffer-file-name "node_modules"))
+            (cmd  (if base (expand-file-name (concat "node_modules/.bin/" executable)  base))))
+       (if (and cmd (file-exists-p cmd))
+           cmd))
+     (flycheck-default-executable-find executable)))
 
-  ;; See URL `http://stylelint.io/'."
-  ;;   :command ("stylelint"
-  ;;             (eval flycheck-stylelint-args)
-  ;;             (option-flag "--quiet" flycheck-stylelint-quiet)
-  ;;             (when flycheck-stylelintrc (config-file "--config" flycheck-stylelintrc)))
-  ;;   :standard-input t
-  ;;   :error-parser flycheck-parse-stylelint
-  ;;   :predicate flycheck-buffer-nonempty-p
-  ;;   :modes (less-css-mode))
+  (defun flycheck-node-modules-hook ()
+    "Look inside node modules for the specified checker"
+    (setq-local flycheck-executable-find #'flycheck-node-modules-executable-find))
   (global-flycheck-mode)
+  :hook
+  ((typescript-ts-base-mode
+    js-base-mode
+    web-mode
+    css-ts-mode
+    less-css-mode) .  #'flycheck-node-modules-hook)
   :custom
   (flycheck-javascript-eslint-executable "eslint_d")
   (flycheck-typescript-tslint-executable "eslint_d")
-  (flycheck-check-syntax-automatically '(save mode-enabled))
+  (flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
   (flycheck-standard-error-navigation nil)
+  (flycheck-stylelintrc ".stylelintrc.json")
   :config
   ;; (require 'flycheck-pos-tip)
   ;; (when 'display-graphic-p (selected-frame)
@@ -1406,6 +1413,7 @@ parses its input."
   (lsp-headerline-breadcrumb-enable nil)
   (lsp-solargraph-use-bundler 't)
   (lsp-keymap-prefix "C-l")
+  (lsp-diagnostic-clean-after-change 't)
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1426,7 +1434,6 @@ parses its input."
   (setq css-indent-offset 2))
 
 (use-feature less-css-mode
-  :hook (less-css-mode . flycheck-mode)
   :config
   (setq css-indent-offset 2))
 
