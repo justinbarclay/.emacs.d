@@ -1663,10 +1663,9 @@ parses its input."
 (use-package rustic
   :mode (("\\.rs\\'" . rustic-mode))
   :config
-  (progn
-    (setq rustic-lsp-setup-p '())
-    (setq rustic-indent-offset 2)
-    (electric-pair-mode 1)))
+  (setq rustic-lsp-setup-p '())
+  (setq rustic-indent-offset 2)
+  (electric-pair-mode 1))
 
 (use-package nix-mode)
 
@@ -1764,6 +1763,45 @@ parses its input."
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
+
+(use-package prodigy
+  :config
+  (prodigy-define-tag
+    :name 'thin
+    :ready-message "Listening on ssl://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+\.+\n")
+
+  (prodigy-define-tag
+    :name 'mongrel
+    :ready-message "Use Ctrl-C to stop")
+
+  (prodigy-define-tag
+    :name 'rails
+    :tags '(thin mongrel))
+
+  (prodigy-define-tag
+    :ready-message "VITE v[0-9]+.[0-9]+.[0-9]+  ready"
+    :name 'vite)
+
+  (prodigy-define-service
+    :name "MMP"
+    :command "rails"
+    :args '("s")
+    :url "https://dev.localtest.me:3000"
+    :cwd "~/dev/tidal/application-inventory/"
+    :stop-signal 'kill
+    :truncate-output 't
+    :kill-process-buffer-on-stop 't
+    :tags '(rails accelerator))
+
+  (prodigy-define-service
+    :name "Tidal Accelerator"
+    :command "npm"
+    :args '("run" "dev")
+    :url "https://dev.localtest.me:3449"
+    :cwd "~/dev/tidal/tidal-wave/"
+    :stop-signal 'kill
+    :kill-process-buffer-on-stop 't
+    :tags '(vite accelerator)))
 
 (use-feature tramp
   :custom
