@@ -341,13 +341,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":END:")
                          :file "~/org/work/calendar.org")))))))
 
-(use-package org-gcal
-  :init
-  (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
-        org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
-        org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/personal/calendar.org")
-                              ("justin.barclay@tidalmigrations.com" . "~/org/work/calendar.org"))))
-
 (use-package org-fancy-priorities
   :hook
   (org-mode . org-fancy-priorities-mode)
@@ -971,7 +964,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (use-package package-lint))
 
 (use-package flycheck
-  :ensure (:type git :host github :repo "justinbarclay/flycheck" :branch "fix/stylecheck-syntax-arg")
   :init
   (defun flycheck-node-modules-executable-find (executable)
     (or

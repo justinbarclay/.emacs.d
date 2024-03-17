@@ -678,7 +678,7 @@ Declarative Org Capture Templates
 #+END_SRC
 
 **** Org-gcal
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package org-gcal
     :init
     (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
@@ -1715,7 +1715,6 @@ Load this before we load Flycheck
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
-    :ensure (:type git :host github :repo "justinbarclay/flycheck" :branch "fix/stylecheck-syntax-arg")
     :init
     (defun flycheck-node-modules-executable-find (executable)
       (or
@@ -1731,10 +1730,10 @@ Load this before we load Flycheck
     (global-flycheck-mode)
     :hook
     ((typescript-ts-base-mode
-      js-base-mode 
+      js-base-mode
       web-mode
       css-ts-mode
-      less-css-mode) .  #'flycheck-node-modules-hook) 
+      less-css-mode) .  #'flycheck-node-modules-hook)
     :custom
     (flycheck-javascript-eslint-executable "eslint_d")
     (flycheck-typescript-tslint-executable "eslint_d")
