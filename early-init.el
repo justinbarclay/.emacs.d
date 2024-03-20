@@ -8,6 +8,7 @@
 
 (when (featurep 'jsonrpsc)
     (unload-feature 'jsonrpc))
+
 (setq custom-file (expand-file-name "customs.el" user-emacs-directory))
 
 (add-hook 'after-init-hook (lambda () (load custom-file 'noerror)))

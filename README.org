@@ -5,6 +5,7 @@
 - [[#setup][Setup]]
   - [[#turn-off-garbage-collection][Turn off garbage collection]]
   - [[#turn-off-bytecompiler-warnings][Turn off bytecompiler warnings]]
+  - [[#unload-some-built-in-packages][Unload some built-in packages]]
   - [[#move-customizations-to-their-own-file][Move customizations to their own file]]
   - [[#lets-make-the-emacs-start-up-run-fast][Let's make the Emacs start up run fast]]
   - [[#package-repositories][Package repositories]]
@@ -22,7 +23,7 @@
   - [[#eshell][EShell]]
   - [[#eat][Eat]]
   - [[#magit][Magit]]
-  - [[#pos-top][pos-top]]
+  - [[#pos-tip][pos-tip]]
   - [[#jsonrpc][jsonrpc]]
   - [[#email-mu4e][Email (mu4e)]]
   - [[#elfeed][Elfeed]]
@@ -65,6 +66,7 @@
   - [[#comment-or-uncomment-region][Comment or Uncomment region]]
   - [[#backups][Backups]]
   - [[#disable-superfluous-warnings][Disable Superfluous warnings]]
+  - [[#mark-manipulation][Mark Manipulation]]
   - [[#end-emacs-specific-config][end emacs specific config]]
   - [[#parens-balancing][Parens Balancing]]
   - [[#whitespace][Whitespace]]
@@ -131,7 +133,7 @@
   - [[#playground][Playground]]
 
 * About
-  "Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
+"Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do." - Donald Knuth
   This Config file is inspired by:
   + [[http://pages.sachachua.com/.emacs.d/Sacha.html]]
   + [[http://thewanderingcoder.com/2015/02/literate-emacs-configuration/]]
@@ -156,10 +158,15 @@ They are really noisy and annoying right now. And nothing I can deal with.
   (setq native-comp-deferred-compilation-deny-list '())
   (setq native-comp-async-report-warnings-errors nil)
 #+end_src
-** Move customizations to their own file
-#+begin_src emacs-lisp :tangle early-init.el
+** Unload some built-in packages
+Other dependencies need updated packages and Elpaca is not good about unloading them. So we have to do it for Elpaca.
+#+begin_src elisp :tangle early-init.el
   (when (featurep 'jsonrpsc)
       (unload-feature 'jsonrpc))
+#+end_src
+
+** Move customizations to their own file
+#+begin_src emacs-lisp :tangle early-init.el
   (setq custom-file (expand-file-name "customs.el" user-emacs-directory))
 
   (add-hook 'after-init-hook (lambda () (load custom-file 'noerror)))
@@ -788,7 +795,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
       ;; settings
       ;; from: http://whattheemacsd.com/setup-magit.el-01.html
       (defadvice magit-status (around magit-fullscreen activate)
-        (window-configuration-to-register :magit-fullscreen)
+        (window-configuration-to-register :m)
         ad-do-it
         (delete-other-windows))
 
@@ -817,7 +824,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
           ;; we only want to jump to register when the last seen buffer
           ;; was a magit-status buffer.
           (when (eq 'magit-status-mode current-mode)
-            (jump-to-register :magit-fullscreen))))
+            (jump-to-register :m))))
 
       (defun magit-maybe-commit (&optional show-options)
         "Runs magit-commit unless prefix is passed"
@@ -855,7 +862,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
-** pos-top
+** pos-tip
 #+begin_src emacs-lisp
 (use-package pos-tip)
 #+end_src
@@ -1004,7 +1011,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
           ("https://mjg59.dreamwidth.org/" tech)
           ("https://oxide.computer/blog/feed" tech company))))
 #+end_src
-
 * Look and Feel
 ** Window
 *** Natural colouring from emacs chrome
@@ -1371,7 +1377,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
      '(("h" "~/" "Home")
        ("m" "~/dev/tidal/application-inventory/" "MMP")
        ("t" "~/dev/tidal/tidal-wave" "Tidal Wave")))
-    ;; (dirvish-header-line-format '(:left (path) :right (free-space)))
+    (dirvish-header-line-format '(:left (path) :right (free-space)))
     (dirvish-mode-line-format ; it's ok to place string inside
      '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
     ;; Don't worry, Dirvish is still performant even you enable all these attributes
@@ -1473,8 +1479,9 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
     :defer 1
+    :bind (("C-s p" . projectile-ripgrep))
     :commands
-    (projectile-find-file projectile-switch-project)
+    (projectile-find-file projectile-switch-project projectile-ripgrep)
     :config
     (projectile-global-mode)
     (setq projectile-completion-system 'auto)
@@ -1578,8 +1585,54 @@ Allows one to switch to a buffer based by using numbers, instead of cycling with
 #+end_src
 
 ** Searching
+Unbind C-s from isearch and make it the universal search command
+#+begin_src elisp
+  (unbind-key "C-s")
+#+end_src
+*** With Ripgrep
 #+begin_src emacs-lisp
-  (use-package rg)
+  (use-package rg
+    :bind (("C-s r" . rg)))
+#+end_src
+*** With Isearch and Avy
+#+begin_src elisp
+  (use-package avy
+    :bind (("C-s a" . #'avy-goto-char-timer)
+           ("M-," . #'pop-mark-dwim))
+    :custom
+    (avy-enter-times-out 't)
+    (avy-timeout-seconds 1))
+#+end_src
+
+#+begin_src elisp
+  (use-feature isearch
+    :bind (("C-s i" . isearch-forward-regexp)
+           :map isearch-mode-map
+                ("M-j" . avy-isearch)))
+#+end_src
+*** Occur
+#+begin_src elisp
+  (use-feature occur
+    :bind ("C-s o" . occur))
+#+end_src
+
+*** Multi Occur
+#+begin_src elisp
+  (use-feature multi-occur
+    :init
+    (defun get-buffers-matching-mode (mode)
+      "Returns a list of buffers where their major-mode is equal to MODE"
+      (let ((buffer-mode-matches '()))
+        (dolist (buf (buffer-list))
+          (with-current-buffer buf
+            (when (eq mode major-mode)
+              (push buf buffer-mode-matches))))
+        buffer-mode-matches))
+    (defun multi-occur-in-this-mode ()
+      (interactive)
+      (multi-occur (get-buffers-matching-mode major-mode)
+                   (car (occur-read-primary-args))))
+    :bind ("C-s m" . multi-occur-in-this-mode))
 #+end_src
 
 * Editing
@@ -1647,6 +1700,23 @@ Emacs can automatically create backup files. This tells Emacs to put all backups
 #+begin_src emacs-lisp
   (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
 #+end_src
+** Mark Manipulation
+Moving around with the mark should be really simple. It's such a super power that I want to use it more and to do that, I need to bind it to something easier, something already reserved for popping the mark. So we can upgrade ~xref-go-back~ to be a ~DWIM~ function.
+
+Here is an example of and another examp I guess it is corfu being slow due to too many candidates?
+#+begin_src elisp
+  (global-unset-key "M-,")
+
+  (defun pop-mark-dwim ()
+    "If xref history exist, use that to move around and if not pop off the global mark stack."
+    (interactive)
+    (condition-case nil
+        (xref-go-back)
+      (user-error
+       (pop-global-mark))))
+
+  (global-set-key "M-," #'pop-mark-dwim)
+#+end_src
 
 ** end emacs specific config
 #+begin_src emacs-lisp
@@ -1702,8 +1772,7 @@ I've put this at the top, because I use this almost everyday and wish it existed
 ** Flycheck pos-tip
 Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp :tangle no
-(use-package flycheck-pos-tip
-  :ensure t)
+(use-package flycheck-pos-tip)
 #+END_SRC
 ** Flycheck package
 #+begin_src emacs-lisp 
@@ -1767,9 +1836,7 @@ Load this before we load Flycheck
   (use-package dape
     :ensure (:fetcher git
     :url "https://github.com/svaante/dape"))
-
 #+end_src
-
 * Completion
 ** Minibuffer
 *** Vertico
@@ -2008,10 +2075,8 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
     :bind ;; C-c bindings (mode-specific-map)
     (("C-c h" . consult-history)
      ("C-c m" . consult-mode-command)
-     ("C-c k" . consult-kmacro)
-     ("C-s" . consult-line)
+     ("C-s b" . consult-line)
      ;; C-x bindings (ctl-x-map)
-     ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
      ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
      ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
      ;; Custom M-# bindings for fast register access
@@ -2314,6 +2379,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 :PROPERTIES:
 :header-args:
 :END:
+
 #+begin_src emacs-lisp
   (use-package corfu
     :init
@@ -2322,7 +2388,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
     :config
     (setq corfu-auto-delay 0.1
           corfu-auto 't
-          corfu-auto-prefix 2
+          corfu-auto-prefix 1
           corfu-min-width 40
           corfu-min-height 20)
 
@@ -3234,7 +3300,6 @@ DELTA should be a multiple of 10, in the units used by the
 
   (global-set-key (kbd "C-c i") 'open-config-file)
 #+end_src
-
 
 ** Sudo Save
 For saving root protected files

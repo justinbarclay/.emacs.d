@@ -421,7 +421,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     ;; settings
     ;; from: http://whattheemacsd.com/setup-magit.el-01.html
     (defadvice magit-status (around magit-fullscreen activate)
-      (window-configuration-to-register :magit-fullscreen)
+      (window-configuration-to-register :m)
       ad-do-it
       (delete-other-windows))
 
@@ -450,7 +450,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         ;; we only want to jump to register when the last seen buffer
         ;; was a magit-status buffer.
         (when (eq 'magit-status-mode current-mode)
-          (jump-to-register :magit-fullscreen))))
+          (jump-to-register :m))))
 
     (defun magit-maybe-commit (&optional show-options)
       "Runs magit-commit unless prefix is passed"
@@ -767,7 +767,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    '(("h" "~/" "Home")
      ("m" "~/dev/tidal/application-inventory/" "MMP")
      ("t" "~/dev/tidal/tidal-wave" "Tidal Wave")))
-  ;; (dirvish-header-line-format '(:left (path) :right (free-space)))
+  (dirvish-header-line-format '(:left (path) :right (free-space)))
   (dirvish-mode-line-format ; it's ok to place string inside
    '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
   ;; Don't worry, Dirvish is still performant even you enable all these attributes
@@ -848,8 +848,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package projectile
   :defer 1
+  :bind (("C-s p" . projectile-ripgrep))
   :commands
-  (projectile-find-file projectile-switch-project)
+  (projectile-find-file projectile-switch-project projectile-ripgrep)
   :config
   (projectile-global-mode)
   (setq projectile-completion-system 'auto)
@@ -897,7 +898,41 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package ace-window
   :bind ("C-x o" . ace-window))
 
-(use-package rg)
+(unbind-key "C-s")
+
+(use-package rg
+  :bind (("C-s r" . rg)))
+
+(use-package avy
+  :bind (("C-s a" . #'avy-goto-char-timer)
+         ("M-," . #'pop-mark-dwim))
+  :custom
+  (avy-enter-times-out 't)
+  (avy-timeout-seconds 1))
+
+(use-feature isearch
+  :bind (("C-s i" . isearch-forward-regexp)
+         :map isearch-mode-map
+              ("M-j" . avy-isearch)))
+
+(use-feature occur
+  :bind ("C-s o" . occur))
+
+(use-feature multi-occur
+  :init
+  (defun get-buffers-matching-mode (mode)
+    "Returns a list of buffers where their major-mode is equal to MODE"
+    (let ((buffer-mode-matches '()))
+      (dolist (buf (buffer-list))
+        (with-current-buffer buf
+          (when (eq mode major-mode)
+            (push buf buffer-mode-matches))))
+      buffer-mode-matches))
+  (defun multi-occur-in-this-mode ()
+    (interactive)
+    (multi-occur (get-buffers-matching-mode major-mode)
+                 (car (occur-read-primary-args))))
+  :bind ("C-s m" . multi-occur-in-this-mode))
 
 (use-feature emacs
   :config
@@ -932,6 +967,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq auto-save-default nil)
 
 (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
+
+(global-unset-key "M-,")
+
+(defun pop-mark-dwim ()
+  "If xref history exist, use that to move around and if not pop off the global mark stack."
+  (interactive)
+  (condition-case nil
+      (xref-go-back)
+    (user-error
+     (pop-global-mark))))
+
+(global-set-key "M-," #'pop-mark-dwim)
 
 )
 
@@ -1223,10 +1270,8 @@ parses its input."
   :bind ;; C-c bindings (mode-specific-map)
   (("C-c h" . consult-history)
    ("C-c m" . consult-mode-command)
-   ("C-c k" . consult-kmacro)
-   ("C-s" . consult-line)
+   ("C-s b" . consult-line)
    ;; C-x bindings (ctl-x-map)
-   ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
    ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
    ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
    ;; Custom M-# bindings for fast register access
@@ -1309,7 +1354,7 @@ parses its input."
   :config
   (setq corfu-auto-delay 0.1
         corfu-auto 't
-        corfu-auto-prefix 2
+        corfu-auto-prefix 1
         corfu-min-width 40
         corfu-min-height 20)
 
