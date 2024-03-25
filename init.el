@@ -904,8 +904,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :bind (("C-s r" . rg)))
 
 (use-package avy
-  :bind (("C-s a" . #'avy-goto-char-timer)
-         ("M-," . #'pop-mark-dwim))
+  :bind (("C-s a" . #'avy-goto-char-timer))
   :custom
   (avy-enter-times-out 't)
   (avy-timeout-seconds 1))
@@ -968,7 +967,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
 
-(global-unset-key "M-,")
+(unbind-key "M-,")
 
 (defun pop-mark-dwim ()
   "If xref history exist, use that to move around and if not pop off the global mark stack."
@@ -978,7 +977,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (user-error
      (pop-global-mark))))
 
-(global-set-key "M-," #'pop-mark-dwim)
+(bind-key "M-," #'pop-mark-dwim)
 
 )
 
@@ -1048,9 +1047,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (text-mode . flyspell-mode))
   ;; :config (setq flyspell-issue-message-flag nil)
   )
-
-(use-package dap-mode
-  :hook (go-ts-mode . (require 'dap-dlv-go)))
 
 (use-package vertico
   :init
@@ -1268,9 +1264,7 @@ parses its input."
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind ;; C-c bindings (mode-specific-map)
-  (("C-c h" . consult-history)
-   ("C-c m" . consult-mode-command)
-   ("C-s b" . consult-line)
+  (("C-s b" . consult-line)
    ;; C-x bindings (ctl-x-map)
    ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
    ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
@@ -1327,10 +1321,8 @@ parses its input."
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
   :init
-
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
-
   :config
 
   ;; Hide the mode line of the Embark live/completions buffers
@@ -1730,8 +1722,7 @@ parses its input."
   :config
   (setq-local tab-width 2))
 
-(use-package docker
-  :defer t)
+(use-package docker)
 
 (use-package markdown-mode
   :commands (markdown-mode gfm-mode)
@@ -1841,9 +1832,10 @@ parses its input."
     :tags '(vite accelerator)))
 
 (use-feature tramp
-  :custom
-  (tramp-default-method "ssh")
-  (tramp-copy-size-limit nil))
+  :defer t
+  :custom (tramp-terminal-type "tramp")
+  :hook (tramp-mode . (lambda () (projectile-mode 0)))
+  :config (setq debug-ignored-errors (cons 'remote-file-error debug-ignored-errors)))
 
 (use-package alert
       :commands (alert alert-define-style)

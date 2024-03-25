@@ -1597,8 +1597,7 @@ Unbind C-s from isearch and make it the universal search command
 *** With Isearch and Avy
 #+begin_src elisp
   (use-package avy
-    :bind (("C-s a" . #'avy-goto-char-timer)
-           ("M-," . #'pop-mark-dwim))
+    :bind (("C-s a" . #'avy-goto-char-timer))
     :custom
     (avy-enter-times-out 't)
     (avy-timeout-seconds 1))
@@ -1705,7 +1704,7 @@ Moving around with the mark should be really simple. It's such a super power tha
 
 Here is an example of and another examp I guess it is corfu being slow due to too many candidates?
 #+begin_src elisp
-  (global-unset-key "M-,")
+  (unbind-key "M-,")
 
   (defun pop-mark-dwim ()
     "If xref history exist, use that to move around and if not pop off the global mark stack."
@@ -1715,7 +1714,7 @@ Here is an example of and another examp I guess it is corfu being slow due to to
       (user-error
        (pop-global-mark))))
 
-  (global-set-key "M-," #'pop-mark-dwim)
+  (bind-key "M-," #'pop-mark-dwim)
 #+end_src
 
 ** end emacs specific config
@@ -1827,10 +1826,6 @@ Load this before we load Flycheck
 #+END_SRC
 
 * Integrated Debugging
-#+begin_src emacs-lisp
-  (use-package dap-mode
-    :hook (go-ts-mode . (require 'dap-dlv-go)))
-#+end_src
 ** Dape
 #+begin_src emacs-lisp :tangle no
   (use-package dape
@@ -2073,9 +2068,7 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
   (use-package consult
     ;; Replace bindings. Lazily loaded due by `use-package'.
     :bind ;; C-c bindings (mode-specific-map)
-    (("C-c h" . consult-history)
-     ("C-c m" . consult-mode-command)
-     ("C-s b" . consult-line)
+    (("C-s b" . consult-line)
      ;; C-x bindings (ctl-x-map)
      ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
      ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
@@ -2135,10 +2128,8 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
   :init
-
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
-
   :config
 
   ;; Hide the mode line of the Embark live/completions buffers
@@ -2997,8 +2988,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+END_SRC
 *** Docker
 #+BEGIN_SRC emacs-lisp
-  (use-package docker
-    :defer t)
+  (use-package docker)
 #+END_SRC
 ** Markdown
 #+BEGIN_SRC emacs-lisp
@@ -3143,9 +3133,10 @@ Much like Mu4e we treat this as a feature because otherwise there is too much ce
 ** Tramp
 #+begin_src emacs-lisp
 (use-feature tramp
-  :custom
-  (tramp-default-method "ssh")
-  (tramp-copy-size-limit nil))
+  :defer t
+  :custom (tramp-terminal-type "tramp")
+  :hook (tramp-mode . (lambda () (projectile-mode 0)))
+  :config (setq debug-ignored-errors (cons 'remote-file-error debug-ignored-errors)))
 #+end_src
 
 ** Alert
