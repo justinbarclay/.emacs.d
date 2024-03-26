@@ -1833,9 +1833,11 @@ parses its input."
 
 (use-feature tramp
   :defer t
-  :custom (tramp-terminal-type "tramp")
   :hook (tramp-mode . (lambda () (projectile-mode 0)))
-  :config (setq debug-ignored-errors (cons 'remote-file-error debug-ignored-errors)))
+  :config (setq debug-ignored-errors (cons 'remote-file-error debug-ignored-errors))
+  :custom
+  (tramp-terminal-type "tramp")
+  (tramp-use-ssh-controlmaster-options nil))
 
 (use-package alert
       :commands (alert alert-define-style)
