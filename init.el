@@ -1030,6 +1030,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     css-ts-mode
     less-css-mode) .  #'flycheck-node-modules-hook)
   :custom
+  (checkdoc-force-docstrings-flag nil)
   (flycheck-javascript-eslint-executable "eslint_d")
   (flycheck-typescript-tslint-executable "eslint_d")
   (flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
@@ -1503,13 +1504,14 @@ parses its input."
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package parinfer-rust-mode
- :defer 10
- :commands (parinfer-rust-mode)
- :hook (emacs-lisp-mode)
- :custom
- (parinfer-rust-disable-troublesome-modes 't)
- (parinfer-rust-check-before-enable 'defer)
- (parinfer-rust-auto-download nil))
+  :defer 10
+  :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :branch "update-options-handling")
+  :commands (parinfer-rust-mode)
+  :hook (emacs-lisp-mode)
+  :custom
+  (parinfer-rust-disable-troublesome-modes 't)
+  (parinfer-rust-check-before-enable 'defer)
+  (parinfer-rust-auto-download nil))
 
 (use-feature eldoc
   :config
