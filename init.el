@@ -1505,8 +1505,11 @@ parses its input."
 (use-package parinfer-rust-mode
  :defer 10
  :commands (parinfer-rust-mode)
- :init
- (setq parinfer-rust-auto-download nil))
+ :hook (emacs-lisp-mode)
+ :custom
+ (parinfer-rust-disable-troublesome-modes 't)
+ (parinfer-rust-check-before-enable 'defer)
+ (parinfer-rust-auto-download nil))
 
 (use-feature eldoc
   :config
@@ -1591,6 +1594,8 @@ parses its input."
                       nil
                       -1))
     (message "info not found")))
+
+(use-package janet-mode)
 
 (use-feature js-base-mode
  :custom

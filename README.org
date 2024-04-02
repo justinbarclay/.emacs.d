@@ -683,16 +683,6 @@ Declarative Org Capture Templates
                                         ":END:")
                              :file "~/org/work/calendar.org")))))))
 #+END_SRC
-
-**** Org-gcal
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package org-gcal
-    :init
-    (setq org-gcal-client-id (getenv "CALENDAR_CLIENT_ID")
-          org-gcal-client-secret (getenv "CALENDAR_CLIENT_SECRET")
-          org-gcal-file-alist '(("justincbarclay@gmail.com" . "~/org/personal/calendar.org")
-                                ("justin.barclay@tidalmigrations.com" . "~/org/work/calendar.org"))))
-#+END_SRC
 **** Org Fancy Priorities
 Change priority cookies from alphanumeric cookies into symbols and explicitly colours them
 #+BEGIN_SRC emacs-lisp
@@ -705,6 +695,12 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
       (?C :foreground "blue"))
     (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 #+END_SRC
+*** org-trello
+#+begin_src elisp :tangle no
+  (use-package org-trello
+    :ensure (:build (:not elpaca--byte-compile)))
+#+end_src
+
 *** Org Roam
 #+begin_src emacs-lisp
 (use-package org-roam
@@ -2647,8 +2643,11 @@ We need lispy for some of the excellent bracket based navigation integrations wi
   (use-package parinfer-rust-mode
    :defer 10
    :commands (parinfer-rust-mode)
-   :init
-   (setq parinfer-rust-auto-download nil))
+   :hook (emacs-lisp-mode)
+   :custom
+   (parinfer-rust-disable-troublesome-modes 't)
+   (parinfer-rust-check-before-enable 'defer)
+   (parinfer-rust-auto-download nil))
 #+END_SRC
 
 **** eldoc
@@ -2770,6 +2769,11 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
                       -1))
     (message "info not found")))
 #+END_SRC
+
+*** Janet
+#+begin_src elisp
+(use-package janet-mode)
+#+end_src
 
 ** JavaScript Land
 *** Javascript
