@@ -161,7 +161,7 @@ They are really noisy and annoying right now. And nothing I can deal with.
 ** Unload some built-in packages
 Other dependencies need updated packages and Elpaca is not good about unloading them. So we have to do it for Elpaca.
 #+begin_src elisp :tangle early-init.el
-  (when (featurep 'jsonrpsc)
+  (when (featurep 'jsonrpc)
       (unload-feature 'jsonrpc))
 #+end_src
 
@@ -2801,14 +2801,13 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 
 #+begin_src emacs-lisp
   (use-feature typescript-ts-mode
-    :mode "\\.ts\\'")
+    :mode ("\\.ts\\'" "\\.ts.snap\\'"))
 #+end_src
 
-***  TSX Mode
+*** TSX Mode
 #+begin_src emacs-lisp
   (use-feature tsx-ts-mode
-    :mode "\\.tsx\\'"
-    :config (flycheck-add-mode 'javascript-eslint tsx-ts-mode))
+    :mode "\\.tsx\\'")
 #+end_src
 
 *** Prettier

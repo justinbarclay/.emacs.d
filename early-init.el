@@ -6,7 +6,7 @@
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 
-(when (featurep 'jsonrpsc)
+(when (featurep 'jsonrpc)
     (unload-feature 'jsonrpc))
 
 (setq custom-file (expand-file-name "customs.el" user-emacs-directory))

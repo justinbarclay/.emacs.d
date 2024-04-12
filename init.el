@@ -1613,11 +1613,10 @@ parses its input."
   (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 
 (use-feature typescript-ts-mode
-  :mode "\\.ts\\'")
+  :mode ("\\.ts\\'" "\\.ts.snap\\'"))
 
 (use-feature tsx-ts-mode
-  :mode "\\.tsx\\'"
-  :config (flycheck-add-mode 'javascript-eslint tsx-ts-mode))
+  :mode "\\.tsx\\'")
 
 (use-package prettier-js
   :hook ((typescript-ts-base-mode . prettier-js-mode)
