@@ -1504,8 +1504,7 @@ parses its input."
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package parinfer-rust-mode
-  :defer 10
-  :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :branch "update-options-handling")
+  :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :branch "simplify-change-tracking")
   :commands (parinfer-rust-mode)
   :hook (emacs-lisp-mode)
   :custom

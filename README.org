@@ -2642,8 +2642,7 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 **** parinfer-rust-mode
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
-    :defer 10
-    :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :branch "update-options-handling")
+    :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :branch "simplify-change-tracking")
     :commands (parinfer-rust-mode)
     :hook (emacs-lisp-mode)
     :custom
