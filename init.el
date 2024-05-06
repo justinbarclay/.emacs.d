@@ -46,7 +46,6 @@
     (load "./elpaca-autoloads")))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
-
 ;; Install use-package support
 (elpaca elpaca-use-package
         ;; Enable :elpaca use-package keyword.
@@ -369,6 +368,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
+
+(use-package org-download)
 
 (use-package flycheck-grammarly)
 
@@ -1046,8 +1047,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-feature flyspell
   :hook ((prog-mode . flyspell-prog-mode)
          (text-mode . flyspell-mode))
-  ;; :config (setq flyspell-issue-message-flag nil)
-  )
+  :config (setq flyspell-issue-message-flag nil))
 
 (use-package vertico
   :init
@@ -1459,6 +1459,8 @@ parses its input."
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
+(use-package devdocs)
+
 (use-feature css-mode
   :config
   (setq css-indent-offset 2))
@@ -1504,7 +1506,7 @@ parses its input."
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package parinfer-rust-mode
-  :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :branch "simplify-change-tracking")
+  :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :branch "update-options-handling")
   :commands (parinfer-rust-mode)
   :hook (emacs-lisp-mode)
   :custom
