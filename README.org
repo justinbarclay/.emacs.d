@@ -193,6 +193,7 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
   (setq load-prefer-newer t)
   (setq package-archives
         '(("melpa" . "http://melpa.org/packages/")
+          ("melpa-stable" . "http://stable.melpa.org/packages/")
           ("gnu" . "https://elpa.gnu.org/packages/")
           ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
@@ -264,7 +265,6 @@ I've decided to experiment with a completely new package manager. The main purpo
       (load "./elpaca-autoloads")))
   (add-hook 'after-init-hook #'elpaca-process-queues)
   (elpaca `(,@elpaca-order))
-
   ;; Install use-package support
   (elpaca elpaca-use-package
           ;; Enable :elpaca use-package keyword.
@@ -725,6 +725,11 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
+#+end_src
+
+*** Org Download
+#+begin_src elisp
+(use-package org-download)
 #+end_src
 
 ** Grammarly
@@ -1818,8 +1823,7 @@ Load this before we load Flycheck
   (use-feature flyspell
     :hook ((prog-mode . flyspell-prog-mode)
            (text-mode . flyspell-mode))
-    ;; :config (setq flyspell-issue-message-flag nil)
-    )
+    :config (setq flyspell-issue-message-flag nil))
 #+END_SRC
 
 * Integrated Debugging
@@ -2486,7 +2490,6 @@ Better movement through treesitter
     :hook (prog-mode . combobulate-mode)
     :custom (combobulate-js-ts-enable-auto-close-tag . nil))
 #+end_src
-
 ** General Intellisense
 *** copilot
 #+begin_src emacs-lisp
@@ -2563,6 +2566,11 @@ Better movement through treesitter
            ("C-c h" . eldoc))
     :custom
     (eglot-send-changes-idle-time 0.1))
+#+end_src
+
+*** DevDocs
+#+begin_src elisp
+(use-package devdocs)
 #+end_src
 
 ** CSS/LESS/SASS
@@ -2642,8 +2650,6 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 **** parinfer-rust-mode
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
-    :defer 10
-    :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :branch "update-options-handling")
     :commands (parinfer-rust-mode)
     :hook (emacs-lisp-mode)
     :custom
