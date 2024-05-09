@@ -271,10 +271,11 @@ I've decided to experiment with a completely new package manager. The main purpo
           (elpaca-use-package-mode)
           ;; Assume :elpaca t unless otherwise specified.
           (setq elpaca-use-package-by-default t))
-
+  (when jb/os-windows-p (setq elpaca-queue-limit 20))
   ;; Block until current queue processed.
   (elpaca-wait)
 #+end_src
+
 
 * Tent Pole
 For big emacs packages, that help define the experience of Emacs itself
@@ -1056,8 +1057,11 @@ Emacs keeps a margin between itself and other windows, but if we enable pixelwis
 ** Font
 I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good and has great ligature support.
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
+(let ((font-name (if jb/os-windows-p
+                     "CaskaydiaCove NFM"
+                   "CaskaydiaCove Nerd Font Mono")))
   (set-face-attribute 'default nil
-                      :family "CaskaydiaCove Nerd Font Mono" :height 170 :weight 'normal)
+                      :family font-name :height 170 :weight 'normal))
 #+END_SRC
 
 *** Ligatures
@@ -1438,10 +1442,6 @@ Currently turned off due to debugging issues
     (setq package-check-signature nil)
     (require 'gnutls)
     (add-to-list 'gnutls-trustfiles (expand-file-name "~/.cert/cacert.pm"))
-    (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
-    (setq shell-file-name "bash")
-    (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
-    (setenv "SHELL" shell-file-name)
     (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 #+END_SRC
 ** Linux && Darwin

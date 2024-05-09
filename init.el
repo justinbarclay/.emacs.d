@@ -53,7 +53,7 @@
         (elpaca-use-package-mode)
         ;; Assume :elpaca t unless otherwise specified.
         (setq elpaca-use-package-by-default t))
-
+(when jb/os-windows-p (setq elpaca-queue-limit 20))
 ;; Block until current queue processed.
 (elpaca-wait)
 
@@ -824,10 +824,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setq package-check-signature nil)
   (require 'gnutls)
   (add-to-list 'gnutls-trustfiles (expand-file-name "~/.cert/cacert.pm"))
-  (setq explicit-shell-file-name "c:/windows/system32/bash.exe")
-  (setq shell-file-name "bash")
-  (setq explicit-bash.exe-args '("--noediting" "--login" "-i"))
-  (setenv "SHELL" shell-file-name)
   (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 
 (when (not jb/os-windows-p)
