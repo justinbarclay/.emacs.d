@@ -486,6 +486,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
+(use-package magit-file-icons
+  :after magit
+  :hook (magit-status-mode . magit-file-icons-mode)
+  :custom
+  ;; These are the default values:
+  (magit-file-icons-enable-diff-file-section-icons t)
+  (magit-file-icons-enable-untracked-icons t)
+  (magit-file-icons-enable-diffstat-icons t))
+
 (use-package pos-tip)
 
 (use-package jsonrpc)
@@ -1413,6 +1422,21 @@ parses its input."
               ("TAB" . 'copilot-accept-completion)
               ("C-TAB" . 'copilot-accept-completion-by-word)))
 
+(use-package gptel
+  :config
+  (setq
+   gptel-model "gemini-1.5-pro"
+   gptel-backend (gptel-make-gemini "Gemini"
+                   :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
+                   :stream t)))
+
+(use-package gptel-extra
+  :ensure (:repo "KarimAziev/gptel-extra"
+           :type git
+           :host github)
+  :after (gptel)
+  :config (gptel-extra-org-markdown-block-mode 1))
+
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode
@@ -1507,7 +1531,9 @@ parses its input."
   :custom
   (parinfer-rust-disable-troublesome-modes 't)
   (parinfer-rust-check-before-enable 'defer)
-  (parinfer-rust-auto-download nil))
+  (parinfer-rust-auto-download nil)
+  :config
+  (add-hook 'parinfer-rust-mode-hook 'parinfer-rust--auto-apply-fast-mode))
 
 (use-feature eldoc
   :config

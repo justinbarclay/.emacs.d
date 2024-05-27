@@ -864,6 +864,18 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
+*** Magit icons
+#+begin_src elisp
+(use-package magit-file-icons
+  :after magit
+  :hook (magit-status-mode . magit-file-icons-mode)
+  :custom
+  ;; These are the default values:
+  (magit-file-icons-enable-diff-file-section-icons t)
+  (magit-file-icons-enable-untracked-icons t)
+  (magit-file-icons-enable-diffstat-icons t))
+#+end_src
+
 ** pos-tip
 #+begin_src emacs-lisp
 (use-package pos-tip)
@@ -2506,6 +2518,26 @@ Better movement through treesitter
                 ("C-TAB" . 'copilot-accept-completion-by-word)))
 #+end_src
 
+*** GPTel
+#+begin_src elisp
+  (use-package gptel
+    :config
+    (setq
+     gptel-model "gemini-1.5-pro"
+     gptel-backend (gptel-make-gemini "Gemini"
+                     :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
+                     :stream t)))
+#+end_src
+
+#+begin_src elisp
+  (use-package gptel-extra
+    :ensure (:repo "KarimAziev/gptel-extra"
+             :type git
+             :host github)
+    :after (gptel)
+    :config (gptel-extra-org-markdown-block-mode 1))
+#+end_src
+
 *** LSP-Mode
 :PROPERTIES:
 :header-args:
@@ -2655,7 +2687,9 @@ We need lispy for some of the excellent bracket based navigation integrations wi
     :custom
     (parinfer-rust-disable-troublesome-modes 't)
     (parinfer-rust-check-before-enable 'defer)
-    (parinfer-rust-auto-download nil))
+    (parinfer-rust-auto-download nil)
+    :config
+    (add-hook 'parinfer-rust-mode-hook 'parinfer-rust--auto-apply-fast-mode))
 #+END_SRC
 **** eldoc
 #+BEGIN_SRC emacs-lisp
