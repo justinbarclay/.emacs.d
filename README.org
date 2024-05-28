@@ -876,6 +876,18 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
   (magit-file-icons-enable-diffstat-icons t))
 #+end_src
 
+*** Magit TODO
+Due to how hl-todo specified versions, we have to do a full clone and specify the version, as mentioned [[https://github.com/progfolio/elpaca/wiki/Warnings-and-Errors#unmet-dependency-version][here]]
+#+begin_src elisp
+  (use-package hl-todo
+    :ensure (hl-todo :depth nil :version (lambda (&rest _args) "1.9.0")))
+#+end_src
+
+#+begin_src elisp
+  (use-package magit-todos
+    :hook (magit-mode . magit-todos-mode))
+#+end_src
+
 ** pos-tip
 #+begin_src emacs-lisp
 (use-package pos-tip)

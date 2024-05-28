@@ -495,6 +495,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (magit-file-icons-enable-untracked-icons t)
   (magit-file-icons-enable-diffstat-icons t))
 
+(use-package hl-todo
+  :ensure (hl-todo :depth nil :version (lambda (&rest _args) "1.9.0")))
+
+(use-package magit-todos
+  :hook (magit-mode . magit-todos-mode))
+
 (use-package pos-tip)
 
 (use-package jsonrpc)
