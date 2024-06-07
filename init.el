@@ -488,12 +488,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package magit-file-icons
   :after magit
-  :hook (magit-status-mode . magit-file-icons-mode)
-  :custom
-  ;; These are the default values:
-  (magit-file-icons-enable-diff-file-section-icons t)
-  (magit-file-icons-enable-untracked-icons t)
-  (magit-file-icons-enable-diffstat-icons t))
+  :hook (magit-status-mode . magit-file-icons-mode))
 
 (use-package hl-todo
   :ensure (hl-todo :depth nil :version (lambda (&rest _args) "1.9.0")))
@@ -867,6 +862,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (projectile-global-mode)
   (setq projectile-completion-system 'auto)
   (setq projectile-enable-caching t)
+  (add-to-list 'projectile-globally-ignored-directories "~")
+
   (setq projectile-switch-project-action #'magit-status)
 
   (define-key projectile-mode-map (kbd "C-c p") '("projectile" . projectile-command-map))
@@ -1654,6 +1651,8 @@ parses its input."
          (json-base-mode . prettier-js-mode)
          (js-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
+
+(use-package deno-fmt)
 
 (use-package eslint-disable-rule)
 

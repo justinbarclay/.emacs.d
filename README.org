@@ -868,12 +868,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+begin_src elisp
 (use-package magit-file-icons
   :after magit
-  :hook (magit-status-mode . magit-file-icons-mode)
-  :custom
-  ;; These are the default values:
-  (magit-file-icons-enable-diff-file-section-icons t)
-  (magit-file-icons-enable-untracked-icons t)
-  (magit-file-icons-enable-diffstat-icons t))
+  :hook (magit-status-mode . magit-file-icons-mode))
 #+end_src
 
 *** Magit TODO
@@ -1511,6 +1506,8 @@ Turn on recent file mode so that you can more easily switch to recently edited f
     (projectile-global-mode)
     (setq projectile-completion-system 'auto)
     (setq projectile-enable-caching t)
+    (add-to-list 'projectile-globally-ignored-directories "~")
+
     (setq projectile-switch-project-action #'magit-status)
 
     (define-key projectile-mode-map (kbd "C-c p") '("projectile" . projectile-command-map))
@@ -2873,6 +2870,11 @@ Autoformatting
            (js-mode . prettier-js-mode)
            (web-mode . prettier-js-mode)))
 #+end_src
+*** denofmt
+#+begin_src emacs-lisp
+(use-package deno-fmt)
+#+end_src
+
 *** eslint-disable
 #+begin_src emacs-lisp
   (use-package eslint-disable-rule)
