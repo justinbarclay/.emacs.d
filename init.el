@@ -1536,6 +1536,8 @@ parses its input."
   (parinfer-rust-check-before-enable 'defer)
   (parinfer-rust-auto-download nil)
   :config
+  (add-hook 'vundo-pre-enter-hook (lambda () (parinfer-rust-mode 0) nil t))
+  (add-hook 'vundo-post-exit-hook (lambda () (parinfer-rust-mode 1) nil t))
   (add-hook 'parinfer-rust-mode-hook 'parinfer-rust--auto-apply-fast-mode))
 
 (use-feature eldoc

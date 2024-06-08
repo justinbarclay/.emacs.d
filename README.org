@@ -74,7 +74,7 @@
   - [[#hungry-delete][Hungry Delete]]
   - [[#multiple-cursors][Multiple Cursors]]
 - [[#syntax-and-error-checking][Syntax and Error checking]]
-  - [[#flycheck-pos-tip][Flycheck pos-tip]]
+  - [[#flycheck-posframe][Flycheck posframe]]
   - [[#flycheck-package][Flycheck package]]
   - [[#flycheck][Flycheck]]
   - [[#flyspell][Flyspell]]
@@ -1790,10 +1790,17 @@ I've put this at the top, because I use this almost everyday and wish it existed
 #+END_SRC
 
 * Syntax and Error checking
-** Flycheck pos-tip
+** Flycheck posframe
 Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp :tangle no
-(use-package flycheck-pos-tip)
+  (use-package flycheck-posframe
+    :config
+    (set-face-attribute 'flycheck-posframe-info-face nil :inherit 'font-lock-variable-name-face)
+    (set-face-attribute 'flycheck-posframe-warning-face nil :inherit 'warning)
+    (set-face-attribute 'flycheck-posframe-error-face nil :inherit 'error)
+    (setq flycheck-posframe-warning-prefix "⚠ "
+          flycheck-posframe-error-prefix "❌ "
+          flycheck-posframe-info-prefix "ⓘ "))
 #+END_SRC
 ** Flycheck package
 #+begin_src emacs-lisp 
@@ -2698,6 +2705,8 @@ We need lispy for some of the excellent bracket based navigation integrations wi
     (parinfer-rust-check-before-enable 'defer)
     (parinfer-rust-auto-download nil)
     :config
+    (add-hook 'vundo-pre-enter-hook (lambda () (parinfer-rust-mode 0) nil t))
+    (add-hook 'vundo-post-exit-hook (lambda () (parinfer-rust-mode 1) nil t))
     (add-hook 'parinfer-rust-mode-hook 'parinfer-rust--auto-apply-fast-mode))
 #+END_SRC
 **** eldoc
