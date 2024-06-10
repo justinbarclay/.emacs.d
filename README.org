@@ -2545,15 +2545,6 @@ Better movement through treesitter
                      :stream t)))
 #+end_src
 
-#+begin_src elisp
-  (use-package gptel-extra
-    :ensure (:repo "KarimAziev/gptel-extra"
-             :type git
-             :host github)
-    :after (gptel)
-    :config (gptel-extra-org-markdown-block-mode 1))
-#+end_src
-
 *** LSP-Mode
 :PROPERTIES:
 :header-args:

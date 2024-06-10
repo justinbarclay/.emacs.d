@@ -1433,13 +1433,6 @@ parses its input."
                    :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
                    :stream t)))
 
-(use-package gptel-extra
-  :ensure (:repo "KarimAziev/gptel-extra"
-           :type git
-           :host github)
-  :after (gptel)
-  :config (gptel-extra-org-markdown-block-mode 1))
-
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode
