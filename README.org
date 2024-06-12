@@ -3521,3 +3521,19 @@ Count line repititions
         (goto-char (point-min))
         (sort-numeric-fields 1 (point-min) (point-max)))))
 #+end_src
+
+Play with string properties
+
+#+begin_src emacs-lisp
+(comment
+(while-let ((prop (text-property-search-forward 'font-lock-face nil (lambda (propa propb)
+                                                                      (message "%s" propa)
+                                                                      (message "%s" propb)
+                                                                      nil)
+                                                nil))
+            (icon))
+    (message "%s" prop)
+    (message "%s" (nerd-icons-icon-for-file (buffer-substring-no-properties (prop-match-beginning prop)
+                                                                            (prop-match-end prop))))
+    (message "%s" (prop-match-value prop))))
+#+end_src
