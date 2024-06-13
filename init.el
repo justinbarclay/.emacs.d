@@ -1014,6 +1014,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    ("C-<" . mc/mark-previous-like-this))
   :commands (mc/mark-next-like-this mc/mark-previous-like-this))
 
+(use-package flycheck-posframe
+  :hook ((flycheck-mode . flycheck-posframe-mode)
+         (lsp-mode . (lambda () (flycheck-posframe-mode 0))))
+  :config
+  (set-face-attribute 'flycheck-posframe-info-face nil :inherit 'font-lock-variable-name-face)
+  (set-face-attribute 'flycheck-posframe-warning-face nil :inherit 'warning)
+  (set-face-attribute 'flycheck-posframe-error-face nil :inherit 'error)
+  (setq flycheck-posframe-warning-prefix "⚠ "
+        flycheck-posframe-error-prefix "❌ "
+        flycheck-posframe-info-prefix "ⓘ "))
+
 (use-package flycheck-package
   :init
   (use-package package-lint))
@@ -1044,13 +1055,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (flycheck-typescript-tslint-executable "eslint_d")
   (flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
   (flycheck-standard-error-navigation nil)
-  (flycheck-stylelintrc ".stylelintrc.json")
-  :config
-  ;; (require 'flycheck-pos-tip)
-  ;; (when 'display-graphic-p (selected-frame)
-  ;;       (eval-after-load 'flycheck
-  ;;         (flycheck-pos-tip-mode)))
-  )
+  (flycheck-stylelintrc ".stylelintrc.json"))
 
 (use-feature flyspell
   :hook ((prog-mode . flyspell-prog-mode)

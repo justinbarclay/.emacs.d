@@ -1792,8 +1792,10 @@ I've put this at the top, because I use this almost everyday and wish it existed
 * Syntax and Error checking
 ** Flycheck posframe
 Load this before we load Flycheck
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (use-package flycheck-posframe
+    :hook ((flycheck-mode . flycheck-posframe-mode)
+           (lsp-mode . (lambda () (flycheck-posframe-mode 0))))
     :config
     (set-face-attribute 'flycheck-posframe-info-face nil :inherit 'font-lock-variable-name-face)
     (set-face-attribute 'flycheck-posframe-warning-face nil :inherit 'warning)
@@ -1837,13 +1839,7 @@ Load this before we load Flycheck
     (flycheck-typescript-tslint-executable "eslint_d")
     (flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
     (flycheck-standard-error-navigation nil)
-    (flycheck-stylelintrc ".stylelintrc.json")
-    :config
-    ;; (require 'flycheck-pos-tip)
-    ;; (when 'display-graphic-p (selected-frame)
-    ;;       (eval-after-load 'flycheck
-    ;;         (flycheck-pos-tip-mode)))
-    )
+    (flycheck-stylelintrc ".stylelintrc.json"))
 #+END_SRC
 
 ** Flyspell
