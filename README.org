@@ -440,18 +440,7 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
     :after org)
 #+end_src
 
-*** Org-bullets
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package org-bullets
-    :hook (org-mode . org-bullets-mode))
-#+END_SRC
-
 *** org-pdftools
-Before we can install org-pdftools, we need to install pdf-tools
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package pdf-tools)
-#+END_SRC
-
 Now that we have that installed we can pull in org-pdftools from github
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package org-pdftools
@@ -494,24 +483,6 @@ You can also use @ as separator, instead of _.
   (use-package org-modern
     :hook (org-mode . org-modern-mode))
 #+end_src
-
-*** Org-re-reveal
-Creating presentation using org mode and the web
-#+BEGIN_SRC emacs-lisp
-  (use-package org-re-reveal)
-#+END_SRC
-*** Org-tree-slide
-A presentation mode directly in Emacs and Org Mode
-#+BEGIN_SRC emacs-lisp
-  (use-package org-tree-slide
-    :config
-    (progn
-      (org-tree-slide-presentation-profile)
-      (setq org-tree-slide-slide-in-effect nil
-            org-tree-slide-skip-done nil
-            org-tree-slide-header nil)))
-
-#+END_SRC
 
 *** Custom Org Functions
 These functions expand on the abilities of org-babel and ob-restclient mode and
@@ -695,12 +666,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
       (?C :foreground "blue"))
     (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 #+END_SRC
-*** org-trello
-#+begin_src elisp :tangle no
-  (use-package org-trello
-    :ensure (:build (:not elpaca--byte-compile)))
-#+end_src
-
 *** Org Roam
 #+begin_src emacs-lisp
 (use-package org-roam
@@ -3522,7 +3487,6 @@ Play with string properties
     (if (directory-name-p file)
         (insert (format "%s " (nerd-icons-icon-for-dir file)))
       (insert (format "%s " (nerd-icons-icon-for-file file)))))
-                           
 
   (defun magit-iconify--diff-file-heading ()
     (progn
@@ -3532,7 +3496,6 @@ Play with string properties
                              (thing-at-point 'filename t))))
       (when (re-search-forward "->\\\s+" (pos-eol) t)
         (magit-iconify--insert-icon (thing-at-point 'filename t)))))
-        
       
   (defun magit-add-file-icons ()
     (require 'text-property-search)

@@ -178,16 +178,6 @@
 (use-package org-modern
   :hook (org-mode . org-modern-mode))
 
-(use-package org-re-reveal)
-
-(use-package org-tree-slide
-  :config
-  (progn
-    (org-tree-slide-presentation-profile)
-    (setq org-tree-slide-slide-in-effect nil
-          org-tree-slide-skip-done nil
-          org-tree-slide-header nil)))
-
 ;; generated-curl-command is used to communicate state across several function calls
 (setq generated-curl-command nil)
 
