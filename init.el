@@ -486,9 +486,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
-(use-package magit-file-icons
-  :after magit
-  :hook (magit-status-mode . magit-file-icons-mode))
+(use-package magit-file-icons)
 
 (use-package hl-todo
   :ensure (hl-todo :depth nil :version (lambda (&rest _args) "1.9.0")))
@@ -695,7 +693,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package doom-modeline
   :hook
-  (emacs-startup . doom-modeline-mode)
+  (elpaca-after-init . doom-modeline-mode)
   :custom
   (doom-modeline-buffer-file-name-style 'relative-to-project))
 
@@ -2033,14 +2031,38 @@ parses its input."
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
 
-(comment
-(while-let ((prop (text-property-search-forward 'font-lock-face nil (lambda (propa propb)
-                                                                      (message "%s" propa)
-                                                                      (message "%s" propb)
-                                                                      nil)
-                                                nil))
-            (icon))
-    (message "%s" prop)
-    (message "%s" (nerd-icons-icon-for-file (buffer-substring-no-properties (prop-match-beginning prop)
-                                                                            (prop-match-end prop))))
-    (message "%s" (prop-match-value prop))))
+(defun magit-iconify--insert-icon (file)
+  (if (directory-name-p file)
+      (insert (format "%s " (nerd-icons-icon-for-dir file)))
+    (insert (format "%s " (nerd-icons-icon-for-file file)))))
+
+(defun magit-iconify--diff-file-heading ()
+  (progn
+    (forward-word)
+    (forward-whitespace 1)
+    (insert (format "%s " (nerd-icons-icon-for-file
+                           (thing-at-point 'filename t))))
+    (when (re-search-forward "->\\\s+" (pos-eol) t)
+      (magit-iconify--insert-icon (thing-at-point 'filename t)))))
+    
+(defun magit-add-file-icons ()
+  (require 'text-property-search)
+  (require 'nerd-icons)
+  (let ((pos (point)))
+    (read-only-mode -1)
+    (goto-char (point-min))
+    (while-let ((prop (text-property-search-forward 'font-lock-face nil
+                                                    (lambda (propa propb)
+                                                      (memq propb '(magit-filename magit-diff-file-heading)))
+                                                    nil)))
+      (save-mark-and-excursion
+        (goto-char (prop-match-beginning prop))
+        (if (eq (get-text-property (point) 'font-lock-face)
+                'magit-diff-file-heading)
+           ;; Move to beginning of filename
+            (magit-iconify--diff-file-heading)
+          (magit-iconify--insert-icon (thing-at-point 'filename t)))))
+    (goto-char pos)))
+
+(advice-add 'magit-refresh :after 'magit-add-file-icons)
+(advice-remove 'magit-refresh 'magit-add-file-icons)
