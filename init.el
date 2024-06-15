@@ -164,6 +164,9 @@
   :ensure nil
   :after org)
 
+(use-package org-pdftools
+  :hook (org-mode . org-pdftools-setup-link))
+
 (use-package ob-restclient
   :config
   (org-babel-do-load-languages
@@ -358,6 +361,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
+
+(use-package org-noter)
 
 (use-package org-download)
 
@@ -1004,14 +1009,19 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package flycheck-posframe
   :hook ((flycheck-mode . flycheck-posframe-mode)
-         (lsp-mode . (lambda () (flycheck-posframe-mode 0))))
+         (lsp-mode . (lambda () (flycheck-posframe-mode 0)))
+         (post-command . flycheck-posframe-monitor-post-command))
+  :custom
+  (flycheck-posframe-warning-prefix "⚠ ")
+  (flycheck-posframe-error-prefix "❌ ")
+  (flycheck-posframe-info-prefix "ⓘ ")
   :config
+  (defun flycheck-posframe-monitor-post-command ()
+    (when (not (flycheck-posframe-check-position))
+      (posframe-hide flycheck-posframe-buffer)))
   (set-face-attribute 'flycheck-posframe-info-face nil :inherit 'font-lock-variable-name-face)
   (set-face-attribute 'flycheck-posframe-warning-face nil :inherit 'warning)
-  (set-face-attribute 'flycheck-posframe-error-face nil :inherit 'error)
-  (setq flycheck-posframe-warning-prefix "⚠ "
-        flycheck-posframe-error-prefix "❌ "
-        flycheck-posframe-info-prefix "ⓘ "))
+  (set-face-attribute 'flycheck-posframe-error-face nil :inherit 'error))
 
 (use-package flycheck-package
   :init
@@ -1803,6 +1813,8 @@ parses its input."
      '(("DVI Viewer" "evince %o")
        ("PDF Tools" TeX-pdf-tools-sync-view))))
 
+(use-package cdlatex)
+
 (use-package pdf-tools
  :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
  :init
@@ -2054,5 +2066,4 @@ parses its input."
           (magit-iconify--insert-icon (thing-at-point 'filename t)))))
     (goto-char pos)))
 
-(advice-add 'magit-refresh :after 'magit-add-file-icons)
-(advice-remove 'magit-refresh 'magit-add-file-icons)
+    (advice-add 'magit-refresh :after 'magit-add-file-icons)

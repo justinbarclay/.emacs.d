@@ -442,13 +442,9 @@ Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69
 
 *** org-pdftools
 Now that we have that installed we can pull in org-pdftools from github
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (use-package org-pdftools
-     :ensure nil
-     :ensure  (org-pdftools
-               :fetcher git
-               :url "https://github.com/fuxialexander/org-pdftools.git"
-               :upgrade nil))
+    :hook (org-mode . org-pdftools-setup-link))
 #+END_SRC
 
 *** Ob-Restclient
@@ -689,6 +685,11 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
+#+end_src
+
+*** Org Noter
+#+begin_src emacs-lisp
+(use-package org-noter)
 #+end_src
 
 *** Org Download
@@ -1757,14 +1758,20 @@ Load this before we load Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck-posframe
     :hook ((flycheck-mode . flycheck-posframe-mode)
-           (lsp-mode . (lambda () (flycheck-posframe-mode 0))))
+           (lsp-mode . (lambda () (flycheck-posframe-mode 0)))
+           (post-command . flycheck-posframe-monitor-post-command))
+    :custom
+    (flycheck-posframe-warning-prefix "⚠ ")
+    (flycheck-posframe-error-prefix "❌ ")
+    (flycheck-posframe-info-prefix "ⓘ ")
     :config
+    (defun flycheck-posframe-monitor-post-command ()
+      (when (not (flycheck-posframe-check-position))
+        (posframe-hide flycheck-posframe-buffer)))
     (set-face-attribute 'flycheck-posframe-info-face nil :inherit 'font-lock-variable-name-face)
     (set-face-attribute 'flycheck-posframe-warning-face nil :inherit 'warning)
-    (set-face-attribute 'flycheck-posframe-error-face nil :inherit 'error)
-    (setq flycheck-posframe-warning-prefix "⚠ "
-          flycheck-posframe-error-prefix "❌ "
-          flycheck-posframe-info-prefix "ⓘ "))
+    (set-face-attribute 'flycheck-posframe-error-face nil :inherit 'error))
+    
 #+END_SRC
 ** Flycheck package
 #+begin_src emacs-lisp 
@@ -3087,6 +3094,12 @@ Much like Mu4e we treat this as a feature because otherwise there is too much ce
        '(("DVI Viewer" "evince %o")
          ("PDF Tools" TeX-pdf-tools-sync-view))))
 #+end_src
+
+Then we want org support
+#+begin_src emacs-lisp
+(use-package cdlatex)
+#+end_src
+
 *** PDF Viewer
 #+begin_src emacs-lisp
   (use-package pdf-tools
@@ -3516,6 +3529,7 @@ Play with string properties
             (magit-iconify--insert-icon (thing-at-point 'filename t)))))
       (goto-char pos)))
 
-  (advice-add 'magit-refresh :after 'magit-add-file-icons)
-  (advice-remove 'magit-refresh 'magit-add-file-icons)
+      (advice-add 'magit-refresh :after 'magit-add-file-icons)
 #+end_src
+
+#+RESULTS:
