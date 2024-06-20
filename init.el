@@ -337,7 +337,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook
   (org-mode . org-fancy-priorities-mode)
   :config
-  '((?A :foreground "red" )
+  '((?A :foreground "red")
     (?B :foreground "orange")
     (?C :foreground "blue"))
   (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
@@ -1820,6 +1820,10 @@ parses its input."
  :init
  (pdf-loader-install))
 
+(use-feature text-mode
+  :custom
+  (text-mode-ispell-word-completion nil))
+
 (use-feature rst
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
@@ -2046,8 +2050,8 @@ parses its input."
                            (thing-at-point 'filename t))))
     (when (re-search-forward "->\\\s+" (pos-eol) t)
       (magit-iconify--insert-icon (thing-at-point 'filename t)))))
-    
-(defun magit-add-file-icons ()
+
+(defun magit-iconify-status-buffer ()
   (require 'text-property-search)
   (require 'nerd-icons)
   (let ((pos (point)))
@@ -2061,9 +2065,9 @@ parses its input."
         (goto-char (prop-match-beginning prop))
         (if (eq (get-text-property (point) 'font-lock-face)
                 'magit-diff-file-heading)
-           ;; Move to beginning of filename
+            ;; Move to beginning of filename
             (magit-iconify--diff-file-heading)
           (magit-iconify--insert-icon (thing-at-point 'filename t)))))
     (goto-char pos)))
 
-    (advice-add 'magit-refresh :after 'magit-add-file-icons)
+(advice-add 'magit-refresh :after 'magit-iconify-status-buffer)
