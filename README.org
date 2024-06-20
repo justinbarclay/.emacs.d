@@ -657,7 +657,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :hook
     (org-mode . org-fancy-priorities-mode)
     :config
-    '((?A :foreground "red" )
+    '((?A :foreground "red")
       (?B :foreground "orange")
       (?C :foreground "blue"))
     (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
@@ -3219,7 +3219,7 @@ A better help buffer experience
 #+end_src
 ** Which Key
 #+begin_src emacs-lisp
-  (use-package which-key
+  (use-feature which-key
     :defer 't
     :init (which-key-mode))
 #+end_src

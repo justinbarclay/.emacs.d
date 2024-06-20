@@ -1908,7 +1908,7 @@ parses its input."
           ("C-h v" . helpful-variable)
           ("C-h k" . helpful-key)))
 
-(use-package which-key
+(use-feature which-key
   :defer 't
   :init (which-key-mode))
 
