@@ -1213,8 +1213,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+end_src
 *** Catpuccin
 #+begin_src emacs-lisp
-(use-package catppuccin-theme
-  :init (load-theme 'catppuccin t))
+(use-package catppuccin-theme)
 #+end_src
 
 *** Add on doom theme
@@ -1226,7 +1225,13 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 *** Doom Themes
 Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
-  (use-package doom-themes)
+  (use-package doom-themes
+    :init
+    (load-theme 'doom-tokyo-night t)
+    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+          doom-themes-enable-italic t) ; if nil, italics is universally disabled
+    ;; Corrects (and improves) org-mode's native fontification.
+    (doom-themes-org-config))
 #+END_SRC
 
 ** Icons

@@ -676,10 +676,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (keymap-global-unset "C-l")
 
-(use-package catppuccin-theme
-  :init (load-theme 'catppuccin t))
+(use-package catppuccin-theme)
 
-(use-package doom-themes)
+(use-package doom-themes
+  :init
+  (load-theme 'doom-tokyo-night t)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 (use-package nerd-icons)
 
