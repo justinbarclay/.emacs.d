@@ -775,6 +775,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                                        :height 1.0)
                                    " ")))
 
+(use-feature dired
+  :bind (:map dired-mode-map
+              ("RET" . dired-find-alternate-file)
+              ("a" . dired-find-file)))
+
 (use-package dirvish
   :custom
   ;; Go back home? Just press `bh'

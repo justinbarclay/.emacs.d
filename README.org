@@ -1365,7 +1365,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 
 * Directory Management
 ** dired
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp
   (use-feature dired
     :bind (:map dired-mode-map
                 ("RET" . dired-find-alternate-file)
