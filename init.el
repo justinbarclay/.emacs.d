@@ -680,7 +680,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package doom-themes
   :init
-  (load-theme 'doom-tokyo-night t)
+  (load-theme 'doom-laserwave t)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
   ;; Corrects (and improves) org-mode's native fontification.
