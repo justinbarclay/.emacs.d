@@ -366,6 +366,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package org-download)
 
+(use-package org-transclusion
+  :after org)
+
+(use-package org-transclusion-http
+  :after org-transclusion)
+
 (use-package flycheck-grammarly)
 
 (use-package lsp-grammarly

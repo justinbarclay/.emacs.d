@@ -697,6 +697,17 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 (use-package org-download)
 #+end_src
 
+*** Org Transclusion
+#+begin_src elisp
+(use-package org-transclusion
+  :after org)
+#+end_src
+
+#+begin_src elisp
+(use-package org-transclusion-http
+  :after org-transclusion)
+#+end_src
+
 ** Grammarly
 #+begin_src emacs-lisp
 (use-package flycheck-grammarly)
