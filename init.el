@@ -124,6 +124,7 @@
        (org-babel-find-named-block
         (completing-read "Code Block: " (org-babel-src-block-names))))
       (org-babel-execute-src-block-maybe)))
+
   (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                (concat org-directory "/work/calendar.org")
                                (concat org-directory "/personal/tasks.org")
@@ -146,6 +147,13 @@
         org-hide-leading-stars 't
         org-startup-folded 'overview
         org-startup-indented 't)
+  ;; Add ts language support
+  (add-to-list 'org-src-lang-modes '("tsx" . tsx-ts))
+  (add-to-list 'org-src-lang-modes '("typescript" . typescript-ts))
+  (add-to-list 'org-src-lang-modes '("jsx" . jsx-ts))
+  (add-to-list 'org-src-lang-modes '("javascript" . javascript-ts))
+  (add-to-list 'org-src-lang-modes '("ruby" . ruby-ts))
+  (add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))
   ;; `org-babel-do-load-languages' significantly slows loading time,
   ;; so let's run this well after we've loaded
   (run-at-time "1 min" nil (lambda ()
