@@ -702,7 +702,8 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 
 *** Org Download
 #+begin_src elisp
-(use-package org-download)
+(use-package org-download
+  :after org)
 #+end_src
 
 *** Org Transclusion

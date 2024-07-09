@@ -372,7 +372,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package org-noter)
 
-(use-package org-download)
+(use-package org-download
+  :after org)
 
 (use-package org-transclusion
   :after org)
