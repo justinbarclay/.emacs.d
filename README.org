@@ -113,6 +113,7 @@
   - [[#tramp][Tramp]]
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
+  - [[#dot][dot]]
   - [[#1password][1Password]]
   - [[#helpful][Helpful]]
   - [[#which-key][Which Key]]
@@ -3221,6 +3222,11 @@ Then we want org support for math latex
         (setq alert-default-style 'burnt-toast))
 #+END_SRC
 * Misc
+** dot
+#+begin_src elisp
+(use-package graphviz-dot-mode)
+#+end_src
+
 ** 1Password
 #+begin_src emacs-lisp
   (use-package 1password

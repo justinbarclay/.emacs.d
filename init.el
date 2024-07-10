@@ -1918,6 +1918,8 @@ parses its input."
                           #'alert-burnt-toast-notify)
       (setq alert-default-style 'burnt-toast))
 
+(use-package graphviz-dot-mode)
+
 (use-package 1password
   :ensure (1password :type git :host github :repo "justinbarclay/1password.el")
   :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
