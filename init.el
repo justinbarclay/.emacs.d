@@ -373,7 +373,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package org-noter)
 
 (use-package org-download
-  :after org)
+  :after org
+  :hook (org-mode . org-download-enable))
 
 (use-package org-transclusion
   :after org)
@@ -552,24 +553,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                            (message-send-mail-function . message-send-mail-with-sendmail)
                            (smtpmail-default-smtp-server . "smtp.fastmail.com")
                            (smtpmail-smtp-server  . "smtp.fastmail.com")
-                           (mu4e-trash-folder  . "/fastmail/Trash")))
-
-                  (make-mu4e-context
-                   :name "gmail"
-                   :match-func (lambda (msg)
-                                 (when msg
-                                   (string-prefix-p "/gmail" (mu4e-message-field msg :maildir))))
-                   :vars '((user-mail-address . "justincbarclay@gmail.com")
-                           (user-full-name    . "Justin Barclay")
-                           (mu4e-drafts-folder  . "/gmail/[Gmail]/Drafts")
-                           (mu4e-sent-folder  . "/gmail/[Gmail]/Sent Mail")
-                           (mu4e-refile-folder  . "/gmail/[Gmail]/All Mail")
-                           (mu4e-trash-folder  . "/gmail/[Gmail]/Trash")
-                           (sendmail-program . "msmtp")
-                           (send-mail-function . smtpmail-send-it)
-                           (message-sendmail-f-is-evil . t)
-                           (message-sendmail-extra-arguments . ("--read-envelope-from"))
-                           (message-send-mail-function . message-send-mail-with-sendmail)))))
+                           (mu4e-trash-folder  . "/fastmail/Trash")))))
 
   (display-line-numbers-mode -1))
 
