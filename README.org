@@ -53,6 +53,8 @@
   - [[#treemacs][Treemacs]]
   - [[#treemacs-pojectile][Treemacs Pojectile]]
   - [[#ace-window][ace-window]]
+  - [[#wind-move][wind-move]]
+  - [[#repeat-mode][Repeat-Mode]]
   - [[#searching][Searching]]
 - [[#editing][Editing]]
   - [[#buffer-encoding][Buffer Encoding]]
@@ -109,7 +111,6 @@
   - [[#latex][Latex]]
   - [[#text-modes][Text modes]]
 - [[#communication][Communication]]
-  - [[#process-management][Process Management]]
   - [[#tramp][Tramp]]
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
@@ -357,11 +358,9 @@ This is hidden here to load right after we have use-package to be able to benchm
     :ensure `(seq :build ,(+elpaca-seq-build-steps)))
 #+end_src
 ** Org Mode
-Org config used from https://github.com/zamansky/dotemacs/commit/0d1f8ad89ab3e69cb9320811c5ec63409880eadd
 *** Org
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :defer t
     :bind
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture))
@@ -698,7 +697,8 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 
 *** Org Noter
 #+begin_src emacs-lisp
-(use-package org-noter)
+  (use-package org-noter
+    :custom (org-noter-supported-mode '(doc-view-mode pdf-mode-view)))
 #+end_src
 
 *** Org Download
@@ -883,6 +883,8 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
     :functions (mu4e--server-filter)
     :bind (:map mu4e-headers-mode-map
                 ("q" . kill-current-buffer))
+    :init
+    (require 'mu4e)
     :config
     (setq
      mu4e-headers-skip-duplicates  t
@@ -1250,7 +1252,7 @@ Let's use Doom's version instead
 
 ** Modeline
 *** Doom-modeline
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package doom-modeline
     :hook
     (elpaca-after-init . doom-modeline-mode)
@@ -1258,9 +1260,8 @@ Let's use Doom's version instead
     (doom-modeline-buffer-file-name-style 'relative-to-project))
 #+END_SRC
 *** Feline
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package feline
-  :config (feline-mode)
   :custom
   (feline-line-prefix "L")
   (feline-column-prefix "C")
@@ -1274,6 +1275,59 @@ Let's use Doom's version instead
      scheme-mode "🐔")))
 #+end_src
 
+*** nano
+#+begin_src elisp :tangle no
+  (use-package nano-modeline
+      :init
+      (nano-modeline-prog-mode t)
+      :custom
+      (nano-modeline-position 'nano-modeline-footer)
+      :hook
+      (prog-mode           . nano-modeline-prog-mode)
+      (text-mode           . nano-modeline-text-mode)
+      (org-mode            . nano-modeline-org-mode)
+      (pdf-view-mode       . nano-modeline-pdf-mode)
+      (mu4e-headers-mode   . nano-modeline-mu4e-headers-mode)
+      (mu4e-view-mode      . nano-modeline-mu4e-message-mode)
+      (elfeed-show-mode    . nano-modeline-elfeed-entry-mode)
+      (elfeed-search-mode  . nano-modeline-elfeed-search-mode)
+      (term-mode           . nano-modeline-term-mode)
+      (xwidget-webkit-mode . nano-modeline-xwidget-mode)
+      (messages-buffer-mode . nano-modeline-message-mode)
+      (org-capture-mode    . nano-modeline-org-capture-mode)
+      (org-agenda-mode     . nano-modeline-org-agenda-mode))
+#+end_src
+
+*** lambda-modeline
+#+begin_src elisp
+  (use-package lambda-line
+    :ensure (:type git :host github :repo "lambda-emacs/lambda-line")
+    :custom
+    (lambda-line-position 'top) ;; Set position of status-line
+    (lambda-line-abbrev t) ;; abbreviate major modes
+    (lambda-line-hspace "  ")  ;; add some cushion
+    (lambda-line-prefix t) ;; use a prefix symbol
+    (lambda-line-prefix-padding nil) ;; no extra space for prefix
+    (lambda-line-status-invert t)  ;; no invert colors
+    (lambda-line-git-diff-mode-line nil)
+    (lambda-line-gui-ro-symbol  " ⨂") ;; symbols
+    (lambda-line-gui-mod-symbol " ⬤")
+    (lambda-line-gui-rw-symbol  " ◯")
+    (lambda-line-space-top +.25)  ;; padding on top and bottom of line
+    (lambda-line-space-bottom -.25)
+    (lambda-line-symbol-position 0.1) ;; adjust the vertical placement of symbol
+    (lambda-line-syntax t)
+    :hook (elpaca-after-init . lambda-line-mode)
+    :config
+    (require 'nerd-icons)
+    (setq lambda-line-flycheck-label (format " %s" (nerd-icons-mdicon "nf-md-alarm_light")))
+    (setq lambda-line-vc-symbol (format " %s" (nerd-icons-mdicon "nf-md-git")))
+    ;; activate lambda-line
+    ;; set divider line in footer
+    (when (eq lambda-line-position 'top)
+      (setq-default mode-line-format (list "%_"))
+      (setq mode-line-format (list "%_"))))
+#+end_src
 ** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
@@ -1356,7 +1410,6 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
                                                          :height 1.0)
                                      " ")))
 #+END_SRC
-
 * Directory Management
 ** dired
 #+BEGIN_SRC emacs-lisp
@@ -1577,6 +1630,26 @@ Allows one to switch to a buffer based by using numbers, instead of cycling with
 #+begin_src emacs-lisp
   (use-package ace-window
     :bind ("C-x o" . ace-window))
+#+end_src
+** wind-move
+#+begin_src elisp
+  (use-feature windmove-mode
+    :ensure nil
+    :commands (windmove-left windmove-right windmove-up windmove-down)
+    :init
+    (defvar-keymap windmove-custom-mode-map
+      :repeat (:exit (ignore))
+      "<down>" #'windmove-down
+      "<up>" #'windmove-up
+      "<left>" #'windmove-left
+      "<right>" #'windmove-right)
+    (set-keymap-parent windmove-custom-mode-map window-prefix-map)
+    (keymap-global-set "C-x w" windmove-custom-mode-map))
+#+end_src
+** Repeat-Mode
+#+begin_src elisp
+(use-feature repeat-mode
+  :init (repeat-mode))
 #+end_src
 
 ** Searching
@@ -3133,48 +3206,6 @@ Then we want org support for math latex
 #+END_SRC
 
 * Communication
-** Process Management
-#+begin_src elisp
-  (use-package prodigy
-    :config
-    (prodigy-define-tag
-      :name 'thin
-      :ready-message "Listening on ssl://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+\.+\n")
-
-    (prodigy-define-tag
-      :name 'mongrel
-      :ready-message "Use Ctrl-C to stop")
-
-    (prodigy-define-tag
-      :name 'rails
-      :tags '(thin mongrel))
-
-    (prodigy-define-tag
-      :ready-message "VITE v[0-9]+.[0-9]+.[0-9]+  ready"
-      :name 'vite)
-
-    (prodigy-define-service
-      :name "MMP"
-      :command "rails"
-      :args '("s")
-      :url "https://dev.localtest.me:3000"
-      :cwd "~/dev/tidal/application-inventory/"
-      :stop-signal 'kill
-      :truncate-output 't
-      :kill-process-buffer-on-stop 't
-      :tags '(rails accelerator))
-
-    (prodigy-define-service
-      :name "Tidal Accelerator"
-      :command "npm"
-      :args '("run" "dev")
-      :url "https://dev.localtest.me:3449"
-      :cwd "~/dev/tidal/tidal-wave/"
-      :stop-signal 'kill
-      :kill-process-buffer-on-stop 't
-      :tags '(vite accelerator)))
-#+end_src
-
 ** Tramp
 #+begin_src emacs-lisp
 (use-feature tramp

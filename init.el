@@ -91,7 +91,6 @@
   :ensure `(seq :build ,(+elpaca-seq-build-steps)))
 
 (use-package org
-  :defer t
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture))
@@ -370,7 +369,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
 
-(use-package org-noter)
+(use-package org-noter
+  :custom (org-noter-supported-mode '(doc-view-mode pdf-mode-view)))
 
 (use-package org-download
   :after org
@@ -513,6 +513,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :functions (mu4e--server-filter)
   :bind (:map mu4e-headers-mode-map
               ("q" . kill-current-buffer))
+  :init
+  (require 'mu4e)
   :config
   (setq
    mu4e-headers-skip-duplicates  t
@@ -690,25 +692,33 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package nerd-icons-ibuffer
   :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
-(use-package doom-modeline
-  :hook
-  (elpaca-after-init . doom-modeline-mode)
+(use-package lambda-line
+  :ensure (:type git :host github :repo "lambda-emacs/lambda-line")
   :custom
-  (doom-modeline-buffer-file-name-style 'relative-to-project))
-
-(use-package feline
-  :config (feline-mode)
-  :custom
-  (feline-line-prefix "L")
-  (feline-column-prefix "C")
-  (feline-mode-symbols
-   '(emacs-lisp-mode "λ"
-     python-mode "py"
-     typescript-mode "ts"
-     rustic-mode "🦀"
-     rust-mode "🦀"
-     zig-mode "🦎"
-     scheme-mode "🐔")))
+  (lambda-line-position 'top) ;; Set position of status-line
+  (lambda-line-abbrev t) ;; abbreviate major modes
+  (lambda-line-hspace "  ")  ;; add some cushion
+  (lambda-line-prefix t) ;; use a prefix symbol
+  (lambda-line-prefix-padding nil) ;; no extra space for prefix
+  (lambda-line-status-invert t)  ;; no invert colors
+  (lambda-line-git-diff-mode-line nil)
+  (lambda-line-gui-ro-symbol  " ⨂") ;; symbols
+  (lambda-line-gui-mod-symbol " ⬤")
+  (lambda-line-gui-rw-symbol  " ◯")
+  (lambda-line-space-top +.25)  ;; padding on top and bottom of line
+  (lambda-line-space-bottom -.25)
+  (lambda-line-symbol-position 0.1) ;; adjust the vertical placement of symbol
+  (lambda-line-syntax t)
+  :hook (elpaca-after-init . lambda-line-mode)
+  :config
+  (require 'nerd-icons)
+  (setq lambda-line-flycheck-label (format " %s" (nerd-icons-mdicon "nf-md-alarm_light")))
+  (setq lambda-line-vc-symbol (format " %s" (nerd-icons-mdicon "nf-md-git")))
+  ;; activate lambda-line
+  ;; set divider line in footer
+  (when (eq lambda-line-position 'top)
+    (setq-default mode-line-format (list "%_"))
+    (setq mode-line-format (list "%_"))))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode)
@@ -908,6 +918,22 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package ace-window
   :bind ("C-x o" . ace-window))
+
+(use-feature windmove-mode
+  :ensure nil
+  :commands (windmove-left windmove-right windmove-up windmove-down)
+  :init
+  (defvar-keymap windmove-custom-mode-map
+    :repeat (:exit (ignore))
+    "<down>" #'windmove-down
+    "<up>" #'windmove-up
+    "<left>" #'windmove-left
+    "<right>" #'windmove-right)
+  (set-keymap-parent windmove-custom-mode-map window-prefix-map)
+  (keymap-global-set "C-x w" windmove-custom-mode-map))
+
+(use-feature repeat-mode
+  :init (repeat-mode))
 
 (unbind-key "C-s")
 
@@ -1837,45 +1863,6 @@ parses its input."
   :mode (("\\.txt$" . rst-mode)
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
-
-(use-package prodigy
-  :config
-  (prodigy-define-tag
-    :name 'thin
-    :ready-message "Listening on ssl://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+\.+\n")
-
-  (prodigy-define-tag
-    :name 'mongrel
-    :ready-message "Use Ctrl-C to stop")
-
-  (prodigy-define-tag
-    :name 'rails
-    :tags '(thin mongrel))
-
-  (prodigy-define-tag
-    :ready-message "VITE v[0-9]+.[0-9]+.[0-9]+  ready"
-    :name 'vite)
-
-  (prodigy-define-service
-    :name "MMP"
-    :command "rails"
-    :args '("s")
-    :url "https://dev.localtest.me:3000"
-    :cwd "~/dev/tidal/application-inventory/"
-    :stop-signal 'kill
-    :truncate-output 't
-    :kill-process-buffer-on-stop 't
-    :tags '(rails accelerator))
-
-  (prodigy-define-service
-    :name "Tidal Accelerator"
-    :command "npm"
-    :args '("run" "dev")
-    :url "https://dev.localtest.me:3449"
-    :cwd "~/dev/tidal/tidal-wave/"
-    :stop-signal 'kill
-    :kill-process-buffer-on-stop 't
-    :tags '(vite accelerator)))
 
 (use-feature tramp
   :defer t
