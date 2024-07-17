@@ -91,6 +91,7 @@
   :ensure `(seq :build ,(+elpaca-seq-build-steps)))
 
 (use-package org
+  :defer t
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture))
@@ -510,11 +511,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package jsonrpc)
 
 (use-feature mu4e
-  :functions (mu4e--server-filter)
   :bind (:map mu4e-headers-mode-map
               ("q" . kill-current-buffer))
-  :init
-  (require 'mu4e)
+  :after org
   :config
   (setq
    mu4e-headers-skip-duplicates  t
@@ -570,7 +569,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :custom
   (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
   :config
-  (require 'mu4e)
   (defun mu4e-dashboard-edit ()
     (interactive)
     (let ((edit-buffer "*edit-mu4e-dashboard*"))

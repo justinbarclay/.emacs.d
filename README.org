@@ -361,6 +361,7 @@ This is hidden here to load right after we have use-package to be able to benchm
 *** Org
 #+BEGIN_SRC emacs-lisp
   (use-package org
+    :defer t
     :bind
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture))
@@ -880,11 +881,9 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 ** Email (mu4e)
 #+begin_src emacs-lisp
   (use-feature mu4e
-    :functions (mu4e--server-filter)
     :bind (:map mu4e-headers-mode-map
                 ("q" . kill-current-buffer))
-    :init
-    (require 'mu4e)
+    :after org
     :config
     (setq
      mu4e-headers-skip-duplicates  t
@@ -943,7 +942,6 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
     :custom
     (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
     :config
-    (require 'mu4e)
     (defun mu4e-dashboard-edit ()
       (interactive)
       (let ((edit-buffer "*edit-mu4e-dashboard*"))
