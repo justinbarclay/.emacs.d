@@ -114,6 +114,7 @@
   - [[#tramp][Tramp]]
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
+  - [[#yequake][Yequake]]
   - [[#dot][dot]]
   - [[#1password][1Password]]
   - [[#helpful][Helpful]]
@@ -1257,45 +1258,6 @@ Let's use Doom's version instead
     :custom
     (doom-modeline-buffer-file-name-style 'relative-to-project))
 #+END_SRC
-*** Feline
-#+begin_src emacs-lisp :tangle no
-(use-package feline
-  :custom
-  (feline-line-prefix "L")
-  (feline-column-prefix "C")
-  (feline-mode-symbols
-   '(emacs-lisp-mode "λ"
-     python-mode "py"
-     typescript-mode "ts"
-     rustic-mode "🦀"
-     rust-mode "🦀"
-     zig-mode "🦎"
-     scheme-mode "🐔")))
-#+end_src
-
-*** nano
-#+begin_src elisp :tangle no
-  (use-package nano-modeline
-      :init
-      (nano-modeline-prog-mode t)
-      :custom
-      (nano-modeline-position 'nano-modeline-footer)
-      :hook
-      (prog-mode           . nano-modeline-prog-mode)
-      (text-mode           . nano-modeline-text-mode)
-      (org-mode            . nano-modeline-org-mode)
-      (pdf-view-mode       . nano-modeline-pdf-mode)
-      (mu4e-headers-mode   . nano-modeline-mu4e-headers-mode)
-      (mu4e-view-mode      . nano-modeline-mu4e-message-mode)
-      (elfeed-show-mode    . nano-modeline-elfeed-entry-mode)
-      (elfeed-search-mode  . nano-modeline-elfeed-search-mode)
-      (term-mode           . nano-modeline-term-mode)
-      (xwidget-webkit-mode . nano-modeline-xwidget-mode)
-      (messages-buffer-mode . nano-modeline-message-mode)
-      (org-capture-mode    . nano-modeline-org-capture-mode)
-      (org-agenda-mode     . nano-modeline-org-agenda-mode))
-#+end_src
-
 *** lambda-modeline
 #+begin_src elisp
   (use-package lambda-line
@@ -1810,8 +1772,9 @@ Emacs doesn’t handle trailing spaces or anything like that very well by defaul
 #+END_SRC
 ** Code Folding
 Emacs by default doesn't have a good story for folding text so we have to add one.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package origami
+  :defer t
   :bind ("C-<tab>" . origami-recursively-toggle-node)
   :hook (prog-mode . origami-mode))
 #+END_SRC
@@ -1836,7 +1799,7 @@ I've put this at the top, because I use this almost everyday and wish it existed
 * Syntax and Error checking
 ** Flycheck posframe
 Load this before we load Flycheck
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-list
   (use-package flycheck-posframe
     :hook ((flycheck-mode . flycheck-posframe-mode)
            (lsp-mode . (lambda () (flycheck-posframe-mode 0)))
@@ -2225,6 +2188,69 @@ Consult users will also want the embark-consult package.
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
+***** Consult Omni
+#+begin_src elisp
+  (use-package consult-omni
+    :ensure (:type git :host github :repo "armindarvish/consult-omni" :branch "main" :files (:defaults "sources/*.el"))
+    :commands (consult-omni-multi consult-omni-apps)
+    :custom
+    ;; General settings that apply to all sources
+    (consult-omni-show-preview t) ;;; show previews
+    (consult-omni-preview-key "C-o") ;;; set the preview key to C-o
+    (consult-omni-group-by :source)
+    :config
+    ;; Load Sources Core code
+    (require 'consult-omni-sources)
+    ;; Load Embark Actions
+    (require 'consult-omni-embark)
+    (when jb/os-macos-p
+      (add-to-list 'consult-omni-apps-paths "/Applications/Nix Apps"))
+    
+    ;; Either load all source modules or a selected list
+
+     ;;; Select a list of modules you want to aload, otherwise all sources all laoded
+    (setq consult-omni-sources-modules-to-load
+          (list 'consult-omni-apps
+                'consult-omni-buffer
+                 'consult-omni-calc
+                 'consult-omni-dict
+                 'consult-omni-fd
+                 'consult-omni-google
+                 'consult-omni-google-autosuggest
+                 'consult-omni-gptel
+                 'consult-omni-line-multi
+                 ;;'consult-omni-org-agenda
+                 'consult-omni-ripgrep
+                 'consult-omni-ripgrep-all
+                 'consult-omni-wikipedia
+                 'consult-omni-youtube))
+
+    (consult-omni-sources-load-modules)
+     ;;; set multiple sources for consult-omni-multi command. Change these lists as needed for different interactive commands. Keep in mind that each source has to be a key in `consult-omni-sources-alist'.
+    (setq consult-omni-multi-sources '("calc"
+                                       "File"
+                                       "Buffer"
+                                       ;; "Bookmark"
+                                       "Apps"
+                                       "gptel"
+                                       "Dictionary"
+                                       "Google"
+                                       "Wikipedia"
+                                       ;; "elfeed"
+                                       "mu4e"
+                                       "buffers text search"
+                                       "Org Agenda"
+                                       ;; "GitHub"
+                                       "YouTube"))
+                                       ;; "Invidious"))
+
+    ;;; Pick you favorite autosuggest command.
+    (setq consult-omni-default-autosuggest-command #'consult-omni-dynamic-google-autosuggest) ;;or any other autosuggest source you define
+
+    ;;; Set your shorthand favorite interactive command
+    (setq consult-omni-default-interactive-command #'consult-omni-multi))
+#+end_src
+
 *** Ivy Ecosystem
 As Stolen from http://cestlaz.github.io/posts/using-emacs-6-swiper/ (January 10, 2017)
 it looks like counsel is a requirement for swiper
@@ -2585,7 +2611,7 @@ Better movement through treesitter
   (use-package gptel
     :config
     (setq
-     gptel-model "gemini-1.5-pro"
+     gptel-model "gemini-pro"
      gptel-backend (gptel-make-gemini "Gemini"
                      :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
                      :stream t)))
@@ -3235,6 +3261,22 @@ Then we want org support for math latex
         (setq alert-default-style 'burnt-toast))
 #+END_SRC
 * Misc
+** Yequake
+#+begin_src elisp
+  (use-package yequake
+    :config
+    (add-to-list 'yequake-frames '("consult-omni-demo"
+                                   (buffer-fns . #'consult-omni-apps)
+                                   (width . 0.8)
+                                   (height . 0.1)
+                                   (top . 0.5)
+                                   (frame-parameters . ((name . "yequake-demo")
+                                                        (minibuffer . only)
+                                                        (autoraise . t)
+                                                        (window-system . ns)))))) ;;change accordingly
+                                                      
+#+end_src
+
 ** dot
 #+begin_src elisp
 (use-package graphviz-dot-mode)
@@ -3244,7 +3286,9 @@ Then we want org support for math latex
 #+begin_src emacs-lisp
   (use-package 1password
     :ensure (1password :type git :host github :repo "justinbarclay/1password.el")
+    :demand t
     :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
+    :hook (elpaca-after-init-hook . (lambda () (1password-enable-auth-source)))
     :custom
     (1password-results-formatter '1password-colour-formatter)
     (1password-executable (if (executable-find "op.exe")

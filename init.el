@@ -1027,10 +1027,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands (ws-butler-mode)
   :hook (prog-mode . ws-butler-mode))
 
-(use-package origami
-  :bind ("C-<tab>" . origami-recursively-toggle-node)
-  :hook (prog-mode . origami-mode))
-
 (use-package hungry-delete
   :hook (prog-mode . global-hungry-delete-mode))
 
@@ -1384,6 +1380,66 @@ parses its input."
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
+(use-package consult-omni
+  :ensure (:type git :host github :repo "armindarvish/consult-omni" :branch "main" :files (:defaults "sources/*.el"))
+  :commands (consult-omni-multi consult-omni-apps)
+  :custom
+  ;; General settings that apply to all sources
+  (consult-omni-show-preview t) ;;; show previews
+  (consult-omni-preview-key "C-o") ;;; set the preview key to C-o
+  (consult-omni-group-by :source)
+  :config
+  ;; Load Sources Core code
+  (require 'consult-omni-sources)
+  ;; Load Embark Actions
+  (require 'consult-omni-embark)
+  (when jb/os-macos-p
+    (add-to-list 'consult-omni-apps-paths "/Applications/Nix Apps"))
+  
+  ;; Either load all source modules or a selected list
+
+   ;;; Select a list of modules you want to aload, otherwise all sources all laoded
+  (setq consult-omni-sources-modules-to-load
+        (list 'consult-omni-apps
+              'consult-omni-buffer
+               'consult-omni-calc
+               'consult-omni-dict
+               'consult-omni-fd
+               'consult-omni-google
+               'consult-omni-google-autosuggest
+               'consult-omni-gptel
+               'consult-omni-line-multi
+               ;;'consult-omni-org-agenda
+               'consult-omni-ripgrep
+               'consult-omni-ripgrep-all
+               'consult-omni-wikipedia
+               'consult-omni-youtube))
+
+  (consult-omni-sources-load-modules)
+   ;;; set multiple sources for consult-omni-multi command. Change these lists as needed for different interactive commands. Keep in mind that each source has to be a key in `consult-omni-sources-alist'.
+  (setq consult-omni-multi-sources '("calc"
+                                     "File"
+                                     "Buffer"
+                                     ;; "Bookmark"
+                                     "Apps"
+                                     "gptel"
+                                     "Dictionary"
+                                     "Google"
+                                     "Wikipedia"
+                                     ;; "elfeed"
+                                     "mu4e"
+                                     "buffers text search"
+                                     "Org Agenda"
+                                     ;; "GitHub"
+                                     "YouTube"))
+                                     ;; "Invidious"))
+
+  ;;; Pick you favorite autosuggest command.
+  (setq consult-omni-default-autosuggest-command #'consult-omni-dynamic-google-autosuggest) ;;or any other autosuggest source you define
+
+  ;;; Set your shorthand favorite interactive command
+  (setq consult-omni-default-interactive-command #'consult-omni-multi))
+
 (use-package corfu
   :init
   (global-corfu-mode)
@@ -1464,7 +1520,7 @@ parses its input."
 (use-package gptel
   :config
   (setq
-   gptel-model "gemini-1.5-pro"
+   gptel-model "gemini-pro"
    gptel-backend (gptel-make-gemini "Gemini"
                    :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
                    :stream t)))
@@ -1887,11 +1943,25 @@ parses its input."
                           #'alert-burnt-toast-notify)
       (setq alert-default-style 'burnt-toast))
 
+(use-package yequake
+  :config
+  (add-to-list 'yequake-frames '("consult-omni-demo"
+                                 (buffer-fns . #'consult-omni-apps)
+                                 (width . 0.8)
+                                 (height . 0.1)
+                                 (top . 0.5)
+                                 (frame-parameters . ((name . "yequake-demo")
+                                                      (minibuffer . only)
+                                                      (autoraise . t)
+                                                      (window-system . ns)))))) ;;change accordingly
+
 (use-package graphviz-dot-mode)
 
 (use-package 1password
   :ensure (1password :type git :host github :repo "justinbarclay/1password.el")
+  :demand t
   :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
+  :hook (elpaca-after-init-hook . (lambda () (1password-enable-auth-source)))
   :custom
   (1password-results-formatter '1password-colour-formatter)
   (1password-executable (if (executable-find "op.exe")
