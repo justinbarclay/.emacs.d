@@ -1365,7 +1365,6 @@ parses its input."
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
-
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -1440,43 +1439,41 @@ parses its input."
   ;;; Set your shorthand favorite interactive command
   (setq consult-omni-default-interactive-command #'consult-omni-multi))
 
-(use-package corfu
-  :init
-  (global-corfu-mode)
-  :hook (corfu-mode . corfu-popupinfo-mode)
-  :config
-  (setq corfu-auto-delay 0.1
-        corfu-auto 't
-        corfu-auto-prefix 1
-        corfu-min-width 40
-        corfu-min-height 20)
-
-  ;; You can also enable Corfu more generally for every minibuffer, as
-  ;; long as no other completion UI is active. If you use Mct or
-  ;; Vertico as your main minibuffer completion UI, the following
-  ;; snippet should yield the desired result.
-  (defun corfu-enable-always-in-minibuffer ()
-    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-    (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
-                (bound-and-true-p vertico--input))
-      (setq-local corfu-auto nil) ; Ensure auto completion is disabled
-      (corfu-mode 1)))
-  (custom-set-faces '(corfu-current ((t :inherit region :background "#2d2844"))))
-  (custom-set-faces '(corfu-popupinfo ((t :inherit corfu-default))))
-  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
-
 (use-package cape
   :init
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file))
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-dict))
 
-(use-package kind-icon
-  :init
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
-  :custom
-  (kind-icon-default-face 'corfu-default)  ; Have background color be the same as `corfu' face background
-  (kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
+(use-package company
+  :commands (company-manual-begin)
+  :hook (elpaca-after-init . global-company-mode)
+  :bind (("C-<tab>" . company-manual-begin)
+         :map company-active-map
+         ("C->" . #'company-filter-candidates)
+         ("C-/" . #'company-other-backend))
+  :config
+  (setq company-tooltip-align-annotations t
+        company-minimum-prefix-length 1
+        company-idle-delay 0.1
+        company-selection-wrap-around t
+        company-tooltip-limit 10
+        company-backends '((company-capf :with company-yasnippet)
+                           company-yasnippet)
+        company-frontends '(company-pseudo-tooltip-unless-just-one-frontend-with-delay
+                            company-preview-frontend
+                            company-echo-metadata-frontend)))
+
+;; (setq company-backends '((company-capf)
+;;                          company-yasnippet
+;;                          (company-dabbrev :with company-dabbrev-code company-keywords) 
+;;                          company-files))
+
+(use-package company-box
+  :hook (company-mode . company-box-mode)
+  :config
+  (setq company-box-scrollbar nil))
 
 (use-package yasnippet
  :init (yas-global-mode))

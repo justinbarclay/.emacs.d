@@ -1,4 +1,5 @@
 [[./logo_512x512.png]]
+
 * Table of Contents                                                    :TOC:
 - [[#about][About]]
   - [[#note-for-making-elisp-blocks][Note for making Elisp Blocks]]
@@ -2159,22 +2160,21 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
 
 ***** Embark
 #+begin_src emacs-lisp
-(use-package embark
-  :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+  (use-package embark
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ("C-;" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
-  :init
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-  :config
-
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
+    :init
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+    :config
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
 #+end_src
 
 Consult users will also want the embark-consult package.
@@ -2466,10 +2466,11 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
     :after ivy
     :bind ("C-s" . swiper))
 #+END_SRC
+
 ** Code Completion
 *** Corfu
 :PROPERTIES:
-:header-args:
+:header-args: :tangle no
 :END:
 
 #+begin_src emacs-lisp
@@ -2498,17 +2499,6 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
     (custom-set-faces '(corfu-popupinfo ((t :inherit corfu-default))))
     (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
 #+end_src
-
-**** Cape
-Cape adds some more completion backends for us, allowing us to get file and dabbrev completions where appropriate. We also have the possibility of using company completions with some helper functions given from cape.
-#+begin_src emacs-lisp
-(use-package cape
-  :init
-  ;; Add `completion-at-point-functions', used by `completion-at-point'.
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file))
-#+end_src
-
 **** Kind Icon
 Things are always better when they are prettier, let's add icons to our in buffer completions and make them pretty. Nothing requires kind-icon, so nothing really brings it into scope. So, we can't just stuff everything into config. We need a way to trigger calling, and loading, kind-icons. So, we add kind-icon to corfu's formatters within the init block.
 #+begin_src emacs-lisp
@@ -2519,22 +2509,64 @@ Things are always better when they are prettier, let's add icons to our in buffe
     (kind-icon-default-face 'corfu-default)  ; Have background color be the same as `corfu' face background
     (kind-icon-default-style '(:padding 0 :stroke 0 :margin 0 :radius 0 :height 0.8 :scale 1.0)))
 #+end_src
+*** Cape
+Cape adds some more completion backends for us, allowing us to get file and dabbrev completions where appropriate. We also have the possibility of using company completions with some helper functions given from cape.
+#+begin_src emacs-lisp
+  (use-package cape
+    :init
+    ;; Add `completion-at-point-functions', used by `completion-at-point'.
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-dict))
+#+end_src
+
+
 *** Company
 :PROPERTIES:
-:header-args: :tangle no
 :END:
+comp
 #+BEGIN_SRC emacs-lisp
-(use-package company
-    :init
-    (global-company-mode t)
-    :commands (compant-manual-begin)
-    :bind ("C-<tab>" . company-manual-begin)
+  (use-package company
+    :commands (company-manual-begin)
+    :hook (elpaca-after-init . global-company-mode)
+    :bind (("C-<tab>" . company-manual-begin)
+           :map company-active-map
+           ("C->" . #'company-filter-candidates)
+           ("C-/" . #'company-other-backend))
     :config
     (setq company-tooltip-align-annotations t
           company-minimum-prefix-length 1
-          company-idle-delay 0))
-    ;;(add-to-list 'company-backends 'company-emoji))
+          company-idle-delay 0.1
+          company-selection-wrap-around t
+          company-tooltip-limit 10
+          company-backends '((company-capf :with company-yasnippet)
+                             company-yasnippet)
+          company-frontends '(company-pseudo-tooltip-unless-just-one-frontend-with-delay
+                              company-preview-frontend
+                              company-echo-metadata-frontend)))
+
+  ;; (setq company-backends '((company-capf)
+  ;;                          company-yasnippet
+  ;;                          (company-dabbrev :with company-dabbrev-code company-keywords) 
+  ;;                          company-files))
 #+END_SRC
+
+**** Company Box
+#+begin_src emacs-lisp
+  (use-package company-box
+    :hook (company-mode . company-box-mode)
+    :config
+    (setq company-box-scrollbar nil))
+#+end_src
+**** Company Quickhelp
+#+begin_src emacs-lisp :tangle no
+  (use-package company-quickhelp
+   :after company
+   :hook (company-mode . company-quickhelp-mode)
+   :bind (:map company-active-map
+               ("C-c h" . company-quickhelp-manual-begin)))
+#+end_src
+
 ** Yas Snippets
 #+begin_src emacs-lisp
   (use-package yasnippet
