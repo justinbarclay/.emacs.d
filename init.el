@@ -511,6 +511,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package jsonrpc)
 
 (use-feature mu4e
+  :commands (mu4e mu4e-update-mail-and-index)
   :bind (:map mu4e-headers-mode-map
               ("q" . kill-current-buffer))
   :after org

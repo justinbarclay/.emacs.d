@@ -115,6 +115,7 @@
   - [[#tramp][Tramp]]
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
+  - [[#codemetrics][codemetrics]]
   - [[#yequake][Yequake]]
   - [[#dot][dot]]
   - [[#1password][1Password]]
@@ -883,6 +884,7 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 ** Email (mu4e)
 #+begin_src emacs-lisp
   (use-feature mu4e
+    :commands (mu4e mu4e-update-mail-and-index)
     :bind (:map mu4e-headers-mode-map
                 ("q" . kill-current-buffer))
     :after org
@@ -3362,6 +3364,12 @@ Then we want org support for math latex
         (setq alert-default-style 'burnt-toast))
 #+END_SRC
 * Misc
+** codemetrics
+#+begin_src elisp :tangle no
+(use-package cognitive-complexity 
+  :ensure (:type git :host github :repo "emacs-vs/cognitive-complexity"))
+#+end_src
+
 ** Yequake
 #+begin_src elisp
   (use-package yequake
