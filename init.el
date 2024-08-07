@@ -1443,8 +1443,7 @@ parses its input."
              company-complete-common-or-cycle
              company-manual-begin
              company-grab-line)
-  :hook ((elpaca-after-init . global-company-mode)
-         (company-mode . company-tng-mode))
+  :hook ((elpaca-after-init . global-company-mode))
   :bind (("C-<tab>" . company-manual-begin)
          :map company-active-map
          ("C->" . #'company-filter-candidates)
