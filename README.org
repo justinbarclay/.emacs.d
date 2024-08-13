@@ -1800,7 +1800,7 @@ I've put this at the top, because I use this almost everyday and wish it existed
 * Syntax and Error checking
 ** Flycheck posframe
 Load this before we load Flycheck
-#+BEGIN_SRC emacs-list
+#+BEGIN_SRC emacs
   (use-package flycheck-posframe
     :hook ((flycheck-mode . flycheck-posframe-mode)
            (lsp-mode . (lambda () (flycheck-posframe-mode 0)))
