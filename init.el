@@ -1443,7 +1443,7 @@ parses its input."
              company-complete-common-or-cycle
              company-manual-begin
              company-grab-line)
-  :hook ((elpaca-after-init . global-company-mode))
+  :hook (elpaca-after-init . global-company-mode)
   :bind (("C-<tab>" . company-manual-begin)
          :map company-active-map
          ("C->" . #'company-filter-candidates)
@@ -1474,11 +1474,7 @@ parses its input."
       ;; `company-auto-commit-chars' is typed. This is too magical. We
       ;; already have the much more explicit RET and TAB.
       company-auto-commit nil
-
-      ;; Only search the current buffer for `company-dabbrev' (a backend that
-      ;; suggests text your open buffers). This prevents Company from causing
-      ;; lag once you have a lot of buffers open.
-      ;; company-dabbrev-other-buffers nil
+      
       ;; Make `company-dabbrev' fully case-sensitive, to improve UX with
       ;; domain-specific words with particular casing.
       company-dabbrev-ignore-case nil
@@ -1496,8 +1492,8 @@ parses its input."
         (Method         . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
         (Function       . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
         (Constructor    . ,(nerd-icons-codicon  "nf-cod-triangle_right"      :face  'font-lock-function-name-face))
-        (Field          . ,(nerd-icons-codicon  "nf-cod-symbol_field"        :face  'font-lock-variable-name-face))
-        (Variable       . ,(nerd-icons-codicon  "nf-cod-symbol_variable"     :face  'font-lock-variable-name-face))
+        (Field          . ,(nerd-icons-codicon  "nf-cod-symbol_field"        :face  'font-lock-type-face))
+        (Variable       . ,(nerd-icons-codicon  "nf-cod-symbol_variable"     :face  'font-lock-type-face))
         (Class          . ,(nerd-icons-codicon  "nf-cod-symbol_class"        :face  'font-lock-type-face))
         (Interface      . ,(nerd-icons-codicon  "nf-cod-symbol_interface"    :face  'font-lock-type-face))
         (Module         . ,(nerd-icons-codicon  "nf-cod-file_submodule"      :face  'font-lock-preprocessor-face))
@@ -1519,9 +1515,10 @@ parses its input."
         (TypeParameter  . ,(nerd-icons-codicon  "nf-cod-list_unordered"      :face  'font-lock-type-face))
         (Template       . ,(nerd-icons-codicon  "nf-cod-notebook_template"      :face  'font-lock-escape-face))
         (ElispFunction  . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
-        (ElispVariable  . ,(nerd-icons-codicon  "nf-cod-symbol_variable"     :face  'font-lock-variable-name-face))
+        (ElispVariable  . ,(nerd-icons-codicon  "nf-cod-symbol_variable"     :face  'font-lock-type-face))
         (ElispFeature   . ,(nerd-icons-codicon  "nf-cod-globe"               :face  'font-lock-builtin-face))
         (ElispFace      . ,(nerd-icons-codicon  "nf-cod-symbol_color"        :face  'success))))
+
   :config
   (setq company-box-show-single-candidate t
         company-box-backends-colors nil
