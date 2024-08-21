@@ -1026,6 +1026,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :commands (ws-butler-mode)
   :hook (prog-mode . ws-butler-mode))
 
+(use-package origami
+  :defer t
+  :bind ("C-<tab>" . origami-recursively-toggle-node)
+  :hook (prog-mode . origami-mode))
+
 (use-package hungry-delete
   :hook (prog-mode . global-hungry-delete-mode))
 
@@ -1077,8 +1082,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     less-css-mode) .  #'flycheck-node-modules-hook)
   :custom
   (checkdoc-force-docstrings-flag nil)
-  (flycheck-javascript-eslint-executable "eslint_d")
-  (flycheck-typescript-tslint-executable "eslint_d")
+  ;; (flycheck-javascript-eslint-executable "eslint_d")
+  ;; (flycheck-typescript-tslint-executable "eslint_d")
   (flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
   (flycheck-standard-error-navigation nil)
   (flycheck-stylelintrc ".stylelintrc.json"))
@@ -1444,7 +1449,7 @@ parses its input."
              company-manual-begin
              company-grab-line)
   :hook (elpaca-after-init . global-company-mode)
-  :bind (("C-<tab>" . company-manual-begin)
+  :bind (("C-<shift>-<tab>" . company-manual-begin)
          :map company-active-map
          ("C->" . #'company-filter-candidates)
          ("C-/" . #'company-other-backend))
@@ -2166,3 +2171,4 @@ parses its input."
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
+(put 'dired-find-alternate-file 'disabled nil)
