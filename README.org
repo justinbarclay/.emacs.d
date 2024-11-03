@@ -3008,7 +3008,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 
 #+begin_src emacs-lisp
   (use-feature js-ts-mode
-    :mode "\\.js\\'")
+    :mode ("\\.js\\'" "\\.cjs\\'" "\\.mjs\\'"))
 #+end_src
 *** Typescript
 
@@ -3023,7 +3023,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 
 #+begin_src emacs-lisp
   (use-feature typescript-ts-mode
-    :mode ("\\.ts\\'" "\\.ts.snap\\'"))
+    :mode ("\\.ts\\'" "\\.mts\\'" "\\.ts.snap\\'"))
 #+end_src
 
 *** TSX Mode

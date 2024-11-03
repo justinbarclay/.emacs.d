@@ -1786,7 +1786,7 @@ parses its input."
  (lsp-eslint-enable 't))
 
 (use-feature js-ts-mode
-  :mode "\\.js\\'")
+  :mode ("\\.js\\'" "\\.cjs\\'" "\\.mjs\\'"))
 
 (use-feature typescript-ts-base-mode    
   :custom
@@ -1796,7 +1796,7 @@ parses its input."
   (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 
 (use-feature typescript-ts-mode
-  :mode ("\\.ts\\'" "\\.ts.snap\\'"))
+  :mode ("\\.ts\\'" "\\.mts\\'" "\\.ts.snap\\'"))
 
 (use-feature tsx-ts-mode
   :mode "\\.tsx\\'")
@@ -2171,4 +2171,3 @@ parses its input."
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
-(put 'dired-find-alternate-file 'disabled nil)
