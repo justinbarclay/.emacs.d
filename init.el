@@ -1000,6 +1000,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
 (setq auto-save-default nil)
+(setq backup-by-copying t)
 
 (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
 
@@ -1475,6 +1476,7 @@ parses its input."
       ;; Buffer-local backends will be computed when loading a major mode, so
       ;; only specify a global default here.
       company-backends '((company-capf)
+                         company-files
                          company-yasnippet)
 
       ;; These auto-complete the current selection when
@@ -1590,7 +1592,7 @@ parses its input."
 (use-package gptel
   :config
   (setq
-   gptel-model "gemini-pro"
+   gptel-model 'gemini-pro-1.5-pro-latest
    gptel-backend (gptel-make-gemini "Gemini"
                    :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
                    :stream t)))
@@ -1808,6 +1810,7 @@ parses its input."
          (js-base-mode . prettier-js-mode)
          (json-base-mode . prettier-js-mode)
          (js-mode . prettier-js-mode)
+         (less-css-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
 
 (use-package deno-fmt)
