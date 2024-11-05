@@ -1076,6 +1076,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (defun flycheck-node-modules-hook ()
     "Look inside node modules for the specified checker"
     (setq-local flycheck-executable-find #'flycheck-node-modules-executable-find))
+
   (global-flycheck-mode)
   :hook
   ((typescript-ts-base-mode
@@ -1605,17 +1606,19 @@ parses its input."
           web-mode
           ruby-base-mode
           c-mode
-          javascript-base-mode
+          js-base-mode
+          json-base-mode
           typescript-ts-mode
           lua-mode
           jsx-ts-mode
           tsx-ts-mode
+          less-css-mode
+          css-ts-mode
           go-base-mode
           LaTeX-mode
           nix-mode
           org-mode)
          . lsp-deferred)
-         (lsp-completion-mode . my/lsp-mode-setup-completion)
   (lsp-mode . lsp-enable-which-key-integration)
   :custom
   (lsp-idle-delay 0.1)
@@ -1625,16 +1628,27 @@ parses its input."
   (lsp-solargraph-use-bundler 't)
   (lsp-keymap-prefix "C-l")
   (lsp-diagnostic-clean-after-change 't)
-  :init
-  (defun my/orderless-dispatch-flex-first (_pattern index _total)
-    (and (eq index 0) 'orderless-flex))
+  :config
+  (defvar lsp-flycheck-mapping '(less-css-mode (less-stylelint less)
+                                 css-base-mode (css-stylelint)
+                                 js-base-mode (javascript-eslint)
+                                 typescript-ts-base-mode (javascript-eslint)
+                                 tsx-ts-mode (javascript-eslint)
+                                 jsx-ts-mode (javascript-eslint))
+                              "a selections of major modes and the associated checkers to run after lsp
+runs it's diagnostics.")
+  (defvar-local my/flycheck-local-cache nil)
 
-  (defun my/lsp-mode-setup-completion ()
-    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-          '(orderless)))
+  (defun my/flycheck-checker-get (fn checker property)
+    (or (alist-get property (alist-get checker my/flycheck-local-cache))
+        (funcall fn checker property)))
 
-  ;; Optionally configure the first word as flex filtered.
-  (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local))
+  (advice-add 'flycheck-checker-get :around 'my/flycheck-checker-get)
+
+  (add-hook 'lsp-managed-mode-hook
+            (lambda ()
+              (when-let ((checkers (plist-get lsp-flycheck-mapping major-mode)))
+                (setq my/flycheck-local-cache `((lsp . ((next-checkers . ,checkers)))))))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -1906,7 +1920,7 @@ parses its input."
 
 (use-package lua-mode)
 
-(use-package json-mode
+(use-feature json-ts-mode
   :mode "\\.json\\'"
   :config
   (setq js-indent-level 2))
