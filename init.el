@@ -1086,7 +1086,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (checkdoc-force-docstrings-flag nil)
   ;; (flycheck-javascript-eslint-executable "eslint_d")
   ;; (flycheck-typescript-tslint-executable "eslint_d")
-  (flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
+  (flycheck-check-syntax-automatically '(save idle-change idle-buffer-switch mode-enabled))
   (flycheck-standard-error-navigation nil)
   (flycheck-stylelintrc ".stylelintrc.json"))
 
@@ -1685,7 +1685,6 @@ parses its input."
          (lisp-mode . (lambda () (enable-paredit)))))
 
 (use-package parinfer-rust-mode
-  :ensure (:type git :host github :repo "justinbarclay/parinfer-rust-mode" :ref "error-handling")
   :commands (parinfer-rust-mode)
   :hook (emacs-lisp-mode)
   :custom

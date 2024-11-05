@@ -1853,7 +1853,7 @@ Load this before we load Flycheck
     (checkdoc-force-docstrings-flag nil)
     ;; (flycheck-javascript-eslint-executable "eslint_d")
     ;; (flycheck-typescript-tslint-executable "eslint_d")
-    (flycheck-check-syntax-automatically '(save idle-buffer-switch mode-enabled))
+    (flycheck-check-syntax-automatically '(save idle-change idle-buffer-switch mode-enabled))
     (flycheck-standard-error-navigation nil)
     (flycheck-stylelintrc ".stylelintrc.json"))
 #+END_SRC
