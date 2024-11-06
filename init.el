@@ -1474,22 +1474,22 @@ parses its input."
         company-frontends '(company-pseudo-tooltip-frontend  ; always show candidates in overlay tooltip
                             company-echo-metadata-frontend)  ; show selected candidate docs in echo area
 
-      ;; Buffer-local backends will be computed when loading a major mode, so
-      ;; only specify a global default here.
-      company-backends '((company-capf)
-                         company-files
-                         company-yasnippet)
+        ;; Buffer-local backends will be computed when loading a major mode, so
+        ;; only specify a global default here.
+        company-backends '((company-capf company-dabbrev)
+                           company-files
+                           company-yasnippet)
 
-      ;; These auto-complete the current selection when
-      ;; `company-auto-commit-chars' is typed. This is too magical. We
-      ;; already have the much more explicit RET and TAB.
-      company-auto-commit nil
-      
-      ;; Make `company-dabbrev' fully case-sensitive, to improve UX with
-      ;; domain-specific words with particular casing.
-      company-dabbrev-ignore-case nil
-      company-dabbrev-downcase nil)
- (add-to-list 'company-files--regexps "file:\\(\\(?:\\.\\{1,2\\}/\\|~/\\|/\\)[^\]\n]*\\)"))
+        ;; These auto-complete the current selection when
+        ;; `company-auto-commit-chars' is typed. This is too magical. We
+        ;; already have the much more explicit RET and TAB.
+        company-auto-commit nil
+
+        ;; Make `company-dabbrev' fully case-sensitive, to improve UX with
+        ;; domain-specific words with particular casing.
+        company-dabbrev-ignore-case nil
+        company-dabbrev-downcase nil)
+  (add-to-list 'company-files--regexps "file:\\(\\(?:\\.\\{1,2\\}/\\|~/\\|/\\)[^\]\n]*\\)"))
 
 (use-package company-box
   :hook (company-mode . company-box-mode)
@@ -1497,7 +1497,7 @@ parses its input."
   (require 'nerd-icons)
   (setq company-box-icons-alist 'company-box-icons-nerd-icons
         company-box-icons-nerd-icons
-      `((Unknown        . ,(nerd-icons-codicon  "nf-cod-code"                :face  'font-lock-warning-face))
+      `((Unknown        . ,(nerd-icons-codicon  "nf-cod-text_size"           :face  'font-lock-warning-face))
         (Text           . ,(nerd-icons-codicon  "nf-cod-text_size"           :face  'font-lock-doc-face))
         (Method         . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
         (Function       . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
@@ -1533,12 +1533,12 @@ parses its input."
   (setq company-box-show-single-candidate t
         company-box-backends-colors nil
         company-box-tooltip-limit 50
-         ;; Move company-box-icons--elisp to the end, because it has a catch-all
-         ;; clause that ruins icons from other backends in elisp buffers.
-         company-box-icons-functions
-         (cons #'+company-box-icons--elisp-fn
-               (delq 'company-box-icons--elisp
-                     company-box-icons-functions)))
+        ;; Move company-box-icons--elisp to the end, because it has a catch-all
+        ;; clause that ruins icons from other backends in elisp buffers.
+        company-box-icons-functions
+        (cons #'+company-box-icons--elisp-fn
+              (delq 'company-box-icons--elisp
+                    company-box-icons-functions)))
    
         
   (setq company-box-scrollbar nil)
@@ -1602,7 +1602,6 @@ parses its input."
   :commands lsp
   :hook ((rustic-mode
           rust-base-mode
-          rjsx-mode
           web-mode
           ruby-base-mode
           c-mode
@@ -1823,7 +1822,6 @@ runs it's diagnostics.")
   :hook ((typescript-ts-base-mode . prettier-js-mode)
          (js-base-mode . prettier-js-mode)
          (json-base-mode . prettier-js-mode)
-         (js-mode . prettier-js-mode)
          (less-css-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
 
