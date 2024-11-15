@@ -1,4 +1,4 @@
-[[./logo_512x512.png]]
+[[./emacs-dragon.png]]
 
 * Table of Contents                                                    :TOC:
 - [[#about][About]]
