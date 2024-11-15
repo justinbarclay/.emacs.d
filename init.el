@@ -1606,7 +1606,7 @@ parses its input."
           ruby-base-mode
           c-mode
           js-base-mode
-          json-base-mode
+          json-ts-mode
           typescript-ts-mode
           lua-mode
           jsx-ts-mode
@@ -1821,7 +1821,7 @@ runs it's diagnostics.")
 (use-package prettier-js
   :hook ((typescript-ts-base-mode . prettier-js-mode)
          (js-base-mode . prettier-js-mode)
-         (json-base-mode . prettier-js-mode)
+         (json-ts-mode . prettier-js-mode)
          (less-css-mode . prettier-js-mode)
          (web-mode . prettier-js-mode)))
 

@@ -1803,7 +1803,7 @@ I've put this at the top, because I use this almost everyday and wish it existed
 * Syntax and Error checking
 ** Flycheck posframe
 Load this before we load Flycheck
-#+BEGIN_SRC emacs
+#+BEGIN_SRC emacs-lisp
   (use-package flycheck-posframe
     :hook ((flycheck-mode . flycheck-posframe-mode)
            (lsp-mode . (lambda () (flycheck-posframe-mode 0)))
@@ -2735,7 +2735,7 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
             ruby-base-mode
             c-mode
             js-base-mode
-            json-base-mode
+            json-ts-mode
             typescript-ts-mode
             lua-mode
             jsx-ts-mode
@@ -3056,7 +3056,7 @@ Autoformatting
   (use-package prettier-js
     :hook ((typescript-ts-base-mode . prettier-js-mode)
            (js-base-mode . prettier-js-mode)
-           (json-base-mode . prettier-js-mode)
+           (json-ts-mode . prettier-js-mode)
            (less-css-mode . prettier-js-mode)
            (web-mode . prettier-js-mode)))
 #+end_src
