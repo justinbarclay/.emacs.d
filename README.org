@@ -399,7 +399,7 @@ This is hidden here to load right after we have use-package to be able to benchm
          (org-babel-find-named-block
           (completing-read "Code Block: " (org-babel-src-block-names))))
         (org-babel-execute-src-block-maybe)))
-
+    (setq org-directory "~/dev/diary")
     (setq org-agenda-files (list (concat org-directory "/personal/calendar.org")
                                  (concat org-directory "/work/calendar.org")
                                  (concat org-directory "/personal/tasks.org")
@@ -612,26 +612,27 @@ Have alerts pop up from your org agenda
 Declarative Org Capture Templates
 #+BEGIN_SRC emacs-lisp
     (use-package doct
+      :after org
       :commands (doct)
       :init (setq org-capture-templates
-                  (doct '(("Personal" :keys "p" :children
+                  (doct `(("Personal" :keys "p" :children
                            (("Todo"   :keys "t"
                              :template ("* TODO %^{Description}"
                                         "SCHEDULED: %U")
-                             :headline "Tasks" :file "~/org/personal/tasks.org")
+                             :headline "Tasks" :file ,(concat org-directory "/personal/tasks.org"))
                             ("Notes"  :keys "n"
                              :template ("* %^{Description}"
                                         ":PROPERTIES:"
                                         ":Created: %U"
                                         ":END:")
-                             :headline "Notes" :file "~/org/personal/tasks.org")
+                             :headline "Notes" :file ,(concat org-directory "/personal/tasks.org"))
                             ("Appointment"  :keys "a"
                              :template ("* %^{Description}"
                                         "SCHEDULED: %T"
                                         ":PROPERTIES:"
                                         ":calendar-id: justincbarclay@gmail.com"
                                         ":END:")
-                             :file "~/org/personal/calendar.org")
+                                        :file ,(concat org-directory "/personal/calendar.org"))
                             ("Emails" :keys "e"
                              :template "* TODO [#A] Reply: %a :@home:"
                              :headline "Emails" :file "~/org/personal/tasks.org")))
@@ -643,26 +644,26 @@ Declarative Org Capture Templates
                                         ":PROPERTIES:"
                                         ":Scheduled: %U"
                                         ":END:")
-                             :headline "Tasks" :file "~/org/work/tasks.org")
+                             :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
                             ("Notes"  :keys "n"
                              :template ("* %^{Description}"
                                         ":PROPERTIES:"
                                         ":Created: %U"
                                         ":END:")
-                             :headline "Notes" :file "~/org/work/tasks.org")
+                             :headline "Notes" :file ,(concat org-directory "/work/tasks.org"))
                             ("Emails" :keys "e"
                              :template "* TODO [#A] Reply: %a :@work:"
-                             :headline "Emails" :file "~/org/work/tasks.org")
+                             :headline "Emails" :file ,(concat org-directory "/work/tasks.org"))
                             ("Trello" :keys "r"
                              :template ("* TODO [#B] %a " "SCHEDULED: %U")
-                             :headline "Tasks" :file "~/org/work/tasks.org")
+                             :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
                             ("Appointment"  :keys "a"
                              :template ("* %^{Description}"
                                         "SCHEDULED: %T"
                                         ":PROPERTIES:"
-                                        ":calendar-id: justin.barclay@tidalmigrations.com"
+                                        ":calendar-id: justin.barclay@tidalcloud.com"
                                         ":END:")
-                             :file "~/org/work/calendar.org")))))))
+                             :file ,(concat org-directory "/work/calendar.org"))))))))
 #+END_SRC
 **** Org Fancy Priorities
 Change priority cookies from alphanumeric cookies into symbols and explicitly colours them
