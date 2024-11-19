@@ -2189,3 +2189,94 @@ runs it's diagnostics.")
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
+
+(eval-when-compile
+  (declare-function org-heading-components "org")
+  (declare-function org-format-outline-path "org")
+  (declare-function org-get-outline-path "org")
+  (declare-function org-get-todo-face "org")
+  (declare-function org-clock-in "org-clock")
+  (declare-function org-clocking-p "org-clock")
+  (declare-function org-map-entries "org")
+  (defvar org-agenda-files))
+
+(defgroup org-clock-auto nil
+  "Automatically clock into tasks when working in a project."
+  :group 'org-clock)
+
+(defcustom org-clock-in-auto-project-names '()
+  "List of project names that org-clock-in-auto will try to clock in when
+opening, or switching to, a buffer a file."
+  :type '(list string)
+  :group 'org-clock-auto)
+
+(defcustom org-clock-in-auto-project-name-resolution 'always
+  "Methodoloy to resolve the name of the project the current buffer is in.
+   - `always': Always try to clock in to a task regardless of project name
+   - `projectile': Use projectile to resolve the project name
+   - `project': Use the project.el to resolve the project name"
+  :type '(radio (const :tag "Always" always)
+                (const :tag "Projectile" projectile)
+                (const :tag "Project" project))
+  :group 'org-clock-auto)
+
+(defun org-clock-auto--extract-headings (agenda &optional match)
+  (with-current-buffer (find-file-noselect agenda)
+    (org-map-entries
+     (lambda (_entry)
+       (let* ((todo (nth 2 (org-heading-components)))
+              (path (org-format-outline-path
+                     (org-get-outline-path 't 't)
+                     100))
+              (todo (when todo
+                      (propertize todo 'face (org-get-todo-face todo)))))
+         (add-text-properties 0 1
+                              (list 'marker (point-marker)
+                                    'todo-state todo)
+                              path)
+         path))
+     match
+     'file)))
+
+(defun org-clock-in-auto-select-task (&optional match)
+  "Clock in to an agenda tasks in another buffer"
+  (interactive)
+  (unless org-agenda-files
+    (user-error "Unable to find any agenda files.`org-agenda-files' is nil."))
+  ;; This requires Emacs 28.1
+  (let* ((minibuffer-allow-text-properties 't)
+         (agenda (completing-read "Clock into file: " org-agenda-files))
+         (headings (org-clock-remote--extract-headings agenda match))
+         (heading (completing-read
+                   "Clock into which heading:"
+                   headings)))
+    
+    (with-current-buffer (marker-buffer
+                          (get-text-property 0 'marker heading))
+      (save-mark-and-excursion
+        (goto-char (marker-position (get-text-property 0 'marker heading)))
+        (org-clock-in)))))
+  
+(defun org-clock-auto--can-run-p ()
+  "Return non-nil if `org-clock-in-auto' can run in current buffer"
+  (cond ((eq org-clock-in-auto-project-name-resolution
+             'projectile)
+         (seq-contains-p org-clock-in-auto-project-names
+                         (projectile-project-name)))
+        ((eq org-clock-in-auto-project-name-resolution
+             'project)
+         (seq-contains-p org-clock-in-auto-project-names
+                         (project-name (project-current))))
+        't))
+
+(defun org-clock-in-auto--clock-in ()
+  "Clock into a task when opening a buffer or file."
+  (unless (and (org-clocking-p)
+               (org-clock-auto-can-run-p))
+    (org-clock-in-remote)))
+
+(define-minor-mode org-clock-in-auto
+  "Automatically clock into a task when opening any buffer or file."
+  :lighter " ClockIn"
+  (if org-clock-in-auto
+      (add-hook 'window-selection-change-functions #'org-clock-in-auto--clock-in)))
