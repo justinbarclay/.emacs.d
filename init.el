@@ -386,6 +386,16 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package org-transclusion-http
   :after org-transclusion)
 
+(use-package org-auto-clock
+  :after org
+  :commands org-auto-clock-mode
+  :ensure (:type git :host github :repo "justinbarclay/org-auto-clock")
+  :init
+  (org-auto-clock-mode)
+  :custom
+  (org-auto-clock-projects '("tidal-wave" "application-inventory"))
+  (org-auto-clock-project-name-function #'projectile-project-name))
+
 (use-package flycheck-grammarly)
 
 (use-package lsp-grammarly
@@ -1648,7 +1658,60 @@ runs it's diagnostics.")
   (add-hook 'lsp-managed-mode-hook
             (lambda ()
               (when-let ((checkers (plist-get lsp-flycheck-mapping major-mode)))
-                (setq my/flycheck-local-cache `((lsp . ((next-checkers . ,checkers)))))))))
+                (setq my/flycheck-local-cache `((lsp . ((next-checkers . ,checkers))))))))
+  (setopt flycheck-relevant-error-other-file-show 't)
+  (setopt flycheck-error-list-minimum-level nil)
+  ;; As stolen from https://github.com/emacs-lsp/lsp-mode/issues/3279
+  (defun lsp-diagnostics--flycheck-start (checker callback)
+   "Start an LSP syntax check with CHECKER.
+
+CALLBACK is the status callback passed by Flycheck."
+
+   (remove-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer t)
+
+   (->> (lsp--get-buffer-diagnostics)
+        (-mapcat
+         (-lambda ((&Diagnostic :message :severity? :tags? :code? :source? :related-information?
+                                :range (&Range :start (&Position :line      start-line
+                                                                 :character start-character)
+                                               :end   (&Position :line      end-line
+                                                                 :character end-character))))
+           (let ((group (gensym)))
+             (cons (flycheck-error-new
+                    :buffer (current-buffer)
+                    :checker checker
+                    :filename buffer-file-name
+                    :message message
+                    :level (lsp-diagnostics--flycheck-calculate-level severity? tags?)
+                    :id code?
+                    :group group
+                    :line (lsp-translate-line (1+ start-line))
+                    :column (1+ (lsp-translate-column start-character))
+                    :end-line (lsp-translate-line (1+ end-line))
+                    :end-column (1+ (lsp-translate-column end-character)))
+                   (-mapcat
+                    (-lambda ((&DiagnosticRelatedInformation
+                               :message
+                               :location
+                               (&Location :range (&Range :start (&Position :line      start-line
+                                                                           :character start-character)
+                                                         :end   (&Position :line      end-line
+                                                                           :character end-character))
+                                          :uri)))
+                      `(,(flycheck-error-new
+                          :buffer (current-buffer)
+                          :checker checker
+                          :filename (-> uri lsp--uri-to-path lsp--fix-path-casing)
+                          :message message
+                          :level (lsp-diagnostics--flycheck-calculate-level (1+ severity?) tags?)
+                          :id code?
+                          :group group
+                          :line (lsp-translate-line (1+ start-line))
+                          :column (1+ (lsp-translate-column start-character))
+                          :end-line (lsp-translate-line (1+ end-line))
+                          :end-column (1+ (lsp-translate-column end-character)))))
+                    related-information?)))))
+        (funcall callback 'finished))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -2189,5 +2252,3 @@ runs it's diagnostics.")
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
-(put 'upcase-region 'disabled nil)
-(put 'dired-find-alternate-file 'disabled nil)

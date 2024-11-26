@@ -726,6 +726,19 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
   :after org-transclusion)
 #+end_src
 
+*** org auto clock
+#+begin_src elisp
+  (use-package org-auto-clock
+    :after org
+    :commands org-auto-clock-mode
+    :ensure (:type git :host github :repo "justinbarclay/org-auto-clock")
+    :init
+    (org-auto-clock-mode)
+    :custom
+    (org-auto-clock-projects '("tidal-wave" "application-inventory"))
+    (org-auto-clock-project-name-function #'projectile-project-name))
+#+end_src
+
 ** Grammarly
 #+begin_src emacs-lisp
 (use-package flycheck-grammarly)
