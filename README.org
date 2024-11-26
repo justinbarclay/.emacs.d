@@ -2729,8 +2729,8 @@ Better movement through treesitter
   (use-package gptel
     :config
     (setq
-     gptel-model 'gemini-pro-1.5-pro-latest
-     gptel-backend (gptel-make-gemini "Gemini"
+     gptel-model 'gemini-1.5-pro-latest
+     gptel-backend (gptel-make-gemini "gemini"
                      :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
                      :stream t)))
 #+end_src
