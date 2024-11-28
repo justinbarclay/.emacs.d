@@ -1659,8 +1659,9 @@ runs it's diagnostics.")
             (lambda ()
               (when-let ((checkers (plist-get lsp-flycheck-mapping major-mode)))
                 (setq my/flycheck-local-cache `((lsp . ((next-checkers . ,checkers))))))))
-  (setopt flycheck-relevant-error-other-file-show 't)
   (setopt flycheck-error-list-minimum-level nil)
+  (setopt flycheck-relevant-error-other-file-show 't)
+  (setopt flycheck-relevant-error-other-file-minimum-level 'warning)
   ;; As stolen from https://github.com/emacs-lsp/lsp-mode/issues/3279
   (defun lsp-diagnostics--flycheck-start (checker callback)
    "Start an LSP syntax check with CHECKER.
