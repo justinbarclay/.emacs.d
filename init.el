@@ -393,6 +393,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (org-auto-clock-mode)
   :custom
+  (org-clock-idle-time 20)
   (org-auto-clock-projects '("tidal-wave" "application-inventory"))
   (org-auto-clock-project-name-function #'projectile-project-name))
 
@@ -1487,7 +1488,7 @@ parses its input."
 
         ;; Buffer-local backends will be computed when loading a major mode, so
         ;; only specify a global default here.
-        company-backends '((company-capf company-dabbrev)
+        company-backends '((company-capf :separate company-dabbrev)
                            company-files
                            company-yasnippet)
 
