@@ -504,53 +504,46 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :bind (("C-c g" . magit-status))
   :hook
   (git-commit-mode . magit-commit-mode-init)
+  :bind (:map magit-mode-map
+              ("c" . magit-maybe-commit))
   :init
   (progn
     ;; magit extensions
-
-    ;; make magit status go full-screen but remember previous window
-    ;; settings
-    ;; from: http://whattheemacsd.com/setup-magit.el-01.html
-    (defadvice magit-status (around magit-fullscreen activate)
-      (window-configuration-to-register :m)
-      ad-do-it
-      (delete-other-windows))
-
-    ;; Close popup when commiting - thios stops the commit window
-    ;; hanging around
-    ;; From: http://git.io/rPBE0Q
-    (defadvice git-commit-commit (after delete-window activate)
-      (delete-window))
-
-    (defadvice git-commit-abort (after delete-window activate)
-      (delete-window))
-
-    ;; these two force a new line to be inserted into a commit window,
-    ;; which stops the invalid style showing up.
+    ;; stops the invalid style showing up.
     ;; From: http://git.io/rPBE0Q
     (defun magit-commit-mode-init ()
-      (when (looking-at "\n")
-        (open-line 1))))
-  :config
-  (progn
-    ;; restore previously hidden windows
-        ;; major mode for editing `git rebase -i`
-    (defadvice magit-quit-window (around magit-restore-screen activate)
-      (let ((current-mode major-mode))
-        ad-do-it
-        ;; we only want to jump to register when the last seen buffer
-        ;; was a magit-status buffer.
-        (when (eq 'magit-status-mode current-mode)
-          (jump-to-register :m))))
-
+      "Force a new line to be inserted into a commit window"
+      (when (looking-at "\n"))
+     (open-line 1))
     (defun magit-maybe-commit (&optional show-options)
       "Runs magit-commit unless prefix is passed"
       (interactive "P")
       (if show-options
           (magit-key-mode-popup-committing)
         (magit-commit)))
-    (define-key magit-mode-map "c" 'magit-maybe-commit)
+    ;; make magit status go full-screen but remember previous window
+    ;; settings
+    ;; from: http://whattheemacsd.com/setup-magit.el-01.html
+    (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
+                                          (window-configuration-to-register :m)
+                                          (apply orig-fun args)
+                                          (delete-other-windows)))
 
+    (advice-add 'git-commit-commit :after #'(lambda (&rest _)
+                                              (delete-window)))
+
+    (advice-add 'git-commit-abort :after #'(lambda (&rest _)
+                                             (delete-window))))
+  :config
+  (progn
+    ;; restore previously hidden windows
+    (advice-add 'magit-quit-window
+                :around
+                #'(lambda (oldfun)
+                    (let ((current-mode major-mode))
+                      (funcall oldfun)
+                      (when (eq 'magit-status-mode current-mode)
+                        (jump-to-register :m)))))
     ;; Customizing transients
     ;; This gives us the option to override local branch
     (transient-insert-suffix 'magit-pull "-r" '("-f" "Overwrite local branch" "--force"))
