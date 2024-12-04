@@ -119,6 +119,70 @@
   (defun jb/org-clear-results ()
     (interactive)
     (org-babel-remove-result-one-or-many 't))
+  ;; As liberally borrowed from:
+  ;; https://github.com/Fuco1/.emacs.d/blob/76e80dd07320b079fa26db3af6096d8d8a4f3bb9/files/org-defs.el#L1863C1-L1922C57     
+ (defun my-org-archive-file ()
+  "Get the archive file for the current org buffer."
+  (car (org-archive--compute-location org-archive-location)))
+
+ (defadvice org-archive-subtree (around fix-hierarchy activate)
+   (let* ((fix-archive-p (and (not current-prefix-arg)
+                              (not (use-region-p))))
+          (afile (my-org-archive-file))
+          (buffer (or (find-buffer-visiting afile) (find-file-noselect afile)))
+          ;; Get all the parents and their tags, we will try to
+          ;; recreate the same situation in the archive buffer.
+          ;; TODO: make this customizable.
+          (parents-and-tags (save-excursion
+                              (let (parents)
+                                (while (org-up-heading-safe)
+                                  (push (list :heading (org-get-heading t t t t)
+                                              :tags (org-get-tags nil :local))
+                                        parents))
+                                parents))))
+     ad-do-it
+     (when fix-archive-p
+       (with-current-buffer buffer
+         (goto-char (point-max))
+         (while (org-up-heading-safe))
+         (let* ((olpath (org-entry-get (point) "ARCHIVE_OLPATH"))
+                ;; TODO: Factor out dash.el
+                (path (and olpath
+                           (--map
+                            (replace-regexp-in-string "^/" "" it)
+                            (s-slice-at "/\\sw" olpath))))
+                (level 1)
+                tree-text)
+           (when olpath
+             (org-mark-subtree)
+             (setq tree-text (buffer-substring (region-beginning) (region-end)))
+             (let (this-command) (org-cut-subtree))
+             (goto-char (point-min))
+             (save-restriction
+               (widen)
+               (-each path
+                 (lambda (heading)
+                   (if (re-search-forward
+                        (rx-to-string
+                         `(: bol (repeat ,level "*") (1+ " ") ,heading)) nil t)
+                       (progn
+                         (org-narrow-to-subtree)
+                         (org-set-tags (plist-get (car parents-and-tags) :tags)))
+                     (goto-char (point-max))
+                     (unless (looking-at "^")
+                       (insert "\n"))
+                     (insert (make-string level ?*)
+                             " "
+                             heading)
+                     (org-set-tags (plist-get (car parents-and-tags) :tags))
+                     (end-of-line)
+                     (insert "\n"))
+                   (pop parents-and-tags)
+                   (cl-incf level)))
+               (widen)
+               (org-end-of-subtree t t)
+               (org-paste-subtree level tree-text))))))))
+
   (defun run-org-block ()
     (interactive)
     (save-excursion
@@ -149,15 +213,15 @@
         org-hide-leading-stars 't
         org-startup-folded 'overview
         org-startup-indented 't)
-  ;; Add ts language support
+   ;; Add ts language support
   (add-to-list 'org-src-lang-modes '("tsx" . tsx-ts))
   (add-to-list 'org-src-lang-modes '("typescript" . typescript-ts))
   (add-to-list 'org-src-lang-modes '("jsx" . jsx-ts))
   (add-to-list 'org-src-lang-modes '("javascript" . javascript-ts))
   (add-to-list 'org-src-lang-modes '("ruby" . ruby-ts))
   (add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))
-  ;; `org-babel-do-load-languages' significantly slows loading time,
-  ;; so let's run this well after we've loaded
+   ;; `org-babel-do-load-languages' significantly slows loading time,
+   ;; so let's run this well after we've loaded
   (run-at-time "1 min" nil (lambda ()
                              (org-babel-do-load-languages 'org-babel-load-languages
                                                           '((shell . t)
