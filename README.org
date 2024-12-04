@@ -1136,7 +1136,7 @@ I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
 (let ((font-name (if jb/os-windows-p
                      "CaskaydiaCove NFM"
-                   "CaskaydiaCove Nerd Font Mono")))
+                   "CaskaydiaMono Nerd Font Mono")))
   (set-face-attribute 'default nil
                       :family font-name :height 170 :weight 'normal))
 #+END_SRC
