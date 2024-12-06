@@ -544,15 +544,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                       (funcall oldfun)
                       (when (eq 'magit-status-mode current-mode)
                         (jump-to-register :m)))))
-    ;; Customizing transients
-    ;; This gives us the option to override local branch
-    (transient-insert-suffix 'magit-pull "-r" '("-f" "Overwrite local branch" "--force"))
     ;; magit settings
     (setq
      ;; don't put "origin-" in front of new branch names by default
-     magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
+     magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
      ;; open magit status in same window as current buffer
-     magit-status-buffer-switch-function 'switch-to-buffer
+     magit-status-buffer-switch-function #'switch-to-buffer
      ;; highlight word/letter changes in hunk diffs
      magit-diff-refine-hunk t
      ;; ask me if I want to include a revision when rewriting
