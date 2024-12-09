@@ -25,7 +25,6 @@
   - [[#eat][Eat]]
   - [[#magit][Magit]]
   - [[#pos-tip][pos-tip]]
-  - [[#jsonrpc][jsonrpc]]
   - [[#email-mu4e][Email (mu4e)]]
   - [[#elfeed][Elfeed]]
 - [[#look-and-feel][Look and Feel]]
@@ -82,6 +81,7 @@
   - [[#flycheck][Flycheck]]
   - [[#flyspell][Flyspell]]
 - [[#integrated-debugging][Integrated Debugging]]
+  - [[#pgmacs][PGMacs]]
   - [[#dape][Dape]]
 - [[#completion][Completion]]
   - [[#minibuffer][Minibuffer]]
@@ -548,10 +548,6 @@ You can also use @ as separator, instead of _.
   (use-package toc-org
     :hook (org-mode . toc-org-mode))
 #+END_SRC
-*** SVG Tag Mode
-#+begin_src emacs-lisp
-  (use-package svg-tag-mode)
-#+end_src
 *** Org Modern
 #+begin_src emacs-lisp
   (use-package org-modern
@@ -926,11 +922,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 #+END_SRC
-*** Magit icons
-#+begin_src elisp
-(use-package magit-file-icons)
-#+end_src
-
 *** Magit TODO
 Due to how hl-todo specified versions, we have to do a full clone and specify the version, as mentioned [[https://github.com/progfolio/elpaca/wiki/Warnings-and-Errors#unmet-dependency-version][here]]
 #+begin_src elisp
@@ -946,11 +937,6 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 ** pos-tip
 #+begin_src emacs-lisp
 (use-package pos-tip)
-#+end_src
-
-** jsonrpc
-#+begin_src emacs-lisp
-(use-package jsonrpc)
 #+end_src
 ** Email (mu4e)
 #+begin_src emacs-lisp
@@ -1030,7 +1016,7 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 #+end_src
 
 *** Mu4e Theading
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package mu4e-thread-folding
     :ensure (:type git :host github :repo "rougier/mu4e-thread-folding")
     :hook
@@ -1938,6 +1924,15 @@ Load this before we load Flycheck
 #+END_SRC
 
 * Integrated Debugging
+** PGMacs
+#+begin_src elisp
+  (use-package pgmacs
+    :ensure (:type git :host github :repo "emarsden/pgmacs"))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table data (:use-package (26454 46369 26287 0) :use-package-secs (0 0 4956 0)))
+
 ** Dape
 #+begin_src emacs-lisp :tangle no
   (use-package dape

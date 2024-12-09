@@ -250,8 +250,6 @@
 (use-package toc-org
   :hook (org-mode . toc-org-mode))
 
-(use-package svg-tag-mode)
-
 (use-package org-modern
   :hook (org-mode . org-modern-mode))
 
@@ -566,8 +564,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
-(use-package magit-file-icons)
-
 (use-package hl-todo
   :ensure (hl-todo :depth nil :version (lambda (&rest _args) "1.9.0")))
 
@@ -575,8 +571,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook (magit-mode . magit-todos-mode))
 
 (use-package pos-tip)
-
-(use-package jsonrpc)
 
 (use-feature mu4e
   :commands (mu4e mu4e-update-mail-and-index)
@@ -648,30 +642,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       (org-mode 1)))
   (display-line-numbers-mode -1)
   (flyspell-mode -1))
-
-(use-package mu4e-thread-folding
-  :ensure (:type git :host github :repo "rougier/mu4e-thread-folding")
-  :hook
-  ((mu4e-headers-mode . mu4e-thread-folding-mode)
-   (mu4e-headers-mode . (lambda () (display-line-numbers-mode -1))))
-  :config
-  (add-to-list 'mu4e-header-info-custom
-               '(:empty . (:name "Empty"
-                                 :shortname ""
-                                 :function (lambda (msg) "  "))))
-  :custom
-  (mu4e-headers-fields '((:empty         .    2)
-                         (:human-date    .   12)
-                         (:flags         .    6)
-                         (:mailing-list  .   10)
-                         (:from          .   22)
-                         (:subject       .   nil)))
-  :bind (:map mu4e-headers-mode-map
-              ("<tab>"     . mu4e-headers-toggle-at-point)
-              ("<left>"    . mu4e-headers-fold-at-point)
-              ("<S-left>"  . mu4e-headers-fold-all)
-              ("<right>"   . mu4e-headers-unfold-at-point)
-              ("<S-right>" . mu4e-headers-unfold-all)))
 
 (use-package elfeed
  :custom
@@ -1162,6 +1132,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook ((prog-mode . flyspell-prog-mode)
          (text-mode . flyspell-mode))
   :config (setq flyspell-issue-message-flag nil))
+
+(use-package pgmacs
+  :ensure (:type git :host github :repo "emarsden/pgmacs"))
 
 (use-package vertico
   :init
