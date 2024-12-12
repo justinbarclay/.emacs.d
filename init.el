@@ -459,11 +459,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (org-auto-clock-projects '("tidal-wave" "application-inventory"))
   (org-auto-clock-project-name-function #'projectile-project-name))
 
-(use-package flycheck-grammarly)
-
-(use-package lsp-grammarly
-  :custom
-  (lsp-grammarly-dialect "canadian"))
+(use-package lsp-ltex)
 
 (use-feature eshell
   :config

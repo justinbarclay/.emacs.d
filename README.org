@@ -20,7 +20,7 @@
   - [[#use-package][use-package]]
   - [[#seq][seq]]
   - [[#org-mode][Org Mode]]
-  - [[#grammarly][Grammarly]]
+  - [[#ltex][Ltex]]
   - [[#eshell][EShell]]
   - [[#eat][Eat]]
   - [[#magit][Magit]]
@@ -800,15 +800,10 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (org-auto-clock-project-name-function #'projectile-project-name))
 #+end_src
 
-** Grammarly
-#+begin_src emacs-lisp
-(use-package flycheck-grammarly)
-#+end_src
+** Ltex
 *** lsp
 #+begin_src emacs-lisp
-  (use-package lsp-grammarly
-    :custom
-    (lsp-grammarly-dialect "canadian"))
+  (use-package lsp-ltex)
 #+end_src
 
 ** EShell
@@ -1929,9 +1924,6 @@ Load this before we load Flycheck
   (use-package pgmacs
     :ensure (:type git :host github :repo "emarsden/pgmacs"))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table data (:use-package (26454 46369 26287 0) :use-package-secs (0 0 4956 0)))
 
 ** Dape
 #+begin_src emacs-lisp :tangle no
