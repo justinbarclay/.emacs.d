@@ -707,8 +707,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package catppuccin-theme)
 
 (use-package doom-themes
+  :ensure (:type git :host github :repo "justinbarclay/themes" :ref "laserwave-hc")
   :init
-  (load-theme 'doom-laserwave t)
+  (load-theme 'doom-laserwave-high-contrast t)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
   ;; Corrects (and improves) org-mode's native fontification.
@@ -1592,6 +1593,13 @@ parses its input."
 (use-package yasnippet-snippets
   :after yasnippet)
 
+(use-package apheleia
+  :init
+  (apheleia-global-mode)
+  :config
+  ;; Override ruby-ts-mode defaults
+  (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop)))
+
 (use-feature treesit
   :config
   (setq-default treesit-font-lock-level 4))
@@ -1604,12 +1612,27 @@ parses its input."
   :custom
   (treesit-auto-install 'prompt)
   :init
-  (add-to-list 'treesit-auto-recipe-list (make-treesit-auto-recipe
-                                          :lang 'nu
-                                          :ts-mode 'nushell-ts-mode
-                                          :remap 'nushell-mode
-                                          :url "https://github.com/nushell/tree-sitter-nu"
-                                          :ext "\\.nu\\'"))
+  (setq my-jsdoc-tsauto-config
+    (make-treesit-auto-recipe
+     :lang 'jsdoc
+     :ts-mode 'js-ts-mode
+     :url "https://github.com/tree-sitter/tree-sitter-jsdoc"
+     :revision "master"
+     :source-dir "src"
+     :requires 'javascript))
+  (setq my-js-tsauto-config
+   (make-treesit-auto-recipe
+    :lang 'javascript
+    :ts-mode 'js-ts-mode
+    :remap '(js2-mode js-mode javascript-mode)
+    :url "https://github.com/tree-sitter/tree-sitter-javascript"
+    :revision "master"
+    :requires 'jsdoc
+    :source-dir "src"
+    :ext "\\.js\\'"))
+  (add-to-list 'treesit-auto-recipe-list my-js-tsauto-config)
+  (add-to-list 'treesit-auto-recipe-list my-jsdoc-tsauto-config)
+  (add-to-list 'treesit-auto-langs 'jsdoc)
   :config
   (global-treesit-auto-mode))
 
@@ -1663,6 +1686,7 @@ parses its input."
   (lsp-solargraph-use-bundler 't)
   (lsp-keymap-prefix "C-l")
   (lsp-diagnostic-clean-after-change 't)
+  (lsp-copilot-enabled 't)
   :config
   (defvar lsp-flycheck-mapping '(less-css-mode (less-stylelint less)
                                  css-base-mode (css-stylelint)
@@ -1908,13 +1932,6 @@ CALLBACK is the status callback passed by Flycheck."
 (use-feature tsx-ts-mode
   :mode "\\.tsx\\'")
 
-(use-package prettier-js
-  :hook ((typescript-ts-base-mode . prettier-js-mode)
-         (js-base-mode . prettier-js-mode)
-         (json-ts-mode . prettier-js-mode)
-         (less-css-mode . prettier-js-mode)
-         (web-mode . prettier-js-mode)))
-
 (use-package deno-fmt)
 
 (use-package eslint-disable-rule)
@@ -1974,11 +1991,6 @@ CALLBACK is the status callback passed by Flycheck."
       (when (executable-find "pry")
         (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
         (setq inf-ruby-default-implementation "pry"))))
-
-(use-package rubocopfmt
-  :hook ((ruby-base-mode . rubocopfmt-mode)
-         (ruby-ts-mode . rubocopfmt-mode))
-  :custom (rubocopfmt-on-save-use-lsp-format-buffer 't))
 
 (use-package rspec-mode
  :hook (ruby-base-mode . rspec-enable-appropriate-mode)
@@ -2094,6 +2106,10 @@ CALLBACK is the status callback passed by Flycheck."
          ("\\.rst$" . rst-mode)
          ("\\.rest$" . rst-mode)))
 
+(use-package kotlin-ts-mode)
+
+(use-package android-env)
+
 (use-feature tramp
   :defer t
   :hook (tramp-mode . (lambda () (projectile-mode 0)))
@@ -2186,6 +2202,15 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package git-sync-mode
   :commands (git-sync-mode git-sync-global-mode)
   :ensure (:type git :host github :repo "justinbarclay/git-sync-mode"))
+
+(use-package leetcode-emacs
+ :commands (leetcode-show)
+ :ensure (leetcode :type git
+          :host github
+          :repo "ginqi7/leetcode-emacs"
+          :files ("leetcode.el"))
+ :config
+ (setq leetcode-language "rust"))
 
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"

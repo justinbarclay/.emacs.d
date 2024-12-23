@@ -88,6 +88,7 @@
   - [[#code-completion][Code Completion]]
   - [[#yas-snippets][Yas Snippets]]
 - [[#languages][Languages]]
+  - [[#code-formatting][Code Formatting]]
   - [[#tree-sitter-support][Tree Sitter support]]
   - [[#general-intellisense][General Intellisense]]
   - [[#csslesssass][CSS/LESS/SASS]]
@@ -111,6 +112,7 @@
   - [[#sql][SQL]]
   - [[#latex][Latex]]
   - [[#text-modes][Text modes]]
+  - [[#android][Android]]
 - [[#communication][Communication]]
   - [[#tramp][Tramp]]
   - [[#alert][Alert]]
@@ -126,6 +128,7 @@
   - [[#http-client][http client]]
   - [[#git-link][Git-link]]
   - [[#git-sync][git-sync]]
+  - [[#leetcode-emacs][leetcode-emacs]]
 - [[#custom-functions][Custom Functions]]
   - [[#allow-for-clojure-style-comment-blocks][Allow for clojure style comment blocks]]
   - [[#resize-font-size][Resize font size]]
@@ -1276,8 +1279,9 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 Let's use Doom's version instead
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes
+    :ensure (:type git :host github :repo "justinbarclay/themes" :ref "laserwave-hc")
     :init
-    (load-theme 'doom-laserwave t)
+    (load-theme 'doom-laserwave-high-contrast t)
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
     ;; Corrects (and improves) org-mode's native fontification.
@@ -2716,6 +2720,16 @@ Cape adds some more completion backends for us, allowing us to get file and dabb
 
 * Languages
 Major mode customizations
+** Code Formatting
+#+begin_src elisp
+  (use-package apheleia
+    :init
+    (apheleia-global-mode)
+    :config
+    ;; Override ruby-ts-mode defaults
+    (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop)))
+#+end_src
+
 ** Tree Sitter support
 #+begin_src emacs-lisp
   (use-feature treesit
@@ -2733,12 +2747,27 @@ We want automatic fall back and to have manually manage `treesit-language-source
     :custom
     (treesit-auto-install 'prompt)
     :init
-    (add-to-list 'treesit-auto-recipe-list (make-treesit-auto-recipe
-                                            :lang 'nu
-                                            :ts-mode 'nushell-ts-mode
-                                            :remap 'nushell-mode
-                                            :url "https://github.com/nushell/tree-sitter-nu"
-                                            :ext "\\.nu\\'"))
+    (setq my-jsdoc-tsauto-config
+      (make-treesit-auto-recipe
+       :lang 'jsdoc
+       :ts-mode 'js-ts-mode
+       :url "https://github.com/tree-sitter/tree-sitter-jsdoc"
+       :revision "master"
+       :source-dir "src"
+       :requires 'javascript))
+    (setq my-js-tsauto-config
+     (make-treesit-auto-recipe
+      :lang 'javascript
+      :ts-mode 'js-ts-mode
+      :remap '(js2-mode js-mode javascript-mode)
+      :url "https://github.com/tree-sitter/tree-sitter-javascript"
+      :revision "master"
+      :requires 'jsdoc
+      :source-dir "src"
+      :ext "\\.js\\'"))
+    (add-to-list 'treesit-auto-recipe-list my-js-tsauto-config)
+    (add-to-list 'treesit-auto-recipe-list my-jsdoc-tsauto-config)
+    (add-to-list 'treesit-auto-langs 'jsdoc)
     :config
     (global-treesit-auto-mode))
 #+end_src
@@ -2813,6 +2842,7 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
     (lsp-solargraph-use-bundler 't)
     (lsp-keymap-prefix "C-l")
     (lsp-diagnostic-clean-after-change 't)
+    (lsp-copilot-enabled 't)
     :config
     (defvar lsp-flycheck-mapping '(less-css-mode (less-stylelint less)
                                    css-base-mode (css-stylelint)
@@ -3140,7 +3170,6 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
     :mode ("\\.js\\'" "\\.cjs\\'" "\\.mjs\\'"))
 #+end_src
 *** Typescript
-
 #+begin_src emacs-lisp
   (use-feature typescript-ts-base-mode    
     :custom
@@ -3163,7 +3192,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 
 *** Prettier
 Autoformatting
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package prettier-js
     :hook ((typescript-ts-base-mode . prettier-js-mode)
            (js-base-mode . prettier-js-mode)
@@ -3256,7 +3285,7 @@ Autoformatting
           #+END_SRC
 
 *** formatter
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package rubocopfmt
     :hook ((ruby-base-mode . rubocopfmt-mode)
            (ruby-ts-mode . rubocopfmt-mode))
@@ -3458,6 +3487,16 @@ Then we want org support for math latex
            ("\\.rest$" . rst-mode)))
 #+END_SRC
 
+** Android
+*** Kotlin
+#+begin_src elisp
+(use-package kotlin-ts-mode)
+#+end_src
+*** android-env
+#+begin_src elisp
+  (use-package android-env)
+#+end_src
+
 * Communication
 ** Tramp
 #+begin_src emacs-lisp
@@ -3489,6 +3528,7 @@ Then we want org support for math latex
                             #'alert-burnt-toast-notify)
         (setq alert-default-style 'burnt-toast))
 #+END_SRC
+
 * Misc
 ** codemetrics
 #+begin_src elisp :tangle no
@@ -3597,6 +3637,18 @@ For when you want to link to the current file from github or gitlab
   (use-package git-sync-mode
     :commands (git-sync-mode git-sync-global-mode)
     :ensure (:type git :host github :repo "justinbarclay/git-sync-mode"))
+#+end_src
+
+** leetcode-emacs
+#+begin_src elisp
+  (use-package leetcode-emacs
+   :commands (leetcode-show)
+   :ensure (leetcode :type git
+            :host github
+            :repo "ginqi7/leetcode-emacs"
+            :files ("leetcode.el"))
+   :config
+   (setq leetcode-language "rust"))
 #+end_src
 
 * Custom Functions
