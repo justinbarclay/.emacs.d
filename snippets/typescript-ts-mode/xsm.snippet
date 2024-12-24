@@ -1,0 +1,40 @@
+# -*- mode: typescript -*-
+# name: xstate-machine
+# key: /xsm
+# --
+
+import { createMachine } from "xstate";
+
+type ${1:$$(string-replace "Machine" "" (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))}Context = {
+  ${2:context}
+}
+
+type ${1}Events = {
+  type: "${4:$(upcase yas-text)}";
+  ${7:payload}: ${8:type};
+};
+
+const ${1}Machine = createMachine({
+  tsTypes: {} as import("").Typegen0,
+  id: "${1:$(kebab-case yas-text)}",
+  schema: {
+    context: {} as ${1}Context,
+    events: {} as ${1}Events
+  },
+  initial: "${3:initialState}",
+  states: {
+    ${3}: {
+      on: {
+        ${4:$$(upcase yas-text)}: {target: "${5:nextState}",
+                                   actions: ["${6:action}"]},
+      }
+    },
+    ${5}: {$0},
+  }
+  }, {
+  actions: {
+      ${6}: (context, {${7}}) => {
+        // TODO: implement action 
+      }
+    }
+});

@@ -1,0 +1,18 @@
+# -*- mode: typescript -*-
+# name: xstate-invoke-node
+# key: /xsni
+# --
+
+${1:state}: {
+  invoke: {
+    src: "${2:service}",
+    onDone: {
+      target: "${3:target}",
+      actions: ["${4:actions}"]
+    },
+    onError: {
+      target: "${5:target}",
+      actions: ["${6:actions}"]
+    }
+  }
+}

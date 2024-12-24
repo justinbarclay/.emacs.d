@@ -2303,3 +2303,13 @@ CALLBACK is the status callback passed by Flycheck."
                tracker)
       (goto-char (point-min))
       (sort-numeric-fields 1 (point-min) (point-max)))))
+
+(defun kebab-case (string)
+  "Convert STRING to kebab-case. For example, HelloWorld! becomes hello-world! Note that this downcases the first character but does not add a - before it"
+  (let ((case-fold-search nil))
+    (-> (replace-regexp-in-string
+         "\\([A-Z]\\)"
+         "-\\1"
+         string)
+      (downcase)
+      (string-trim-left "-"))))

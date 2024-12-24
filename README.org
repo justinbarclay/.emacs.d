@@ -3873,3 +3873,15 @@ Count line repititions
         (goto-char (point-min))
         (sort-numeric-fields 1 (point-min) (point-max)))))
 #+end_src
+Kebab Case String
+#+begin_src elisp
+  (defun kebab-case (string)
+    "Convert STRING to kebab-case. For example, HelloWorld! becomes hello-world! Note that this downcases the first character but does not add a - before it"
+    (let ((case-fold-search nil))
+      (-> (replace-regexp-in-string
+           "\\([A-Z]\\)"
+           "-\\1"
+           string)
+        (downcase)
+        (string-trim-left "-"))))
+#+end_src

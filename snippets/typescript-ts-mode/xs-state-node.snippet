@@ -1,0 +1,13 @@
+# -*- mode: typescript -*-
+# name: xstate-state-node
+# key: /xsns
+# --
+
+${1:state}: {
+  on: {
+    "${2:$$(upcase event)}": {
+      target: "${3:target}",
+      actions: ["${4:action}"]
+      }
+    }
+}
