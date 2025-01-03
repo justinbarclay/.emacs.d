@@ -373,7 +373,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":PROPERTIES:"
                                     ":calendar-id: justincbarclay@gmail.com"
                                     ":END:")
-                                    :file ,(concat org-directory "/personal/calendar.org"))
+                     :file ,(concat org-directory "/personal/calendar.org"))
                         ("Emails" :keys "e"
                          :template "* TODO [#A] Reply: %a :@home:"
                          :headline "Emails" :file "~/org/personal/tasks.org")))
@@ -386,6 +386,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":Scheduled: %U"
                                     ":END:")
                          :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
+                        ("PR Review"  :keys "p"
+                         :template ("* TODO %^{Date}u" "%?")
+                         :headline "Tasks"
+                         :olp ("Review PRs")
+                         :file ,(concat org-directory "/work/tasks.org")) 
                         ("Notes"  :keys "n"
                          :template ("* %^{Description}"
                                     ":PROPERTIES:"

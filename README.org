@@ -674,60 +674,69 @@ Have alerts pop up from your org agenda
 **** DOCT
 Declarative Org Capture Templates
 #+BEGIN_SRC emacs-lisp
-    (use-package doct
-      :after org
-      :commands (doct)
-      :init (setq org-capture-templates
-                  (doct `(("Personal" :keys "p" :children
-                           (("Todo"   :keys "t"
-                             :template ("* TODO %^{Description}"
-                                        "SCHEDULED: %U")
-                             :headline "Tasks" :file ,(concat org-directory "/personal/tasks.org"))
-                            ("Notes"  :keys "n"
-                             :template ("* %^{Description}"
-                                        ":PROPERTIES:"
-                                        ":Created: %U"
-                                        ":END:")
-                             :headline "Notes" :file ,(concat org-directory "/personal/tasks.org"))
-                            ("Appointment"  :keys "a"
-                             :template ("* %^{Description}"
-                                        "SCHEDULED: %T"
-                                        ":PROPERTIES:"
-                                        ":calendar-id: justincbarclay@gmail.com"
-                                        ":END:")
-                                        :file ,(concat org-directory "/personal/calendar.org"))
-                            ("Emails" :keys "e"
-                             :template "* TODO [#A] Reply: %a :@home:"
-                             :headline "Emails" :file "~/org/personal/tasks.org")))
+  (use-package doct
+    :after org
+    :commands (doct)
+    :init (setq org-capture-templates
+                (doct `(("Personal" :keys "p" :children
+                         (("Todo"   :keys "t"
+                           :template ("* TODO %^{Description}"
+                                      "SCHEDULED: %U")
+                           :headline "Tasks" :file ,(concat org-directory "/personal/tasks.org"))
+                          ("Notes"  :keys "n"
+                           :template ("* %^{Description}"
+                                      ":PROPERTIES:"
+                                      ":Created: %U"
+                                      ":END:")
+                           :headline "Notes" :file ,(concat org-directory "/personal/tasks.org"))
+                          ("Appointment"  :keys "a"
+                           :template ("* %^{Description}"
+                                      "SCHEDULED: %T"
+                                      ":PROPERTIES:"
+                                      ":calendar-id: justincbarclay@gmail.com"
+                                      ":END:")
+                       :file ,(concat org-directory "/personal/calendar.org"))
+                          ("Emails" :keys "e"
+                           :template "* TODO [#A] Reply: %a :@home:"
+                           :headline "Emails" :file "~/org/personal/tasks.org")))
 
-                          ("Work"    :keys "w"
-                           :children
-                           (("Todo"  :keys "t"
-                             :template ("* TODO %^{Description}"
-                                        ":PROPERTIES:"
-                                        ":Scheduled: %U"
-                                        ":END:")
-                             :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
-                            ("Notes"  :keys "n"
-                             :template ("* %^{Description}"
-                                        ":PROPERTIES:"
-                                        ":Created: %U"
-                                        ":END:")
-                             :headline "Notes" :file ,(concat org-directory "/work/tasks.org"))
-                            ("Emails" :keys "e"
-                             :template "* TODO [#A] Reply: %a :@work:"
-                             :headline "Emails" :file ,(concat org-directory "/work/tasks.org"))
-                            ("Trello" :keys "r"
-                             :template ("* TODO [#B] %a " "SCHEDULED: %U")
-                             :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
-                            ("Appointment"  :keys "a"
-                             :template ("* %^{Description}"
-                                        "SCHEDULED: %T"
-                                        ":PROPERTIES:"
-                                        ":calendar-id: justin.barclay@tidalcloud.com"
-                                        ":END:")
-                             :file ,(concat org-directory "/work/calendar.org"))))))))
+                        ("Work"    :keys "w"
+                         :children
+                         (("Todo"  :keys "t"
+                           :template ("* TODO %^{Description}"
+                                      ":PROPERTIES:"
+                                      ":Scheduled: %U"
+                                      ":END:")
+                           :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
+                          ("PR Review"  :keys "p"
+                           :template ("* TODO %^{Date}u" "%?")
+                           :headline "Tasks"
+                           :olp ("Review PRs")
+                           :file ,(concat org-directory "/work/tasks.org")) 
+                          ("Notes"  :keys "n"
+                           :template ("* %^{Description}"
+                                      ":PROPERTIES:"
+                                      ":Created: %U"
+                                      ":END:")
+                           :headline "Notes" :file ,(concat org-directory "/work/tasks.org"))
+                          ("Emails" :keys "e"
+                           :template "* TODO [#A] Reply: %a :@work:"
+                           :headline "Emails" :file ,(concat org-directory "/work/tasks.org"))
+                          ("Trello" :keys "r"
+                           :template ("* TODO [#B] %a " "SCHEDULED: %U")
+                           :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
+                          ("Appointment"  :keys "a"
+                           :template ("* %^{Description}"
+                                      "SCHEDULED: %T"
+                                      ":PROPERTIES:"
+                                      ":calendar-id: justin.barclay@tidalcloud.com"
+                                      ":END:")
+                           :file ,(concat org-directory "/work/calendar.org"))))))))
 #+END_SRC
+
+#+RESULTS:
+: #s(hash-table data (:use-package (26488 14842 843480 0) :use-package-secs (0 0 1813 0) :init (26488 14812 1308 0) :config (26488 14812 1301 0) :config-secs (0 0 2 0) :init-secs (0 0 301 0)))
+
 **** Org Fancy Priorities
 Change priority cookies from alphanumeric cookies into symbols and explicitly colours them
 #+BEGIN_SRC emacs-lisp
