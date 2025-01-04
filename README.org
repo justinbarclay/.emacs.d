@@ -1055,6 +1055,7 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
    :custom
    (elfeed-feeds
         '(("http://nullprogram.com/feed/" emacs)
+          ("https://www.penny-arcade.com/feed" comics)
           ("https://sachachua.com/blog/feed/" emacs)
           ("https://macowners.club/posts/index.xml" emacs)
           ("https://fasterthanli.me/index.xml" tech rust)
@@ -1119,7 +1120,7 @@ I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good
 #+BEGIN_SRC emacs-lisp :tangle early-init.el
 (let ((font-name (if jb/os-windows-p
                      "CaskaydiaCove NFM"
-                   "CaskaydiaMono Nerd Font Mono")))
+                   "PT Mono")))
   (set-face-attribute 'default nil
                       :family font-name :height 170 :weight 'normal))
 #+END_SRC
@@ -2726,7 +2727,6 @@ Cape adds some more completion backends for us, allowing us to get file and dabb
     :init
     (add-hook 'yas-minor-mode-hook #'yas-capf-minor-mode))
 #+end_src
-
 * Languages
 Major mode customizations
 ** Code Formatting

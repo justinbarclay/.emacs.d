@@ -57,7 +57,7 @@
 
 (let ((font-name (if jb/os-windows-p
                      "CaskaydiaCove NFM"
-                   "CaskaydiaMono Nerd Font Mono")))
+                   "PT Mono")))
   (set-face-attribute 'default nil
                       :family font-name :height 170 :weight 'normal))
 
