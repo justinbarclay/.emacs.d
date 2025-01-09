@@ -1934,6 +1934,9 @@ CALLBACK is the status callback passed by Flycheck."
 (use-feature typescript-ts-mode
   :mode ("\\.ts\\'" "\\.mts\\'" "\\.ts.snap\\'"))
 
+(use-package pretty-ts-errors
+  :ensure (pretty-ts-errors :host github :repo "artawower/pretty-ts-errors.el"))
+
 (use-feature tsx-ts-mode
   :mode "\\.tsx\\'")
 

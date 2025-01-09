@@ -3193,6 +3193,12 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
     :mode ("\\.ts\\'" "\\.mts\\'" "\\.ts.snap\\'"))
 #+end_src
 
+**** pretty errors
+#+begin_src elisp
+(use-package pretty-ts-errors
+  :ensure (pretty-ts-errors :host github :repo "artawower/pretty-ts-errors.el"))
+#+end_src
+
 *** TSX Mode
 #+begin_src emacs-lisp
   (use-feature tsx-ts-mode
