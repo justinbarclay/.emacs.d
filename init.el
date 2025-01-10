@@ -388,8 +388,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                          :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
                         ("PR Review"  :keys "p"
                          :template ("* TODO %^{Date}u" "%?")
-                         :headline "Tasks"
-                         :olp ("Review PRs")
+                         :olp ("Tasks" "Review PRs")
                          :file ,(concat org-directory "/work/tasks.org")) 
                         ("Notes"  :keys "n"
                          :template ("* %^{Description}"
@@ -1980,10 +1979,6 @@ CALLBACK is the status callback passed by Flycheck."
   :custom (ruby-indent-level 2)
           (ruby-indent-tabs-mode nil))
 
-(use-package rbenv
-  :config
-  (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
-
 (use-package inf-ruby
   :defer t
   :bind
@@ -2280,7 +2275,6 @@ CALLBACK is the status callback passed by Flycheck."
 
 (defun count-repititions ()
   (interactive)
-  ;;
   (let ((tracker (make-hash-table :test 'equal))
         (buffer (current-buffer)))
     (with-temp-buffer

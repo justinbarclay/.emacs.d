@@ -710,8 +710,7 @@ Declarative Org Capture Templates
                            :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
                           ("PR Review"  :keys "p"
                            :template ("* TODO %^{Date}u" "%?")
-                           :headline "Tasks"
-                           :olp ("Review PRs")
+                           :olp ("Tasks" "Review PRs")
                            :file ,(concat org-directory "/work/tasks.org")) 
                           ("Notes"  :keys "n"
                            :template ("* %^{Description}"
@@ -1437,6 +1436,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
                                                          :height 1.0)
                                      " ")))
 #+END_SRC
+
 * Directory Management
 ** dired
 #+BEGIN_SRC emacs-lisp
@@ -3269,12 +3269,6 @@ Autoformatting
             (ruby-indent-tabs-mode nil))
 #+END_SRC
 
-*** rbenv
-#+BEGIN_SRC emacs-lisp
-  (use-package rbenv
-    :config
-    (setq rbenv-installation-dir "/usr/local/bin/rbenv"))
-#+END_SRC
 *** inf-ruby
 #+BEGIN_SRC emacs-lisp
   (use-package inf-ruby
@@ -3294,6 +3288,7 @@ Autoformatting
           #+END_SRC
 
 *** formatter
+This has been switched out for apheleia
 #+BEGIN_SRC emacs-lisp :tangle no
   (use-package rubocopfmt
     :hook ((ruby-base-mode . rubocopfmt-mode)
@@ -3852,7 +3847,6 @@ Count line repititions
 #+begin_src emacs-lisp
   (defun count-repititions ()
     (interactive)
-    ;;
     (let ((tracker (make-hash-table :test 'equal))
           (buffer (current-buffer)))
       (with-temp-buffer
