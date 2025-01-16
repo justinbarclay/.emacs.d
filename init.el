@@ -498,7 +498,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 ;; https://github.com/magit/magit
 (use-package magit
   :commands magit-get-top-dir
-  ;; :ensure-system-package git
   :bind (("C-c g" . magit-status))
   :hook
   (git-commit-mode . magit-commit-mode-init)
@@ -560,6 +559,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
      magit-set-upstream-on-push 'askifnotset)))
 
 (use-package forge
+  :ensure (:type git :repo "magit/forge" :ref "0c906062620")
   :after magit
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
