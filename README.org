@@ -237,7 +237,7 @@ Let's describe some variables to help determine how to configure Emacs
 I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
 ** Bootstrapping elpaca
 #+begin_src emacs-lisp
-  (defvar elpaca-installer-version 0.8)
+  (defvar elpaca-installer-version 0.9)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -1121,7 +1121,7 @@ I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good
                      "CaskaydiaCove NFM"
                    "CaskaydiaMono Nerd Font Mono")))
   (set-face-attribute 'default nil
-                      :family font-name :height 170 :weight 'normal))
+                      :family font-name :height 160 :weight 'normal))
 #+END_SRC
 
 *** Ligatures
