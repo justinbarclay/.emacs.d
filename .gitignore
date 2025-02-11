@@ -28,13 +28,14 @@ parinfer-rust
 persist
 places
 projectile-bookmarks.eld
+.projectile.cache
 projectile.cache
+icons/
 projects
 quelpa/
 recentf
 request
 site-lisp
-snippets
 straight
 tramp
 transient

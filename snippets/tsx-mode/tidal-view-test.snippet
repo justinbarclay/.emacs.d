@@ -1,0 +1,185 @@
+# -*- mode: tsx -*-
+# name: tidal-view-test
+# key: /tview-test
+# --
+
+import React from "react";
+import { rest } from "msw";
+import { test, expect } from "vitest";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+
+import server from "../../setup";
+import { renderWithContext } from "../../testHelper";
+import ${1:View} from "${2:../../src/views/View}";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { apiBase } from "../../rest-data/apps";
+import { ${3:apiResponseCount} } from "../../rest-data/instance_targets";
+
+describe("${1} view", async () => {
+  test("renders the view", async () => {
+    const tree = renderWithContext(
+      <div id="main-container">
+        <MemoryRouter initialEntries={["${4:/some/specific/1/route}"]}>
+          <Routes>
+            <Route key=":id" path="${5:/some/generic/:id/route}" element={<${1} />} />
+          </Routes>
+        </MemoryRouter>
+      </div>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("${6:textInLoadedRow}")).toBeTruthy();
+    });
+
+    expect(tree).toMatchSnapshot();
+  });
+
+  test(`renders ${3} items in the search table`, async () => {
+    renderWithContext(
+      <div id="main-container">
+        <MemoryRouter initialEntries={["${4}"]}>
+          <Routes>
+            <Route key=":id" path="${5}" element={<${1} />} />
+          </Routes>
+        </MemoryRouter>
+      </div>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("${6}")).toBeTruthy();
+    });
+
+    expect(screen.getAllByRole("row").length).toBe(${3});
+    expect(screen.getByText(`\${${3}} results found`)).toBeTruthy();
+  });
+
+  test("can respond to searching", async () => {
+    renderWithContext(
+      <div id="main-container">
+        <MemoryRouter initialEntries={["${4}"]}>
+          <Routes>
+            <Route key=":id" path="${5}" element={<${1} />} />
+          </Routes>
+        </MemoryRouter>
+      </div>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("${6}")).toBeTruthy();
+    });
+
+    expect(screen.getAllByRole("row").length).toBe(3);
+
+    const input = screen.getByLabelText("${7:Search Label}");
+    expect(input).toBeTruthy();
+
+    fireEvent.change(input, { target: { value: "${8:Search Value}" } });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("${8}")).toBeTruthy();
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("row").length).toBe(1);
+    });
+
+    expect(screen.getByText("1 result found")).toBeTruthy();
+  });
+
+  test("reset button clears out query options", async () => {
+    renderWithContext(
+      <div id="main-container">
+        <MemoryRouter initialEntries={["${4}"]}>
+          <Routes>
+            <Route key=":id" path="${5}" element={<${1} />} />
+          </Routes>
+        </MemoryRouter>
+      </div>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("${6}")).toBeTruthy();
+    });
+
+    expect(screen.getAllByRole("row").length).toBe(${3});
+    const input = screen.getByLabelText("${7}");
+    expect(input).toBeTruthy();
+
+    fireEvent.change(input, { target: { value: "${8}" } });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("${8}")).toBeTruthy();
+      expect(screen.getByText("1 result found")).toBeTruthy();
+    });
+    const resetButton = screen.getByRole("button", { name: "Reset" });
+
+    expect(resetButton).toBeTruthy();
+
+    fireEvent.click(resetButton);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("row").length).toBe(${3});
+    });
+
+    expect(screen.getByText(`${instanceTargetIndexCount} results found`)).toBeTruthy();
+  });
+
+  it("it should open a filter menu", async () => {
+    renderWithContext(
+      <div id="main-container">
+        <MemoryRouter initialEntries={["${4}"]}>
+          <Routes>
+            <Route key=":id" path="${5}" element={<${1} />} />
+          </Routes>
+        </MemoryRouter>
+      </div>
+    );
+    await waitFor(() =>
+      expect(screen.getByText(`${instanceTargetIndexCount} results found`)).toBeTruthy(),
+    );
+
+    const advancedFilter = screen.getByRole("button", { name: "Advanced Filtering" });
+    fireEvent.click(advancedFilter);
+    await waitFor(() =>
+      expect(screen.getByPlaceholderText("${9:Filter Place Holder}")).toBeTruthy(),
+    );
+  });
+
+  it("it should send a query when filtered", async () => {
+    renderWithContext(
+      <div id="main-container">
+        <MemoryRouter initialEntries={["${4}"]}>
+          <Routes>
+            <Route key=":id" path="${5}" element={<${1} />} />
+          </Routes>
+        </MemoryRouter>
+      </div>
+    );
+    await waitFor(() =>
+      expect(screen.getByText(`${instanceTargetIndexCount} results found`)).toBeTruthy(),
+    );
+    // Expects don't run properly in msw functions so we set a
+    // variable to capture it outside of the msw declaration
+    let filterValue: string | null = "";
+
+    server.use(
+      rest.get(`${apiBase}/${10:mocker/api/route}`, (req, res, ctx) => {
+        filterValue = req.url.searchParams.get("filters[${11:filterKey}]");
+
+        return res(ctx.json([]));
+      }),
+      rest.get(`${apiBase}/cpus`, (req, res, ctx) => res(ctx.json([]))),
+    );
+    const advancedFilter = screen.getByRole("button", { name: "Advanced Filtering" });
+    fireEvent.click(advancedFilter);
+
+    await waitFor(() =>
+      expect(screen.getByPlaceholderText("${9}")).toBeTruthy(),
+    );
+
+    const instanceName = screen.getByPlaceholderText("${9}");
+    fireEvent.change(instanceName, { target: { value: "${12:Filter Value}" } });
+
+    await waitFor(() => expect(filterValue).toBe("~${12}"));
+  });
+});
