@@ -854,76 +854,99 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 #+BEGIN_SRC emacs-lisp
-  ;; Magit is an Emacs interface to Git.
-  ;; (It's awesome)
-  ;; https://github.com/magit/magit
-  (use-package magit
-    :commands magit-get-top-dir
-    :bind (("C-c g" . magit-status))
-    :hook
-    (git-commit-mode . magit-commit-mode-init)
-    :bind (:map magit-mode-map
-                ("c" . magit-maybe-commit))
-    :init
-    (progn
-      ;; magit extensions
-      ;; stops the invalid style showing up.
-      ;; From: http://git.io/rPBE0Q
-      (defun magit-commit-mode-init ()
-        "Force a new line to be inserted into a commit window"
-        (when (looking-at "\n"))
-       (open-line 1))
-      (defun magit-maybe-commit (&optional show-options)
-        "Runs magit-commit unless prefix is passed"
-        (interactive "P")
-        (if show-options
-            (magit-key-mode-popup-committing)
-          (magit-commit)))
-      ;; make magit status go full-screen but remember previous window
-      ;; settings
-      ;; from: http://whattheemacsd.com/setup-magit.el-01.html
-      (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
-                                            (window-configuration-to-register :m)
-                                            (apply orig-fun args)
-                                            (delete-other-windows)))
+    ;; Magit is an Emacs interface to Git.
+    ;; (It's awesome)
+    ;; https://github.com/magit/magit
+    (use-package magit
+      :commands magit-get-top-dir
+      :bind (("C-c g" . magit-status))
+      :hook
+      (git-commit-mode . magit-commit-mode-init)
+      :bind (:map magit-mode-map
+                  ("c" . magit-maybe-commit))
+      :init
+      (progn
+        ;; magit extensions
+        ;; stops the invalid style showing up.
+        ;; From: http://git.io/rPBE0Q
+        (defun magit-commit-mode-init ()
+          "Force a new line to be inserted into a commit window"
+          (when (looking-at "\n"))
+         (open-line 1))
+        (defun magit-maybe-commit (&optional show-options)
+          "Runs magit-commit unless prefix is passed"
+          (interactive "P")
+          (if show-options
+              (magit-key-mode-popup-committing)
+            (magit-commit)))
+        ;; make magit status go full-screen but remember previous window
+        ;; settings
+        ;; from: http://whattheemacsd.com/setup-magit.el-01.html
+        (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
+                                              (window-configuration-to-register :m)
+                                              (apply orig-fun args)
+                                              (delete-other-windows)))
 
-      (advice-add 'git-commit-commit :after #'(lambda (&rest _)
-                                                (delete-window)))
+        (advice-add 'git-commit-commit :after #'(lambda (&rest _)
+                                                  (delete-window)))
 
-      (advice-add 'git-commit-abort :after #'(lambda (&rest _)
-                                               (delete-window))))
-    :config
-    (progn
-      ;; restore previously hidden windows
-      (advice-add 'magit-quit-window
-                  :around
-                  #'(lambda (oldfun)
-                      (let ((current-mode major-mode))
-                        (funcall oldfun)
-                        (when (eq 'magit-status-mode current-mode)
-                          (jump-to-register :m)))))
-      ;; magit settings
-      (setq
-       ;; don't put "origin-" in front of new branch names by default
-       magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
-       ;; open magit status in same window as current buffer
-       magit-status-buffer-switch-function #'switch-to-buffer
-       ;; highlight word/letter changes in hunk diffs
-       magit-diff-refine-hunk t
-       ;; ask me if I want to include a revision when rewriting
-       magit-rewrite-inclusive 'ask
-       ;; ask me to save buffers
-       magit-save-some-buffers nil
-       ;; pop the process buffer if we're taking a while to complete
-       magit-process-popup-time 10
-       ;; ask me if I want a tracking upstream
-       magit-set-upstream-on-push 'askifnotset)))
+        (advice-add 'git-commit-abort :after #'(lambda (&rest _)
+                                                 (delete-window))))
+      :config
+      (defun magit-iconify-nerd-icon (file-or-dir)
+       "Return the nerd-icon for a file or directory"
+       (if (directory-name-p file-or-dir)
+           (nerd-icons-icon-for-dir file-or-dir)
+         (nerd-icons-icon-for-file file-or-dir)))
+
+      (defun magit-iconify-format-file (_kind file face &optional status orig)
+        (propertize
+         (concat (and status (format "%-11s" status))
+                 (if orig
+                     (format "%s %s -> %s %s"
+                             (magit-iconify-nerd-icon orig) orig
+                             (magit-iconify-nerd-icon file) file)
+                   (format "%s %s" (magit-iconify-nerd-icon file) file)))
+         'font-lock-face face))
+
+     ;; restore previously hidden windows
+     (advice-add 'magit-quit-window
+                 :around
+                 #'(lambda (oldfun)
+                     (let ((current-mode major-mode))
+                       (funcall oldfun)
+                       (when (eq 'magit-status-mode current-mode)
+                         (jump-to-register :m)))))
+     ;; magit settings
+     (setopt
+      ;; customize the iconify function for 
+      magit-formate-file-function 'magit-iconify-format-file
+      ;; don't put "origin-" in front of new branch names by default
+      magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
+      ;; open magit status in same window as current buffer
+      magit-status-buffer-switch-function #'switch-to-buffer
+      ;; highlight word/letter changes in hunk diffs
+      magit-diff-refine-hunk t
+      ;; ask me if I want to include a revision when rewriting
+      magit-rewrite-inclusive 'ask
+      ;; ask me to save buffers
+      magit-save-some-buffers nil
+      ;; pop the process buffer if we're taking a while to complete
+      magit-process-popup-time 10
+      ;; ask me if I want a tracking upstream
+      magit-set-upstream-on-push 'askifnotset))
 #+END_SRC
+*** Magit Icons
+#+begin_src elisp
+  (use-package magit-iconify
+    :ensure (:type git :host github :repo "justinbarclay/magit-iconify")
+    :hook (magit-mode . magit-iconify-mode))
+#+end_src
 
 *** Magit forges
 #+BEGIN_SRC emacs-lisp
   (use-package forge
-    :ensure (:type git :repo "magit/forge" :ref "0c906062620")
+    :ensure (:type git :repo "magit/forge")
     :after magit
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
@@ -1596,10 +1619,11 @@ Turn on recent file mode so that you can more easily switch to recently edited f
         (define-key map (kbd "x") '("find-references" . projectile-find-references))
         map))
 
-    (which-key-add-keymap-based-replacements projectile-command-map
-      "4" (cons "other-window" projectile-other-window-map)
-      "5" (cons "other-frame" projectile-other-frame-map)
-      "s" (cons "search" projectile-search-map)))
+    ;; (which-key-add-keymap-based-replacements projectile-command-map
+    ;;   "4" (cons "other-window" projectile-other-window-map)
+    ;;   "5" (cons "other-frame" projectile-other-frame-map)
+    ;;   "s" (cons "search" projectile-search-map))
+    )
 #+END_SRC
 
 ** Treemacs
@@ -3283,15 +3307,13 @@ Autoformatting
     (:map inf-ruby-minor-mode-map
           (("C-c C-z" . run-ruby)
            ("C-c C-b" . ruby-send-buffer)))
-    :init
-    (add-hook 'inf-ruby-mode-hook (lambda () (corfu-mode -1)))
     :config
-      (progn
-        (when (executable-find "pry")
-          (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
-          (setq inf-ruby-default-implementation "pry"))))
+    (progn
+      (when (executable-find "pry")
+        (add-to-list 'inf-ruby-implementations '("pry" . "pry"))
+        (setq inf-ruby-default-implementation "pry"))))
 
-          #+END_SRC
+#+END_SRC
 
 *** formatter
 This has been switched out for apheleia
