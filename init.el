@@ -121,67 +121,67 @@
     (org-babel-remove-result-one-or-many 't))
   ;; As liberally borrowed from:
   ;; https://github.com/Fuco1/.emacs.d/blob/76e80dd07320b079fa26db3af6096d8d8a4f3bb9/files/org-defs.el#L1863C1-L1922C57     
-  (defun my-org-archive-file ()
-    "Get the archive file for the current org buffer."
-    (car (org-archive--compute-location org-archive-location)))
+ (defun my-org-archive-file ()
+  "Get the archive file for the current org buffer."
+  (car (org-archive--compute-location org-archive-location)))
 
-  (defadvice org-archive-subtree (around fix-hierarchy activate)
-    (let* ((fix-archive-p (and (not current-prefix-arg)
-                               (not (use-region-p))))
-           (afile (my-org-archive-file))
-           (buffer (or (find-buffer-visiting afile) (find-file-noselect afile)))
-           ;; Get all the parents and their tags, we will try to
-           ;; recreate the same situation in the archive buffer.
-           ;; TODO: make this customizable.
-           (parents-and-tags (save-excursion
-                               (let (parents)
-                                 (while (org-up-heading-safe)
-                                   (push (list :heading (org-get-heading t t t t)
-                                               :tags (org-get-tags nil :local))
-                                         parents))
-                                 parents))))
-      ad-do-it
-      (when fix-archive-p
-        (with-current-buffer buffer
-          (goto-char (point-max))
-          (while (org-up-heading-safe))
-          (let* ((olpath (org-entry-get (point) "ARCHIVE_OLPATH"))
-                 ;; TODO: Factor out dash.el
-                 (path (and olpath
-                            (--map
-                             (replace-regexp-in-string "^/" "" it)
-                             (s-slice-at "/\\sw" olpath))))
-                 (level 1)
-                 tree-text)
-            (when olpath
-              (org-mark-subtree)
-              (setq tree-text (buffer-substring (region-beginning) (region-end)))
-              (let (this-command) (org-cut-subtree))
-              (goto-char (point-min))
-              (save-restriction
-                (widen)
-                (-each path
-                  (lambda (heading)
-                    (if (re-search-forward
-                         (rx-to-string
-                          `(: bol (repeat ,level "*") (1+ " ") ,heading)) nil t)
-                        (progn
-                          (org-narrow-to-subtree)
-                          (org-set-tags (plist-get (car parents-and-tags) :tags)))
-                      (goto-char (point-max))
-                      (unless (looking-at "^")
-                        (insert "\n"))
-                      (insert (make-string level ?*)
-                              " "
-                              heading)
-                      (org-set-tags (plist-get (car parents-and-tags) :tags))
-                      (end-of-line)
-                      (insert "\n"))
-                    (pop parents-and-tags)
-                    (cl-incf level)))
-                (widen)
-                (org-end-of-subtree t t)
-                (org-paste-subtree level tree-text))))))))
+ (defadvice org-archive-subtree (around fix-hierarchy activate)
+   (let* ((fix-archive-p (and (not current-prefix-arg)
+                              (not (use-region-p))))
+          (afile (my-org-archive-file))
+          (buffer (or (find-buffer-visiting afile) (find-file-noselect afile)))
+          ;; Get all the parents and their tags, we will try to
+          ;; recreate the same situation in the archive buffer.
+          ;; TODO: make this customizable.
+          (parents-and-tags (save-excursion
+                              (let (parents)
+                                (while (org-up-heading-safe)
+                                  (push (list :heading (org-get-heading t t t t)
+                                              :tags (org-get-tags nil :local))
+                                        parents))
+                                parents))))
+     ad-do-it
+     (when fix-archive-p
+       (with-current-buffer buffer
+         (goto-char (point-max))
+         (while (org-up-heading-safe))
+         (let* ((olpath (org-entry-get (point) "ARCHIVE_OLPATH"))
+                ;; TODO: Factor out dash.el
+                (path (and olpath
+                           (--map
+                            (replace-regexp-in-string "^/" "" it)
+                            (s-slice-at "/\\sw" olpath))))
+                (level 1)
+                tree-text)
+           (when olpath
+             (org-mark-subtree)
+             (setq tree-text (buffer-substring (region-beginning) (region-end)))
+             (let (this-command) (org-cut-subtree))
+             (goto-char (point-min))
+             (save-restriction
+               (widen)
+               (-each path
+                 (lambda (heading)
+                   (if (re-search-forward
+                        (rx-to-string
+                         `(: bol (repeat ,level "*") (1+ " ") ,heading)) nil t)
+                       (progn
+                         (org-narrow-to-subtree)
+                         (org-set-tags (plist-get (car parents-and-tags) :tags)))
+                     (goto-char (point-max))
+                     (unless (looking-at "^")
+                       (insert "\n"))
+                     (insert (make-string level ?*)
+                             " "
+                             heading)
+                     (org-set-tags (plist-get (car parents-and-tags) :tags))
+                     (end-of-line)
+                     (insert "\n"))
+                   (pop parents-and-tags)
+                   (cl-incf level)))
+               (widen)
+               (org-end-of-subtree t t)
+               (org-paste-subtree level tree-text))))))))
 
   (defun run-org-block ()
     (interactive)
@@ -213,15 +213,15 @@
         org-hide-leading-stars 't
         org-startup-folded 'overview
         org-startup-indented 't)
-  ;; Add ts language support
+   ;; Add ts language support
   (add-to-list 'org-src-lang-modes '("tsx" . tsx-ts))
   (add-to-list 'org-src-lang-modes '("typescript" . typescript-ts))
   (add-to-list 'org-src-lang-modes '("jsx" . jsx-ts))
   (add-to-list 'org-src-lang-modes '("javascript" . javascript-ts))
   (add-to-list 'org-src-lang-modes '("ruby" . ruby-ts))
   (add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))
-  ;; `org-babel-do-load-languages' significantly slows loading time,
-  ;; so let's run this well after we've loaded
+   ;; `org-babel-do-load-languages' significantly slows loading time,
+   ;; so let's run this well after we've loaded
   (run-at-time "1 min" nil (lambda ()
                              (org-babel-do-load-languages 'org-babel-load-languages
                                                           '((shell . t)
@@ -315,7 +315,7 @@ This function is called by `org-babel-execute-src-block'"
     (if (equalp "restclient" (car info))
         (org-babel-execute-src-block t (cons "restclient-curl"
                                              (cdr info)))
-      (message "I'm sorry, I can only generate curl commands for a restclient block."))))
+        (message "I'm sorry, I can only generate curl commands for a restclient block."))))
 
 (use-feature org-agenda
   :config
@@ -373,7 +373,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":PROPERTIES:"
                                     ":calendar-id: justincbarclay@gmail.com"
                                     ":END:")
-                         :file ,(concat org-directory "/personal/calendar.org"))
+                     :file ,(concat org-directory "/personal/calendar.org"))
                         ("Emails" :keys "e"
                          :template "* TODO [#A] Reply: %a :@home:"
                          :headline "Emails" :file "~/org/personal/tasks.org")))
@@ -432,12 +432,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (org-roam-setup))
 
 (use-package org-roam-ui
-  :after org-roam
-  :config
-  (setq org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
+    :after org-roam
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 
 (use-package org-noter
   :custom (org-noter-supported-mode '(doc-view-mode pdf-mode-view)))
@@ -486,6 +486,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (add-to-list 'eshell-command-completions-alist
                       '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
 
+(use-package vterm
+  :config
+  (display-line-numbers-mode -1))
+
 (use-package eat
   :init
   (add-hook 'eshell-load-hook #'eat-eshell-mode)
@@ -511,7 +515,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (defun magit-commit-mode-init ()
       "Force a new line to be inserted into a commit window"
       (when (looking-at "\n"))
-      (open-line 1))
+     (open-line 1))
     (defun magit-maybe-commit (&optional show-options)
       "Runs magit-commit unless prefix is passed"
       (interactive "P")
@@ -532,52 +536,32 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (advice-add 'git-commit-abort :after #'(lambda (&rest _)
                                              (delete-window))))
   :config
-  (defun magit-iconify-nerd-icon (file-or-dir)
-    "Return the nerd-icon for a file or directory"
-    (if (directory-name-p file-or-dir)
-        (nerd-icons-icon-for-dir file-or-dir)
-      (nerd-icons-icon-for-file file-or-dir)))
-
-  (defun magit-iconify-format-file (_kind file face &optional status orig)
-    (propertize
-     (concat (and status (format "%-11s" status))
-             (if orig
-                 (format "%s %s -> %s %s"
-                         (magit-iconify-nerd-icon orig) orig
-                         (magit-iconify-nerd-icon file) file)
-               (format "%s %s" (magit-iconify-nerd-icon file) file)))
-     'font-lock-face face))
-
-  ;; restore previously hidden windows
-  (advice-add 'magit-quit-window
-              :around
-              #'(lambda (oldfun)
-                  (let ((current-mode major-mode))
-                    (funcall oldfun)
-                    (when (eq 'magit-status-mode current-mode)
-                      (jump-to-register :m)))))
-  ;; magit settings
-  (setopt
-   ;; customize the iconify function for
-   magit-formate-file-function 'magit-iconify-format-file
-   ;; don't put "origin-" in front of new branch names by default
-   magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
-   ;; open magit status in same window as current buffer
-   magit-status-buffer-switch-function #'switch-to-buffer
-   ;; highlight word/letter changes in hunk diffs
-   magit-diff-refine-hunk t
-   ;; ask me if I want to include a revision when rewriting
-   magit-rewrite-inclusive 'ask
-   ;; ask me to save buffers
-   magit-save-some-buffers nil
-   ;; pop the process buffer if we're taking a while to complete
-   magit-process-popup-time 10
-   ;; ask me if I want a tracking upstream
-   magit-set-upstream-on-push 'askifnotset))
-
-(use-package magit-iconify
-  :ensure (:type git :host github :repo "justinbarclay/magit-iconify")
-  :hook (magit-mode . magit-iconify-mode))
+ ;; restore previously hidden windows
+ (advice-add 'magit-quit-window
+             :around
+             #'(lambda (oldfun)
+                 (let ((current-mode major-mode))
+                   (funcall oldfun)
+                   (when (eq 'magit-status-mode current-mode)
+                     (jump-to-register :m)))))
+ ;; magit settings
+ (setopt
+  ;; customize the iconify function for 
+  magit-format-file-function #'magit-format-file-nerd-icons
+  ;; don't put "origin-" in front of new branch names by default
+  magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
+  ;; open magit status in same window as current buffer
+  magit-status-buffer-switch-function #'switch-to-buffer
+  ;; highlight word/letter changes in hunk diffs
+  magit-diff-refine-hunk t
+  ;; ask me if I want to include a revision when rewriting
+  magit-rewrite-inclusive 'ask
+  ;; ask me to save buffers
+  magit-save-some-buffers nil
+  ;; pop the process buffer if we're taking a while to complete
+  magit-process-popup-time 10
+  ;; ask me if I want a tracking upstream
+  magit-set-upstream-on-push 'askifnotset))
 
 (use-package forge
   :ensure (:type git :repo "magit/forge")
@@ -665,22 +649,22 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (flyspell-mode -1))
 
 (use-package elfeed
-  :custom
-  (elfeed-feeds
-   '(("http://nullprogram.com/feed/" emacs)
-     ("https://www.penny-arcade.com/feed" comics)
-     ("https://sachachua.com/blog/feed/" emacs)
-     ("https://macowners.club/posts/index.xml" emacs)
-     ("https://fasterthanli.me/index.xml" tech rust)
-     ("https://justinbarclay.ca/index.xml" mine)
-     ("https://blog.1password.com/index.xml" security authentication)
-     ("https://www.michaelgeist.ca/blog/feed/" canada law)
-     ("https://popehat.substack.com/feed" law)
-     ("https://www.joelonsoftware.com/feed/" tech)
-     ("https://xeiaso.net/blog.rss" tech nix)
-     ("https://byorgey.wordpress.com/feed/" functional-programming)
-     ("https://mjg59.dreamwidth.org/" tech)
-     ("https://oxide.computer/blog/feed" tech company))))
+ :custom
+ (elfeed-feeds
+      '(("http://nullprogram.com/feed/" emacs)
+        ("https://www.penny-arcade.com/feed" comics)
+        ("https://sachachua.com/blog/feed/" emacs)
+        ("https://macowners.club/posts/index.xml" emacs)
+        ("https://fasterthanli.me/index.xml" tech rust)
+        ("https://justinbarclay.ca/index.xml" mine)
+        ("https://blog.1password.com/index.xml" security authentication)
+        ("https://www.michaelgeist.ca/blog/feed/" canada law)
+        ("https://popehat.substack.com/feed" law)
+        ("https://www.joelonsoftware.com/feed/" tech)
+        ("https://xeiaso.net/blog.rss" tech nix)
+        ("https://byorgey.wordpress.com/feed/" functional-programming)
+        ("https://mjg59.dreamwidth.org/" tech)
+        ("https://oxide.computer/blog/feed" tech company))))
 
 (use-package ligature
   :defer t
@@ -710,9 +694,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (global-ligature-mode t))
 
 (use-package unicode-fonts
-  :defer 't
-  :config
-  (unicode-fonts-setup))
+   :defer 't
+   :config
+   (unicode-fonts-setup))
 
 (cond
  (jb/os-macos-p
@@ -781,17 +765,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode)
   :config
-  (custom-set-faces
-   '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
-   '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
-   '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
-   '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
-   '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
-   '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
-   '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
-   '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
-   '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
-   '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
+   (custom-set-faces
+    '(rainbow-delimiters-depth-0-face ((t (:foreground "saddle brown"))))
+    '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
+    '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
+    '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
+    '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
+    '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
+    '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
+    '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
+    '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1"))))
+    '(rainbow-delimiters-unmatched-face ((t (:foreground "black"))))))
 
 (use-package vundo
   :custom
@@ -1008,7 +992,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-feature isearch
   :bind (("C-s i" . isearch-forward-regexp)
          :map isearch-mode-map
-         ("M-j" . avy-isearch)))
+              ("M-j" . avy-isearch)))
 
 (use-feature occur
   :bind ("C-s o" . occur))
@@ -1032,51 +1016,51 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-feature emacs
   :config
 
-  (prefer-coding-system 'utf-8)
-  (set-default-coding-systems 'utf-8)
-  (set-terminal-coding-system 'utf-8)
-  (set-keyboard-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
 
-  (define-key global-map (kbd "RET") 'newline-and-indent)
+(define-key global-map (kbd "RET") 'newline-and-indent)
 
-  (setq-default truncate-lines t)
+(setq-default truncate-lines t)
 
-  (global-hl-line-mode 1)
+(global-hl-line-mode 1)
 
-  (show-paren-mode 1)
+(show-paren-mode 1)
 
-  (setq-default indent-tabs-mode nil)
+(setq-default indent-tabs-mode nil)
 
-  (setq-default tab-width 2)
+(setq-default tab-width 2)
 
-  (setq-default c-basic-offset 2)
+(setq-default c-basic-offset 2)
 
-  (save-place-mode 1)
-  ;; keep track of saved places in ~/.emacs.d/places
-  (setq save-place-file (concat user-emacs-directory "places"))
+(save-place-mode 1)
+;; keep track of saved places in ~/.emacs.d/places
+(setq save-place-file (concat user-emacs-directory "places"))
 
-  (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
+(global-set-key (kbd "C-;") 'comment-or-uncomment-region)
 
-  (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
-                                                 "backups"))))
-  (setq auto-save-default nil)
-  (setq backup-by-copying t)
+(setq backup-directory-alist `(("." . ,(concat user-emacs-directory
+                                               "backups"))))
+(setq auto-save-default nil)
+(setq backup-by-copying t)
 
-  (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
+(setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
 
-  (unbind-key "M-,")
+(unbind-key "M-,")
 
-  (defun pop-mark-dwim ()
-    "If xref history exist, use that to move around and if not pop off the global mark stack."
-    (interactive)
-    (condition-case nil
-        (xref-go-back)
-      (user-error
-       (pop-global-mark))))
+(defun pop-mark-dwim ()
+  "If xref history exist, use that to move around and if not pop off the global mark stack."
+  (interactive)
+  (condition-case nil
+      (xref-go-back)
+    (user-error
+     (pop-global-mark))))
 
-  (bind-key "M-," #'pop-mark-dwim)
+(bind-key "M-," #'pop-mark-dwim)
 
-  )
+)
 
 (use-package smartparens
   :hook (prog-mode . smartparens-mode)
@@ -1292,7 +1276,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (defun +marginalia-truncate-helper (cand)
   (if-let ((func (alist-get (vertico--metadata-get 'category)
                             +marginalia-truncation-func-overrides))
-           (shortened-candidate (funcall func cand)))
+               (shortened-candidate (funcall func cand)))
       shortened-candidate
     cand))
 
@@ -1306,30 +1290,30 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     "Alist mapping category to truncate functions.")
 
   (defun marginalia--align (cands)
-    "Align annotations of CANDS according to `marginalia-align'."
-    (cl-loop for (cand . ann) in cands do
+  "Align annotations of CANDS according to `marginalia-align'."
+  (cl-loop for (cand . ann) in cands do
+           (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
+             (setq marginalia--cand-width-max
+                   (max marginalia--cand-width-max
+                        (+ (string-width (+marginalia-truncate-helper cand))
+                           (compat-call string-width ann 0 align))))))
+  (setq marginalia--cand-width-max (* (ceiling marginalia--cand-width-max
+                                               marginalia--cand-width-step)
+                                      marginalia--cand-width-step))
+  (cl-loop for (cand . ann) in cands collect
+           (progn
              (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
-               (setq marginalia--cand-width-max
-                     (max marginalia--cand-width-max
-                          (+ (string-width (+marginalia-truncate-helper cand))
-                             (compat-call string-width ann 0 align))))))
-    (setq marginalia--cand-width-max (* (ceiling marginalia--cand-width-max
-                                                 marginalia--cand-width-step)
-                                        marginalia--cand-width-step))
-    (cl-loop for (cand . ann) in cands collect
-             (progn
-               (when-let (align (text-property-any 0 (length ann) 'marginalia--align t ann))
-                 (put-text-property
-                  align (1+ align) 'display
-                  `(space :align-to
-                          ,(pcase-exhaustive marginalia-align
-                             ('center `(+ center ,marginalia-align-offset))
-                             ('left `(+ left ,(+ marginalia-align-offset marginalia--cand-width-max 2)))
-                             ('right `(+ right ,(+ marginalia-align-offset 1
-                                                   (- (compat-call string-width ann 0 align)
-                                                      (string-width ann)))))))
-                  ann))
-               (list (+marginalia-truncate-helper cand) "" ann))))
+               (put-text-property
+                align (1+ align) 'display
+                `(space :align-to
+                        ,(pcase-exhaustive marginalia-align
+                           ('center `(+ center ,marginalia-align-offset))
+                           ('left `(+ left ,(+ marginalia-align-offset marginalia--cand-width-max 2)))
+                           ('right `(+ right ,(+ marginalia-align-offset 1
+                                                 (- (compat-call string-width ann 0 align)
+                                                    (string-width ann)))))))
+                ann))
+             (list (+marginalia-truncate-helper cand) "" ann))))
 
   (defun marginalia-annotate-buffer (cand)
     "Annotate buffer CAND with modification status, file name and major mode."
@@ -1472,18 +1456,18 @@ parses its input."
   (setq consult-omni-sources-modules-to-load
         (list 'consult-omni-apps
               'consult-omni-buffer
-              'consult-omni-calc
-              'consult-omni-dict
-              'consult-omni-fd
-              'consult-omni-google
-              'consult-omni-google-autosuggest
-              'consult-omni-gptel
-              'consult-omni-line-multi
-              ;;'consult-omni-org-agenda
-              'consult-omni-ripgrep
-              'consult-omni-ripgrep-all
-              'consult-omni-wikipedia
-              'consult-omni-youtube))
+               'consult-omni-calc
+               'consult-omni-dict
+               'consult-omni-fd
+               'consult-omni-google
+               'consult-omni-google-autosuggest
+               'consult-omni-gptel
+               'consult-omni-line-multi
+               ;;'consult-omni-org-agenda
+               'consult-omni-ripgrep
+               'consult-omni-ripgrep-all
+               'consult-omni-wikipedia
+               'consult-omni-youtube))
 
   (consult-omni-sources-load-modules)
    ;;; set multiple sources for consult-omni-multi command. Change these lists as needed for different interactive commands. Keep in mind that each source has to be a key in `consult-omni-sources-alist'.
@@ -1502,7 +1486,7 @@ parses its input."
                                      "Org Agenda"
                                      ;; "GitHub"
                                      "YouTube"))
-  ;; "Invidious"))
+                                     ;; "Invidious"))
 
   ;;; Pick you favorite autosuggest command.
   (setq consult-omni-default-autosuggest-command #'consult-omni-dynamic-google-autosuggest) ;;or any other autosuggest source you define
@@ -1560,37 +1544,37 @@ parses its input."
   (require 'nerd-icons)
   (setq company-box-icons-alist 'company-box-icons-nerd-icons
         company-box-icons-nerd-icons
-        `((Unknown        . ,(nerd-icons-codicon  "nf-cod-text_size"           :face  'font-lock-warning-face))
-          (Text           . ,(nerd-icons-codicon  "nf-cod-text_size"           :face  'font-lock-doc-face))
-          (Method         . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
-          (Function       . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
-          (Constructor    . ,(nerd-icons-codicon  "nf-cod-triangle_right"      :face  'font-lock-function-name-face))
-          (Field          . ,(nerd-icons-codicon  "nf-cod-symbol_field"        :face  'font-lock-type-face))
-          (Variable       . ,(nerd-icons-codicon  "nf-cod-symbol_variable"     :face  'font-lock-type-face))
-          (Class          . ,(nerd-icons-codicon  "nf-cod-symbol_class"        :face  'font-lock-type-face))
-          (Interface      . ,(nerd-icons-codicon  "nf-cod-symbol_interface"    :face  'font-lock-type-face))
-          (Module         . ,(nerd-icons-codicon  "nf-cod-file_submodule"      :face  'font-lock-preprocessor-face))
-          (Property       . ,(nerd-icons-codicon  "nf-cod-symbol_property"     :face  'font-lock-variable-name-face))
-          (Unit           . ,(nerd-icons-codicon  "nf-cod-symbol_ruler"        :face  'font-lock-constant-face))
-          (Value          . ,(nerd-icons-codicon  "nf-cod-symbol_field"        :face  'font-lock-builtin-face))
-          (Enum           . ,(nerd-icons-codicon  "nf-cod-symbol_enum"         :face  'font-lock-builtin-face))
-          (Keyword        . ,(nerd-icons-codicon  "nf-cod-symbol_keyword"      :face  'font-lock-keyword-face))
-          (Snippet        . ,(nerd-icons-codicon  "nf-cod-notebook_template"      :face  'font-lock-string-face))
-          (Color          . ,(nerd-icons-codicon  "nf-cod-symbol_color"        :face  'success))
-          (File           . ,(nerd-icons-codicon  "nf-cod-symbol_file"         :face  'font-lock-string-face))
-          (Reference      . ,(nerd-icons-codicon  "nf-cod-references"          :face  'font-lock-variable-name-face))
-          (Folder         . ,(nerd-icons-codicon  "nf-cod-folder"              :face  'font-lock-variable-name-face))
-          (EnumMember     . ,(nerd-icons-codicon  "nf-cod-symbol_enum_member"  :face  'font-lock-builtin-face))
-          (Constant       . ,(nerd-icons-codicon  "nf-cod-symbol_constant"     :face  'font-lock-constant-face))
-          (Struct         . ,(nerd-icons-codicon  "nf-cod-symbol_structure"    :face  'font-lock-variable-name-face))
-          (Event          . ,(nerd-icons-codicon  "nf-cod-symbol_event"        :face  'font-lock-warning-face))
-          (Operator       . ,(nerd-icons-codicon  "nf-cod-symbol_operator"     :face  'font-lock-comment-delimiter-face))
-          (TypeParameter  . ,(nerd-icons-codicon  "nf-cod-list_unordered"      :face  'font-lock-type-face))
-          (Template       . ,(nerd-icons-codicon  "nf-cod-notebook_template"      :face  'font-lock-escape-face))
-          (ElispFunction  . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
-          (ElispVariable  . ,(nerd-icons-codicon  "nf-cod-symbol_variable"     :face  'font-lock-type-face))
-          (ElispFeature   . ,(nerd-icons-codicon  "nf-cod-globe"               :face  'font-lock-builtin-face))
-          (ElispFace      . ,(nerd-icons-codicon  "nf-cod-symbol_color"        :face  'success))))
+      `((Unknown        . ,(nerd-icons-codicon  "nf-cod-text_size"           :face  'font-lock-warning-face))
+        (Text           . ,(nerd-icons-codicon  "nf-cod-text_size"           :face  'font-lock-doc-face))
+        (Method         . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
+        (Function       . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
+        (Constructor    . ,(nerd-icons-codicon  "nf-cod-triangle_right"      :face  'font-lock-function-name-face))
+        (Field          . ,(nerd-icons-codicon  "nf-cod-symbol_field"        :face  'font-lock-type-face))
+        (Variable       . ,(nerd-icons-codicon  "nf-cod-symbol_variable"     :face  'font-lock-type-face))
+        (Class          . ,(nerd-icons-codicon  "nf-cod-symbol_class"        :face  'font-lock-type-face))
+        (Interface      . ,(nerd-icons-codicon  "nf-cod-symbol_interface"    :face  'font-lock-type-face))
+        (Module         . ,(nerd-icons-codicon  "nf-cod-file_submodule"      :face  'font-lock-preprocessor-face))
+        (Property       . ,(nerd-icons-codicon  "nf-cod-symbol_property"     :face  'font-lock-variable-name-face))
+        (Unit           . ,(nerd-icons-codicon  "nf-cod-symbol_ruler"        :face  'font-lock-constant-face))
+        (Value          . ,(nerd-icons-codicon  "nf-cod-symbol_field"        :face  'font-lock-builtin-face))
+        (Enum           . ,(nerd-icons-codicon  "nf-cod-symbol_enum"         :face  'font-lock-builtin-face))
+        (Keyword        . ,(nerd-icons-codicon  "nf-cod-symbol_keyword"      :face  'font-lock-keyword-face))
+        (Snippet        . ,(nerd-icons-codicon  "nf-cod-notebook_template"      :face  'font-lock-string-face))
+        (Color          . ,(nerd-icons-codicon  "nf-cod-symbol_color"        :face  'success))
+        (File           . ,(nerd-icons-codicon  "nf-cod-symbol_file"         :face  'font-lock-string-face))
+        (Reference      . ,(nerd-icons-codicon  "nf-cod-references"          :face  'font-lock-variable-name-face))
+        (Folder         . ,(nerd-icons-codicon  "nf-cod-folder"              :face  'font-lock-variable-name-face))
+        (EnumMember     . ,(nerd-icons-codicon  "nf-cod-symbol_enum_member"  :face  'font-lock-builtin-face))
+        (Constant       . ,(nerd-icons-codicon  "nf-cod-symbol_constant"     :face  'font-lock-constant-face))
+        (Struct         . ,(nerd-icons-codicon  "nf-cod-symbol_structure"    :face  'font-lock-variable-name-face))
+        (Event          . ,(nerd-icons-codicon  "nf-cod-symbol_event"        :face  'font-lock-warning-face))
+        (Operator       . ,(nerd-icons-codicon  "nf-cod-symbol_operator"     :face  'font-lock-comment-delimiter-face))
+        (TypeParameter  . ,(nerd-icons-codicon  "nf-cod-list_unordered"      :face  'font-lock-type-face))
+        (Template       . ,(nerd-icons-codicon  "nf-cod-notebook_template"      :face  'font-lock-escape-face))
+        (ElispFunction  . ,(nerd-icons-codicon  "nf-cod-symbol_method"       :face  'font-lock-function-name-face))
+        (ElispVariable  . ,(nerd-icons-codicon  "nf-cod-symbol_variable"     :face  'font-lock-type-face))
+        (ElispFeature   . ,(nerd-icons-codicon  "nf-cod-globe"               :face  'font-lock-builtin-face))
+        (ElispFace      . ,(nerd-icons-codicon  "nf-cod-symbol_color"        :face  'success))))
 
   :config
   (setq company-box-show-single-candidate t
@@ -1602,8 +1586,8 @@ parses its input."
         (cons #'+company-box-icons--elisp-fn
               (delq 'company-box-icons--elisp
                     company-box-icons-functions)))
-  
-
+   
+        
   (setq company-box-scrollbar nil)
 
   (defun +company-box-icons--elisp-fn (candidate)
@@ -1615,7 +1599,7 @@ parses its input."
               ((facep sym)    'ElispFace))))))
 
 (use-package yasnippet
-  :init (yas-global-mode))
+ :init (yas-global-mode))
 
 (use-package yasnippet-snippets
   :after yasnippet)
@@ -1640,23 +1624,23 @@ parses its input."
   (treesit-auto-install 'prompt)
   :init
   (setq my-jsdoc-tsauto-config
-        (make-treesit-auto-recipe
-         :lang 'jsdoc
-         :ts-mode 'js-ts-mode
-         :url "https://github.com/tree-sitter/tree-sitter-jsdoc"
-         :revision "master"
-         :source-dir "src"
-         :requires 'javascript))
+    (make-treesit-auto-recipe
+     :lang 'jsdoc
+     :ts-mode 'js-ts-mode
+     :url "https://github.com/tree-sitter/tree-sitter-jsdoc"
+     :revision "master"
+     :source-dir "src"
+     :requires 'javascript))
   (setq my-js-tsauto-config
-        (make-treesit-auto-recipe
-         :lang 'javascript
-         :ts-mode 'js-ts-mode
-         :remap '(js2-mode js-mode javascript-mode)
-         :url "https://github.com/tree-sitter/tree-sitter-javascript"
-         :revision "master"
-         :requires 'jsdoc
-         :source-dir "src"
-         :ext "\\.js\\'"))
+   (make-treesit-auto-recipe
+    :lang 'javascript
+    :ts-mode 'js-ts-mode
+    :remap '(js2-mode js-mode javascript-mode)
+    :url "https://github.com/tree-sitter/tree-sitter-javascript"
+    :revision "master"
+    :requires 'jsdoc
+    :source-dir "src"
+    :ext "\\.js\\'"))
   (add-to-list 'treesit-auto-recipe-list my-js-tsauto-config)
   (add-to-list 'treesit-auto-recipe-list my-jsdoc-tsauto-config)
   (add-to-list 'treesit-auto-langs 'jsdoc)
@@ -1683,6 +1667,14 @@ parses its input."
    gptel-backend (gptel-make-gemini "gemini"
                    :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
                    :stream t)))
+
+(use-package aidermacs
+  :ensure (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+  :bind (("C-c C-a" . aidermacs-transient-menu))
+  :config
+  (setq aidermacs-args '("--model" "gemini/gemini-2.0-pro-experimental")
+        aidermacs-backend 'vterm)
+  (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))))
 
 (use-package lsp-mode
   :commands lsp
@@ -1716,12 +1708,12 @@ parses its input."
   (lsp-copilot-enabled 't)
   :config
   (defvar lsp-flycheck-mapping '(less-css-mode (less-stylelint less)
-                                               css-base-mode (css-stylelint)
-                                               js-base-mode (javascript-eslint)
-                                               typescript-ts-base-mode (javascript-eslint)
-                                               tsx-ts-mode (javascript-eslint)
-                                               jsx-ts-mode (javascript-eslint))
-    "a selections of major modes and the associated checkers to run after lsp
+                                 css-base-mode (css-stylelint)
+                                 js-base-mode (javascript-eslint)
+                                 typescript-ts-base-mode (javascript-eslint)
+                                 tsx-ts-mode (javascript-eslint)
+                                 jsx-ts-mode (javascript-eslint))
+                              "a selections of major modes and the associated checkers to run after lsp
 runs it's diagnostics.")
   (defvar-local my/flycheck-local-cache nil)
 
@@ -1740,55 +1732,55 @@ runs it's diagnostics.")
   (setopt flycheck-relevant-error-other-file-minimum-level 'warning)
   ;; As stolen from https://github.com/emacs-lsp/lsp-mode/issues/3279
   (defun lsp-diagnostics--flycheck-start (checker callback)
-    "Start an LSP syntax check with CHECKER.
+   "Start an LSP syntax check with CHECKER.
 
 CALLBACK is the status callback passed by Flycheck."
 
-    (remove-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer t)
+   (remove-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer t)
 
-    (->> (lsp--get-buffer-diagnostics)
-         (-mapcat
-          (-lambda ((&Diagnostic :message :severity? :tags? :code? :source? :related-information?
-                                 :range (&Range :start (&Position :line      start-line
-                                                                  :character start-character)
-                                                :end   (&Position :line      end-line
-                                                                  :character end-character))))
-            (let ((group (gensym)))
-              (cons (flycheck-error-new
-                     :buffer (current-buffer)
-                     :checker checker
-                     :filename buffer-file-name
-                     :message message
-                     :level (lsp-diagnostics--flycheck-calculate-level severity? tags?)
-                     :id code?
-                     :group group
-                     :line (lsp-translate-line (1+ start-line))
-                     :column (1+ (lsp-translate-column start-character))
-                     :end-line (lsp-translate-line (1+ end-line))
-                     :end-column (1+ (lsp-translate-column end-character)))
-                    (-mapcat
-                     (-lambda ((&DiagnosticRelatedInformation
-                                :message
-                                :location
-                                (&Location :range (&Range :start (&Position :line      start-line
-                                                                            :character start-character)
-                                                          :end   (&Position :line      end-line
-                                                                            :character end-character))
-                                           :uri)))
-                       `(,(flycheck-error-new
-                           :buffer (current-buffer)
-                           :checker checker
-                           :filename (-> uri lsp--uri-to-path lsp--fix-path-casing)
-                           :message message
-                           :level (lsp-diagnostics--flycheck-calculate-level (1+ severity?) tags?)
-                           :id code?
-                           :group group
-                           :line (lsp-translate-line (1+ start-line))
-                           :column (1+ (lsp-translate-column start-character))
-                           :end-line (lsp-translate-line (1+ end-line))
-                           :end-column (1+ (lsp-translate-column end-character)))))
-                     related-information?)))))
-         (funcall callback 'finished))))
+   (->> (lsp--get-buffer-diagnostics)
+        (-mapcat
+         (-lambda ((&Diagnostic :message :severity? :tags? :code? :source? :related-information?
+                                :range (&Range :start (&Position :line      start-line
+                                                                 :character start-character)
+                                               :end   (&Position :line      end-line
+                                                                 :character end-character))))
+           (let ((group (gensym)))
+             (cons (flycheck-error-new
+                    :buffer (current-buffer)
+                    :checker checker
+                    :filename buffer-file-name
+                    :message message
+                    :level (lsp-diagnostics--flycheck-calculate-level severity? tags?)
+                    :id code?
+                    :group group
+                    :line (lsp-translate-line (1+ start-line))
+                    :column (1+ (lsp-translate-column start-character))
+                    :end-line (lsp-translate-line (1+ end-line))
+                    :end-column (1+ (lsp-translate-column end-character)))
+                   (-mapcat
+                    (-lambda ((&DiagnosticRelatedInformation
+                               :message
+                               :location
+                               (&Location :range (&Range :start (&Position :line      start-line
+                                                                           :character start-character)
+                                                         :end   (&Position :line      end-line
+                                                                           :character end-character))
+                                          :uri)))
+                      `(,(flycheck-error-new
+                          :buffer (current-buffer)
+                          :checker checker
+                          :filename (-> uri lsp--uri-to-path lsp--fix-path-casing)
+                          :message message
+                          :level (lsp-diagnostics--flycheck-calculate-level (1+ severity?) tags?)
+                          :id code?
+                          :group group
+                          :line (lsp-translate-line (1+ start-line))
+                          :column (1+ (lsp-translate-column start-character))
+                          :end-line (lsp-translate-line (1+ end-line))
+                          :end-column (1+ (lsp-translate-column end-character)))))
+                    related-information?)))))
+        (funcall callback 'finished))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -1821,18 +1813,18 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package c-eldoc)
 
 (defun enable-paredit ()
-  (turn-off-smartparens-mode)
-  (paredit-mode))
+    (turn-off-smartparens-mode)
+    (paredit-mode))
 
-(defun enable-parinfer ()
-  (global-hungry-delete-mode 0)
-  (turn-off-smartparens-mode)
-  (paredit-mode)
-  (parinfer-rust-mode))
+  (defun enable-parinfer ()
+    (global-hungry-delete-mode 0)
+    (turn-off-smartparens-mode)
+    (paredit-mode)
+    (parinfer-rust-mode))
 
 (defun enable-lispy ()
-  (turn-off-smartparens-mode)
-  (lispy-mode))
+    (turn-off-smartparens-mode)
+    (lispy-mode))
 
 (use-package paredit
   :commands (paredit-mode)
@@ -1929,19 +1921,19 @@ CALLBACK is the status callback passed by Flycheck."
   (interactive)
   (if-let ((info (cider-var-info (thing-at-point 'symbol))))
       (nrepl-dbind-response info (doc arglists-str name ns)
-                            (pos-tip-show (format "%s : %s\n%s\n%s" ns name arglists-str doc)
-                                          nil
-                                          nil
-                                          nil
-                                          -1))
+        (pos-tip-show (format "%s : %s\n%s\n%s" ns name arglists-str doc)
+                      nil
+                      nil
+                      nil
+                      -1))
     (message "info not found")))
 
 (use-package janet-mode)
 
 (use-feature js-base-mode
-  :custom
-  (js-indent-level 2)
-  (lsp-eslint-enable 't))
+ :custom
+ (js-indent-level 2)
+ (lsp-eslint-enable 't))
 
 (use-feature js-ts-mode
   :mode ("\\.js\\'" "\\.cjs\\'" "\\.mjs\\'"))
@@ -1979,10 +1971,10 @@ CALLBACK is the status callback passed by Flycheck."
         web-mode-enable-auto-pairing t
         web-mode-enable-comment-keywords t
         web-mode-enable-current-element-highlight t)
-  (flycheck-add-mode 'javascript-eslint 'web-mode))
+        (flycheck-add-mode 'javascript-eslint 'web-mode))
 
 (use-package tagedit
-  :defer t)
+ :defer t)
 
 (use-feature sgml-mode
   :after tagedit
@@ -2002,7 +1994,7 @@ CALLBACK is the status callback passed by Flycheck."
               ("C-c r e" . 'treesit-end-of-defun))
   :hook (ruby-base-mode . subword-mode)
   :custom (ruby-indent-level 2)
-  (ruby-indent-tabs-mode nil))
+          (ruby-indent-tabs-mode nil))
 
 (use-package inf-ruby
   :defer t
@@ -2017,9 +2009,9 @@ CALLBACK is the status callback passed by Flycheck."
       (setq inf-ruby-default-implementation "pry"))))
 
 (use-package rspec-mode
-  :hook (ruby-base-mode . rspec-enable-appropriate-mode)
-  :config
-  (rspec-install-snippets))
+ :hook (ruby-base-mode . rspec-enable-appropriate-mode)
+ :config
+ (rspec-install-snippets))
 
 (use-package rustic
   :mode (("\\.rs\\'" . rustic-mode))
@@ -2033,7 +2025,7 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package nixos-options)
 
 (use-package nixpkgs-fmt
-  :hook (nix-mode . nixpkgs-fmt-on-save-mode))
+ :hook (nix-mode . nixpkgs-fmt-on-save-mode))
 
 (use-feature go-ts-mode
   :mode "\\.go\\'"
@@ -2064,7 +2056,7 @@ CALLBACK is the status callback passed by Flycheck."
   :init (setq markdown-command "multimarkdown"))
 
 (use-package flymd
-  :commands (flymd-flyit))
+ :commands (flymd-flyit))
 
 (use-package powershell
   :mode "\\.ps\\'")
@@ -2073,7 +2065,7 @@ CALLBACK is the status callback passed by Flycheck."
   :mode "\\.nu\\'")
 
 (use-package terraform-mode
-  :mode "\\.tf\\'" )
+:mode "\\.tf\\'" )
 
 (use-package yaml-mode
   :defer t)
@@ -2084,42 +2076,42 @@ CALLBACK is the status callback passed by Flycheck."
 ;; (use-package sqlint)
 
 (use-feature auctex
-  :mode (("\\.tex\\'" . TeX-latex-mode)
-         ("\\.tex\\.erb\\'" . TeX-latex-mode)
-         ("\\.etx\\'" . TeX-latex-mode))
-  :hook
-  ((LaTeX-mode . turn-on-auto-fill)
-   (LaTeX-mode . TeX-source-correlate-mode))
-  :config
-  (setq-default TeX-master nil)
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-  :custom
-  (LaTeX-item-indent 0)
-  (TeX-auto-local ".auctex-auto")
-  (TeX-style-local ".auctex-style")
-  (TeX-auto-save t)
-  (TeX-parse-self t)
-  (TeX-save-query nil)
-  ;; use pdflatex
-  (TeX-PDF-mode t)
-  (TeX-source-correlate-start-server nil)
-  (TeX-source-correlate-method 'synctex)
-  ;; use evince for dvi and pdf viewer
-  ;; evince-dvi backend should be installed
-  (TeX-view-program-selection
-   '((output-dvi "DVI Viewer")
-     (output-pdf "PDF Tools")
-     (output-html "Firefox")))
-  (TeX-view-program-list
-   '(("DVI Viewer" "evince %o")
-     ("PDF Tools" TeX-pdf-tools-sync-view))))
+    :mode (("\\.tex\\'" . TeX-latex-mode)
+           ("\\.tex\\.erb\\'" . TeX-latex-mode)
+           ("\\.etx\\'" . TeX-latex-mode))
+    :hook
+    ((LaTeX-mode . turn-on-auto-fill)
+     (LaTeX-mode . TeX-source-correlate-mode))
+    :config
+    (setq-default TeX-master nil)
+    (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+    :custom
+    (LaTeX-item-indent 0)
+    (TeX-auto-local ".auctex-auto")
+    (TeX-style-local ".auctex-style")
+    (TeX-auto-save t)
+    (TeX-parse-self t)
+    (TeX-save-query nil)
+    ;; use pdflatex
+    (TeX-PDF-mode t)
+    (TeX-source-correlate-start-server nil)
+    (TeX-source-correlate-method 'synctex)
+    ;; use evince for dvi and pdf viewer
+    ;; evince-dvi backend should be installed
+    (TeX-view-program-selection
+     '((output-dvi "DVI Viewer")
+       (output-pdf "PDF Tools")
+       (output-html "Firefox")))
+    (TeX-view-program-list
+     '(("DVI Viewer" "evince %o")
+       ("PDF Tools" TeX-pdf-tools-sync-view))))
 
 (use-package cdlatex)
 
 (use-package pdf-tools
-  :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
-  :init
-  (pdf-loader-install))
+ :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
+ :init
+ (pdf-loader-install))
 
 (use-feature text-mode
   :custom
@@ -2143,21 +2135,21 @@ CALLBACK is the status callback passed by Flycheck."
   (tramp-use-ssh-controlmaster-options nil))
 
 (use-package alert
-  :commands (alert alert-define-style)
-  :config
-  (defun alert-burnt-toast-notify (info)
-    (let ((args
-           (list
-            "-c" "New-BurntToastNotification"
-            "-Text" (if-let ((title (plist-get info :title)))
-                        (format "'%s', '%s'" title (plist-get info :message))
-                      (format "'%s'" (plist-get info :message)))
-            )))
-      (apply #'start-process (append '("burnt-toast" nil "powershell.exe") args))))
-  (alert-define-style 'burnt-toast :title "Notify Windows 10 using the PowerShell library BurntToast"
-                      :notifier
-                      #'alert-burnt-toast-notify)
-  (setq alert-default-style 'burnt-toast))
+      :commands (alert alert-define-style)
+      :config
+      (defun alert-burnt-toast-notify (info)
+        (let ((args
+               (list
+                "-c" "New-BurntToastNotification"
+                "-Text" (if-let ((title (plist-get info :title)))
+                            (format "'%s', '%s'" title (plist-get info :message))
+                          (format "'%s'" (plist-get info :message)))
+                )))
+          (apply #'start-process (append '("burnt-toast" nil "powershell.exe") args))))
+      (alert-define-style 'burnt-toast :title "Notify Windows 10 using the PowerShell library BurntToast"
+                          :notifier
+                          #'alert-burnt-toast-notify)
+      (setq alert-default-style 'burnt-toast))
 
 (use-package yequake
   :config
@@ -2197,11 +2189,11 @@ CALLBACK is the status callback passed by Flycheck."
 (use-feature woman
   :config
   (progn (setq woman-manpath
-               (split-string (shell-command-to-string "man --path") ":" t "\n"))
-         (autoload 'woman "woman"
-           "Decode and browse a UN*X man page." t)
-         (autoload 'woman-find-file "woman"
-           "Find, decode and browse a specific UN*X man-page file." t)))
+              (split-string (shell-command-to-string "man --path") ":" t "\n"))
+        (autoload 'woman "woman"
+          "Decode and browse a UN*X man page." t)
+        (autoload 'woman-find-file "woman"
+          "Find, decode and browse a specific UN*X man-page file." t)))
 
 (add-hook 'elpaca-after-init-hook
           (lambda ()
@@ -2228,13 +2220,13 @@ CALLBACK is the status callback passed by Flycheck."
   :ensure (:type git :host github :repo "justinbarclay/git-sync-mode"))
 
 (use-package leetcode-emacs
-  :commands (leetcode-show)
-  :ensure (leetcode :type git
-                    :host github
-                    :repo "ginqi7/leetcode-emacs"
-                    :files ("leetcode.el"))
-  :config
-  (setq leetcode-language "rust"))
+ :commands (leetcode-show)
+ :ensure (leetcode :type git
+          :host github
+          :repo "ginqi7/leetcode-emacs"
+          :files ("leetcode.el"))
+ :config
+ (setq leetcode-language "rust"))
 
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"
@@ -2334,6 +2326,5 @@ CALLBACK is the status callback passed by Flycheck."
          "\\([A-Z]\\)"
          "-\\1"
          string)
-        (downcase)
-        (string-trim-left "-"))))
-(put 'dired-find-alternate-file 'disabled nil)
+      (downcase)
+      (string-trim-left "-"))))

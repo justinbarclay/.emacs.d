@@ -22,6 +22,7 @@
   - [[#org-mode][Org Mode]]
   - [[#ltex][Ltex]]
   - [[#eshell][EShell]]
+  - [[#vterm][Vterm]]
   - [[#eat][Eat]]
   - [[#magit][Magit]]
   - [[#pos-tip][pos-tip]]
@@ -840,6 +841,12 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
          (add-to-list 'eshell-command-completions-alist
                       '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
 #+END_SRC
+** Vterm
+#+begin_src elisp
+  (use-package vterm
+    :config
+    (display-line-numbers-mode -1))
+#+end_src
 ** Eat
 #+begin_src emacs-lisp
   (use-package eat
@@ -854,90 +861,74 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 #+BEGIN_SRC emacs-lisp
-    ;; Magit is an Emacs interface to Git.
-    ;; (It's awesome)
-    ;; https://github.com/magit/magit
-    (use-package magit
-      :commands magit-get-top-dir
-      :bind (("C-c g" . magit-status))
-      :hook
-      (git-commit-mode . magit-commit-mode-init)
-      :bind (:map magit-mode-map
-                  ("c" . magit-maybe-commit))
-      :init
-      (progn
-        ;; magit extensions
-        ;; stops the invalid style showing up.
-        ;; From: http://git.io/rPBE0Q
-        (defun magit-commit-mode-init ()
-          "Force a new line to be inserted into a commit window"
-          (when (looking-at "\n"))
-         (open-line 1))
-        (defun magit-maybe-commit (&optional show-options)
-          "Runs magit-commit unless prefix is passed"
-          (interactive "P")
-          (if show-options
-              (magit-key-mode-popup-committing)
-            (magit-commit)))
-        ;; make magit status go full-screen but remember previous window
-        ;; settings
-        ;; from: http://whattheemacsd.com/setup-magit.el-01.html
-        (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
-                                              (window-configuration-to-register :m)
-                                              (apply orig-fun args)
-                                              (delete-other-windows)))
+  ;; Magit is an Emacs interface to Git.
+  ;; (It's awesome)
+  ;; https://github.com/magit/magit
+  (use-package magit
+    :commands magit-get-top-dir
+    :bind (("C-c g" . magit-status))
+    :hook
+    (git-commit-mode . magit-commit-mode-init)
+    :bind (:map magit-mode-map
+                ("c" . magit-maybe-commit))
+    :init
+    (progn
+      ;; magit extensions
+      ;; stops the invalid style showing up.
+      ;; From: http://git.io/rPBE0Q
+      (defun magit-commit-mode-init ()
+        "Force a new line to be inserted into a commit window"
+        (when (looking-at "\n"))
+       (open-line 1))
+      (defun magit-maybe-commit (&optional show-options)
+        "Runs magit-commit unless prefix is passed"
+        (interactive "P")
+        (if show-options
+            (magit-key-mode-popup-committing)
+          (magit-commit)))
+      ;; make magit status go full-screen but remember previous window
+      ;; settings
+      ;; from: http://whattheemacsd.com/setup-magit.el-01.html
+      (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
+                                            (window-configuration-to-register :m)
+                                            (apply orig-fun args)
+                                            (delete-other-windows)))
 
-        (advice-add 'git-commit-commit :after #'(lambda (&rest _)
-                                                  (delete-window)))
+      (advice-add 'git-commit-commit :after #'(lambda (&rest _)
+                                                (delete-window)))
 
-        (advice-add 'git-commit-abort :after #'(lambda (&rest _)
-                                                 (delete-window))))
-      :config
-      (defun magit-iconify-nerd-icon (file-or-dir)
-       "Return the nerd-icon for a file or directory"
-       (if (directory-name-p file-or-dir)
-           (nerd-icons-icon-for-dir file-or-dir)
-         (nerd-icons-icon-for-file file-or-dir)))
-
-      (defun magit-iconify-format-file (_kind file face &optional status orig)
-        (propertize
-         (concat (and status (format "%-11s" status))
-                 (if orig
-                     (format "%s %s -> %s %s"
-                             (magit-iconify-nerd-icon orig) orig
-                             (magit-iconify-nerd-icon file) file)
-                   (format "%s %s" (magit-iconify-nerd-icon file) file)))
-         'font-lock-face face))
-
-     ;; restore previously hidden windows
-     (advice-add 'magit-quit-window
-                 :around
-                 #'(lambda (oldfun)
-                     (let ((current-mode major-mode))
-                       (funcall oldfun)
-                       (when (eq 'magit-status-mode current-mode)
-                         (jump-to-register :m)))))
-     ;; magit settings
-     (setopt
-      ;; customize the iconify function for 
-      magit-formate-file-function 'magit-iconify-format-file
-      ;; don't put "origin-" in front of new branch names by default
-      magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
-      ;; open magit status in same window as current buffer
-      magit-status-buffer-switch-function #'switch-to-buffer
-      ;; highlight word/letter changes in hunk diffs
-      magit-diff-refine-hunk t
-      ;; ask me if I want to include a revision when rewriting
-      magit-rewrite-inclusive 'ask
-      ;; ask me to save buffers
-      magit-save-some-buffers nil
-      ;; pop the process buffer if we're taking a while to complete
-      magit-process-popup-time 10
-      ;; ask me if I want a tracking upstream
-      magit-set-upstream-on-push 'askifnotset))
+      (advice-add 'git-commit-abort :after #'(lambda (&rest _)
+                                               (delete-window))))
+    :config
+   ;; restore previously hidden windows
+   (advice-add 'magit-quit-window
+               :around
+               #'(lambda (oldfun)
+                   (let ((current-mode major-mode))
+                     (funcall oldfun)
+                     (when (eq 'magit-status-mode current-mode)
+                       (jump-to-register :m)))))
+   ;; magit settings
+   (setopt
+    ;; customize the iconify function for 
+    magit-format-file-function #'magit-format-file-nerd-icons
+    ;; don't put "origin-" in front of new branch names by default
+    magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
+    ;; open magit status in same window as current buffer
+    magit-status-buffer-switch-function #'switch-to-buffer
+    ;; highlight word/letter changes in hunk diffs
+    magit-diff-refine-hunk t
+    ;; ask me if I want to include a revision when rewriting
+    magit-rewrite-inclusive 'ask
+    ;; ask me to save buffers
+    magit-save-some-buffers nil
+    ;; pop the process buffer if we're taking a while to complete
+    magit-process-popup-time 10
+    ;; ask me if I want a tracking upstream
+    magit-set-upstream-on-push 'askifnotset))
 #+END_SRC
 *** Magit Icons
-#+begin_src elisp
+#+begin_src elisp :tangle no
   (use-package magit-iconify
     :ensure (:type git :host github :repo "justinbarclay/magit-iconify")
     :hook (magit-mode . magit-iconify-mode))
@@ -2838,6 +2829,17 @@ Better movement through treesitter
      gptel-backend (gptel-make-gemini "gemini"
                      :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
                      :stream t)))
+#+end_src
+
+*** Aidermacs
+#+begin_src elisp
+  (use-package aidermacs
+    :ensure (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+    :bind (("C-c C-a" . aidermacs-transient-menu))
+    :config
+    (setq aidermacs-args '("--model" "gemini/gemini-2.0-pro-experimental")
+          aidermacs-backend 'vterm)
+    (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))))
 #+end_src
 
 *** LSP-Mode
