@@ -10,54 +10,7 @@
 (setq-default user-full-name "Justin Barclay"
               user-mail-address "github@justincbarclay.ca")
 
-(defvar elpaca-installer-version 0.9)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1
-                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-       (build (expand-file-name "elpaca/" elpaca-builds-directory))
-       (order (cdr elpaca-order))
-       (default-directory repo))
-  (add-to-list 'load-path (if (file-exists-p build) build repo))
-  (unless (file-exists-p repo)
-    (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
-    (condition-case-unless-debug err
-        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                  ,@(when-let* ((depth (plist-get order :depth)))
-                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                  ,(plist-get order :repo) ,repo))))
-                  ((zerop (call-process "git" nil buffer t "checkout"
-                                        (or (plist-get order :ref) "--"))))
-                  (emacs (concat invocation-directory invocation-name))
-                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                  ((require 'elpaca))
-                  ((elpaca-generate-autoloads "elpaca" repo)))
-            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-  (unless (require 'elpaca-autoloads nil t)
-    (require 'elpaca)
-    (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
-(add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
-;; Install use-package support
-(elpaca elpaca-use-package
-  ;; Enable :elpaca use-package keyword.
-  (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
-  (setq elpaca-use-package-by-default t))
-(when jb/os-windows-p (setq elpaca-queue-limit 20))
-;; Block until current queue processed.
-(elpaca-wait)
-
+(package-initialize)
 (require 'use-package)
 (setq use-package-always-ensure t)
 (setq use-package-verbose nil)
@@ -77,23 +30,8 @@
      :ensure nil
      ,@args))
 
-(defun +elpaca-unload-seq (e)
-  (and (featurep 'seq) (unload-feature 'seq t))
-  (elpaca--continue-build e))
-
-;; You could embed this code directly in the reicpe, I just abstracted it into a function.
-(defun +elpaca-seq-build-steps ()
-  (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
-                       elpaca--pre-built-steps elpaca-build-steps))
-          (list '+elpaca-unload-seq 'elpaca--activate-package)))
-
-(use-package seq
-  :init
-  (require 'seq)
-  :ensure `(seq :build ,(+elpaca-seq-build-steps)))
-
 (use-package org
-  :defer t
+  :defer 1
   :bind
   (("C-c a" . org-agenda)
    ("C-c c" . org-capture))
@@ -453,12 +391,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :after org-transclusion)
 
 (use-package org-auto-clock
+  :vc (:url "https://github.com/justinbarclay/org-auto-clock" :rev :newest)
   :after org
-  :commands org-auto-clock-mode
-  :ensure (:type git :host github :repo "justinbarclay/org-auto-clock")
-  :init
-  (org-auto-clock-mode)
   :custom
+  (org-auto-clock-mode)
   (org-clock-idle-time 20)
   (org-auto-clock-projects '("tidal-wave" "application-inventory"))
   (org-auto-clock-project-name-function #'projectile-project-name))
@@ -515,62 +451,61 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (defun magit-commit-mode-init ()
       "Force a new line to be inserted into a commit window"
       (when (looking-at "\n"))
-     (open-line 1))
+      (open-line 1))
     (defun magit-maybe-commit (&optional show-options)
       "Runs magit-commit unless prefix is passed"
       (interactive "P")
       (if show-options
           (magit-key-mode-popup-committing)
-        (magit-commit)))
-    ;; make magit status go full-screen but remember previous window
-    ;; settings
-    ;; from: http://whattheemacsd.com/setup-magit.el-01.html
-    (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
-                                          (window-configuration-to-register :m)
-                                          (apply orig-fun args)
-                                          (delete-other-windows)))
-
-    (advice-add 'git-commit-commit :after #'(lambda (&rest _)
-                                              (delete-window)))
-
-    (advice-add 'git-commit-abort :after #'(lambda (&rest _)
-                                             (delete-window))))
+        (magit-commit))))
   :config
- ;; restore previously hidden windows
- (advice-add 'magit-quit-window
-             :around
-             #'(lambda (oldfun)
-                 (let ((current-mode major-mode))
-                   (funcall oldfun)
-                   (when (eq 'magit-status-mode current-mode)
-                     (jump-to-register :m)))))
- ;; magit settings
- (setopt
-  ;; customize the iconify function for 
-  magit-format-file-function #'magit-format-file-nerd-icons
-  ;; don't put "origin-" in front of new branch names by default
-  magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
-  ;; open magit status in same window as current buffer
-  magit-status-buffer-switch-function #'switch-to-buffer
-  ;; highlight word/letter changes in hunk diffs
-  magit-diff-refine-hunk t
-  ;; ask me if I want to include a revision when rewriting
-  magit-rewrite-inclusive 'ask
-  ;; ask me to save buffers
-  magit-save-some-buffers nil
-  ;; pop the process buffer if we're taking a while to complete
-  magit-process-popup-time 10
-  ;; ask me if I want a tracking upstream
-  magit-set-upstream-on-push 'askifnotset))
+  ;; make magit status go full-screen but remember previous window
+  ;; settings
+  ;; from: http://whattheemacsd.com/setup-magit.el-01.html
+  (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
+                                        (window-configuration-to-register :m)
+                                        (apply orig-fun args)
+                                        (delete-other-windows)))
+
+  (advice-add 'git-commit-commit :after #'(lambda (&rest _)
+                                            (delete-window)))
+
+  (advice-add 'git-commit-abort :after #'(lambda (&rest _)
+                                           (delete-window)))
+
+  ;; restore previously hidden windows
+  (advice-add 'magit-quit-window
+               :around
+               #'(lambda (oldfun)
+                   (let ((current-mode major-mode))
+                     (funcall oldfun)
+                     (when (eq 'magit-status-mode current-mode)
+                       (jump-to-register :m)))))
+   ;; magit settings
+  (setopt
+   ;; customize the iconify function for
+   magit-format-file-function #'magit-format-file-nerd-icons
+   ;; don't put "origin-" in front of new branch names by default
+   magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
+   ;; open magit status in same window as current buffer
+   magit-status-buffer-switch-function #'switch-to-buffer
+   ;; highlight word/letter changes in hunk diffs
+   magit-diff-refine-hunk t
+   ;; ask me if I want to include a revision when rewriting
+   magit-rewrite-inclusive 'ask
+   ;; ask me to save buffers
+   magit-save-some-buffers nil
+   ;; pop the process buffer if we're taking a while to complete
+   magit-process-popup-time 10
+    ;; ask me if I want a tracking upstream
+   magit-set-upstream-on-push 'askifnotset))
 
 (use-package forge
-  :ensure (:type git :repo "magit/forge")
   :after magit
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
-(use-package hl-todo
-  :ensure (hl-todo :depth nil :version (lambda (&rest _args) "1.9.0")))
+(use-package hl-todo)
 
 (use-package magit-todos
   :hook (magit-mode . magit-todos-mode))
@@ -626,10 +561,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
   (display-line-numbers-mode -1))
 
-(push 'mu4e elpaca-ignored-dependencies)
+;; (push 'mu4e elpaca-ignored-dependencies)
 
 (use-package mu4e-dashboard
-  :ensure (:type git :host github :repo "rougier/mu4e-dashboard")
+  :vc (:url "https://github.com/rougier/mu4e-dashboard" :rev :newest)
   :bind ("C-c d" . mu4e-dashboard)
   :after mu4e
   :hook
@@ -667,7 +602,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         ("https://oxide.computer/blog/feed" tech company))))
 
 (use-package ligature
-  :defer t
+  :commands (global-ligature-mode)
   :config
   ;; Enable the "www" ligature in every possible major mode
   (ligature-set-ligatures 't '("www"))
@@ -690,7 +625,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                        "\\\\" "://"))
   ;; Enables ligature checks globally in all buffers. You can also do it
   ;; per mode with `ligature-mode'.
-  :init
   (global-ligature-mode t))
 
 (use-package unicode-fonts
@@ -714,15 +648,29 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (keymap-global-unset "C-l")
 
+(use-package lambda-themes
+  :vc (:url "https://github.com/lambda-emacs/lambda-themes" :rev :newest)
+  :custom
+  (lambda-themes-set-italic-comments nil)
+  (lambda-themes-set-italic-keywords nil)
+  (lambda-themes-set-variable-pitch nil)
+  :config
+  ;; load preferred theme
+  (load-theme 'lambda-light))
+
 (use-package catppuccin-theme)
 
 (use-package doom-themes
-  :ensure (:type git :host github :repo "justinbarclay/themes" :ref "laserwave-hc")
+  :vc (:url "https://github.com/justinbarclay/themes.git" :rev "laserwave-hc")
   :init
+  (add-to-list 'load-path (concat (expand-file-name package-user-dir)
+                                  "/doom-themes/extensions"))
   (load-theme 'doom-laserwave-high-contrast t)
+  :config
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
   ;; Corrects (and improves) org-mode's native fontification.
+  (require 'doom-themes-ext-org)
   (doom-themes-org-config))
 
 (use-package nerd-icons)
@@ -735,7 +683,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 (use-package lambda-line
-  :ensure (:type git :host github :repo "lambda-emacs/lambda-line")
+  :vc (:url "https://github.com/lambda-emacs/lambda-line.git" :rev :latest)
   :custom
   (lambda-line-position 'top) ;; Set position of status-line
   (lambda-line-abbrev t) ;; abbreviate major modes
@@ -751,7 +699,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (lambda-line-space-bottom -.25)
   (lambda-line-symbol-position 0.1) ;; adjust the vertical placement of symbol
   (lambda-line-syntax t)
-  :hook (elpaca-after-init . lambda-line-mode)
+  :hook (after-init . lambda-line-mode)
   :config
   (require 'nerd-icons)
   (setq lambda-line-flycheck-label (format " %s" (nerd-icons-mdicon "nf-md-alarm_light")))
@@ -800,10 +748,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                 " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
                                 " " (size 9 -1 :right)
                                 " " (mode 16 16 :left :elide) " " filename-and-process)
-                          (mark " " (name 16 -1) " " filename)))
-  :config
-  (with-eval-after-load 'consult
-    (defalias 'ibuffer-find-file 'consult-find-file)))
+                          (mark " " (name 16 -1) " " filename))))
 
 (use-package ibuffer-projectile
   :init
@@ -909,7 +854,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package projectile
   :defer 1
-  :bind (("C-s p" . projectile-ripgrep))
+  ;;:bind (("C-s p" . projectile-ripgrep))
   :commands
   (projectile-find-file projectile-switch-project projectile-ripgrep)
   :config
@@ -1140,9 +1085,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook ((prog-mode . flyspell-prog-mode)
          (text-mode . flyspell-mode))
   :config (setq flyspell-issue-message-flag nil))
-
-(use-package pgmacs
-  :ensure (:type git :host github :repo "emarsden/pgmacs"))
 
 (use-package vertico
   :init
@@ -1435,8 +1377,11 @@ parses its input."
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package consult-omni
-  :ensure (:type git :host github :repo "armindarvish/consult-omni" :branch "main" :files (:defaults "sources/*.el"))
+  :vc (:url "https://github.com/armindarvish/consult-omni" :branch "main")
   :commands (consult-omni-multi consult-omni-apps)
+  :init
+  (add-to-list 'load-path (concat (expand-file-name package-user-dir)
+                              "/consult-omni/sources/"))
   :custom
   ;; General settings that apply to all sources
   (consult-omni-show-preview t) ;;; show previews
@@ -1499,7 +1444,7 @@ parses its input."
              company-complete-common-or-cycle
              company-manual-begin
              company-grab-line)
-  :hook (elpaca-after-init . global-company-mode)
+  :hook (after-init . global-company-mode)
   :bind (("C-<shift>-<tab>" . company-manual-begin)
          :map company-active-map
          ("C->" . #'company-filter-candidates)
@@ -1650,11 +1595,6 @@ parses its input."
 (use-package copilot
   :after jsonrpc
   :hook (prog-mode . copilot-mode)
-  :ensure (copilot
-           :files ("dist" "*.el")
-           :type git
-           :host github
-           :repo "copilot-emacs/copilot.el")
   :bind (:map copilot-completion-map
               ("TAB" . 'copilot-accept-completion)
               ("C-TAB" . 'copilot-accept-completion-by-word)))
@@ -1669,8 +1609,10 @@ parses its input."
                    :stream t)))
 
 (use-package aidermacs
-  :ensure (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+  :vc (:url "https://github.com/MatthewZMD/aidermacs" :branch "main" :rev :newest)
   :bind (("C-c C-a" . aidermacs-transient-menu))
+  :init
+  (global-unset-key "\C-c\C-a")
   :config
   (setq aidermacs-args '("--model" "gemini/gemini-2.0-pro-experimental")
         aidermacs-backend 'vterm)
@@ -1948,9 +1890,6 @@ CALLBACK is the status callback passed by Flycheck."
 (use-feature typescript-ts-mode
   :mode ("\\.ts\\'" "\\.mts\\'" "\\.ts.snap\\'"))
 
-(use-package pretty-ts-errors
-  :ensure (pretty-ts-errors :host github :repo "artawower/pretty-ts-errors.el"))
-
 (use-feature tsx-ts-mode
   :mode "\\.tsx\\'")
 
@@ -2166,10 +2105,9 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package graphviz-dot-mode)
 
 (use-package 1password
-  :ensure (1password :type git :host github :repo "justinbarclay/1password.el")
-  :demand t
+  :vc (:url "https://github.com/justinbarclay/1password.el.git" :rev :newest)
   :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
-  :hook (elpaca-after-init-hook . (lambda () (1password-enable-auth-source)))
+  :hook (after-init . 1password-enable-auth-source)
   :custom
   (1password-results-formatter '1password-colour-formatter)
   (1password-executable (if (executable-find "op.exe")
@@ -2195,7 +2133,7 @@ CALLBACK is the status callback passed by Flycheck."
         (autoload 'woman-find-file "woman"
           "Find, decode and browse a specific UN*X man-page file." t)))
 
-(add-hook 'elpaca-after-init-hook
+(add-hook 'after-init-hook
           (lambda ()
             (message "Emacs loaded in %s with %d garbage collections."
                      (format "%.2f seconds"
@@ -2217,16 +2155,7 @@ CALLBACK is the status callback passed by Flycheck."
 
 (use-package git-sync-mode
   :commands (git-sync-mode git-sync-global-mode)
-  :ensure (:type git :host github :repo "justinbarclay/git-sync-mode"))
-
-(use-package leetcode-emacs
- :commands (leetcode-show)
- :ensure (leetcode :type git
-          :host github
-          :repo "ginqi7/leetcode-emacs"
-          :files ("leetcode.el"))
- :config
- (setq leetcode-language "rust"))
+  :vc (:url "https://github.com/justinbarclay/git-sync-mode.git" :rev :newest))
 
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"

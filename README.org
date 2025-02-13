@@ -14,8 +14,6 @@
   - [[#function-for-making-readmeorg-work][Function for making README.org work]]
 - [[#vars][Vars]]
   - [[#os][OS]]
-- [[#package-manager][Package Manager]]
-  - [[#bootstrapping-elpaca][Bootstrapping elpaca]]
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
   - [[#seq][seq]]
@@ -82,7 +80,6 @@
   - [[#flycheck][Flycheck]]
   - [[#flyspell][Flyspell]]
 - [[#integrated-debugging][Integrated Debugging]]
-  - [[#pgmacs][PGMacs]]
   - [[#dape][Dape]]
 - [[#completion][Completion]]
   - [[#minibuffer][Minibuffer]]
@@ -152,7 +149,7 @@ I've forgotten this before so this seems like the perfect place to put it but ~C
 ** Turn off garbage collection
 This sets the garbage collection threshold to 100mb
 Reset garbage collection to emacs default after 5s
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   (setq gc-cons-threshold 1000000000)
   (run-with-idle-timer
    5 nil
@@ -163,7 +160,7 @@ Reset garbage collection to emacs default after 5s
 #+END_SRC
 ** Turn off bytecompiler warnings
 They are really noisy and annoying right now. And nothing I can deal with.
-#+begin_src emacs-lisp
+#+begin_src elisp
   (setq native-comp-deferred-compilation-deny-list '())
   (setq native-comp-async-report-warnings-errors nil)
 #+end_src
@@ -175,20 +172,20 @@ Other dependencies need updated packages and Elpaca is not good about unloading 
 #+end_src
 
 ** Move customizations to their own file
-#+begin_src emacs-lisp :tangle early-init.el
+#+begin_src elisp :tangle early-init.el
   (setq custom-file (expand-file-name "customs.el" user-emacs-directory))
 
   (add-hook 'after-init-hook (lambda () (load custom-file 'noerror)))
 #+end_src
 
 ** Let's make the Emacs start up run fast
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (setq-default lexical-binding t
                 load-prefer-newer t)
 #+END_SRC
 
 Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-dooms-startup-so-fast
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (defvar doom--file-name-handler-alist file-name-handler-alist)
 (setq file-name-handler-alist nil)
 #+END_SRC
@@ -196,7 +193,7 @@ Some recommendations by https://github.com/hlissner/doom-emacs/wiki/FAQ#how-is-d
 ** Package repositories
 Define custom package repositories besides ELPA. If I am being honest with myself, Marmalade and Tromey are probably not necessary repositories.
 
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   (setq package-enable-at-startup nil)
   (setq package-user-dir "~/.emacs.d/elpa")
   (setq load-prefer-newer t)
@@ -208,14 +205,14 @@ Define custom package repositories besides ELPA. If I am being honest with mysel
 
 #+END_SRC
 ** Personal information
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (setq-default user-full-name "Justin Barclay"
                 user-mail-address "github@justincbarclay.ca")
 #+END_SRC
 
 ** Function for making README.org work
 Tangle and Compile init file
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   (defun my/tangle-dotfiles ()
     "If the current file is this file, the code blocks are tangled"
     (interactive)
@@ -229,63 +226,11 @@ Tangle and Compile init file
 * Vars
 Let's describe some variables to help determine how to configure Emacs
 ** OS
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   (defvar jb/os-linux-p (eq system-type 'gnu/linux))
   (defvar jb/os-windows-p (eq system-type 'windows-nt))
   (defvar jb/os-macos-p (eq system-type 'darwin))
 #+END_SRC
-* Package Manager
-I've decided to experiment with a completely new package manager. The main purpose of this is to better work with git repositories as the main source of packaging system, without relying on quelpa as that can inhibit load times.
-** Bootstrapping elpaca
-#+begin_src emacs-lisp
-  (defvar elpaca-installer-version 0.9)
-  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                                :ref nil :depth 1
-                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                                :build (:not elpaca--activate-package)))
-  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-         (build (expand-file-name "elpaca/" elpaca-builds-directory))
-         (order (cdr elpaca-order))
-         (default-directory repo))
-    (add-to-list 'load-path (if (file-exists-p build) build repo))
-    (unless (file-exists-p repo)
-      (make-directory repo t)
-      (when (< emacs-major-version 28) (require 'subr-x))
-      (condition-case-unless-debug err
-          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                    ,@(when-let* ((depth (plist-get order :depth)))
-                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                    ,(plist-get order :repo) ,repo))))
-                    ((zerop (call-process "git" nil buffer t "checkout"
-                                          (or (plist-get order :ref) "--"))))
-                    (emacs (concat invocation-directory invocation-name))
-                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                    ((require 'elpaca))
-                    ((elpaca-generate-autoloads "elpaca" repo)))
-              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-            (error "%s" (with-current-buffer buffer (buffer-string))))
-        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-    (unless (require 'elpaca-autoloads nil t)
-      (require 'elpaca)
-      (elpaca-generate-autoloads "elpaca" repo)
-      (load "./elpaca-autoloads")))
-  (add-hook 'after-init-hook #'elpaca-process-queues)
-  (elpaca `(,@elpaca-order))
-  ;; Install use-package support
-  (elpaca elpaca-use-package
-    ;; Enable :elpaca use-package keyword.
-    (elpaca-use-package-mode)
-    ;; Assume :elpaca t unless otherwise specified.
-    (setq elpaca-use-package-by-default t))
-  (when jb/os-windows-p (setq elpaca-queue-limit 20))
-  ;; Block until current queue processed.
-  (elpaca-wait)
-#+end_src
 
 * Tent Pole
 For big emacs packages, that help define the experience of Emacs itself
@@ -294,7 +239,8 @@ I use Jon Wiegley's [[https://github.com/jwiegley/use-package][use-package]] for
 Let's bootstrap use-package so it can download everything else as we need it.
 *** Performance improvements
 It's a god send, UsePackage landed in Emacs master, no bootstrapping required, just up and go.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
+  (package-initialize)
   (require 'use-package)
   (setq use-package-always-ensure t)
   (setq use-package-verbose nil)
@@ -302,7 +248,7 @@ It's a god send, UsePackage landed in Emacs master, no bootstrapping required, j
   (setq use-package-enable-imenu-support t)
 #+END_SRC
 *** Generate reports based on use-package
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (setq use-package-compute-statistics t)
 (setq use-package-minimum-reported-time 0.01)
 #+END_SRC
@@ -315,12 +261,12 @@ The :ensure keyword causes the package(s) to be installed automatically if not a
 You can override package deferral with the :demand keyword. Thus, even if you use :bind, using :demand will force loading to occur immediately and not establish an autoload for the bound key.
 In almost all cases you don't need to manually specify :defer t. This is implied whenever :bind or :mode or :interpreter is used.
 *** Make sure gpg-keys are up to date
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package gnu-elpa-keyring-update)
 #+END_SRC
 *** Supporting built in features
 As stolen from [[https://github.com/progfolio/.emacs.d/blob/cff07d4454d327a4df1915a2cdf8ac6bc5dfde23/init.org?plain=1#L276][progfolio]]
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defmacro use-feature (name &rest args)
   "Like `use-package' but accounting for asynchronous installation.
   NAME and ARGS are in `use-package'."
@@ -332,7 +278,7 @@ As stolen from [[https://github.com/progfolio/.emacs.d/blob/cff07d4454d327a4df19
 
 *** Debugging
 The :disabled keyword can turn off a module you're having difficulties with, or stop loading something you're not using at the present time:
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (use-package ess-site
     :disabled
     :commands R)
@@ -340,7 +286,7 @@ The :disabled keyword can turn off a module you're having difficulties with, or 
 When byte-compiling your .emacs file, disabled declarations are omitted from the output entirely, to accelerate startup times.
 *** Benchmark-init
 This is hidden here to load right after we have use-package to be able to benchmark startup
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (use-package benchmark-init
     :demand t
     :init
@@ -350,7 +296,7 @@ This is hidden here to load right after we have use-package to be able to benchm
     (add-hook 'window-setup-hook 'benchmark-init/deactivate))
 #+END_SRC
 ** seq
-#+begin_src emacs-lisp
+#+begin_src elisp :tangle no
   (defun +elpaca-unload-seq (e)
     (and (featurep 'seq) (unload-feature 'seq t))
     (elpaca--continue-build e))
@@ -368,9 +314,9 @@ This is hidden here to load right after we have use-package to be able to benchm
 #+end_src
 ** Org Mode
 *** Org
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package org
-    :defer t
+    :defer 1
     :bind
     (("C-c a" . org-agenda)
      ("C-c c" . org-capture))
@@ -510,13 +456,13 @@ This is hidden here to load right after we have use-package to be able to benchm
 #+END_SRC
 
 *** Org Contrib
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package org-contrib
     :after org)
 #+end_src
 
 *** ox-md
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature ox-md
     :ensure nil
     :after org)
@@ -524,13 +470,13 @@ This is hidden here to load right after we have use-package to be able to benchm
 
 *** org-pdftools
 Now that we have that installed we can pull in org-pdftools from github
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package org-pdftools
     :hook (org-mode . org-pdftools-setup-link))
 #+END_SRC
 
 *** Ob-Restclient
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package ob-restclient
     :config
     (org-babel-do-load-languages
@@ -548,12 +494,12 @@ In addition to the simple :TOC: tag, you can also use the following tag formats:
     :TOC_2_gh: - sets the max depth as in above and also uses the GitHub-style hrefs in the table of contents (this style is default). The other supported href style is ‘org’, which is the default org style.
 
 You can also use @ as separator, instead of _.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package toc-org
     :hook (org-mode . toc-org-mode))
 #+END_SRC
 *** Org Modern
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package org-modern
     :hook (org-mode . org-modern-mode))
 #+end_src
@@ -561,7 +507,7 @@ You can also use @ as separator, instead of _.
 *** Custom Org Functions
 These functions expand on the abilities of org-babel and ob-restclient mode and
 as such need both of these modes loaded before they'll work.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   ;; generated-curl-command is used to communicate state across several function calls
   (setq generated-curl-command nil)
 
@@ -629,7 +575,7 @@ as such need both of these modes loaded before they'll work.
 *** Organize your life
 This section includes tooling for organizing ones work or personal life. Generally the tools and setup is pretty straight forward but should that not be the case I'll add more details about the purpose and how to use.
 **** Org Agenda customizations
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature org-agenda
     :config
     (defun air-org-skip-subtree-if-priority (priority)
@@ -661,20 +607,20 @@ This section includes tooling for organizing ones work or personal life. General
                           (org-agenda-overriding-header "Tasks:"))))))))
 #+END_SRC
 ***** elegant-agenda-mode
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package elegant-agenda-mode
     :hook (org-agenda-mode . elegant-agenda-mode))
 #+end_src
 
 **** org-alert
 Have alerts pop up from your org agenda
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package org-alert)
 #+END_SRC
 
 **** DOCT
 Declarative Org Capture Templates
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package doct
     :after org
     :commands (doct)
@@ -739,7 +685,7 @@ Declarative Org Capture Templates
 
 **** Org Fancy Priorities
 Change priority cookies from alphanumeric cookies into symbols and explicitly colours them
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package org-fancy-priorities
     :hook
     (org-mode . org-fancy-priorities-mode)
@@ -750,7 +696,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 #+END_SRC
 *** Org Roam
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package org-roam
   :init
   (setq org-roam-v2-ack t)
@@ -764,7 +710,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
   (org-roam-setup))
 #+end_src
 **** Org Roam UI
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package org-roam-ui
     :after org-roam
     :config
@@ -775,7 +721,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 *** Org Noter
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package org-noter
     :custom (org-noter-supported-mode '(doc-view-mode pdf-mode-view)))
 #+end_src
@@ -798,15 +744,13 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
   :after org-transclusion)
 #+end_src
 
-*** org auto clock
+*** Org auto clock
 #+begin_src elisp
   (use-package org-auto-clock
+    :vc (:url "https://github.com/justinbarclay/org-auto-clock" :rev :newest)
     :after org
-    :commands org-auto-clock-mode
-    :ensure (:type git :host github :repo "justinbarclay/org-auto-clock")
-    :init
-    (org-auto-clock-mode)
     :custom
+    (org-auto-clock-mode)
     (org-clock-idle-time 20)
     (org-auto-clock-projects '("tidal-wave" "application-inventory"))
     (org-auto-clock-project-name-function #'projectile-project-name))
@@ -814,12 +758,12 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 
 ** Ltex
 *** lsp
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package lsp-ltex)
 #+end_src
 
 ** EShell
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-feature eshell
   :config
   (progn
@@ -848,7 +792,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     (display-line-numbers-mode -1))
 #+end_src
 ** Eat
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package eat
     :init
     (add-hook 'eshell-load-hook #'eat-eshell-mode)
@@ -856,11 +800,11 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 ** Magit
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package transient)
 #+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC elisp
   ;; Magit is an Emacs interface to Git.
   ;; (It's awesome)
   ;; https://github.com/magit/magit
@@ -879,55 +823,57 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
       (defun magit-commit-mode-init ()
         "Force a new line to be inserted into a commit window"
         (when (looking-at "\n"))
-       (open-line 1))
+        (open-line 1))
       (defun magit-maybe-commit (&optional show-options)
         "Runs magit-commit unless prefix is passed"
         (interactive "P")
         (if show-options
             (magit-key-mode-popup-committing)
-          (magit-commit)))
-      ;; make magit status go full-screen but remember previous window
-      ;; settings
-      ;; from: http://whattheemacsd.com/setup-magit.el-01.html
-      (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
-                                            (window-configuration-to-register :m)
-                                            (apply orig-fun args)
-                                            (delete-other-windows)))
-
-      (advice-add 'git-commit-commit :after #'(lambda (&rest _)
-                                                (delete-window)))
-
-      (advice-add 'git-commit-abort :after #'(lambda (&rest _)
-                                               (delete-window))))
+          (magit-commit))))
     :config
-   ;; restore previously hidden windows
-   (advice-add 'magit-quit-window
-               :around
-               #'(lambda (oldfun)
-                   (let ((current-mode major-mode))
-                     (funcall oldfun)
-                     (when (eq 'magit-status-mode current-mode)
-                       (jump-to-register :m)))))
-   ;; magit settings
-   (setopt
-    ;; customize the iconify function for 
-    magit-format-file-function #'magit-format-file-nerd-icons
-    ;; don't put "origin-" in front of new branch names by default
-    magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
-    ;; open magit status in same window as current buffer
-    magit-status-buffer-switch-function #'switch-to-buffer
-    ;; highlight word/letter changes in hunk diffs
-    magit-diff-refine-hunk t
-    ;; ask me if I want to include a revision when rewriting
-    magit-rewrite-inclusive 'ask
-    ;; ask me to save buffers
-    magit-save-some-buffers nil
-    ;; pop the process buffer if we're taking a while to complete
-    magit-process-popup-time 10
-    ;; ask me if I want a tracking upstream
-    magit-set-upstream-on-push 'askifnotset))
+    ;; make magit status go full-screen but remember previous window
+    ;; settings
+    ;; from: http://whattheemacsd.com/setup-magit.el-01.html
+    (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
+                                          (window-configuration-to-register :m)
+                                          (apply orig-fun args)
+                                          (delete-other-windows)))
+
+    (advice-add 'git-commit-commit :after #'(lambda (&rest _)
+                                              (delete-window)))
+
+    (advice-add 'git-commit-abort :after #'(lambda (&rest _)
+                                             (delete-window)))
+
+    ;; restore previously hidden windows
+    (advice-add 'magit-quit-window
+                 :around
+                 #'(lambda (oldfun)
+                     (let ((current-mode major-mode))
+                       (funcall oldfun)
+                       (when (eq 'magit-status-mode current-mode)
+                         (jump-to-register :m)))))
+     ;; magit settings
+    (setopt
+     ;; customize the iconify function for
+     magit-format-file-function #'magit-format-file-nerd-icons
+     ;; don't put "origin-" in front of new branch names by default
+     magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
+     ;; open magit status in same window as current buffer
+     magit-status-buffer-switch-function #'switch-to-buffer
+     ;; highlight word/letter changes in hunk diffs
+     magit-diff-refine-hunk t
+     ;; ask me if I want to include a revision when rewriting
+     magit-rewrite-inclusive 'ask
+     ;; ask me to save buffers
+     magit-save-some-buffers nil
+     ;; pop the process buffer if we're taking a while to complete
+     magit-process-popup-time 10
+      ;; ask me if I want a tracking upstream
+     magit-set-upstream-on-push 'askifnotset))
 #+END_SRC
 *** Magit Icons
+Disabled for now while I try out the default implementation
 #+begin_src elisp :tangle no
   (use-package magit-iconify
     :ensure (:type git :host github :repo "justinbarclay/magit-iconify")
@@ -935,9 +881,8 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 
 *** Magit forges
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package forge
-    :ensure (:type git :repo "magit/forge")
     :after magit
     :init
     (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
@@ -945,8 +890,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 *** Magit TODO
 Due to how hl-todo specified versions, we have to do a full clone and specify the version, as mentioned [[https://github.com/progfolio/elpaca/wiki/Warnings-and-Errors#unmet-dependency-version][here]]
 #+begin_src elisp
-  (use-package hl-todo
-    :ensure (hl-todo :depth nil :version (lambda (&rest _args) "1.9.0")))
+  (use-package hl-todo)
 #+end_src
 
 #+begin_src elisp
@@ -955,11 +899,11 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 #+end_src
 
 ** pos-tip
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package pos-tip)
 #+end_src
 ** Email (mu4e)
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature mu4e
     :commands (mu4e mu4e-update-mail-and-index)
     :bind (:map mu4e-headers-mode-map
@@ -1011,11 +955,11 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 #+end_src
 
 *** Mu4e Dashboard
-#+begin_src emacs-lisp
-  (push 'mu4e elpaca-ignored-dependencies)
+#+begin_src elisp
+  ;; (push 'mu4e elpaca-ignored-dependencies)
 
   (use-package mu4e-dashboard
-    :ensure (:type git :host github :repo "rougier/mu4e-dashboard")
+    :vc (:url "https://github.com/rougier/mu4e-dashboard" :rev :newest)
     :bind ("C-c d" . mu4e-dashboard)
     :after mu4e
     :hook
@@ -1034,36 +978,8 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
     (display-line-numbers-mode -1)
     (flyspell-mode -1))
 #+end_src
-
-*** Mu4e Theading
-#+begin_src emacs-lisp :tangle no
-  (use-package mu4e-thread-folding
-    :ensure (:type git :host github :repo "rougier/mu4e-thread-folding")
-    :hook
-    ((mu4e-headers-mode . mu4e-thread-folding-mode)
-     (mu4e-headers-mode . (lambda () (display-line-numbers-mode -1))))
-    :config
-    (add-to-list 'mu4e-header-info-custom
-                 '(:empty . (:name "Empty"
-                                   :shortname ""
-                                   :function (lambda (msg) "  "))))
-    :custom
-    (mu4e-headers-fields '((:empty         .    2)
-                           (:human-date    .   12)
-                           (:flags         .    6)
-                           (:mailing-list  .   10)
-                           (:from          .   22)
-                           (:subject       .   nil)))
-    :bind (:map mu4e-headers-mode-map
-                ("<tab>"     . mu4e-headers-toggle-at-point)
-                ("<left>"    . mu4e-headers-fold-at-point)
-                ("<S-left>"  . mu4e-headers-fold-all)
-                ("<right>"   . mu4e-headers-unfold-at-point)
-                ("<S-right>" . mu4e-headers-unfold-all)))
-#+end_src
-
 ** Elfeed
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package elfeed
    :custom
    (elfeed-feeds
@@ -1085,52 +1001,52 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 * Look and Feel
 ** Window
 *** Natural colouring from emacs chrome
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   (when jb/os-macos-p
     (setq default-frame-alist '((ns-appearance . dark) (ns-transparent-titlebar . t) (ns-appearance . 'nil))))
 #+END_SRC
 
 *** Simplify the UI
 Remove the tool bar
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 (tool-bar-mode -1)
 #+END_SRC
 
 Remove the menu bar
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   (menu-bar-mode -1)
 #+END_SRC
 
 Remove scroll bars
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 #+END_SRC
 *** Scrolling
-#+begin_src emacs-lisp :tangle early-init.el
+#+begin_src elisp :tangle early-init.el
   (pixel-scroll-precision-mode 1)
 #+end_src
 
 *** Emacs should not take focus when it launches
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   (when (display-graphic-p) ; Start full screen
     (add-to-list 'default-frame-alist '(fullscreen . t))
     (x-focus-frame nil))
 #+END_SRC
 
 *** Formatting window title
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 (setq-default frame-title-format "%b (%f)")
 #+END_SRC
 *** Precision Framing
 Emacs keeps a margin between itself and other windows, but if we enable pixelwise resizing it keeps everything nice and snug
-#+begin_src emacs-lisp :tangle early-init.el
+#+begin_src elisp :tangle early-init.el
   (setq frame-resize-pixelwise 't)
 #+end_src
 
 ** Font
 I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good and has great ligature support.
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 (let ((font-name (if jb/os-windows-p
                      "CaskaydiaCove NFM"
                    "CaskaydiaMono Nerd Font Mono")))
@@ -1141,9 +1057,9 @@ I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good
 *** Ligatures
 
 Ok we know our font supports ligatures, let's set that up.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package ligature
-    :defer t
+    :commands (global-ligature-mode)
     :config
     ;; Enable the "www" ligature in every possible major mode
     (ligature-set-ligatures 't '("www"))
@@ -1166,12 +1082,11 @@ Ok we know our font supports ligatures, let's set that up.
                                          "\\\\" "://"))
     ;; Enables ligature checks globally in all buffers. You can also do it
     ;; per mode with `ligature-mode'.
-    :init
     (global-ligature-mode t))
 #+END_SRC
 
 Lets improve our mapping for unicode-fonts
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package unicode-fonts
    :defer 't
    :config
@@ -1180,7 +1095,7 @@ Lets improve our mapping for unicode-fonts
 
 *** Emojis
 We can not place this in early-init because it requires the GUI to be initialized
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (cond
    (jb/os-macos-p
     (progn
@@ -1196,11 +1111,11 @@ We can not place this in early-init because it requires the GUI to be initialize
 
 ** Misc
 No cursor blinking, it's distracting
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (blink-cursor-mode 0)
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   ;; These settings relate to how emacs interacts with your operating system
   (setq-default ;; makes killing/yanking interact with the clipboard
    select-enable-clipboard t
@@ -1223,11 +1138,11 @@ No cursor blinking, it's distracting
 #+END_SRC
 
 My name isn't "Tinker", so I don't need a bell.
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 (setq-default ring-bell-function 'ignore)
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -1245,40 +1160,34 @@ My name isn't "Tinker", so I don't need a bell.
 Note:
 Disabling the BPA makes redisplay faster, but might produce incorrect
 display reordering of bidirectional text with embedded parentheses
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 (setq bidi-inhibit-bpa t)
 #+END_SRC
 
 We want to unbind ~C-l~ so we can use it later
-#+begin_src emacs-lisp
+#+begin_src elisp
 (keymap-global-unset "C-l")
 #+end_src
 
 ** Performance
 Increase the size of read-process-output-max from default of 4k to 1Mb
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
   (setq-default read-process-output-max (* 1024 1024)) ;; 1mb
 #+END_SRC
 
 ** Line Numbers
 As of Emacs 26.0 we have native, perfomant, support for line numbers
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 (global-display-line-numbers-mode)
 (set-default 'display-line-numbers-type 't)
 (set-default 'display-line-numbers-current-absolute 't)
 #+END_SRC
 
 ** Theme
-*** Elegant Emacs
-#+begin_src emacs-lisp :tangle no
-  (use-package nano-theme
-    :ensure (nano-theme :type git :host github :repo "rougier/nano-theme"))
-#+end_src
-
 *** Lambda Themes
-#+begin_src emacs-lisp :tangle no
+#+begin_src elisp
 (use-package lambda-themes
-  :ensure (:type git :host github :repo "lambda-emacs/lambda-themes")
+  :vc (:url "https://github.com/lambda-emacs/lambda-themes" :rev :newest)
   :custom
   (lambda-themes-set-italic-comments nil)
   (lambda-themes-set-italic-keywords nil)
@@ -1288,51 +1197,48 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
   (load-theme 'lambda-light))
 #+end_src
 *** Catpuccin
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package catppuccin-theme)
 #+end_src
-
-*** Add on doom theme
-#+begin_src emacs-lisp :tangle no
-  (use-package doom-everblush-theme
-    :ensure (doom-everblush-theme :type git :host github :repo "Everblush/doomemacs"))
-#+end_src
-
 *** Doom Themes
 Let's use Doom's version instead
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package doom-themes
-    :ensure (:type git :host github :repo "justinbarclay/themes" :ref "laserwave-hc")
+    :vc (:url "https://github.com/justinbarclay/themes.git" :rev "laserwave-hc")
     :init
+    (add-to-list 'load-path (concat (expand-file-name package-user-dir)
+                                    "/doom-themes/extensions"))
     (load-theme 'doom-laserwave-high-contrast t)
+    :config
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
     ;; Corrects (and improves) org-mode's native fontification.
+    (require 'doom-themes-ext-org)
     (doom-themes-org-config))
 #+END_SRC
 
 ** Icons
 *** Nerd Icons
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package nerd-icons)
 #+end_src
 
 **** Completion
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package nerd-icons-completion
   :after (nerd-icons marginalia)
   :hook (marginalia-mode . nerd-icons-completion-marginalia-setup))
 #+end_src
 **** iBuffer
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package nerd-icons-ibuffer
   :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 #+end_src
 
 ** Modeline
 *** Doom-modeline
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package doom-modeline
+#+BEGIN_src elisp :tangle no
+(use-package doom-modeline
     :hook
     (elpaca-after-init . doom-modeline-mode)
     :custom
@@ -1341,7 +1247,7 @@ Let's use Doom's version instead
 *** lambda-modeline
 #+begin_src elisp
   (use-package lambda-line
-    :ensure (:type git :host github :repo "lambda-emacs/lambda-line")
+    :vc (:url "https://github.com/lambda-emacs/lambda-line.git" :rev :latest)
     :custom
     (lambda-line-position 'top) ;; Set position of status-line
     (lambda-line-abbrev t) ;; abbreviate major modes
@@ -1357,7 +1263,7 @@ Let's use Doom's version instead
     (lambda-line-space-bottom -.25)
     (lambda-line-symbol-position 0.1) ;; adjust the vertical placement of symbol
     (lambda-line-syntax t)
-    :hook (elpaca-after-init . lambda-line-mode)
+    :hook (after-init . lambda-line-mode)
     :config
     (require 'nerd-icons)
     (setq lambda-line-flycheck-label (format " %s" (nerd-icons-mdicon "nf-md-alarm_light")))
@@ -1369,7 +1275,7 @@ Let's use Doom's version instead
       (setq mode-line-format (list "%_"))))
 #+end_src
 ** Rainbow delimiters
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode)
     :config
@@ -1388,19 +1294,19 @@ Let's use Doom's version instead
 ** undo
 *** Vundo
 Sometimes you have to quickly jump through you undo-history
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package vundo
     :custom
     (vundo-glyph-alist vundo-unicode-symbols))
 #+end_src
 
 *** undo-fu
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package undo-fu)
 #+end_src
 *** undo-fu-sessions
 And sometimes you want that undo-history to persist over a couple of days
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package undo-fu-session
     :init
     (undo-fu-session-global-mode)
@@ -1415,7 +1321,7 @@ We're prettying up ibuffer after
 
 This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/master/lisp/init-ibuffer.el (April 12, 2019)
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature ibuffer
     :commands (ibuffer-current-buffer
                ibuffer-find-file
@@ -1427,14 +1333,11 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
                                   " " (icon 2 2 :left :elide) (name 18 18 :left :elide)
                                   " " (size 9 -1 :right)
                                   " " (mode 16 16 :left :elide) " " filename-and-process)
-                            (mark " " (name 16 -1) " " filename)))
-    :config
-    (with-eval-after-load 'consult
-      (defalias 'ibuffer-find-file 'consult-find-file)))
+                            (mark " " (name 16 -1) " " filename))))
 #+END_SRC
 
 *** ibuffer-projectile
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package ibuffer-projectile
     :init
     (add-hook 'ibuffer-hook
@@ -1453,14 +1356,14 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 
 * Directory Management
 ** dired
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature dired
     :bind (:map dired-mode-map
                 ("RET" . dired-find-alternate-file)
                 ("a" . dired-find-file)))
 #+END_SRC
 ** Dirvish
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package dirvish
     :custom
     ;; Go back home? Just press `bh'
@@ -1518,7 +1421,7 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 ** MacOS
 In OS X, when Emacs is started from the GUI it inherits a default set of environment variables. Let's fix that.
 Currently turned off due to debugging issues
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package exec-path-from-shell
     :if jb/os-macos-p
     :defer 1
@@ -1528,7 +1431,7 @@ Currently turned off due to debugging issues
     (exec-path-from-shell-arguments '("-l")))
 #+END_SRC
 ** Windows
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (when jb/os-windows-p
     (setq package-check-signature nil)
     (require 'gnutls)
@@ -1536,7 +1439,7 @@ Currently turned off due to debugging issues
     (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
 #+END_SRC
 ** Linux && Darwin
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (when (not jb/os-windows-p)
     (use-package envrc
       :defer 2
@@ -1547,14 +1450,14 @@ Currently turned off due to debugging issues
 * Navigating
 ** Uniquify
 Ensure that buffers have unique file names
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-feature uniquify
   :config
   (setq uniquify-buffer-name-style 'forward))
 #+END_SRC
 ** Recentf
 Turn on recent file mode so that you can more easily switch to recently edited files when you first start emacs
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature recentf
     :init
     (recentf-mode)
@@ -1563,10 +1466,10 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 #+END_SRC
 
 ** Projectile
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package projectile
     :defer 1
-    :bind (("C-s p" . projectile-ripgrep))
+    ;;:bind (("C-s p" . projectile-ripgrep))
     :commands
     (projectile-find-file projectile-switch-project projectile-ripgrep)
     :config
@@ -1618,7 +1521,7 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 #+END_SRC
 
 ** Treemacs
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (use-package treemacs
     :config
     (progn
@@ -1662,14 +1565,14 @@ Turn on recent file mode so that you can more easily switch to recently edited f
           ("M-0"       . treemacs-select-window)))
 #+END_SRC
 ** Treemacs Pojectile
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (use-package treemacs-projectile
     :config
     (setq treemacs-header-function #'treemacs-projectile-create-header))
 #+END_SRC
 ** ace-window
 Allows one to switch to a buffer based by using numbers, instead of cycling with ~C-x o~. ~ace-window~ only kicks in if there are more than two buffers open.
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package ace-window
     :bind ("C-x o" . ace-window))
 #+end_src
@@ -1700,7 +1603,7 @@ Unbind C-s from isearch and make it the universal search command
   (unbind-key "C-s")
 #+end_src
 *** With Ripgrep
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package rg
     :bind (("C-s r" . rg)))
 #+end_src
@@ -1746,12 +1649,12 @@ Unbind C-s from isearch and make it the universal search command
 
 * Editing
 General config to make editing text feel nice
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-feature emacs
   :config
 #+end_src
 ** Buffer Encoding
-#+begin_src emacs-lisp
+#+begin_src elisp
   (prefer-coding-system 'utf-8)
   (set-default-coding-systems 'utf-8)
   (set-terminal-coding-system 'utf-8)
@@ -1759,29 +1662,29 @@ General config to make editing text feel nice
 #+end_src
 
 ** Newline and indent
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (define-key global-map (kbd "RET") 'newline-and-indent)
 #+END_SRC
 ** Truncate lines
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (setq-default truncate-lines t)
 #+END_SRC
 ** Highlight current line
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (global-hl-line-mode 1)
 #+END_SRC
 ** Highlight matching parens
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (show-paren-mode 1)
 #+END_SRC
 ** No tabs
 I prefer spaces like some sort of monster
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (setq-default indent-tabs-mode nil)
 #+END_SRC
 ** Set base indentation
 It's all about space efficiency
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (setq-default tab-width 2)
 
   (setq-default c-basic-offset 2)
@@ -1789,25 +1692,25 @@ It's all about space efficiency
 
 ** Save place in file
 Remember where point was when I come back to a file
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (save-place-mode 1)
   ;; keep track of saved places in ~/.emacs.d/places
   (setq save-place-file (concat user-emacs-directory "places"))
 #+END_SRC
 ** Comment or Uncomment region
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
 #+END_SRC
 ** Backups
 Emacs can automatically create backup files. This tells Emacs to put all backups in ~/.emacs.d/backups. More [[http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html][info]].
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                  "backups"))))
   (setq auto-save-default nil)
   (setq backup-by-copying t)
 #+END_SRC
 ** Disable Superfluous warnings
-#+begin_src emacs-lisp
+#+begin_src elisp
   (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
 #+end_src
 ** Mark Manipulation
@@ -1829,33 +1732,33 @@ Here is an example of and another examp I guess it is corfu being slow due to to
 #+end_src
 
 ** end emacs specific config
-#+begin_src emacs-lisp
+#+begin_src elisp
 )
 #+end_src
 
 ** Parens Balancing
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package smartparens
     :hook (prog-mode . smartparens-mode)
     :bind (:map smartparens-mode-map ("M-<backspace>" . 'backward-kill-word)))
 #+END_SRC
 
 Config
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature smartparens-config
     :after smartparens)
 #+end_src
 
 ** Whitespace
 Emacs doesn’t handle trailing spaces or anything like that very well by default, it’s far too aggressive for my tastes, so we’ll use ws-butler to fix this.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package ws-butler
     :commands (ws-butler-mode)
     :hook (prog-mode . ws-butler-mode))
 #+END_SRC
 ** Code Folding
 Emacs by default doesn't have a good story for folding text so we have to add one.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package origami
   :defer t
   :bind ("C-<tab>" . origami-recursively-toggle-node)
@@ -1863,7 +1766,7 @@ Emacs by default doesn't have a good story for folding text so we have to add on
 #+END_SRC
 
 ** Hungry Delete
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package hungry-delete
     :hook (prog-mode . global-hungry-delete-mode))
 #+END_SRC
@@ -1871,7 +1774,7 @@ Emacs by default doesn't have a good story for folding text so we have to add on
 ** Multiple Cursors
 Thank you Magnar Sveen!
 I've put this at the top, because I use this almost everyday and wish it existed in more places.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package multiple-cursors
   :bind
   (("C->" . mc/mark-next-like-this)
@@ -1882,7 +1785,7 @@ I've put this at the top, because I use this almost everyday and wish it existed
 * Syntax and Error checking
 ** Flycheck posframe
 Load this before we load Flycheck
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package flycheck-posframe
     :hook ((flycheck-mode . flycheck-posframe-mode)
            (lsp-mode . (lambda () (flycheck-posframe-mode 0)))
@@ -1901,14 +1804,14 @@ Load this before we load Flycheck
     
 #+END_SRC
 ** Flycheck package
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package flycheck-package
   :init
   (use-package package-lint))
 #+end_src
 
 ** Flycheck
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package flycheck
     :init
     (defun flycheck-node-modules-executable-find (executable)
@@ -1940,7 +1843,7 @@ Load this before we load Flycheck
 #+END_SRC
 
 ** Flyspell
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature flyspell
     :hook ((prog-mode . flyspell-prog-mode)
            (text-mode . flyspell-mode))
@@ -1948,14 +1851,8 @@ Load this before we load Flycheck
 #+END_SRC
 
 * Integrated Debugging
-** PGMacs
-#+begin_src elisp
-  (use-package pgmacs
-    :ensure (:type git :host github :repo "emarsden/pgmacs"))
-#+end_src
-
 ** Dape
-#+begin_src emacs-lisp :tangle no
+#+begin_src elisp :tangle no
   (use-package dape
     :ensure (:fetcher git
     :url "https://github.com/svaante/dape"))
@@ -1963,7 +1860,7 @@ Load this before we load Flycheck
 * Completion
 ** Minibuffer
 *** Vertico
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package vertico
     :init
     (vertico-mode)
@@ -2023,7 +1920,7 @@ Load this before we load Flycheck
 
 ***** savehist
 Save minibuffer history for better integration with orderless
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature savehist
     :init
     (savehist-mode))
@@ -2031,7 +1928,7 @@ Save minibuffer history for better integration with orderless
 
 ***** Marginalia
 Marginalia looks  and acts great, however as an old grey(ing) beard, I got used to some of the aesthetics of `ivy-rich` so I would like to bring some of these back.
-#+begin_src emacs-lisp
+#+begin_src elisp
   (defun ivy-rich-switch-buffer-user-buffer-p (buffer)
     "Check whether BUFFER-NAME is a user buffer."
     (let ((buffer-name
@@ -2109,7 +2006,7 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
       cand))
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package marginalia
     :config
     (setq marginalia-max-relative-age 0)
@@ -2164,7 +2061,7 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
 #+end_src
 
 ***** Orderless
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package orderless
     :config
     (defun prot-orderless-literal-dispatcher (pattern _index _total)
@@ -2192,7 +2089,7 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
 #+end_src
 
 ***** Consult
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package consult
     ;; Replace bindings. Lazily loaded due by `use-package'.
     :bind ;; C-c bindings (mode-specific-map)
@@ -2248,7 +2145,7 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
 #+end_src
 
 ***** Embark
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package embark
     :bind
     (("C-." . embark-act)         ;; pick some comfortable binding
@@ -2267,7 +2164,7 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
 #+end_src
 
 Consult users will also want the embark-consult package.
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package embark-consult
   :after (embark consult)
   :demand t ; only necessary if you have the hook below
@@ -2280,8 +2177,11 @@ Consult users will also want the embark-consult package.
 ***** Consult Omni
 #+begin_src elisp
   (use-package consult-omni
-    :ensure (:type git :host github :repo "armindarvish/consult-omni" :branch "main" :files (:defaults "sources/*.el"))
+    :vc (:url "https://github.com/armindarvish/consult-omni" :branch "main")
     :commands (consult-omni-multi consult-omni-apps)
+    :init
+    (add-to-list 'load-path (concat (expand-file-name package-user-dir)
+                                "/consult-omni/sources/"))
     :custom
     ;; General settings that apply to all sources
     (consult-omni-show-preview t) ;;; show previews
@@ -2346,7 +2246,7 @@ it looks like counsel is a requirement for swiper
 **** Ivy-rich
 Let's pretty up ivy
 This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emacs.d/blob/master/lisp/init-ivy.el
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (use-package ivy-rich
     :defines (all-the-icons-icon-alist
               all-the-icons-dir-icon-alist
@@ -2517,7 +2417,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 #+END_SRC
 
 **** Ivy
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (use-package ivy
     :hook (after-init . ivy-mode)
     :config
@@ -2529,7 +2429,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 #+END_SRC
 
 **** Counsel
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (use-package counsel
     :after ivy
     :config
@@ -2550,8 +2450,8 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
       ("C-c k" . counsel-rg)))
 #+END_SRC
 **** swiper
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package swiper :tangle no
+#+BEGIN_src elisp :tangle no
+  (use-package swiper
     :after ivy
     :bind ("C-s" . swiper))
 #+END_SRC
@@ -2562,7 +2462,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 :header-args: :tangle no
 :END:
 
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package corfu
     :init
     (global-corfu-mode)
@@ -2590,7 +2490,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 #+end_src
 **** Kind Icon
 Things are always better when they are prettier, let's add icons to our in buffer completions and make them pretty. Nothing requires kind-icon, so nothing really brings it into scope. So, we can't just stuff everything into config. We need a way to trigger calling, and loading, kind-icons. So, we add kind-icon to corfu's formatters within the init block.
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package kind-icon
     :init
     (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
@@ -2600,7 +2500,7 @@ Things are always better when they are prettier, let's add icons to our in buffe
 #+end_src
 *** Cape
 Cape adds some more completion backends for us, allowing us to get file and dabbrev completions where appropriate. We also have the possibility of using company completions with some helper functions given from cape.
-#+begin_src emacs-lisp :tangle no
+#+begin_src elisp :tangle no
   (use-package cape
     :init
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
@@ -2615,13 +2515,13 @@ Cape adds some more completion backends for us, allowing us to get file and dabb
 :header-args:
 :END:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package company
     :commands (company-complete-common
                company-complete-common-or-cycle
                company-manual-begin
                company-grab-line)
-    :hook (elpaca-after-init . global-company-mode)
+    :hook (after-init . global-company-mode)
     :bind (("C-<shift>-<tab>" . company-manual-begin)
            :map company-active-map
            ("C->" . #'company-filter-candidates)
@@ -2662,7 +2562,7 @@ Cape adds some more completion backends for us, allowing us to get file and dabb
 #+END_SRC
 
 **** Company Box
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package company-box
     :hook (company-mode . company-box-mode)
     :init
@@ -2725,17 +2625,17 @@ Cape adds some more completion backends for us, allowing us to get file and dabb
 #+end_src
 
 ** Yas Snippets
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package yasnippet
    :init (yas-global-mode))
 #+end_src
 **** Additional Snippets
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package yasnippet-snippets
     :after yasnippet)
 #+end_src
 **** Yasnippet capf
-#+begin_src emacs-lisp :tangle no
+#+begin_src elisp :tangle no
   (use-package yasnippet-capf
     :commands yas-capf-minor-mode
     :ensure (:type git :host github :repo "justinbarclay/yasnippet-capf")
@@ -2755,14 +2655,14 @@ Major mode customizations
 #+end_src
 
 ** Tree Sitter support
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature treesit
     :config
     (setq-default treesit-font-lock-level 4))
 #+end_src
 *** Treesit Auto
 We want automatic fall back and to have manually manage `treesit-language-source-alist`.
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package treesit-auto
     :if (and (require 'treesit)
              (treesit-available-p))
@@ -2797,7 +2697,7 @@ We want automatic fall back and to have manually manage `treesit-language-source
 #+end_src
 *** Combobulate
 Better movement through treesitter
-#+begin_src emacs-lisp :tangle no
+#+begin_src elisp :tangle no
   (use-package combobulate
     :ensure (:type git :host github :repo "mickeynp/combobulate")
     :hook (prog-mode . combobulate-mode)
@@ -2805,15 +2705,10 @@ Better movement through treesitter
 #+end_src
 ** General Intellisense
 *** copilot
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package copilot
     :after jsonrpc
     :hook (prog-mode . copilot-mode)
-    :ensure (copilot
-             :files ("dist" "*.el")
-             :type git
-             :host github
-             :repo "copilot-emacs/copilot.el")
     :bind (:map copilot-completion-map
                 ("TAB" . 'copilot-accept-completion)
                 ("C-TAB" . 'copilot-accept-completion-by-word)))
@@ -2834,8 +2729,10 @@ Better movement through treesitter
 *** Aidermacs
 #+begin_src elisp
   (use-package aidermacs
-    :ensure (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+    :vc (:url "https://github.com/MatthewZMD/aidermacs" :branch "main" :rev :newest)
     :bind (("C-c C-a" . aidermacs-transient-menu))
+    :init
+    (global-unset-key "\C-c\C-a")
     :config
     (setq aidermacs-args '("--model" "gemini/gemini-2.0-pro-experimental")
           aidermacs-backend 'vterm)
@@ -2847,7 +2744,7 @@ Better movement through treesitter
 :header-args:
 :END:
 lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes issues when you want other linters to run at the same time. Following allong with the suggestion [[https://github.com/flycheck/flycheck/issues/1762#issuecomment-750458442][here]], I've added a hook that adds back in the linters that I care about.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package lsp-mode
     :commands lsp
     :hook ((rustic-mode
@@ -2955,7 +2852,7 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
           (funcall callback 'finished))))
 #+END_SRC
 ***** lsp-ui
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package lsp-ui
     :commands lsp-ui-mode
     :hook (lsp-mode . lsp-ui-mode))
@@ -2964,7 +2861,7 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
 :PROPERTIES:
 :header-args: :tangle no
 :END:
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package eglot
     :bind (("C-c r" . eglot-rename)
            ("C-c o" . eglot-code-action-organize-imports)
@@ -2980,32 +2877,32 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
 
 ** CSS/LESS/SASS
 *** CSS
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature css-mode
     :config
     (setq css-indent-offset 2))
 #+end_src
 *** Less
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature less-css-mode
     :config
     (setq css-indent-offset 2))
 #+end_src
 *** Rainbow mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package rainbow-mode
   :hook ((css-mode . rainbow-mode)
          (less-mode . rainbow-mode)))
 #+END_SRC
 *** Sass mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package sass-mode
     :mode "\\.sass\\'")
 #+END_SRC
 
 ** C/C++
 *** Add hooks and customizations
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature c-ts-base-mode
     :config
     (progn ; C mode hook
@@ -3013,17 +2910,17 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
 #+END_SRC
 
 c++
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature c++-ts-mode)
 #+END_SRC
 
 *** c-eldoc
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package c-eldoc)
 #+END_SRC
 ** Lispy-languages
 *** Enable Paredit or Parinfer
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (defun enable-paredit ()
     (turn-off-smartparens-mode)
     (paredit-mode))
@@ -3039,7 +2936,7 @@ c++
     (lispy-mode))
 #+END_SRC
 **** paredit
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package paredit
     :commands (paredit-mode)
     :hook ((common-lisp-mode . (lambda () (enable-paredit)))
@@ -3048,12 +2945,12 @@ c++
 #+END_SRC
 **** lispy
 We need lispy for some of the excellent bracket based navigation integrations with parinfer
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
     (use-package lispy)
 #+END_SRC
 
 **** parinfer-rust-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package parinfer-rust-mode
     :commands (parinfer-rust-mode)
     :hook (emacs-lisp-mode)
@@ -3067,21 +2964,21 @@ We need lispy for some of the excellent bracket based navigation integrations wi
     (add-hook 'parinfer-rust-mode-hook 'parinfer-rust--auto-apply-fast-mode))
 #+END_SRC
 **** eldoc
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature eldoc
     :config
     (global-eldoc-mode))
 #+END_SRC
 *** Elisp
 **** elisp-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature elisp-mode
     :hook (emacs-lisp . enable-paredit))
 #+END_SRC
 
 *** Clojure
 **** clj-refactor
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
 
   ;; clojure refactor library
   ;; https://github.com/clojure-emacs/clj-refactor.el
@@ -3093,12 +2990,12 @@ We need lispy for some of the excellent bracket based navigation integrations wi
                                                   (cljr-add-keybindings-with-prefix "C-c C-m")))))
 #+END_SRC
 **** Kibit
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package kibit-helper
     :defer t)
 #+END_SRC
 **** clojure-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package clojure-mode
     :mode (("\\.clj\\'" . clojure-mode)
            ( "\\.cljs\\'" . clojurescript-mode))
@@ -3124,13 +3021,13 @@ We need lispy for some of the excellent bracket based navigation integrations wi
 #+END_SRC
 
 Clojure mode also supports extra font locking(for syntax highlighting), but I have noticed that this causes performance issues in large and complicated clojure files (which I have been playing a lot with lately), so I have turned this feature off.
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
 (require 'clojure-mode-extra-font-locking)
 #+END_SRC
 
 **** Cider
 A REPL for Clojure and nrepl for ClojureScript
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package cider
     :hook ((clojure-mode . cider-mode)
            (clojurescript-mode . cider-mode))
@@ -3173,7 +3070,7 @@ A REPL for Clojure and nrepl for ClojureScript
 #+END_SRC
 ***** Custom cider functions
 This was suggested by @dpsutton on the slack channel and seems to be really interesting. It creates a little pop-up window by you cursor to show you the meaning of a thing
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (defun cider--tooltip-show ()
   (interactive)
   (if-let ((info (cider-var-info (thing-at-point 'symbol))))
@@ -3193,19 +3090,19 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 
 ** JavaScript Land
 *** Javascript
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-feature js-base-mode
  :custom
  (js-indent-level 2)
  (lsp-eslint-enable 't))
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature js-ts-mode
     :mode ("\\.js\\'" "\\.cjs\\'" "\\.mjs\\'"))
 #+end_src
 *** Typescript
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature typescript-ts-base-mode    
     :custom
     (typescript-indent-level 2)
@@ -3214,26 +3111,21 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
     (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature typescript-ts-mode
     :mode ("\\.ts\\'" "\\.mts\\'" "\\.ts.snap\\'"))
 #+end_src
 
-**** pretty errors
-#+begin_src elisp
-(use-package pretty-ts-errors
-  :ensure (pretty-ts-errors :host github :repo "artawower/pretty-ts-errors.el"))
-#+end_src
 
 *** TSX Mode
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature tsx-ts-mode
     :mode "\\.tsx\\'")
 #+end_src
 
 *** Prettier
 Autoformatting
-#+begin_src emacs-lisp :tangle no
+#+begin_src elisp :tangle no
   (use-package prettier-js
     :hook ((typescript-ts-base-mode . prettier-js-mode)
            (js-base-mode . prettier-js-mode)
@@ -3242,18 +3134,18 @@ Autoformatting
            (web-mode . prettier-js-mode)))
 #+end_src
 *** denofmt
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package deno-fmt)
 #+end_src
 
 *** eslint-disable
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package eslint-disable-rule)
 #+end_src
 
 ** HTML
 *** Web Mode
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package web-mode
     :mode (("\\.html?\\'" . web-mode))
     :config
@@ -3271,12 +3163,12 @@ Autoformatting
 #+end_src
 
 *** tagedit
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package tagedit
    :defer t)
 #+END_SRC
 *** sgml-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature sgml-mode
     :after tagedit
     :config
@@ -3286,7 +3178,7 @@ Autoformatting
 #+END_SRC
 ** Ruby
 *** ruby-mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature ruby-ts-mode
     :mode "\\.rb\\'"
     :mode "Rakefile\\'"
@@ -3302,7 +3194,7 @@ Autoformatting
 #+END_SRC
 
 *** inf-ruby
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package inf-ruby
     :defer t
     :bind
@@ -3319,7 +3211,7 @@ Autoformatting
 
 *** formatter
 This has been switched out for apheleia
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (use-package rubocopfmt
     :hook ((ruby-base-mode . rubocopfmt-mode)
            (ruby-ts-mode . rubocopfmt-mode))
@@ -3327,7 +3219,7 @@ This has been switched out for apheleia
 #+END_SRC
 
 *** Test running library
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package rspec-mode
    :hook (ruby-base-mode . rspec-enable-appropriate-mode)
    :config
@@ -3336,12 +3228,12 @@ This has been switched out for apheleia
 
 ** Rust
 *** Cargo
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
 (use-package cargo)
 #+END_SRC
 *** Rustic
 We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-playground packages are causing rust-mode to shadow rustic-mode.
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package rustic
     :mode (("\\.rs\\'" . rustic-mode))
     :config
@@ -3351,7 +3243,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+END_SRC
 
 *** Rust repl
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
 (use-package evcxr-mode
    :defer t
    :ensure nil
@@ -3365,21 +3257,21 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 
 ** Nix
 *** Major Mode
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package nix-mode)
 #+end_src
 *** nixos-options
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package nixos-options)
 #+end_src
 *** nixpkgs-fm
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package nixpkgs-fmt
  :hook (nix-mode . nixpkgs-fmt-on-save-mode))
 #+end_src
 ** Go
 *** Go Mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature go-ts-mode
     :mode "\\.go\\'"
     :custom
@@ -3389,12 +3281,12 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+END_SRC
 
 ** Lua
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package lua-mode)
 #+end_src
 
 ** JSON
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
     (use-feature json-ts-mode
       :mode "\\.json\\'"
       :config
@@ -3402,18 +3294,18 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+END_SRC
 ** Docker
 *** Dockerfile
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
     (use-package dockerfile-mode
       :mode "\\Dockerfile\\'"
       :config
       (setq-local tab-width 2))
 #+END_SRC
 *** Docker
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package docker)
 #+END_SRC
 ** Markdown
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package markdown-mode
   :commands (markdown-mode gfm-mode)
   :mode (("README\\.md\\'" . gfm-mode)
@@ -3423,45 +3315,45 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 #+END_SRC
 *** Flymd
 Live preview of MarkDown
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package flymd
    :commands (flymd-flyit))
 #+END_SRC
 ** Powershell
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package powershell
     :mode "\\.ps\\'")
 #+END_SRC
 ** NuShell Config
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package nushell-ts-mode
     :mode "\\.nu\\'")
 #+end_src
 ** Terraform
 *** Terraform mode
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package terraform-mode
   :mode "\\.tf\\'" )
 #+END_SRC
 ** YAML
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package yaml-mode
     :defer t)
 #+END_SRC
 
 ** SSH
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package ssh-config-mode
   :defer t)
 #+END_SRC
 ** SQL
 *** Linting
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   ;; (use-package sqlint)
 #+END_SRC
 ** Latex
 Much like Mu4e we treat this as a feature because otherwise there is too much ceremony in setting up an Auctex. Instead, we rely on Nix to install this on Darwin and Linux. On windows though? shrug 🤷.
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature auctex
       :mode (("\\.tex\\'" . TeX-latex-mode)
              ("\\.tex\\.erb\\'" . TeX-latex-mode)
@@ -3495,12 +3387,12 @@ Much like Mu4e we treat this as a feature because otherwise there is too much ce
 #+end_src
 
 Then we want org support for math latex
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package cdlatex)
 #+end_src
 
 *** PDF Viewer
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package pdf-tools
    :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
    :init
@@ -3508,13 +3400,13 @@ Then we want org support for math latex
 #+end_src
 
 ** Text modes
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-feature text-mode
   :custom
   (text-mode-ispell-word-completion nil))
 #+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature rst
     :mode (("\\.txt$" . rst-mode)
            ("\\.rst$" . rst-mode)
@@ -3533,7 +3425,7 @@ Then we want org support for math latex
 
 * Communication
 ** Tramp
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-feature tramp
   :defer t
   :hook (tramp-mode . (lambda () (projectile-mode 0)))
@@ -3544,7 +3436,7 @@ Then we want org support for math latex
 #+end_src
 
 ** Alert
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package alert
         :commands (alert alert-define-style)
         :config
@@ -3592,12 +3484,11 @@ Then we want org support for math latex
 #+end_src
 
 ** 1Password
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package 1password
-    :ensure (1password :type git :host github :repo "justinbarclay/1password.el")
-    :demand t
+    :vc (:url "https://github.com/justinbarclay/1password.el.git" :rev :newest)
     :commands (1password-search-password 1password-search-id 1password-enable-auth-source)
-    :hook (elpaca-after-init-hook . (lambda () (1password-enable-auth-source)))
+    :hook (after-init . 1password-enable-auth-source)
     :custom
     (1password-results-formatter '1password-colour-formatter)
     (1password-executable (if (executable-find "op.exe")
@@ -3607,7 +3498,7 @@ Then we want org support for math latex
 
 ** Helpful
 A better help buffer experience
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package helpful
     :defer t
     :bind  (("C-h f" . helpful-callable)
@@ -3615,14 +3506,14 @@ A better help buffer experience
             ("C-h k" . helpful-key)))
 #+end_src
 ** Which Key
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-feature which-key
     :defer 't
     :init (which-key-mode))
 #+end_src
 
 ** Woman
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature woman
     :config
     (progn (setq woman-manpath
@@ -3634,8 +3525,8 @@ A better help buffer experience
 #+END_SRC
 ** Profiling
 This function displays how long Emacs took to start. It’s a rough way of knowing when/if I need to optimize my init file.
-#+begin_src emacs-lisp
-(add-hook 'elpaca-after-init-hook
+#+begin_src elisp
+(add-hook 'after-init-hook
           (lambda ()
             (message "Emacs loaded in %s with %d garbage collections."
                      (format "%.2f seconds"
@@ -3645,36 +3536,36 @@ This function displays how long Emacs took to start. It’s a rough way of knowi
 #+end_src
 
 *** Esup
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (use-package esup
   :commands (esup))
 #+END_SRC
 *** profiler
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-feature profiler
     :bind
     (("s-l" . profiler-start)
      ("s-r" . profiler-report)))
 #+END_SRC
 ** http client
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
   (use-package restclient)
 #+END_SRC
 ** Git-link
 For when you want to link to the current file from github or gitlab
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package git-link)
 #+end_src
 
 ** git-sync
-#+begin_src emacs-lisp
+#+begin_src elisp
   (use-package git-sync-mode
     :commands (git-sync-mode git-sync-global-mode)
-    :ensure (:type git :host github :repo "justinbarclay/git-sync-mode"))
+    :vc (:url "https://github.com/justinbarclay/git-sync-mode.git" :rev :newest))
 #+end_src
 
 ** leetcode-emacs
-#+begin_src elisp
+#+begin_src elisp :tangle no
   (use-package leetcode-emacs
    :commands (leetcode-show)
    :ensure (leetcode :type git
@@ -3687,7 +3578,7 @@ For when you want to link to the current file from github or gitlab
 
 * Custom Functions
 ** Allow for clojure style comment blocks
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"
   nil)
@@ -3695,7 +3586,7 @@ For when you want to link to the current file from github or gitlab
 
 ** Resize font size
 Increases the fonts size across all buffers
-#+BEGIN_SRC emacs-lisp :tangle early-init.el
+#+BEGIN_src elisp :tangle early-init.el
 (defun font-name-replace-size (font-name new-size)
   (let ((parts (split-string font-name "-")))
     (setcar (nthcdr 7 parts) (format "%d" new-size))
@@ -3730,7 +3621,7 @@ DELTA should be a multiple of 10, in the units used by the
 (global-set-key (kbd "C-M--") 'decrease-default-font-height)
 #+END_SRC
 ** Open init
-#+begin_src emacs-lisp
+#+begin_src elisp
   (defun open-config-file ()
     (interactive)
     (find-file "~/.emacs.d/README.org"))
@@ -3740,7 +3631,7 @@ DELTA should be a multiple of 10, in the units used by the
 
 ** Sudo Save
 For saving root protected files
-#+begin_src emacs-lisp
+#+begin_src elisp
   (defun sudo-save ()
     (interactive)
     (if (not buffer-file-name)
@@ -3749,7 +3640,7 @@ For saving root protected files
 #+end_src
 
 ** Rename buffer and file
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 ;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
 (defun rename-file-and-buffer (new-name)
   "Renames both current buffer and file it's visiting to NEW-NAME."
@@ -3767,7 +3658,7 @@ For saving root protected files
           (set-buffer-modified-p nil))))))
 #+END_SRC
 ** Stats
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (defun jb/mean (a)
   (/ (apply '+ a)
      (length a)))
@@ -3783,7 +3674,7 @@ For saving root protected files
     (- (length a) 1 ))))
 #+END_SRC
 ** Screenshots
-#+begin_src emacs-lisp
+#+begin_src elisp
   (defun take-screenshot ()
     (interactive)
     (let ((frame-height (read-number "Enter frame height: " 40))
@@ -3798,12 +3689,12 @@ For saving root protected files
 #+end_src
 
 ** Turn back on file-name-handler-alist
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_src elisp
 (setq file-name-handler-alist doom--file-name-handler-alist)
 #+END_SRC
 ** Playground
 Pomodoro timer
-#+BEGIN_src emacs-lisp :tangle no
+#+BEGIN_src elisp :tangle no
   (require 'alert)
   (require 'seq)
   (require 'zone)
@@ -3874,7 +3765,7 @@ Pomodoro timer
 #+END_SRC
 
 Count line repititions
-#+begin_src emacs-lisp
+#+begin_src elisp
   (defun count-repititions ()
     (interactive)
     (let ((tracker (make-hash-table :test 'equal))
