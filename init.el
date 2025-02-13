@@ -1614,9 +1614,10 @@ parses its input."
   :init
   (global-unset-key "\C-c\C-a")
   :config
-  (setq aidermacs-args '("--model" "gemini/gemini-2.0-pro-experimental")
+  (setq aidermacs-args '("--model" "anthropic/claude-3-5-sonnet-20241022")
         aidermacs-backend 'vterm)
-  (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))))
+  (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
+  (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private")))))
 
 (use-package lsp-mode
   :commands lsp
