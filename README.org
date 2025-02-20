@@ -136,6 +136,7 @@
   - [[#stats][Stats]]
   - [[#screenshots][Screenshots]]
   - [[#turn-back-on-file-name-handler-alist][Turn back on file-name-handler-alist]]
+  - [[#async-upgrade][Async Upgrade]]
   - [[#playground][Playground]]
 
 * About
@@ -788,6 +789,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 ** Vterm
 #+begin_src elisp
   (use-package vterm
+    :ensure nil
     :config
     (display-line-numbers-mode -1))
 #+end_src
@@ -1188,6 +1190,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+begin_src elisp
 (use-package lambda-themes
   :vc (:url "https://github.com/lambda-emacs/lambda-themes" :rev :newest)
+  :defer t
   :custom
   (lambda-themes-set-italic-comments nil)
   (lambda-themes-set-italic-keywords nil)
@@ -1204,7 +1207,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 Let's use Doom's version instead
 #+BEGIN_src elisp
   (use-package doom-themes
-    :vc (:url "https://github.com/justinbarclay/themes.git" :rev "laserwave-hc")
+    :vc (:url "https://github.com/justinbarclay/themes" :rev "laserwave-hc")
     :init
     (add-to-list 'load-path (concat (expand-file-name package-user-dir)
                                     "/doom-themes/extensions"))
@@ -1247,7 +1250,7 @@ Let's use Doom's version instead
 *** lambda-modeline
 #+begin_src elisp
   (use-package lambda-line
-    :vc (:url "https://github.com/lambda-emacs/lambda-line.git" :rev :latest)
+    :vc (:url "https://github.com/lambda-emacs/lambda-line" :rev :newest)
     :custom
     (lambda-line-position 'top) ;; Set position of status-line
     (lambda-line-abbrev t) ;; abbreviate major modes
@@ -2177,7 +2180,7 @@ Consult users will also want the embark-consult package.
 ***** Consult Omni
 #+begin_src elisp
   (use-package consult-omni
-    :vc (:url "https://github.com/armindarvish/consult-omni" :branch "main")
+    :vc (:url "https://github.com/justinbarclay/consult-omni" :branch "main" :rev :newest)
     :commands (consult-omni-multi consult-omni-apps)
     :init
     (add-to-list 'load-path (concat (expand-file-name package-user-dir)
@@ -2717,6 +2720,7 @@ Better movement through treesitter
 *** GPTel
 #+begin_src elisp
   (use-package gptel
+    :after 1password
     :config
     (setq
      gptel-default-mode 'org-mode
@@ -2730,6 +2734,7 @@ Better movement through treesitter
 #+begin_src elisp
   (use-package aidermacs
     :vc (:url "https://github.com/MatthewZMD/aidermacs" :branch "main" :rev :newest)
+    :after 1password
     :bind (("C-c C-a" . aidermacs-transient-menu))
     :init
     (global-unset-key "\C-c\C-a")
@@ -3356,35 +3361,35 @@ Live preview of MarkDown
 Much like Mu4e we treat this as a feature because otherwise there is too much ceremony in setting up an Auctex. Instead, we rely on Nix to install this on Darwin and Linux. On windows though? shrug 🤷.
 #+begin_src elisp
   (use-feature auctex
-      :mode (("\\.tex\\'" . TeX-latex-mode)
-             ("\\.tex\\.erb\\'" . TeX-latex-mode)
-             ("\\.etx\\'" . TeX-latex-mode))
-      :hook
-      ((LaTeX-mode . turn-on-auto-fill)
-       (LaTeX-mode . TeX-source-correlate-mode))
-      :config
-      (setq-default TeX-master nil)
-      (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-      :custom
-      (LaTeX-item-indent 0)
-      (TeX-auto-local ".auctex-auto")
-      (TeX-style-local ".auctex-style")
-      (TeX-auto-save t)
-      (TeX-parse-self t)
-      (TeX-save-query nil)
-      ;; use pdflatex
-      (TeX-PDF-mode t)
-      (TeX-source-correlate-start-server nil)
-      (TeX-source-correlate-method 'synctex)
-      ;; use evince for dvi and pdf viewer
-      ;; evince-dvi backend should be installed
-      (TeX-view-program-selection
-       '((output-dvi "DVI Viewer")
-         (output-pdf "PDF Tools")
-         (output-html "Firefox")))
-      (TeX-view-program-list
-       '(("DVI Viewer" "evince %o")
-         ("PDF Tools" TeX-pdf-tools-sync-view))))
+    :mode (("\\.tex\\'" . TeX-latex-mode)
+           ("\\.tex\\.erb\\'" . TeX-latex-mode)
+           ("\\.etx\\'" . TeX-latex-mode))
+    :hook
+    ((LaTeX-mode . turn-on-auto-fill)
+     (LaTeX-mode . TeX-source-correlate-mode))
+    :config
+    (setq-default TeX-master nil)
+    (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+    :custom
+    (LaTeX-item-indent 0)
+    (TeX-auto-local ".auctex-auto")
+    (TeX-style-local ".auctex-style")
+    (TeX-auto-save t)
+    (TeX-parse-self t)
+    (TeX-save-query nil)
+    ;; use pdflatex
+    (TeX-PDF-mode t)
+    (TeX-source-correlate-start-server nil)
+    (TeX-source-correlate-method 'synctex)
+    ;; use evince for dvi and pdf viewer
+    ;; evince-dvi backend should be installed
+    (TeX-view-program-selection
+     '((output-dvi "DVI Viewer")
+       (output-pdf "PDF Tools")
+       (output-html "Firefox")))
+    (TeX-view-program-list
+     '(("DVI Viewer" "evince %o")
+       ("PDF Tools" TeX-pdf-tools-sync-view))))
 #+end_src
 
 Then we want org support for math latex
@@ -3421,7 +3426,7 @@ Then we want org support for math latex
 #+end_src
 *** android-env
 #+begin_src elisp
-  (use-package android-env)
+(use-package android-env)
 #+end_src
 
 * Communication
@@ -3562,7 +3567,7 @@ For when you want to link to the current file from github or gitlab
 #+begin_src elisp
   (use-package git-sync-mode
     :commands (git-sync-mode git-sync-global-mode)
-    :vc (:url "https://github.com/justinbarclay/git-sync-mode.git" :rev :newest))
+    :vc (:url "https://github.com/justinbarclay/git-sync-mode" :rev :newest))
 #+end_src
 
 ** leetcode-emacs
@@ -3693,6 +3698,78 @@ For saving root protected files
 #+BEGIN_src elisp
 (setq file-name-handler-alist doom--file-name-handler-alist)
 #+END_SRC
+** Async Upgrade
+#+begin_src elisp
+  (use-feature async-upgrade
+    :after package
+    :init
+    (require 'subr-x)
+    (require 'cl-lib)
+    (require 'package)
+    (defun async-upgrade--filter-system-packages (pkg)
+      (string-prefix-p (file-name-as-directory
+                        (expand-file-name package-user-dir))
+                       (expand-file-name
+                        (thread-first pkg
+                                      (assoc package-alist)
+                                      cadr
+                                      (package-desc-dir)
+                                      (expand-file-name)))))
+
+    (defun async-upgrade--dependency-graph (package &optional tree)
+      (let* ((dependency-tree (or tree
+                                  (make-hash-table)))
+             (dependencies (mapcar
+                            #'car
+                            (package-desc-reqs
+                             (cadr (assoc package package-alist)))))
+             (current-package (gethash package dependency-tree (make-hash-table))))
+        (puthash :dependencies dependencies current-package)
+        (puthash package current-package dependency-tree)
+        (mapc (lambda (dependent)
+                (let* ((description (gethash dependent dependency-tree (make-hash-table)))
+                       (dependents (gethash :dependents description '())))
+                  (puthash :dependents
+                           (cons package dependents)
+                           description)
+                  (puthash dependent
+                           description
+                           dependency-tree)))
+              dependencies)
+        dependency-tree))
+
+    (defun async-upgrade--reload-packages (packages)
+      (let ((activated-packages (seq-filter #'featurep
+                                             packages)))
+         (message "Reloading packages %s" activated-packages)
+         (mapc (lambda (package) (unload-feature package 't))
+               activated-packages)
+        (mapc #'require activated-packages)))
+
+    (defun async-upgrade-packages ()
+      "Run package upgrades in a background Emacs process."
+      (interactive)
+      (let ((upgradeable (seq-filter
+                          #'async-upgrade--filter-system-packages
+                          (package--upgradeable-packages))))
+        (if-let* ((buffer (get-buffer-create "*package-upgrade*"))
+                  ((yes-or-no-p (format "Upgrade %s" upgradeable))))
+            (with-current-buffer buffer
+              (defvar-local packages upgradeable)
+              (erase-buffer)
+              (special-mode)))
+        (make-process
+         :name "emacs-package-upgrade"
+         :buffer "*package-upgrade*"
+         :command (list (expand-file-name invocation-name invocation-directory)
+                        "--script" (expand-file-name "upgrade-script.el" user-emacs-directory)
+                        "--" (format "%s" upgradeable))
+         :sentinel (lambda (process event)
+                     (when (string= event "finished\n")
+                       (async-upgrade--reload-packages packages)
+                       (message "Package upgrade complete!")))))))
+#+end_src
+
 ** Playground
 Pomodoro timer
 #+BEGIN_src elisp :tangle no
