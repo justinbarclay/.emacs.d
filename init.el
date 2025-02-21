@@ -134,12 +134,13 @@
                                (concat org-directory "/personal/tasks.org")
                                (concat org-directory "/work/tasks.org"))
         org-todo-keywords
-        '((sequence "TODO(t)" "INPROGRESS(i)" "|" "DONE(d)")
+        '((sequence "TODO(t)" "INPROGRESS(i)" "NEEDSREVIEW(r)"  "|" "DONE(d)")
           ("WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))
 
         org-todo-keyword-faces
         '(("TODO" :foreground "red" :weight regular)
           ("INPROGRESS" :foreground "blue" :weight regular)
+          ("TOREVIEW" :foreground "purple" :weight regular)
           ("DONE" :foreground "forest green" :weight regular)
           ("WAITING" :foreground "orange" :weight regular)
           ("BLOCKED" :foreground "magenta" :weight regular)
