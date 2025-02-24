@@ -656,10 +656,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :custom
   (lambda-themes-set-italic-comments nil)
   (lambda-themes-set-italic-keywords nil)
-  (lambda-themes-set-variable-pitch nil)
-  :config
-  ;; load preferred theme
-  (load-theme 'lambda-light))
+  (lambda-themes-set-variable-pitch nil))
 
 (use-package catppuccin-theme)
 

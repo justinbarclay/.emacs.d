@@ -1195,10 +1195,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
   :custom
   (lambda-themes-set-italic-comments nil)
   (lambda-themes-set-italic-keywords nil)
-  (lambda-themes-set-variable-pitch nil)
-  :config
-  ;; load preferred theme
-  (load-theme 'lambda-light))
+  (lambda-themes-set-variable-pitch nil))
 #+end_src
 *** Catpuccin
 #+begin_src elisp
