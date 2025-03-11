@@ -1610,16 +1610,19 @@ parses its input."
                    :stream t)))
 
 (use-package aidermacs
-  :vc (:url "https://github.com/MatthewZMD/aidermacs" :branch "main" :rev :newest)
-  :after 1password
-  :bind (("C-c C-a" . aidermacs-transient-menu))
-  :init
-  (global-unset-key "\C-c\C-a")
-  :config
-  (setq aidermacs-args '("--model" "anthropic/claude-3-5-sonnet-20241022")
-        aidermacs-backend 'vterm)
-  (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
-  (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private")))))
+ :vc (:url "https://github.com/MatthewZMD/aidermacs" :rev :newest)
+ :bind (("C-c C-a" . aidermacs-transient-menu))
+
+ :config
+; Enable minor mode for Aider files
+ (aidermacs-setup-minor-mode)
+ (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
+ (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))
+ :custom
+; See the Configuration section below
+ (aidermacs-auto-commits t)
+ (aidermacs-use-architect-mode t)
+ (aidermacs-default-model "sonnet"))
 
 (use-package lsp-mode
   :commands lsp
