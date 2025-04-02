@@ -366,6 +366,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (org-roam-completion-everywhere t)
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
+         ("C-c n d" . org-roam-dailies-capture-today)
          ("C-c n i" . org-roam-node-insert))
   :config
   (org-roam-setup))
@@ -2160,6 +2161,15 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package git-sync-mode
   :commands (git-sync-mode git-sync-global-mode)
   :vc (:url "https://github.com/justinbarclay/git-sync-mode" :rev :newest))
+
+(use-package ctables
+ :vc (:url "https://github.com/kiwanami/emacs-ctable" :rev :newest))
+
+(use-package leetcode
+ :commands (leetcode-show)
+ :vc (:url "https://github.com/ginqi7/leetcode-emacs" :rev :newest)
+ :config
+ (setq leetcode-language "rust"))
 
 (defmacro comment (docstring &rest body)
   "Ignores body and yields nil"

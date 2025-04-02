@@ -699,17 +699,18 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+END_SRC
 *** Org Roam
 #+begin_src elisp
-(use-package org-roam
-  :init
-  (setq org-roam-v2-ack t)
-  :custom
-  (org-roam-directory "~/dev/diary")
-  (org-roam-completion-everywhere t)
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert))
-  :config
-  (org-roam-setup))
+  (use-package org-roam
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory "~/dev/diary")
+    (org-roam-completion-everywhere t)
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n d" . org-roam-dailies-capture-today)
+           ("C-c n i" . org-roam-node-insert))
+    :config
+    (org-roam-setup))
 #+end_src
 **** Org Roam UI
 #+begin_src elisp
@@ -3570,13 +3571,16 @@ For when you want to link to the current file from github or gitlab
 #+end_src
 
 ** leetcode-emacs
-#+begin_src elisp :tangle no
-  (use-package leetcode-emacs
+Ctables
+#+begin_src elisp
+(use-package ctables
+ :vc (:url "https://github.com/kiwanami/emacs-ctable" :rev :newest))
+#+end_src
+
+#+begin_src elisp
+  (use-package leetcode
    :commands (leetcode-show)
-   :ensure (leetcode :type git
-            :host github
-            :repo "ginqi7/leetcode-emacs"
-            :files ("leetcode.el"))
+   :vc (:url "https://github.com/ginqi7/leetcode-emacs" :rev :newest)
    :config
    (setq leetcode-language "rust"))
 #+end_src
