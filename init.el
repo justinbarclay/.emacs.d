@@ -327,7 +327,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                          :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
                         ("PR Review"  :keys "p"
                          :template ("* TODO %^{Date}u" "%?")
-                         :olp ("Tasks" "Review PRs")
+                         :olp ("Review PRs")
                          :file ,(concat org-directory "/work/tasks.org")) 
                         ("Notes"  :keys "n"
                          :template ("* %^{Description}"
@@ -511,6 +511,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package hl-todo)
 
 (use-package magit-todos
+  :custom
+  (magit-todos-exclude-globs '("dist/**"))
   :hook (magit-mode . magit-todos-mode))
 
 (use-package pos-tip)
@@ -1574,6 +1576,9 @@ parses its input."
   (apheleia-global-mode)
   :config
   ;; Override ruby-ts-mode defaults
+  (map-put! apheleia-formatters 'rustfmt
+      '("rustfmt" "--edition" (or (bound-and-true-p rust-edition) "2024")
+        "--quiet" "--emit" "stdout"))
   (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop)))
 
 (use-feature treesit
@@ -1640,7 +1645,7 @@ parses its input."
 ; See the Configuration section below
  (aidermacs-auto-commits t)
  (aidermacs-use-architect-mode t)
- (aidermacs-default-model "sonnet"))
+ (aidermacs-default-model "gemini/gemini-2.5-pro-exp-03-25"))
 
 (use-package lsp-mode
   :commands lsp
@@ -1978,9 +1983,40 @@ CALLBACK is the status callback passed by Flycheck."
 
 (use-package rustic
   :mode (("\\.rs\\'" . rustic-mode))
+  :hook (rustic-mode . find-rust-version)
+  :custom
+  (rustic-lsp-setup-p '())
+  (rustic-indent-offset 2)
   :config
-  (setq rustic-lsp-setup-p '())
-  (setq rustic-indent-offset 2)
+  (defun find-rust-version ()
+    "Get the Rust version specified in the Cargo.toml file."
+    (when-let*
+        ((cratedir
+          (locate-dominating-file default-directory
+                                  "Cargo.toml"))
+         (manifest-path
+          (expand-file-name "Cargo.toml" cratedir))
+         (env process-environment)
+         (path exec-path))
+      (setq-local rust-edition
+                  (with-temp-buffer
+                    (setq-local process-environment env)
+                    (setq-local exec-path path)
+                    (let ((retcode
+                           (process-file
+                            rustic-cargo-bin nil (list (current-buffer) nil) nil
+                            "metadata" "--no-deps" "--frozen" "--format-version" "1")))
+                      (when (/= retcode 0)
+                        (error "Cargo metadata --format-version 1 returned %s: %s"
+                               retcode (buffer-string)))
+                      (goto-char 0)
+                      (let ((metadata (json-parse-buffer
+                                       :object-type 'alist
+                                       :array-type 'list)))
+                        (cdr (assq 'edition
+                                   (--first (string= (cdr (assq 'manifest_path it)) manifest-path)
+                                            (cdr (assq 'packages metadata)))))))))))
+  :config
   (electric-pair-mode 1))
 
 (use-package nix-mode)
@@ -2247,6 +2283,18 @@ CALLBACK is the status callback passed by Flycheck."
       (insert (x-export-frames nil 'svg)))
     (kill-new filename)
     (message filename)))
+
+(defun jb/copy-image-as-png ()
+  (interactive)
+  (let* ((file-name (string-trim (shell-command-to-string "wslpath -w ./test.png")))
+         (command (format "%s; %s %s %s %s"
+                         "Add-Type -AssemblyName System.Windows.Forms"
+                         "[System.Windows.Forms.Clipboard]::GetDataObject().ContainsImage()"
+                         "-and"
+                         (format "[System.Windows.Forms.Clipboard]::GetImage().Save(\"%s\", \"Png\")"
+                                 file-name)
+                         "-and 1")))
+    (shell-command (format "powershell.exe -c '%s'" command))))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
 
