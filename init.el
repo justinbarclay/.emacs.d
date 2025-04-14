@@ -58,7 +58,7 @@
     (interactive)
     (org-babel-remove-result-one-or-many 't))
   ;; As liberally borrowed from:
-  ;; https://github.com/Fuco1/.emacs.d/blob/76e80dd07320b079fa26db3af6096d8d8a4f3bb9/files/org-defs.el#L1863C1-L1922C57     
+  ;; https://github.com/Fuco1/.emacs.d/blob/76e80dd07320b079fa26db3af6096d8d8a4f3bb9/files/org-defs.el#L1863C1-L1922C57
  (defun my-org-archive-file ()
   "Get the archive file for the current org buffer."
   (car (org-archive--compute-location org-archive-location)))
@@ -327,8 +327,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                          :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
                         ("PR Review"  :keys "p"
                          :template ("* TODO %^{Date}u" "%?")
-                         :olp ("Review PRs")
-                         :file ,(concat org-directory "/work/tasks.org")) 
+                         :olp ("Tasks" "Review PRs")
+                         :file ,(concat org-directory "/work/tasks.org"))
                         ("Notes"  :keys "n"
                          :template ("* %^{Description}"
                                     ":PROPERTIES:"
@@ -1416,7 +1416,7 @@ parses its input."
   (require 'consult-omni-embark)
   (when jb/os-macos-p
     (add-to-list 'consult-omni-apps-paths "/Applications/Nix Apps"))
-  
+
   ;; Either load all source modules or a selected list
 
    ;;; Select a list of modules you want to aload, otherwise all sources all laoded
@@ -1553,8 +1553,8 @@ parses its input."
         (cons #'+company-box-icons--elisp-fn
               (delq 'company-box-icons--elisp
                     company-box-icons-functions)))
-   
-        
+
+
   (setq company-box-scrollbar nil)
 
   (defun +company-box-icons--elisp-fn (candidate)
@@ -1909,7 +1909,7 @@ CALLBACK is the status callback passed by Flycheck."
 (use-feature js-ts-mode
   :mode ("\\.js\\'" "\\.cjs\\'" "\\.mjs\\'"))
 
-(use-feature typescript-ts-base-mode    
+(use-feature typescript-ts-base-mode
   :custom
   (typescript-indent-level 2)
   (lsp-eslint-enable 't)

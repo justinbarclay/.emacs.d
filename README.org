@@ -345,7 +345,7 @@ This is hidden here to load right after we have use-package to be able to benchm
       (interactive)
       (org-babel-remove-result-one-or-many 't))
     ;; As liberally borrowed from:
-    ;; https://github.com/Fuco1/.emacs.d/blob/76e80dd07320b079fa26db3af6096d8d8a4f3bb9/files/org-defs.el#L1863C1-L1922C57     
+    ;; https://github.com/Fuco1/.emacs.d/blob/76e80dd07320b079fa26db3af6096d8d8a4f3bb9/files/org-defs.el#L1863C1-L1922C57
    (defun my-org-archive-file ()
     "Get the archive file for the current org buffer."
     (car (org-archive--compute-location org-archive-location)))
@@ -660,8 +660,8 @@ Declarative Org Capture Templates
                            :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
                           ("PR Review"  :keys "p"
                            :template ("* TODO %^{Date}u" "%?")
-                           :olp ("Review PRs")
-                           :file ,(concat org-directory "/work/tasks.org")) 
+                           :olp ("Tasks" "Review PRs")
+                           :file ,(concat org-directory "/work/tasks.org"))
                           ("Notes"  :keys "n"
                            :template ("* %^{Description}"
                                       ":PROPERTIES:"
@@ -1814,7 +1814,7 @@ Load this before we load Flycheck
     (set-face-attribute 'flycheck-posframe-info-face nil :inherit 'font-lock-variable-name-face)
     (set-face-attribute 'flycheck-posframe-warning-face nil :inherit 'warning)
     (set-face-attribute 'flycheck-posframe-error-face nil :inherit 'error))
-    
+
 #+END_SRC
 ** Flycheck package
 #+begin_src elisp
@@ -2207,7 +2207,7 @@ Consult users will also want the embark-consult package.
     (require 'consult-omni-embark)
     (when jb/os-macos-p
       (add-to-list 'consult-omni-apps-paths "/Applications/Nix Apps"))
-    
+
     ;; Either load all source modules or a selected list
 
      ;;; Select a list of modules you want to aload, otherwise all sources all laoded
@@ -2624,8 +2624,8 @@ Cape adds some more completion backends for us, allowing us to get file and dabb
           (cons #'+company-box-icons--elisp-fn
                 (delq 'company-box-icons--elisp
                       company-box-icons-functions)))
-     
-          
+
+
     (setq company-box-scrollbar nil)
 
     (defun +company-box-icons--elisp-fn (candidate)
@@ -3123,7 +3123,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 #+end_src
 *** Typescript
 #+begin_src elisp
-  (use-feature typescript-ts-base-mode    
+  (use-feature typescript-ts-base-mode
     :custom
     (typescript-indent-level 2)
     (lsp-eslint-enable 't)
@@ -3298,7 +3298,7 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
 (use-package evcxr-mode
    :defer t
    :ensure nil
-   
+
    :config (add-hook 'rustic-mode-hook 'evcxr-minor-mode)
    :quelpa ((evcxr
              :fetcher git
@@ -3509,7 +3509,7 @@ Then we want org support for math latex
 * Misc
 ** codemetrics
 #+begin_src elisp :tangle no
-(use-package cognitive-complexity 
+(use-package cognitive-complexity
   :ensure (:type git :host github :repo "emacs-vs/cognitive-complexity"))
 #+end_src
 
@@ -3526,7 +3526,7 @@ Then we want org support for math latex
                                                         (minibuffer . only)
                                                         (autoraise . t)
                                                         (window-system . ns)))))) ;;change accordingly
-                                                      
+
 #+end_src
 
 ** dot
