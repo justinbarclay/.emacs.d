@@ -660,7 +660,7 @@ Declarative Org Capture Templates
                            :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
                           ("PR Review"  :keys "p"
                            :template ("* TODO %^{Date}u" "%?")
-                           :olp ("Tasks" "Review PRs")
+                           :olp ("Review PRs")
                            :file ,(concat org-directory "/work/tasks.org"))
                           ("Notes"  :keys "n"
                            :template ("* %^{Description}"
@@ -723,16 +723,63 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 *** Org Noter
 #+begin_src elisp
   (use-package org-noter
-    :custom (org-noter-supported-mode '(doc-view-mode pdf-mode-view)))
+    :custom
+    (org-noter-supported-mode '(doc-view-mode pdf-mode-view nov-mode))
+    (org-noter-always-create-frame nil))
+#+end_src
+**** visual-fill-column
+#+begin_src elisp
+(use-package visual-fill-column)
 #+end_src
 
+**** Nov.el
+#+begin_src elisp
+  (use-package nov
+    :mode ("\\.epub\\'" . nov-mode)
+    :hook ((nov-mode . visual-line-mode)
+           (nov-mode . visual-fill-column-mode)
+           (nov-mode . (lambda () (display-line-numbers-mode -1)))
+           (nov-mode . (lambda ()
+                         (face-remap-add-relative 'variable-pitch :family "Liberation Serif"
+                                                  :height 1.0))))
+    :bind (:map nov-mode-map
+                ("h n" . nov-next-heading)
+                ("h p" . nov-previous-heading)
+                ("h j" . nov-jump-to-heading))
+    :custom
+    (nov-text-width t)
+    (visual-fill-column-center-text t)
+    :config
+    (defun nov-next-heading ()
+      (interactive)
+      (text-property-search-forward 'outline-level))
+
+    (defun nov-previous-heading ()
+      (interactive)
+      (text-property-search-forward 'outline-level))
+    (defun nov-jump-to-heading ()
+      (interactive)
+      (let* ((headings '())
+             selection)
+        (save-mark-and-excursion
+           (goto-char (point-min))
+           (while-let ((prop (text-property-search-forward 'outline-level)))
+             (push (list (buffer-substring-no-properties
+                          (prop-match-beginning prop)
+                          (prop-match-end prop))
+                         (prop-match-beginning prop))
+                   headings)))
+        (setq selection (completing-read "Jump to heading: "
+                                         headings))
+        (when selection
+         (goto-char (cadr (assoc selection headings)))))))
+#+end_src
 *** Org Download
 #+begin_src elisp
-(use-package org-download
-  :after org
-  :hook (org-mode . org-download-enable))
+  (use-package org-download
+    :after org
+    :hook (org-mode . org-download-enable))
 #+end_src
-
 *** Org Transclusion
 #+begin_src elisp
 (use-package org-transclusion
@@ -758,8 +805,8 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 
 ** Ltex
 *** lsp
-#+begin_src elisp
-  (use-package lsp-ltex)
+#+begin_src elisp :tangle no
+  ;; (use-package lsp-ltex)
 #+end_src
 
 ** EShell
@@ -798,6 +845,10 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
     :init
     (add-hook 'eshell-load-hook #'eat-eshell-mode)
     :hook (eat-mode . (lambda () (setq display-line-numbers nil))))
+#+end_src
+#+begin_src elisp
+  (use-feature special-mode
+    :hook (special-mode . (lambda () (display-line-numbers-mode -1))))
 #+end_src
 
 ** Magit
@@ -2869,7 +2920,52 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
                             :end-line (lsp-translate-line (1+ end-line))
                             :end-column (1+ (lsp-translate-column end-character)))))
                       related-information?)))))
-          (funcall callback 'finished))))
+          (funcall callback 'finished)))
+
+   (defgroup lsp-harper nil
+     "Settings for harper grammar language Server."
+     :prefix "lsp-harper-"
+     :group 'lsp-mode)
+
+   (defcustom lsp-harper-active-modes
+     '( rust-mode python-mode ess-mode typst-ts-mode markdown-mode)
+     "List of major modes that work with lsp-ai"
+     :type 'list
+     :group 'lsp-harper)
+
+
+   (defcustom lsp-harper-configuration
+           '(:userDictPath ""
+             :fileDictPath ""
+             :linters (:SpellCheck t
+                       :SpelledNumbers :json-false
+                       :AnA t
+                       :SentenceCapitalization t
+                       :UnclosedQuotes t
+                       :WrongQuotes :json-false
+                       :LongSentences t
+                       :RepeatedWords t
+                       :Spaces t
+                       :Matcher t
+                       :CorrectNumberSuffix t)
+             :codeActions (:ForceStable :json-false)
+             :markdown (:IgnoreLinkTitle :json-false)
+             :diagnosticSeverity "hint"
+             :isolateEnglish :json-false)
+           "Harper configuration structure"
+           :type 'dictionary
+           :group 'lsp-harper)
+
+
+   (lsp-register-client
+     (make-lsp-client
+       :new-connection (lsp-stdio-connection
+                        '("harper-ls" "-s"))
+       :major-modes lsp-harper-active-modes
+       :initialization-options lsp-harper-configuration
+       :add-on? 't
+       :priority -3
+       :server-id 'lsp-harper)))
 #+END_SRC
 ***** lsp-ui
 #+BEGIN_src elisp
