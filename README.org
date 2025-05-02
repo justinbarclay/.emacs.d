@@ -795,9 +795,8 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+begin_src elisp
   (use-package org-auto-clock
     :vc (:url "https://github.com/justinbarclay/org-auto-clock" :rev :newest)
-    :after org
+    :hook (after-init . org-auto-clock-mode)
     :custom
-    (org-auto-clock-mode)
     (org-clock-idle-time 20)
     (org-auto-clock-projects '("tidal-wave" "application-inventory"))
     (org-auto-clock-project-name-function #'projectile-project-name))
@@ -1024,6 +1023,13 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
     (display-line-numbers-mode -1)
     (flyspell-mode -1))
 #+end_src
+*** nano Mu4e
+#+begin_src elisp
+  (use-package nano-mu4e
+    :vc (:url "https://github.com/rougier/nano-mu4e" :rev :newest)
+    :hook (mu4e-header-mode . nano-mu4e-mode))
+#+end_src
+
 ** Elfeed
 #+begin_src elisp
   (use-package elfeed
@@ -1298,7 +1304,7 @@ Let's use Doom's version instead
     (lambda-line-hspace "  ")  ;; add some cushion
     (lambda-line-prefix t) ;; use a prefix symbol
     (lambda-line-prefix-padding nil) ;; no extra space for prefix
-    (lambda-line-status-invert t)  ;; no invert colors
+    (lambda-line-status-invert nil)  ;; no invert colors
     (lambda-line-git-diff-mode-line nil)
     (lambda-line-gui-ro-symbol  " ⨂") ;; symbols
     (lambda-line-gui-mod-symbol " ⬤")
@@ -1312,6 +1318,7 @@ Let's use Doom's version instead
     (require 'nerd-icons)
     (setq lambda-line-flycheck-label (format " %s" (nerd-icons-mdicon "nf-md-alarm_light")))
     (setq lambda-line-vc-symbol (format " %s" (nerd-icons-mdicon "nf-md-git")))
+    (setq lambda-line-mu4e t)
     ;; activate lambda-line
     ;; set divider line in footer
     (when (eq lambda-line-position 'top)
@@ -2797,17 +2804,15 @@ Better movement through treesitter
 *** Aidermacs
 #+begin_src elisp
   (use-package aidermacs
-   :bind (("C-c C-a" . aidermacs-transient-menu))
-   :config
-  ; Enable minor mode for Aider files
-   (aidermacs-setup-minor-mode)
-   (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
-   (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))
-   :custom
-  ; See the Configuration section below
-   (aidermacs-auto-commits t)
-   (aidermacs-use-architect-mode t)
-   (aidermacs-default-model "gemini/gemini-2.5-pro-exp-03-25"))
+    :bind (("C-c C-a" . aidermacs-transient-menu))
+    :config
+    (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
+    (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))
+    (aidermacs-setup-minor-mode)
+    :custom
+    (aidermacs-auto-commits t)
+    (aidermacs-use-architect-mode t)
+    (aidermacs-default-model "gemini/gemini-2.5-pro-exp-03-25"))
 #+end_src
 
 *** LSP-Mode
@@ -3366,7 +3371,8 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
            (manifest-path
             (expand-file-name "Cargo.toml" cratedir))
            (env process-environment)
-           (path exec-path))
+           (path exec-path)
+           (_ (executable-find rustic-cargo-bin)))
         (setq-local rust-edition
                     (with-temp-buffer
                       (setq-local process-environment env)
