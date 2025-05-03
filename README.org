@@ -1027,7 +1027,7 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 #+begin_src elisp
   (use-package nano-mu4e
     :vc (:url "https://github.com/rougier/nano-mu4e" :rev :newest)
-    :hook (mu4e-header-mode . nano-mu4e-mode))
+    :hook (mu4e-headers-mode . nano-mu4e-mode))
 #+end_src
 
 ** Elfeed

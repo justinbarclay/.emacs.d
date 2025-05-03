@@ -634,7 +634,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package nano-mu4e
   :vc (:url "https://github.com/rougier/nano-mu4e" :rev :newest)
-  :hook (mu4e-header-mode . nano-mu4e-mode))
+  :hook (mu4e-headers-mode . nano-mu4e-mode))
 
 (use-package elfeed
  :custom
