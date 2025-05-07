@@ -1693,7 +1693,7 @@ parses its input."
   :config
   (setq
    gptel-default-mode 'org-mode
-   gptel-model 'gemini-1.5-pro-latest
+   gptel-model 'gemini-2.5-pro-preview-05-06
    gptel-backend (gptel-make-gemini "gemini"
                    :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
                    :stream t)))
