@@ -617,7 +617,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :bind ("C-c d" . mu4e-dashboard)
   :after mu4e
   :hook
-  (mu4e-dashboard-mode . (lambda () (display-line-numbers-mode -1)))
+  (mu4e-dashboard-mode . (lambda ()
+                           (display-line-numbers-mode -1)
+                           (flyspell-mode -1)))
   :custom
   (mu4e-dashboard-file "~/.emacs.d/dashboards/mu4e-dashboard.org")
   :config
@@ -628,9 +630,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         (kill-buffer (get-buffer edit-buffer)))
       (make-indirect-buffer (current-buffer) edit-buffer)
       (switch-to-buffer-other-window (get-buffer edit-buffer))
-      (org-mode 1)))
-  (display-line-numbers-mode -1)
-  (flyspell-mode -1))
+      (org-mode 1))))
 
 (use-package nano-mu4e
   :vc (:url "https://github.com/rougier/nano-mu4e" :rev :newest)
