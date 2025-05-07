@@ -177,9 +177,6 @@
   :ensure nil
   :after org)
 
-(use-package org-pdftools
-  :hook (org-mode . org-pdftools-setup-link))
-
 (use-package ob-restclient
   :config
   (org-babel-do-load-languages
@@ -426,6 +423,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       (when selection
        (goto-char (cadr (assoc selection headings)))))))
 
+(use-package org-pdftools
+  :hook (org-mode . org-pdftools-setup-link))
+
 (use-package org-download
   :after org
   :hook (org-mode . org-download-enable))
@@ -634,7 +634,22 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package nano-mu4e
   :vc (:url "https://github.com/rougier/nano-mu4e" :rev :newest)
-  :hook (mu4e-headers-mode . nano-mu4e-mode))
+  :hook (mu4e-headers-mode . nano-mu4e-mode)
+  :config
+  (defun nano-mu4e-mode-on ()
+   (setq mu4e-headers-append-func #'nano-mu4e-append-handler
+         mu4e-found-func #'nano-mu4e-found-handler
+         mu4e-headers-fields '((:nano-mu4e))
+         mu4e--mark-fringe "")
+   (advice-add #'mu4e-thread-fold-info
+               :override #'nano-mu4e-thread-fold-info)
+   (advice-add #'mu4e~headers-mark
+               :override #'nano-mu4e-nop)
+   (advice-add #'mu4e-mark-at-point
+               :override #'nano-mu4e-mark-at-point)
+   (advice-add #'mu4e-headers-mark-and-next
+               :override #'nano-mu4e-headers-mark-and-next)
+   (setq nano-mu4e-mode 1)))
 
 (use-package elfeed
  :custom
@@ -2202,8 +2217,8 @@ CALLBACK is the status callback passed by Flycheck."
 
 (use-package pdf-tools
  :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
- :init
- (pdf-loader-install))
+ :custom
+ (pdf-tools-installer-os "nixos"))
 
 (use-feature text-mode
   :custom

@@ -471,13 +471,6 @@ This is hidden here to load right after we have use-package to be able to benchm
     :after org)
 #+end_src
 
-*** org-pdftools
-Now that we have that installed we can pull in org-pdftools from github
-#+BEGIN_src elisp
-  (use-package org-pdftools
-    :hook (org-mode . org-pdftools-setup-link))
-#+END_SRC
-
 *** Ob-Restclient
 #+BEGIN_src elisp
   (use-package ob-restclient
@@ -774,6 +767,13 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
         (when selection
          (goto-char (cadr (assoc selection headings)))))))
 #+end_src
+*** Org Pdftools
+Now that we have that installed we can pull in org-pdftools from github
+#+BEGIN_src elisp
+  (use-package org-pdftools
+    :hook (org-mode . org-pdftools-setup-link))
+#+END_SRC
+
 *** Org Download
 #+begin_src elisp
   (use-package org-download
@@ -1027,7 +1027,22 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 #+begin_src elisp
   (use-package nano-mu4e
     :vc (:url "https://github.com/rougier/nano-mu4e" :rev :newest)
-    :hook (mu4e-headers-mode . nano-mu4e-mode))
+    :hook (mu4e-headers-mode . nano-mu4e-mode)
+    :config
+    (defun nano-mu4e-mode-on ()
+     (setq mu4e-headers-append-func #'nano-mu4e-append-handler
+           mu4e-found-func #'nano-mu4e-found-handler
+           mu4e-headers-fields '((:nano-mu4e))
+           mu4e--mark-fringe "")
+     (advice-add #'mu4e-thread-fold-info
+                 :override #'nano-mu4e-thread-fold-info)
+     (advice-add #'mu4e~headers-mark
+                 :override #'nano-mu4e-nop)
+     (advice-add #'mu4e-mark-at-point
+                 :override #'nano-mu4e-mark-at-point)
+     (advice-add #'mu4e-headers-mark-and-next
+                 :override #'nano-mu4e-headers-mark-and-next)
+     (setq nano-mu4e-mode 1)))
 #+end_src
 
 ** Elfeed
@@ -3548,8 +3563,8 @@ Then we want org support for math latex
 #+begin_src elisp
   (use-package pdf-tools
    :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
-   :init
-   (pdf-loader-install))
+   :custom
+   (pdf-tools-installer-os "nixos"))
 #+end_src
 
 ** Text modes
