@@ -634,22 +634,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package nano-mu4e
   :vc (:url "https://github.com/rougier/nano-mu4e" :rev :newest)
-  :hook (mu4e-headers-mode . nano-mu4e-mode)
-  :config
-  (defun nano-mu4e-mode-on ()
-   (setq mu4e-headers-append-func #'nano-mu4e-append-handler
-         mu4e-found-func #'nano-mu4e-found-handler
-         mu4e-headers-fields '((:nano-mu4e))
-         mu4e--mark-fringe "")
-   (advice-add #'mu4e-thread-fold-info
-               :override #'nano-mu4e-thread-fold-info)
-   (advice-add #'mu4e~headers-mark
-               :override #'nano-mu4e-nop)
-   (advice-add #'mu4e-mark-at-point
-               :override #'nano-mu4e-mark-at-point)
-   (advice-add #'mu4e-headers-mark-and-next
-               :override #'nano-mu4e-headers-mark-and-next)
-   (setq nano-mu4e-mode 1)))
+  :hook (mu4e-headers-mode . nano-mu4e-mode))
 
 (use-package elfeed
  :custom
@@ -1693,7 +1678,6 @@ parses its input."
   :custom
   (gptel-default-mode 'org-mode)
   (gptel-model 'gemini-2.5-pro-preview-05-06)
-
   :config
   (setq gptel-backend (gptel-make-gemini "gemini"
                         :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))

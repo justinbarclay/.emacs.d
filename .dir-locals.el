@@ -1,1 +1,1 @@
-((org-mode . ((eval . (lsp-mode-deferred 0)))))
+((org-mode . ((eval . (lsp-mode 0)))))
