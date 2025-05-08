@@ -1690,13 +1690,91 @@ parses its input."
 
 (use-package gptel
   :after 1password
+  :custom
+  (gptel-default-mode 'org-mode)
+  (gptel-model 'gemini-2.5-pro-preview-05-06)
+
   :config
-  (setq
-   gptel-default-mode 'org-mode
-   gptel-model 'gemini-2.5-pro-preview-05-06
-   gptel-backend (gptel-make-gemini "gemini"
-                   :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
-                   :stream t)))
+  (setq gptel-backend (gptel-make-gemini "gemini"
+                        :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
+                        :stream t))
+  (defvar meeting-minutes-prompt "Purpose and Goals:
+* Act as a professional meeting secretary.
+* Generate accurate and comprehensive meeting minutes based on provided information.
+* Structure the minutes logically and professionally.
+
+Behaviours and Rules:
+
+1) Minute Generation:
+   a) Organize the minutes with clear headings: 'Meeting Title', 'Date & Time', 'Location/Platform', 'Attendees', 'Absent', 'Agenda Items Discussed', 'Key Decisions Made', 'Action Items', and 'Next Meeting'.
+   b) For 'Agenda Items Discussed', provide a concise summary of the discussion for each item.
+   c) For 'Key Decisions Made', list all decisions clearly and concisely.
+   d) For 'Action Items', use a table format: | Task | Owner | Deadline | to ensure clarity and accountability.
+   e) If a 'Next Meeting' is mentioned, include the date, time, and location/platform (if specified).
+   f) If a user asks you to export the meeting to org-mode put the following headings as properties on the Meeting Title: 'Date & Time', 'Location/Platform', 'Attendees', 'Absent'
+
+2) Tone and Style:
+   a) Maintain a professional and objective tone throughout the minutes.
+   b) Use clear, concise, and grammatically correct language.
+   c) Avoid personal opinions, interpretations, or unnecessary details.
+   d) Present information factually and neutrally.
+   e) If there is banter about non-work related things, keep it off in its own section
+
+3) Information Handling:
+   a) Accurately record all essential information provided.
+   b) Ask for clarification if any information is unclear or missing.
+   c) Ensure all sections of the minutes are populated based on the information available.
+
+Overall Tone:
+* Professional
+* Objective
+* Organized
+* Detail-oriented")
+  (add-to-list 'gptel-directives (list 'meeting-minutes meeting-minutes-prompt))
+
+  (defun gptel-summarize-meeting-minutes--callback (response info)
+    (if (stringp response)
+        (let ((posn (marker-position (plist-get info :position)))
+              (buf  (buffer-name (plist-get info :buffer)))
+              sanitized-response)
+          (with-temp-buffer
+            (insert response)
+            (goto-char (point-min))
+            (activate-mark)
+            (while (re-search-forward "^```org" nil t)
+              (delete-region (point-min) (match-end 0)))
+            (while (re-search-forward "^```" nil t)
+              (replace-match ""))
+            (setq sanitized-response (buffer-substring-no-properties (point-min)
+                                                                     (point-max))))
+          (with-current-buffer buf
+            (save-excursion
+              (goto-char posn)
+              (insert sanitized-response)))
+          (message "gptel-request failed with message: %s"
+                   (plist-get info :status)))))
+
+  (defun gptel-summarize-meeting-minutes ()
+    ;; get file name from a bookmark or other
+    (interactive)
+    (org-narrow-to-subtree)
+    (let* ((bookmark-p (yes-or-no-p "Use a bookmark?"))
+           (bookmark (when bookmark-p
+                       (bookmark-completing-read "Bookmark: ")))
+           (dir (when bookmark
+                  (directory-file-name (bookmark-get-filename bookmark))))
+           (file-name (read-file-name "Meeting file: " dir))
+           (query-text "Can you summarize this meeting? After you are done summarizing it export it as an org-mode document."))
+      (gptel-add-file file-name)
+      (let* ((gptel-use-curl)
+             (gptel-use-context 'system)
+             (gptel-model 'gemini-2.5-pro-exp-03-25))
+        (gptel-request query-text
+         :system (cadr
+                  (assq 'meeting-minutes gptel-directives))
+         :context 'system
+         :callback #'gptel-summarize-meeting-minutes--callback))
+      (gptel-remove-file file-name))))
 
 (use-package aidermacs
   :bind (("C-c C-a" . aidermacs-transient-menu))
