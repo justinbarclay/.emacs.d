@@ -603,7 +603,7 @@ This section includes tooling for organizing ones work or personal life. General
                           (org-agenda-overriding-header "Tasks:"))))))))
 #+END_SRC
 ***** elegant-agenda-mode
-#+begin_src elisp
+#+begin_src elisp :tangle no
   (use-package elegant-agenda-mode
     :hook (org-agenda-mode . elegant-agenda-mode))
 #+end_src
@@ -2876,7 +2876,7 @@ Better movement through treesitter
                     (assq 'meeting-minutes gptel-directives))
            :context 'system
            :callback #'gptel-summarize-meeting-minutes--callback))
-        (gptel-remove-file file-name))))
+        (gptel-context-remove file-name))))
 #+end_src
 *** Aidermacs
 #+begin_src elisp

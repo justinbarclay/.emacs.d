@@ -283,9 +283,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                               (air-org-skip-subtree-if-priority ?A)))
                         (org-agenda-overriding-header "Tasks:"))))))))
 
-(use-package elegant-agenda-mode
-  :hook (org-agenda-mode . elegant-agenda-mode))
-
 (use-package org-alert)
 
 (use-package doct
@@ -1758,7 +1755,7 @@ Overall Tone:
                   (assq 'meeting-minutes gptel-directives))
          :context 'system
          :callback #'gptel-summarize-meeting-minutes--callback))
-      (gptel-remove-file file-name))))
+      (gptel-context-remove file-name))))
 
 (use-package aidermacs
   :bind (("C-c C-a" . aidermacs-transient-menu))
