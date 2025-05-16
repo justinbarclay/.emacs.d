@@ -1766,7 +1766,7 @@ Overall Tone:
   :custom
   (aidermacs-auto-commits t)
   (aidermacs-use-architect-mode t)
-  (aidermacs-default-model "gemini/gemini-2.5-pro-exp-03-25"))
+  (aidermacs-default-model "gemini/gemini-2.5-pro-preview-03-25"))
 
 (use-package lsp-mode
   :commands lsp
