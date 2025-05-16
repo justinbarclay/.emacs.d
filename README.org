@@ -2915,8 +2915,7 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
             css-ts-mode
             go-base-mode
             LaTeX-mode
-            nix-mode
-            org-mode)
+            nix-mode)
            . lsp-deferred)
     (lsp-mode . lsp-enable-which-key-integration)
     :custom
@@ -3049,6 +3048,7 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
        :priority -3
        :server-id 'lsp-harper)))
 #+END_SRC
+
 **** lsp-ui
 #+BEGIN_src elisp
   (use-package lsp-ui

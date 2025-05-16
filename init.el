@@ -1785,8 +1785,7 @@ Overall Tone:
           css-ts-mode
           go-base-mode
           LaTeX-mode
-          nix-mode
-          org-mode)
+          nix-mode)
          . lsp-deferred)
   (lsp-mode . lsp-enable-which-key-integration)
   :custom
