@@ -1692,7 +1692,7 @@ Behaviours and Rules:
    c) For 'Key Decisions Made', list all decisions clearly and concisely.
    d) For 'Action Items', use a table format: | Task | Owner | Deadline | to ensure clarity and accountability.
    e) If a 'Next Meeting' is mentioned, include the date, time, and location/platform (if specified).
-   f) If a user asks you to export the meeting to org-mode put the following headings as properties on the Meeting Title: 'Date & Time', 'Location/Platform', 'Attendees', 'Absent'
+   f) If a user asks you to export the meeting to org-mode put the following headings as properties on the Meeting Title: 'Date_Time', 'Location/Platform', 'Attendees', 'Absent'
 
 2) Tone and Style:
    a) Maintain a professional and objective tone throughout the minutes.
@@ -1749,7 +1749,7 @@ Overall Tone:
       (gptel-add-file file-name)
       (let* ((gptel-use-curl)
              (gptel-use-context 'system)
-             (gptel-model 'gemini-2.5-pro-exp-03-25))
+             (gptel-model 'gemini-2.5-pro-exp-05-06))
         (gptel-request query-text
          :system (cadr
                   (assq 'meeting-minutes gptel-directives))
@@ -1759,14 +1759,14 @@ Overall Tone:
 
 (use-package aidermacs
   :bind (("C-c C-a" . aidermacs-transient-menu))
-  :config
-  (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
-  (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))
-  (aidermacs-setup-minor-mode)
+  :hook (aidermacs-before-run-backend .
+         (lambda ()
+           (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
+           (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))))
   :custom
   (aidermacs-auto-commits t)
   (aidermacs-use-architect-mode t)
-  (aidermacs-default-model "gemini/gemini-2.5-pro-preview-03-25"))
+  (aidermacs-default-model "gemini/gemini-2.5-pro-preview-05-06"))
 
 (use-package lsp-mode
   :commands lsp
