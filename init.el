@@ -635,21 +635,38 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package elfeed
  :custom
- (elfeed-feeds
-      '(("http://nullprogram.com/feed/" emacs)
-        ("https://www.penny-arcade.com/feed" comics)
-        ("https://sachachua.com/blog/feed/" emacs)
-        ("https://macowners.club/posts/index.xml" emacs)
-        ("https://fasterthanli.me/index.xml" tech rust)
-        ("https://justinbarclay.ca/index.xml" mine)
-        ("https://blog.1password.com/index.xml" security authentication)
-        ("https://www.michaelgeist.ca/blog/feed/" canada law)
-        ("https://popehat.substack.com/feed" law)
-        ("https://www.joelonsoftware.com/feed/" tech)
-        ("https://xeiaso.net/blog.rss" tech nix)
-        ("https://byorgey.wordpress.com/feed/" functional-programming)
-        ("https://mjg59.dreamwidth.org/" tech)
-        ("https://oxide.computer/blog/feed" tech company))))
+ (elfeed-set-timeout 36000))
+
+(use-package elfeed-protocol
+  :hook (elfeed-search-mode . #'elfeed-protocol-enable)
+  :init
+  (defvar memoized-elfeed-password nil)
+  (defun elfeed-protocol-fever-sync-unread-stat (host-url)
+    "Set all entries in search view to read and fetch latest unread entries.
+HOST-URL is the host name of Fever server with user field authentication info,
+for example \"https://user@myhost.com\"."
+    (interactive
+     (list (completing-read
+             "feed: "
+             (mapcar (lambda (fd)
+                       (string-trim-left (car fd) "[^+]*\\+"))
+                     elfeed-protocol-feeds)))
+     (save-mark-and-excursion
+       (mark-whole-buffer)
+       (cl-loop for entry in (elfeed-search-selected)
+                do (elfeed-untag-1 entry 'unread))
+      (elfeed-protocol-fever--do-update host-url 'update-unread))))
+  (defun fetch-elfeed-password ()
+    (run-with-idle-timer 60 nil (lambda () (setq memoized-elfeed-password nil)))
+    (or
+     memoized-elfeed-password
+     (setq memoized-elfeed-password (string-trim (aio-wait-for (1password--read "FreshRSS API Key" "credential" "private"))))))
+  (setq elfeed-use-curl t)
+  (setq elfeed-protocol-fever-update-unread-only nil)
+  (setq elfeed-protocol-fever-fetch-category-as-tag t)
+  (setq elfeed-protocol-feeds  '(("fever+https://dull.belt7783@justinbarclay.ca@freshrss.cloudbreak.app"
+                                  :api-url "https://freshrss.cloudbreak.app/api/fever.php"
+                                  :password (fetch-elfeed-password)))))
 
 (use-package ligature
   :commands (global-ligature-mode)
@@ -1411,6 +1428,8 @@ parses its input."
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
+   consult-find :preview-key '(:debounce 0.2 any)
+                :state (consult--file-state)
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
    consult--source-bookmark consult--source-file-register
