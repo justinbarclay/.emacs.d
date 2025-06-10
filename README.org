@@ -943,6 +943,12 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
     :hook (magit-mode . magit-todos-mode))
 #+end_src
 
+*** Code Review
+#+begin_src elisp
+  (use-package code-review
+    :vc (:url "https://github.com/doomelpa/code-review" :rev :newest))
+#+end_src
+
 ** pos-tip
 #+begin_src elisp
 (use-package pos-tip)

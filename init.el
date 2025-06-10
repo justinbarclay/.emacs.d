@@ -556,6 +556,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (magit-todos-exclude-globs '("dist/**"))
   :hook (magit-mode . magit-todos-mode))
 
+(use-package code-review
+  :vc (:url "https://github.com/doomelpa/code-review" :rev :newest))
+
 (use-package pos-tip)
 
 (use-feature mu4e
