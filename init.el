@@ -770,6 +770,7 @@ for example \"https://user@myhost.com\"."
   :hook (after-init . lambda-line-mode)
   :config
   (require 'nerd-icons)
+  (defface info '((t (:inherit (flycheck-info)))) " ")
   (setq lambda-line-flycheck-label (format " %s" (nerd-icons-mdicon "nf-md-alarm_light")))
   (setq lambda-line-vc-symbol (format " %s" (nerd-icons-mdicon "nf-md-git")))
   (setq lambda-line-mu4e t)
