@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (setq native-comp-deferred-compilation-deny-list '())
 (setq native-comp-async-report-warnings-errors nil)
 
@@ -306,10 +307,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":PROPERTIES:"
                                     ":calendar-id: justincbarclay@gmail.com"
                                     ":END:")
-                     :file ,(concat org-directory "/personal/calendar.org"))
+                         :file ,(concat org-directory "/personal/calendar.org"))
                         ("Emails" :keys "e"
                          :template "* TODO [#A] Reply: %a :@home:"
-                         :headline "Emails" :file "~/org/personal/tasks.org")))
+                         :headline "Emails" :file ,(concat org-directory "/personal/tasks.org"))))
 
                       ("Work"    :keys "w"
                        :children
@@ -329,6 +330,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":Created: %U"
                                     ":END:")
                          :headline "Notes" :file ,(concat org-directory "/work/tasks.org"))
+                        ("Meeting With Sam" :keys "s"
+                         :olp ("Meetings With Sam")
+                         :type entry
+                         :template ("* %^{Meeting Title}"
+                                    ":PROPERTIES:"
+                                    ":Created: %U"
+                                    ":END:")
+                         :datetree t
+                         :file ,(concat org-directory "/work/tasks.org"))
                         ("Emails" :keys "e"
                          :template "* TODO [#A] Reply: %a :@work:"
                          :headline "Emails" :file ,(concat org-directory "/work/tasks.org"))
@@ -641,7 +651,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  (elfeed-set-timeout 36000))
 
 (use-package elfeed-protocol
-  :hook (elfeed-search-mode . #'elfeed-protocol-enable)
+ ;;:hook (elfeed-search-mode . #'elfeed-protocol-enable)
   :init
   (defvar memoized-elfeed-password nil)
   (defun elfeed-protocol-fever-sync-unread-stat (host-url)
@@ -650,23 +660,23 @@ HOST-URL is the host name of Fever server with user field authentication info,
 for example \"https://user@myhost.com\"."
     (interactive
      (list (completing-read
-             "feed: "
-             (mapcar (lambda (fd)
-                       (string-trim-left (car fd) "[^+]*\\+"))
-                     elfeed-protocol-feeds)))
-     (save-mark-and-excursion
-       (mark-whole-buffer)
-       (cl-loop for entry in (elfeed-search-selected)
-                do (elfeed-untag-1 entry 'unread))
-      (elfeed-protocol-fever--do-update host-url 'update-unread))))
+            "feed: "
+            (mapcar (lambda (fd)
+                      (string-trim-left (car fd) "[^+]*\\+"))
+                    elfeed-protocol-feeds))))
+    (save-mark-and-excursion
+      (mark-whole-buffer)
+      (cl-loop for entry in (elfeed-search-selected)
+               do (elfeed-untag-1 entry 'unread))
+     (elfeed-protocol-fever--do-update host-url 'update-unread)))
   (defun fetch-elfeed-password ()
     (run-with-idle-timer 60 nil (lambda () (setq memoized-elfeed-password nil)))
     (or
      memoized-elfeed-password
      (setq memoized-elfeed-password (string-trim (aio-wait-for (1password--read "FreshRSS API Key" "credential" "private"))))))
   (setq elfeed-use-curl t)
-  (setq elfeed-protocol-fever-update-unread-only nil)
-  (setq elfeed-protocol-fever-fetch-category-as-tag t)
+  (setq elfeed-protocol-fever-update-unread-only 't)
+  (setq elfeed-protocol-fever-fetch-category-as-tag 't)
   (setq elfeed-protocol-feeds  '(("fever+https://dull.belt7783@justinbarclay.ca@freshrss.cloudbreak.app"
                                   :api-url "https://freshrss.cloudbreak.app/api/fever.php"
                                   :password (fetch-elfeed-password)))))
@@ -1930,16 +1940,58 @@ CALLBACK is the status callback passed by Flycheck."
          :type 'dictionary
          :group 'lsp-harper)
 
+ ;; (lsp-register-client
+ ;;   (make-lsp-client
+ ;;     :new-connection (lsp-stdio-connection
+ ;;                      '("harper-ls" "-s"))
+ ;;     :major-modes lsp-harper-active-modes
+ ;;     :initialization-options lsp-harper-configuration
+ ;;     :add-on? 't
+ ;;     :priority -3
+ ;;     :server-id 'lsp-harper))
+
+ (defgroup lsp-vale nil
+   "Settings for vale language server."
+   :prefix "lsp-vale-"
+   :group 'lsp-mode)
+
+ (defcustom lsp-vale-active-modes
+   '( rust-mode
+      rust-ts-mode
+      swift-mode
+      enh-ruby-mode
+      ruby-mode
+      js-base-mode
+      ts-base-mode
+      python-mode
+      ess-mode
+      typst-ts-mode
+      markdown-mode
+      org-mode)
+   "List of major modes that work with vale-lsp"
+   :type 'list
+   :group 'lsp-vale)
+
+ (defcustom lsp-vale-configuration
+   '(:installVale nil
+     :filter nil
+     :configPath nil
+     :codeActions (:ForceStable :json-false)
+     :syncOnStartup t
+     :diagnosticSeverity "hint")
+   "Vale configuration structure"
+   :type 'dictionary
+   :group 'lsp-vale)
 
  (lsp-register-client
    (make-lsp-client
      :new-connection (lsp-stdio-connection
-                      '("harper-ls" "-s"))
-     :major-modes lsp-harper-active-modes
-     :initialization-options lsp-harper-configuration
+                      '("vale-ls"))
+     :major-modes lsp-vale-active-modes
+     :initialization-options lsp-vale-configuration
      :add-on? 't
-     :priority -3
-     :server-id 'lsp-harper)))
+     :priority -2
+     :server-id 'lsp-vale)))
 
 (use-package lsp-ui
   :commands lsp-ui-mode

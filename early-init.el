@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (setq gc-cons-threshold 1000000000)
 (run-with-idle-timer
  5 nil
