@@ -1798,7 +1798,7 @@ Overall Tone:
            (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))))
   :custom
   (aidermacs-auto-commits t)
-  (aidermacs-use-architect-mode t)
+  (aidermacs-default-chat-mode 'architect)
   (aidermacs-default-model "gemini/gemini-2.5-pro-preview-05-06"))
 
 (use-package lsp-mode
