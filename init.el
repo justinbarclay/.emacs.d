@@ -2160,6 +2160,7 @@ CALLBACK is the status callback passed by Flycheck."
   :mode ("\\.ts\\'" "\\.mts\\'" "\\.ts.snap\\'"))
 
 (use-feature tsx-ts-mode
+  :hook (tsx-ts-mode . rainbow-delimiters-mode-disable)
   :mode "\\.tsx\\'")
 
 (use-package deno-fmt)

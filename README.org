@@ -3400,6 +3400,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 *** TSX Mode
 #+begin_src elisp
   (use-feature tsx-ts-mode
+    :hook (tsx-ts-mode . rainbow-delimiters-mode-disable)
     :mode "\\.tsx\\'")
 #+end_src
 
