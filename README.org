@@ -2819,16 +2819,6 @@ Better movement through treesitter
     :custom (combobulate-js-ts-enable-auto-close-tag . nil))
 #+end_src
 ** General Intellisense
-*** copilot
-#+begin_src elisp
-  (use-package copilot
-    :after jsonrpc
-    :hook (prog-mode . copilot-mode)
-    :bind (:map copilot-completion-map
-                ("TAB" . 'copilot-accept-completion)
-                ("C-TAB" . 'copilot-accept-completion-by-word)))
-#+end_src
-
 *** GPTel
 #+begin_src elisp
   (use-package gptel
@@ -2918,14 +2908,25 @@ Better movement through treesitter
            :callback #'gptel-summarize-meeting-minutes--callback))
         (gptel-context-remove file-name))))
 #+end_src
+*** copilot
+#+begin_src elisp
+  (use-package copilot
+    :after jsonrpc
+    :hook (prog-mode . copilot-mode)
+    :bind (:map copilot-completion-map
+                ("C-<tab>" . 'copilot-accept-completion)
+                ("C-n" . 'copilot-next-completion)
+                ("C-c TAB" . 'copilot-accept-completion-by-word)))
+#+end_src
+
 *** Aidermacs
 #+begin_src elisp
   (use-package aidermacs
     :bind (("C-c C-a" . aidermacs-transient-menu))
-    :hook (aidermacs-before-run-backend .
-           (lambda ()
-             (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
-             (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))))
+    :hook ((aidermacs-before-run-backend .
+            (lambda ()
+              (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
+              (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private")))))))
     :custom
     (aidermacs-auto-commits t)
     (aidermacs-default-chat-mode 'architect)

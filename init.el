@@ -1696,13 +1696,6 @@ parses its input."
   :config
   (global-treesit-auto-mode))
 
-(use-package copilot
-  :after jsonrpc
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)))
-
 (use-package gptel
   :after 1password
   :custom
@@ -1790,12 +1783,20 @@ Overall Tone:
          :callback #'gptel-summarize-meeting-minutes--callback))
       (gptel-context-remove file-name))))
 
+(use-package copilot
+  :after jsonrpc
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("C-<tab>" . 'copilot-accept-completion)
+              ("C-n" . 'copilot-next-completion)
+              ("C-c TAB" . 'copilot-accept-completion-by-word)))
+
 (use-package aidermacs
   :bind (("C-c C-a" . aidermacs-transient-menu))
-  :hook (aidermacs-before-run-backend .
-         (lambda ()
-           (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
-           (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))))
+  :hook ((aidermacs-before-run-backend .
+          (lambda ()
+            (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
+            (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private")))))))
   :custom
   (aidermacs-auto-commits t)
   (aidermacs-default-chat-mode 'architect)
