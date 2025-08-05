@@ -1328,7 +1328,7 @@ Let's use Doom's version instead
 #+BEGIN_src elisp :tangle no
 (use-package doom-modeline
     :hook
-    (elpaca-after-init . doom-modeline-mode)
+    (after-init . doom-modeline-mode)
     :custom
     (doom-modeline-buffer-file-name-style 'relative-to-project))
 #+END_SRC
