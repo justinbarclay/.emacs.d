@@ -1117,10 +1117,35 @@ for example \"https://user@myhost.com\"."
   ;; editing experience without affecting cursor placement.
   (stripspace-restore-column t))
 
-(use-package origami
-  :defer t
-  :bind ("C-<tab>" . origami-recursively-toggle-node)
-  :hook (prog-mode . origami-mode))
+(use-package treesit-fold
+  :hook
+  (after-init . global-treesit-fold-mode)
+  :bind ("C-<tab>" . treesit-fold-toggle)
+  :config
+  (setq treesit-fold-line-count-format " <%d lines> ")
+  (setq treesit-fold-on-next-line 't)
+
+ (defun treesit-fold-range-jsx-element (node offset)
+  (let ((beg (treesit-node-end (treesit-node-child node 0 "name")))
+        (end (- (treesit-node-end node) 2)))
+    (treesit-fold--cons-add (cons beg end) offset)))
+
+ (defun treesit-fold-parsers-tsx ()
+   "Rule set for TSX."
+   (append
+    (treesit-fold-parsers-javascript)
+    '((class_body    . treesit-fold-range-seq)
+      (enum_body     . treesit-fold-range-seq)
+      (named_imports . treesit-fold-range-seq)
+      (arrow_function . treesit-fold-range-seq)
+      (object_type   . treesit-fold-range-seq)
+      (formal_parameters . treesit-fold-range-seq)
+      (parenthesized_expression . treesit-fold-range-seq)
+      (jsx_self_closing_element   . treesit-fold-range-jsx-element)
+      (jsx_element   . treesit-fold-range-seq)
+      (jsx_expression . treesit-fold-range-seq))))
+
+ (add-to-list 'treesit-fold-range-alist (cons 'tsx-ts-mode  (treesit-fold-parsers-tsx))))
 
 (use-package hungry-delete
   :hook (prog-mode . global-hungry-delete-mode))
