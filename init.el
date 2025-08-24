@@ -1825,7 +1825,8 @@ Overall Tone:
   :custom
   (aidermacs-auto-commits t)
   (aidermacs-default-chat-mode 'architect)
-  (aidermacs-default-model "gemini/gemini-2.5-pro-preview-05-06"))
+  (aidermacs-default-model "gemini/gemini-2.5-pro")
+  (aidermacs-weak-model "gemini/gemini-2.5-flash"))
 
 (use-package lsp-mode
   :commands lsp
