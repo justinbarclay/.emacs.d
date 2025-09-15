@@ -2959,10 +2959,10 @@ Better movement through treesitter
 #+begin_src elisp
   (use-package aidermacs
     :bind (("C-c C-a" . aidermacs-transient-menu))
-    :hook ((aidermacs-before-run-backend .
+    :hook (aidermacs-before-run-backend .
             (lambda ()
               (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
-              (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private")))))))
+              (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))))
     :custom
     (aidermacs-auto-commits t)
     (aidermacs-default-chat-mode 'architect)
