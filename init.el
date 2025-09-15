@@ -809,13 +809,17 @@ for example \"https://user@myhost.com\"."
   :custom
   (vundo-glyph-alist vundo-unicode-symbols))
 
-(use-package undo-fu)
+(use-package undo-fu
+ :custom
+ (undo-limit (* 64 1024 1024))
+ (undo-strong-limit (* 96 1024 1024))
+ (undo-outer-limit (* 960 1024 1024)))
 
 (use-package undo-fu-session
   :init
   (undo-fu-session-global-mode)
   :custom
-  (undo-fu-session-file-limit 10))
+  (undo-fu-session-file-limit 100))
 
 (use-feature ibuffer
   :commands (ibuffer-current-buffer

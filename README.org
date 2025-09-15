@@ -1392,7 +1392,11 @@ Sometimes you have to quickly jump through you undo-history
 
 *** undo-fu
 #+begin_src elisp
-(use-package undo-fu)
+(use-package undo-fu
+ :custom
+ (undo-limit (* 64 1024 1024))
+ (undo-strong-limit (* 96 1024 1024))
+ (undo-outer-limit (* 960 1024 1024)))
 #+end_src
 *** undo-fu-sessions
 And sometimes you want that undo-history to persist over a couple of days
@@ -1401,7 +1405,7 @@ And sometimes you want that undo-history to persist over a couple of days
     :init
     (undo-fu-session-global-mode)
     :custom
-    (undo-fu-session-file-limit 10))
+    (undo-fu-session-file-limit 100))
 #+end_src
 
 ** ibuffer
