@@ -1831,6 +1831,25 @@ Overall Tone:
   (aidermacs-default-model "gemini/gemini-2.5-pro")
   (aidermacs-weak-model "gemini/gemini-2.5-flash"))
 
+(use-package ai-code-interface
+  :vc (:url "https://github.com/tninja/ai-code-interface.el")
+  :config
+  (ai-code-set-backend 'gemini) ;; use claude-code-ide as backend
+  ;; Enable global keybinding for the main menu
+  (global-set-key (kbd "C-c a") #'ai-code-menu)
+  ;; Optional: Set up Magit integration for AI commands in Magit popups
+  (with-eval-after-load 'magit
+    (ai-code-magit-setup-transients)))
+
+(use-package agent-shell
+  :vc (:url "https://github.com/xenodium/agent-shell"))
+
+(use-package acp
+  :vc (:url "https://github.com/xenodium/acp.el"))
+
+(use-package shell-maker
+  :ensure t)
+
 (use-package lsp-mode
   :commands lsp
   :hook ((rustic-mode

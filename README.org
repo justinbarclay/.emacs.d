@@ -2968,6 +2968,39 @@ Better movement through treesitter
     (aidermacs-default-model "gemini/gemini-2.5-pro")
     (aidermacs-weak-model "gemini/gemini-2.5-flash"))
 #+end_src
+*** ai-code-interfaces
+#+begin_src elisp
+  (use-package ai-code-interface
+    :vc (:url "https://github.com/tninja/ai-code-interface.el")
+    :config
+    (ai-code-set-backend 'gemini) ;; use claude-code-ide as backend
+    ;; Enable global keybinding for the main menu
+    (global-set-key (kbd "C-c a") #'ai-code-menu)
+    ;; Optional: Set up Magit integration for AI commands in Magit popups
+    (with-eval-after-load 'magit
+      (ai-code-magit-setup-transients)))
+#+end_src
+
+#+RESULTS:
+: #s(hash-table data (:use-package (26853 31166 248440 685000) :use-package-secs (0 9 156812 415000) :init (26853 31166 248433 465000) :init-secs (0 0 61 949000)))
+
+*** agent-shell
+:header-args: :tangle no
+#+begin_src elisp
+(use-package agent-shell
+  :vc (:url "https://github.com/xenodium/agent-shell"))
+#+end_src
+
+**** dependencies
+#+begin_src elisp
+(use-package acp
+  :vc (:url "https://github.com/xenodium/acp.el"))
+#+end_src
+
+#+begin_src elisp
+(use-package shell-maker
+  :ensure t)
+#+end_src
 
 *** LSP-Mode
 :PROPERTIES:
