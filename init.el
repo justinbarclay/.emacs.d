@@ -811,13 +811,12 @@ for example \"https://user@myhost.com\"."
 
 (use-package undo-fu
  :custom
- (undo-limit (* 64 1024 1024))
- (undo-strong-limit (* 96 1024 1024))
- (undo-outer-limit (* 960 1024 1024)))
+ (undo-limit (* 5 1024 1024)) ;; 500kb
+ (undo-strong-limit (* 2 1024 1024)) ;; 2mb
+ (undo-outer-limit (* 10 1024 1024))) ;; 5 mb
 
 (use-package undo-fu-session
-  :init
-  (undo-fu-session-global-mode)
+  :hook (after-init . undo-fu-session-global-mode)
   :custom
   (undo-fu-session-file-limit 100))
 
@@ -2478,9 +2477,10 @@ CALLBACK is the status callback passed by Flycheck."
   :commands (esup))
 
 (use-feature profiler
-  :bind
-  (("s-l" . profiler-start)
-   ("s-r" . profiler-report)))
+    :bind
+    (("<f12>" . profiler-start)
+     ("C-<f12>" . profiler-report)
+     ("M-<f12>" . profiler-stop)))
 
 (use-package restclient)
 

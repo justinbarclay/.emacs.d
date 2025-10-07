@@ -1394,16 +1394,15 @@ Sometimes you have to quickly jump through you undo-history
 #+begin_src elisp
 (use-package undo-fu
  :custom
- (undo-limit (* 64 1024 1024))
- (undo-strong-limit (* 96 1024 1024))
- (undo-outer-limit (* 960 1024 1024)))
+ (undo-limit (* 5 1024 1024)) ;; 500kb
+ (undo-strong-limit (* 2 1024 1024)) ;; 2mb
+ (undo-outer-limit (* 10 1024 1024))) ;; 5 mb
 #+end_src
 *** undo-fu-sessions
 And sometimes you want that undo-history to persist over a couple of days
 #+begin_src elisp
   (use-package undo-fu-session
-    :init
-    (undo-fu-session-global-mode)
+    :hook (after-init . undo-fu-session-global-mode)
     :custom
     (undo-fu-session-file-limit 100))
 #+end_src
@@ -3893,11 +3892,13 @@ This function displays how long Emacs took to start. It’s a rough way of knowi
 #+END_SRC
 *** profiler
 #+BEGIN_src elisp
-  (use-feature profiler
+(use-feature profiler
     :bind
-    (("s-l" . profiler-start)
-     ("s-r" . profiler-report)))
+    (("<f12>" . profiler-start)
+     ("C-<f12>" . profiler-report)
+     ("M-<f12>" . profiler-stop)))
 #+END_SRC
+
 ** http client
 #+BEGIN_src elisp
   (use-package restclient)
