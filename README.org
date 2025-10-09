@@ -662,8 +662,8 @@ Declarative Org Capture Templates
                                       ":Created: %U"
                                       ":END:")
                            :headline "Notes" :file ,(concat org-directory "/work/tasks.org"))
-                          ("Meeting With Sam" :keys "s"
-                           :olp ("Meetings With Sam")
+                          ("Meetings" :keys "m"
+                           :olp ("Meetings")
                            :type entry
                            :template ("* %^{Meeting Title}"
                                       ":PROPERTIES:"
@@ -943,7 +943,8 @@ Now that we have that installed we can pull in org-pdftools from github
 *** Magit TODO
 Due to how hl-todo specified versions, we have to do a full clone and specify the version, as mentioned [[https://github.com/progfolio/elpaca/wiki/Warnings-and-Errors#unmet-dependency-version][here]]
 #+begin_src elisp
-  (use-package hl-todo)
+  (use-package hl-todo
+    :hook (after-init . globol-hl-todo-mode))
 #+end_src
 
 #+begin_src elisp
@@ -2860,7 +2861,7 @@ Better movement through treesitter
     :after 1password
     :custom
     (gptel-default-mode 'org-mode)
-    (gptel-model 'gemini-2.5-pro-preview-05-06)
+    (gptel-model 'gemini-pro-latest)
     :config
     (setq gptel-backend (gptel-make-gemini "gemini"
                           :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
@@ -2971,7 +2972,7 @@ Better movement through treesitter
 *** ai-code-interfaces
 #+begin_src elisp
   (use-package ai-code-interface
-    :vc (:url "https://github.com/tninja/ai-code-interface.el")
+    :vc (:url "https://github.com/tninja/ai-code-interface.el"  :rev :newest)
     :config
     (ai-code-set-backend 'gemini) ;; use claude-code-ide as backend
     ;; Enable global keybinding for the main menu
@@ -2980,9 +2981,13 @@ Better movement through treesitter
     (with-eval-after-load 'magit
       (ai-code-magit-setup-transients)))
 #+end_src
-
-#+RESULTS:
-: #s(hash-table data (:use-package (26853 31166 248440 685000) :use-package-secs (0 9 156812 415000) :init (26853 31166 248433 465000) :init-secs (0 0 61 949000)))
+**** Dependencies
+#+begin_src elisp :tangle no
+(use-package gemini-cli :ensure t
+  :vc (:url "https://github.com/linchen2chris/gemini-cli.el" :rev :newest)
+  :config (gemini-cli-mode)
+  :bind-keymap ("C-c c" . gemini-cli-command-map))
+#+end_src
 
 *** agent-shell
 :header-args: :tangle no
@@ -3000,6 +3005,47 @@ Better movement through treesitter
 #+begin_src elisp
 (use-package shell-maker
   :ensure t)
+#+end_src
+
+*** emacs-lsp-booster
+#+begin_src elisp
+  (use-feature emacs-lsp-booster
+    :after (lsp-mode)
+    :init
+    (defun lsp-booster--advice-json-parse (old-fn &rest args)
+      "Try to parse bytecode instead of json."
+      (or
+       (when (equal (following-char) ?#)
+         (let ((bytecode (read (current-buffer))))
+           (when (byte-code-function-p bytecode)
+             (funcall bytecode))))
+       (apply old-fn args)))
+
+    (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+      "Prepend emacs-lsp-booster command to lsp CMD."
+      (let ((orig-result (funcall old-fn cmd test?)))
+        (if (and (not test?)                             ;; for check lsp-server-present?
+                 (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+                 lsp-use-plists
+                 (not (functionp 'json-rpc-connection))  ;; native json-rpc
+                 (executable-find "emacs-lsp-booster"))
+            (progn
+              (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+                (setcar orig-result command-from-exec-path))
+              (message "Using emacs-lsp-booster for %s!" orig-result)
+              (cons "emacs-lsp-booster" orig-result))
+          orig-result)))
+
+    (defun emacs-lsp-booster-setup ()
+      (advice-add (if (progn (require 'json)
+                             (fboundp 'json-parse-buffer))
+                      'json-parse-buffer
+                    'json-read)
+                  :around
+                  #'lsp-booster--advice-json-parse)
+
+      (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command))
+    (emacs-lsp-booster-setup))
 #+end_src
 
 *** LSP-Mode

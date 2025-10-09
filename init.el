@@ -330,8 +330,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":Created: %U"
                                     ":END:")
                          :headline "Notes" :file ,(concat org-directory "/work/tasks.org"))
-                        ("Meeting With Sam" :keys "s"
-                         :olp ("Meetings With Sam")
+                        ("Meetings" :keys "m"
+                         :olp ("Meetings")
                          :type entry
                          :template ("* %^{Meeting Title}"
                                     ":PROPERTIES:"
@@ -559,7 +559,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :init
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
-(use-package hl-todo)
+(use-package hl-todo
+  :hook (after-init . globol-hl-todo-mode))
 
 (use-package magit-todos
   :custom
@@ -1728,7 +1729,7 @@ parses its input."
   :after 1password
   :custom
   (gptel-default-mode 'org-mode)
-  (gptel-model 'gemini-2.5-pro-preview-05-06)
+  (gptel-model 'gemini-pro-latest)
   :config
   (setq gptel-backend (gptel-make-gemini "gemini"
                         :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
@@ -1832,7 +1833,7 @@ Overall Tone:
   (aidermacs-weak-model "gemini/gemini-2.5-flash"))
 
 (use-package ai-code-interface
-  :vc (:url "https://github.com/tninja/ai-code-interface.el")
+  :vc (:url "https://github.com/tninja/ai-code-interface.el"  :rev :newest)
   :config
   (ai-code-set-backend 'gemini) ;; use claude-code-ide as backend
   ;; Enable global keybinding for the main menu
@@ -1849,6 +1850,44 @@ Overall Tone:
 
 (use-package shell-maker
   :ensure t)
+
+(use-feature emacs-lsp-booster
+  :after (lsp-mode)
+  :init
+  (defun lsp-booster--advice-json-parse (old-fn &rest args)
+    "Try to parse bytecode instead of json."
+    (or
+     (when (equal (following-char) ?#)
+       (let ((bytecode (read (current-buffer))))
+         (when (byte-code-function-p bytecode)
+           (funcall bytecode))))
+     (apply old-fn args)))
+
+  (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+    "Prepend emacs-lsp-booster command to lsp CMD."
+    (let ((orig-result (funcall old-fn cmd test?)))
+      (if (and (not test?)                             ;; for check lsp-server-present?
+               (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+               lsp-use-plists
+               (not (functionp 'json-rpc-connection))  ;; native json-rpc
+               (executable-find "emacs-lsp-booster"))
+          (progn
+            (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+              (setcar orig-result command-from-exec-path))
+            (message "Using emacs-lsp-booster for %s!" orig-result)
+            (cons "emacs-lsp-booster" orig-result))
+        orig-result)))
+
+  (defun emacs-lsp-booster-setup ()
+    (advice-add (if (progn (require 'json)
+                           (fboundp 'json-parse-buffer))
+                    'json-parse-buffer
+                  'json-read)
+                :around
+                #'lsp-booster--advice-json-parse)
+
+    (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command))
+  (emacs-lsp-booster-setup))
 
 (use-package lsp-mode
   :commands lsp
