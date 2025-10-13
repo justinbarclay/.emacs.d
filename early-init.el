@@ -3,7 +3,7 @@
 (run-with-idle-timer
  5 nil
  (lambda ()
-   (setq-default gc-cons-threshold (* 1024 1024 100))
+   (setq-default gc-cons-threshold (* 1024 1024 200))
    (message "gc-cons-threshold restored to %S"
             gc-cons-threshold)))
 

@@ -149,7 +149,7 @@
 I've forgotten this before so this seems like the perfect place to put it but ~C-c C-v d~ or ~org-babel-demarcate-block~ creates a code-block for the language of your choice
 * Setup
 ** Turn off garbage collection
-This sets the garbage collection threshold to 100mb
+This sets the garbage collection threshold to 200mb
 Reset garbage collection to emacs default after 5s
 #+BEGIN_src elisp :tangle early-init.el
   ;; -*- lexical-binding: t; -*-
@@ -157,7 +157,7 @@ Reset garbage collection to emacs default after 5s
   (run-with-idle-timer
    5 nil
    (lambda ()
-     (setq-default gc-cons-threshold (* 1024 1024 100))
+     (setq-default gc-cons-threshold (* 1024 1024 200))
      (message "gc-cons-threshold restored to %S"
               gc-cons-threshold)))
 #+END_SRC
