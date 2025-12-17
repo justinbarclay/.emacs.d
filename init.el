@@ -737,20 +737,11 @@ for example \"https://user@myhost.com\"."
   (lambda-themes-set-italic-keywords nil)
   (lambda-themes-set-variable-pitch nil))
 
-(use-package catppuccin-theme)
-
-(use-package doom-themes
-  :vc (:url "https://github.com/justinbarclay/themes" :rev "laserwave-hc")
+(use-package catppuccin-theme
   :init
-  (add-to-list 'load-path (concat (expand-file-name package-user-dir)
-                                  "/doom-themes/extensions"))
-  (load-theme 'doom-laserwave-high-contrast t)
+  (load-theme 'catppuccin t)
   :config
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;; Corrects (and improves) org-mode's native fontification.
-  (require 'doom-themes-ext-org)
-  (doom-themes-org-config))
+  (setq catppuccin-flavor 'frappe))
 
 (use-package nerd-icons)
 
@@ -1683,10 +1674,15 @@ parses its input."
   :init
   (apheleia-global-mode)
   :config
-  ;; Override ruby-ts-mode defaults
   (map-put! apheleia-formatters 'rustfmt
       '("rustfmt" "--edition" (or (bound-and-true-p rust-edition) "2024")
         "--quiet" "--emit" "stdout"))
+  (map-put! apheleia-mode-alist 'js-ts-mode '(biome))
+  (map-put! apheleia-mode-alist 'json-ts-mode '(biome))
+  (map-put! apheleia-mode-alist 'typescript-ts-mode '(biome))
+  (map-put! apheleia-mode-alist 'tsx-ts-mode '(biome))
+  ;;(map-put! apheleia-mode-alist 'jsx-ts-mode '(biome))
+  ;; Override ruby-ts-mode defaults
   (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop)))
 
 (use-feature treesit
@@ -2085,6 +2081,9 @@ CALLBACK is the status callback passed by Flycheck."
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
+(use-package lsp-biome
+  :vc (:url "https://github.com/cxa/lsp-biome" :rev :newest))
+
 (use-package devdocs)
 
 (use-feature css-mode
@@ -2231,8 +2230,7 @@ CALLBACK is the status callback passed by Flycheck."
 
 (use-feature js-base-mode
  :custom
- (js-indent-level 2)
- (lsp-eslint-enable 't))
+ (js-indent-level 2))
 
 (use-feature js-ts-mode
   :mode ("\\.js\\'" "\\.cjs\\'" "\\.mjs\\'"))
@@ -2240,7 +2238,7 @@ CALLBACK is the status callback passed by Flycheck."
 (use-feature typescript-ts-base-mode
   :custom
   (typescript-indent-level 2)
-  (lsp-eslint-enable 't)
+  ;;(lsp-eslint-enable 't)
   :config
   (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 

@@ -1287,17 +1287,20 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 #+end_src
 *** Catpuccin
 #+begin_src elisp
-(use-package catppuccin-theme)
+  (use-package catppuccin-theme
+    :init
+    (load-theme 'catppuccin t)
+    :config
+    (setq catppuccin-flavor 'frappe))
 #+end_src
 *** Doom Themes
 Let's use Doom's version instead
-#+BEGIN_src elisp
+#+BEGIN_src elisp :tangle no
   (use-package doom-themes
-    :vc (:url "https://github.com/justinbarclay/themes" :rev "laserwave-hc")
     :init
     (add-to-list 'load-path (concat (expand-file-name package-user-dir)
                                     "/doom-themes/extensions"))
-    (load-theme 'doom-laserwave-high-contrast t)
+    (load-theme 'doom-challenger-deep t)
     :config
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
@@ -2798,10 +2801,15 @@ Major mode customizations
     :init
     (apheleia-global-mode)
     :config
-    ;; Override ruby-ts-mode defaults
     (map-put! apheleia-formatters 'rustfmt
         '("rustfmt" "--edition" (or (bound-and-true-p rust-edition) "2024")
           "--quiet" "--emit" "stdout"))
+    (map-put! apheleia-mode-alist 'js-ts-mode '(biome))
+    (map-put! apheleia-mode-alist 'json-ts-mode '(biome))
+    (map-put! apheleia-mode-alist 'typescript-ts-mode '(biome))
+    (map-put! apheleia-mode-alist 'tsx-ts-mode '(biome))
+    ;;(map-put! apheleia-mode-alist 'jsx-ts-mode '(biome))
+    ;; Override ruby-ts-mode defaults
     (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop)))
 #+end_src
 
@@ -3253,6 +3261,12 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
     :commands lsp-ui-mode
     :hook (lsp-mode . lsp-ui-mode))
 #+END_SRC
+**** lsp-biome
+#+begin_src elisp
+  (use-package lsp-biome
+    :vc (:url "https://github.com/cxa/lsp-biome" :rev :newest))
+#+end_src
+
 *** Eglot
 :PROPERTIES:
 :header-args: :tangle no
@@ -3489,8 +3503,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
 #+begin_src elisp
 (use-feature js-base-mode
  :custom
- (js-indent-level 2)
- (lsp-eslint-enable 't))
+ (js-indent-level 2))
 #+end_src
 
 #+begin_src elisp
@@ -3502,7 +3515,7 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
   (use-feature typescript-ts-base-mode
     :custom
     (typescript-indent-level 2)
-    (lsp-eslint-enable 't)
+    ;;(lsp-eslint-enable 't)
     :config
     (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 #+end_src
