@@ -560,7 +560,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
 
 (use-package hl-todo
-  :hook (after-init . globol-hl-todo-mode))
+  :hook (after-init . global-hl-todo-mode))
 
 (use-package magit-todos
   :custom
@@ -1815,6 +1815,12 @@ Overall Tone:
               ("C-<tab>" . 'copilot-accept-completion)
               ("C-n" . 'copilot-next-completion)
               ("C-c TAB" . 'copilot-accept-completion-by-word)))
+
+(use-package eca
+  :hook (eca-before-initialize .
+          (lambda ()
+          (setenv "GOOGLE_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
+          (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))))))
 
 (use-package aidermacs
   :bind (("C-c C-a" . aidermacs-transient-menu))

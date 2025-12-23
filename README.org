@@ -944,7 +944,7 @@ Now that we have that installed we can pull in org-pdftools from github
 Due to how hl-todo specified versions, we have to do a full clone and specify the version, as mentioned [[https://github.com/progfolio/elpaca/wiki/Warnings-and-Errors#unmet-dependency-version][here]]
 #+begin_src elisp
   (use-package hl-todo
-    :hook (after-init . globol-hl-todo-mode))
+    :hook (after-init . global-hl-todo-mode))
 #+end_src
 
 #+begin_src elisp
@@ -2961,6 +2961,15 @@ Better movement through treesitter
                 ("C-<tab>" . 'copilot-accept-completion)
                 ("C-n" . 'copilot-next-completion)
                 ("C-c TAB" . 'copilot-accept-completion-by-word)))
+#+end_src
+
+*** Eca
+#+begin_src elisp
+  (use-package eca
+    :hook (eca-before-initialize .
+            (lambda ()
+            (setenv "GOOGLE_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
+            (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))))))
 #+end_src
 
 *** Aidermacs
