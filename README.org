@@ -3846,7 +3846,7 @@ Then we want org support for math latex
 
 *** PDF Viewer
 #+begin_src elisp
-  (use-package pdf-tools
+  (use-feature pdf-tools
    :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
    :custom
    (pdf-tools-installer-os "nixos"))
