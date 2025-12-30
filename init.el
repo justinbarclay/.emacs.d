@@ -746,8 +746,10 @@ for example \"https://user@myhost.com\"."
 (use-package nerd-icons)
 
 (use-package nerd-icons-completion
-  :after (nerd-icons marginalia)
-  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup))
+  :after (marginalia)
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :config
+  (nerd-icons-completion-mode))
 
 (use-package nerd-icons-ibuffer
   :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
@@ -761,7 +763,7 @@ for example \"https://user@myhost.com\"."
   (lambda-line-prefix t) ;; use a prefix symbol
   (lambda-line-prefix-padding nil) ;; no extra space for prefix
   (lambda-line-status-invert nil)  ;; no invert colors
-  (lambda-line-git-diff-mode-line nil)
+  (lambda-line-git-diff-mode-line t)
   (lambda-line-gui-ro-symbol  " ⨂") ;; symbols
   (lambda-line-gui-mod-symbol " ⬤")
   (lambda-line-gui-rw-symbol  " ◯")
@@ -2441,7 +2443,7 @@ CALLBACK is the status callback passed by Flycheck."
 
 (use-package cdlatex)
 
-(use-package pdf-tools
+(use-feature pdf-tools
  :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
  :custom
  (pdf-tools-installer-os "nixos"))
@@ -2549,8 +2551,14 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package git-link)
 
 (use-package git-sync-mode
-  :commands (git-sync-mode git-sync-global-mode)
-  :vc (:url "https://github.com/justinbarclay/git-sync-mode" :rev :newest))
+  :commands (git-sync-mode git-sync-global-mode git-sync--state-icon)
+  :vc (:url "https://github.com/justinbarclay/git-sync-mode" :rev :newest)
+  :config
+  (defun lambda-line-git-sync-info ()
+    (concat (lambda-line-vc-project-branch)
+            ":"
+            (git-sync--state-icon git-sync-state)))
+  (setq-local lambda-line-default-vc-mode-function #'lambda-line-git-sync-info))
 
 (use-package ctables
  :vc (:url "https://github.com/kiwanami/emacs-ctable" :rev :newest))

@@ -4015,8 +4015,14 @@ For when you want to link to the current file from github or gitlab
 ** git-sync
 #+begin_src elisp
   (use-package git-sync-mode
-    :commands (git-sync-mode git-sync-global-mode)
-    :vc (:url "https://github.com/justinbarclay/git-sync-mode" :rev :newest))
+    :commands (git-sync-mode git-sync-global-mode git-sync--state-icon)
+    :vc (:url "https://github.com/justinbarclay/git-sync-mode" :rev :newest)
+    :config
+    (defun lambda-line-git-sync-info ()
+      (concat (lambda-line-vc-project-branch)
+              ":"
+              (git-sync--state-icon git-sync-state)))
+    (setq-local lambda-line-default-vc-mode-function #'lambda-line-git-sync-info))
 #+end_src
 
 ** leetcode-emacs
