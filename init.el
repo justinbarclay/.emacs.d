@@ -430,9 +430,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       (when selection
        (goto-char (cadr (assoc selection headings)))))))
 
-(use-package org-pdftools
-  :hook (org-mode . org-pdftools-setup-link))
-
 (use-package org-download
   :after org
   :hook (org-mode . org-download-enable))

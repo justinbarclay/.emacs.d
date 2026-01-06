@@ -779,7 +779,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+end_src
 *** Org Pdftools
 Now that we have that installed we can pull in org-pdftools from github
-#+BEGIN_src elisp
+#+BEGIN_src elisp :tangle no
   (use-package org-pdftools
     :hook (org-mode . org-pdftools-setup-link))
 #+END_SRC
