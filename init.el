@@ -330,6 +330,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                                     ":Created: %U"
                                     ":END:")
                          :headline "Notes" :file ,(concat org-directory "/work/tasks.org"))
+                        ("Admin" :keys "a"
+                         :olp ("Admin")
+                         :datetree t
+                         :file ,(concat org-directory "/work/tasks.org"))
                         ("Meetings" :keys "m"
                          :olp ("Meetings")
                          :type entry
@@ -342,10 +346,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                         ("Emails" :keys "e"
                          :template "* TODO [#A] Reply: %a :@work:"
                          :headline "Emails" :file ,(concat org-directory "/work/tasks.org"))
-                        ("Trello" :keys "r"
-                         :template ("* TODO [#B] %a " "SCHEDULED: %U")
-                         :headline "Tasks" :file ,(concat org-directory "/work/tasks.org"))
-                        ("Appointment"  :keys "a"
+                        ("Appointment"  :keys "A"
                          :template ("* %^{Description}"
                                     "SCHEDULED: %T"
                                     ":PROPERTIES:"
@@ -2370,6 +2371,7 @@ CALLBACK is the status callback passed by Flycheck."
 
 (use-feature json-ts-mode
   :mode "\\.json\\'"
+  :mode "\\.jsonc\\'"
   :config
   (setq js-indent-level 2))
 
