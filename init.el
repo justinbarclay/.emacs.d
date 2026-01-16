@@ -1462,14 +1462,13 @@ parses its input."
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
-   consult-find :preview-key '(:debounce 0.2 any)
-                :state (consult--file-state)
-   consult-ripgrep consult-git-grep consult-grep
+   consult-ripgrep consult-git-grep consult-grep consult-man
    consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
+   consult-source-bookmark consult-source-file-register
+   consult-source-recent-file consult-source-project-recent-file
    ;; :preview-key "M-."
    :preview-key '(:debounce 0.4 any))
+
   (autoload 'projectile-project-root "projectile")
   (setq consult-project-function (lambda (_) (projectile-project-root))))
 
@@ -2551,7 +2550,6 @@ CALLBACK is the status callback passed by Flycheck."
 
 (use-package git-sync-mode
   :commands (git-sync-mode git-sync-global-mode git-sync--state-icon)
-  :vc (:url "https://github.com/justinbarclay/git-sync-mode" :rev :newest)
   :config
   (defun lambda-line-git-sync-info ()
     (concat (lambda-line-vc-project-branch)
