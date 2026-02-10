@@ -2806,6 +2806,7 @@ Major mode customizations
     (map-put! apheleia-formatters 'rustfmt
         '("rustfmt" "--edition" (or (bound-and-true-p rust-edition) "2024")
           "--quiet" "--emit" "stdout"))
+    (setq apheleia-formatters (map-insert apheleia-formatters 'rubyfmt '("rubyfmt")))
     (map-put! apheleia-mode-alist 'js-ts-mode '(biome))
     (map-put! apheleia-mode-alist 'json-ts-mode '(biome))
     (map-put! apheleia-mode-alist 'typescript-ts-mode '(biome))
@@ -2990,12 +2991,11 @@ Better movement through treesitter
 #+end_src
 *** ai-code-interfaces
 #+begin_src elisp
-  (use-package ai-code-interface
-    :vc (:url "https://github.com/tninja/ai-code-interface.el"  :rev :newest)
+  (use-package ai-code
     :config
     (ai-code-set-backend 'gemini) ;; use claude-code-ide as backend
     ;; Enable global keybinding for the main menu
-    (global-set-key (kbd "C-c a") #'ai-code-menu)
+    (global-set-key (kbd "C-c C-a") #'ai-code-menu)
     ;; Optional: Set up Magit integration for AI commands in Magit popups
     (with-eval-after-load 'magit
       (ai-code-magit-setup-transients)))
