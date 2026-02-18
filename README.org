@@ -3275,7 +3275,13 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
 **** lsp-biome
 #+begin_src elisp
   (use-package lsp-biome
-    :vc (:url "https://github.com/cxa/lsp-biome" :rev :newest))
+    :vc (:url "https://github.com/cxa/lsp-biome" :rev :newest)
+    :preface
+    (defun my/lsp-biome-active-hook ()
+      (setq-local apheleia-formatter '(biome)))
+
+    :config
+    (add-hook 'lsp-biome-active-hook #'my/lsp-biome-active-hook))
 #+end_src
 
 *** Eglot
