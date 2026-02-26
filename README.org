@@ -1986,6 +1986,7 @@ Load this before we load Flycheck
       css-ts-mode
       less-css-mode) .  #'flycheck-node-modules-hook)
     :custom
+    (flycheck-disabled-checkers '(org-lint))
     (checkdoc-force-docstrings-flag nil)
     ;; (flycheck-javascript-eslint-executable "eslint_d")
     ;; (flycheck-typescript-tslint-executable "eslint_d")
@@ -3075,6 +3076,7 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
 #+BEGIN_src elisp
   (use-package lsp-mode
     :commands lsp
+    :vc (:url "https://github.com/justinbarclay/lsp-mode" :branch "lsp-biome" :rev :newest)
     :hook ((rustic-mode
             rust-base-mode
             web-mode
@@ -3093,6 +3095,9 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
             nix-mode)
            . lsp-deferred)
     (lsp-mode . lsp-enable-which-key-integration)
+    :init
+    (add-to-list 'load-path (concat (expand-file-name package-user-dir)
+                                    "/lsp-mode/clients/"))
     :custom
     (lsp-idle-delay 0.1)
     (lsp-log-io nil)
