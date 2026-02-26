@@ -1193,6 +1193,7 @@ for example \"https://user@myhost.com\"."
     css-ts-mode
     less-css-mode) .  #'flycheck-node-modules-hook)
   :custom
+  (flycheck-disabled-checkers '(org-lint))
   (checkdoc-force-docstrings-flag nil)
   ;; (flycheck-javascript-eslint-executable "eslint_d")
   ;; (flycheck-typescript-tslint-executable "eslint_d")
@@ -1501,7 +1502,7 @@ parses its input."
   :commands (consult-omni-multi consult-omni-apps)
   :init
   (add-to-list 'load-path (concat (expand-file-name package-user-dir)
-                              "/consult-omni/sources/"))
+                                  "/consult-omni/sources/"))
   :custom
   ;; General settings that apply to all sources
   (consult-omni-show-preview t) ;;; show previews
@@ -1892,6 +1893,7 @@ Overall Tone:
 
 (use-package lsp-mode
   :commands lsp
+  :vc (:url "https://github.com/justinbarclay/lsp-mode" :branch "lsp-biome" :rev :newest)
   :hook ((rustic-mode
           rust-base-mode
           web-mode
@@ -1910,6 +1912,9 @@ Overall Tone:
           nix-mode)
          . lsp-deferred)
   (lsp-mode . lsp-enable-which-key-integration)
+  :init
+  (add-to-list 'load-path (concat (expand-file-name package-user-dir)
+                                  "/lsp-mode/clients/"))
   :custom
   (lsp-idle-delay 0.1)
   (lsp-log-io nil)
@@ -1993,107 +1998,11 @@ CALLBACK is the status callback passed by Flycheck."
                           :end-line (lsp-translate-line (1+ end-line))
                           :end-column (1+ (lsp-translate-column end-character)))))
                     related-information?)))))
-        (funcall callback 'finished)))
-
- (defgroup lsp-harper nil
-   "Settings for harper grammar language Server."
-   :prefix "lsp-harper-"
-   :group 'lsp-mode)
-
- (defcustom lsp-harper-active-modes
-   '( rust-mode python-mode ess-mode typst-ts-mode markdown-mode)
-   "List of major modes that work with lsp-ai"
-   :type 'list
-   :group 'lsp-harper)
-
-
- (defcustom lsp-harper-configuration
-         '(:userDictPath ""
-           :fileDictPath ""
-           :linters (:SpellCheck t
-                     :SpelledNumbers :json-false
-                     :AnA t
-                     :SentenceCapitalization t
-                     :UnclosedQuotes t
-                     :WrongQuotes :json-false
-                     :LongSentences t
-                     :RepeatedWords t
-                     :Spaces t
-                     :Matcher t
-                     :CorrectNumberSuffix t)
-           :codeActions (:ForceStable :json-false)
-           :markdown (:IgnoreLinkTitle :json-false)
-           :diagnosticSeverity "hint"
-           :isolateEnglish :json-false)
-         "Harper configuration structure"
-         :type 'dictionary
-         :group 'lsp-harper)
-
- ;; (lsp-register-client
- ;;   (make-lsp-client
- ;;     :new-connection (lsp-stdio-connection
- ;;                      '("harper-ls" "-s"))
- ;;     :major-modes lsp-harper-active-modes
- ;;     :initialization-options lsp-harper-configuration
- ;;     :add-on? 't
- ;;     :priority -3
- ;;     :server-id 'lsp-harper))
-
- (defgroup lsp-vale nil
-   "Settings for vale language server."
-   :prefix "lsp-vale-"
-   :group 'lsp-mode)
-
- (defcustom lsp-vale-active-modes
-   '( rust-mode
-      rust-ts-mode
-      swift-mode
-      enh-ruby-mode
-      ruby-mode
-      js-base-mode
-      ts-base-mode
-      python-mode
-      ess-mode
-      typst-ts-mode
-      markdown-mode
-      org-mode)
-   "List of major modes that work with vale-lsp"
-   :type 'list
-   :group 'lsp-vale)
-
- (defcustom lsp-vale-configuration
-   '(:installVale nil
-     :filter nil
-     :configPath nil
-     :codeActions (:ForceStable :json-false)
-     :syncOnStartup t
-     :diagnosticSeverity "hint")
-   "Vale configuration structure"
-   :type 'dictionary
-   :group 'lsp-vale)
-
- (lsp-register-client
-   (make-lsp-client
-     :new-connection (lsp-stdio-connection
-                      '("vale-ls"))
-     :major-modes lsp-vale-active-modes
-     :initialization-options lsp-vale-configuration
-     :add-on? 't
-     :priority -2
-     :server-id 'lsp-vale)))
+        (funcall callback 'finished))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
-
-(use-package lsp-biome
-  :vc (:url "https://github.com/cxa/lsp-biome" :rev :newest)
-  :preface
-  (defun my/lsp-biome-active-hook ()
-    (setq-local apheleia-formatter '(biome)))
-
-  :config
-  (add-hook 'lsp-biome-active-hook #'my/lsp-biome-active-hook))
 
 (use-package devdocs)
 
