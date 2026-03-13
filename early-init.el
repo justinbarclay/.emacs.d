@@ -60,7 +60,7 @@
                      "CaskaydiaCove NFM"
                    "CaskaydiaMono Nerd Font Mono")))
   (set-face-attribute 'default nil
-                      :family font-name :height 160 :weight 'normal))
+                      :family font-name :height 150 :weight 'normal))
 
 ;; These settings relate to how emacs interacts with your operating system
 (setq-default ;; makes killing/yanking interact with the clipboard

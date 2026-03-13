@@ -1893,7 +1893,6 @@ Overall Tone:
 
 (use-package lsp-mode
   :commands lsp
-  :vc (:url "https://github.com/justinbarclay/lsp-mode" :branch "lsp-biome" :rev :newest)
   :hook ((rustic-mode
           rust-base-mode
           web-mode
@@ -1925,13 +1924,21 @@ Overall Tone:
   (lsp-diagnostic-clean-after-change 't)
   (lsp-copilot-enabled 't)
   :config
+  ;; I need a hook that after lsp initialized in a buffer and that buffer is running lsp-biome to print a message.
+  (add-hook 'lsp-after-initialize-hook (lambda () (when (and (bound-and-true-p lsp-mode)
+                                                             (string-equal (lsp--client-server-id
+                                                                            (lsp--workspace-client
+                                                                             lsp--cur-workspace))
+                                                                           "lsp-biome"))
+                                                    (message "LSP Biome initialized in buffer %s" (buffer-name)))))
+
   (defvar lsp-flycheck-mapping '(less-css-mode (less-stylelint less)
-                                 css-base-mode (css-stylelint)
-                                 js-base-mode (javascript-eslint)
-                                 typescript-ts-base-mode (javascript-eslint)
-                                 tsx-ts-mode (javascript-eslint)
-                                 jsx-ts-mode (javascript-eslint))
-                              "a selections of major modes and the associated checkers to run after lsp
+                                               css-base-mode (css-stylelint)
+                                               js-base-mode (javascript-eslint)
+                                               typescript-ts-base-mode (javascript-eslint)
+                                               tsx-ts-mode (javascript-eslint)
+                                               jsx-ts-mode (javascript-eslint))
+    "a selections of major modes and the associated checkers to run after lsp
 runs it's diagnostics.")
   (defvar-local my/flycheck-local-cache nil)
 
@@ -1950,55 +1957,55 @@ runs it's diagnostics.")
   (setopt flycheck-relevant-error-other-file-minimum-level 'warning)
   ;; As stolen from https://github.com/emacs-lsp/lsp-mode/issues/3279
   (defun lsp-diagnostics--flycheck-start (checker callback)
-   "Start an LSP syntax check with CHECKER.
+    "Start an LSP syntax check with CHECKER.
 
 CALLBACK is the status callback passed by Flycheck."
 
-   (remove-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer t)
+    (remove-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer t)
 
-   (->> (lsp--get-buffer-diagnostics)
-        (-mapcat
-         (-lambda ((&Diagnostic :message :severity? :tags? :code? :source? :related-information?
-                                :range (&Range :start (&Position :line      start-line
-                                                                 :character start-character)
-                                               :end   (&Position :line      end-line
-                                                                 :character end-character))))
-           (let ((group (gensym)))
-             (cons (flycheck-error-new
-                    :buffer (current-buffer)
-                    :checker checker
-                    :filename buffer-file-name
-                    :message message
-                    :level (lsp-diagnostics--flycheck-calculate-level severity? tags?)
-                    :id code?
-                    :group group
-                    :line (lsp-translate-line (1+ start-line))
-                    :column (1+ (lsp-translate-column start-character))
-                    :end-line (lsp-translate-line (1+ end-line))
-                    :end-column (1+ (lsp-translate-column end-character)))
-                   (-mapcat
-                    (-lambda ((&DiagnosticRelatedInformation
-                               :message
-                               :location
-                               (&Location :range (&Range :start (&Position :line      start-line
-                                                                           :character start-character)
-                                                         :end   (&Position :line      end-line
-                                                                           :character end-character))
-                                          :uri)))
-                      `(,(flycheck-error-new
-                          :buffer (current-buffer)
-                          :checker checker
-                          :filename (-> uri lsp--uri-to-path lsp--fix-path-casing)
-                          :message message
-                          :level (lsp-diagnostics--flycheck-calculate-level (1+ severity?) tags?)
-                          :id code?
-                          :group group
-                          :line (lsp-translate-line (1+ start-line))
-                          :column (1+ (lsp-translate-column start-character))
-                          :end-line (lsp-translate-line (1+ end-line))
-                          :end-column (1+ (lsp-translate-column end-character)))))
-                    related-information?)))))
-        (funcall callback 'finished))))
+    (->> (lsp--get-buffer-diagnostics
+          (-mapcat)
+          (-lambda ((&Diagnostic :message :severity? :tags? :code? :source? :related-information?
+                                  :range (&Range :start (&Position :line      start-line
+                                                                   :character start-character)
+                                                 :end   (&Position :line      end-line
+                                                                   :character end-character))))
+             (let ((group (gensym)))
+               (cons (flycheck-error-new
+                      :buffer (current-buffer)
+                      :checker checker
+                      :filename buffer-file-name
+                      :message message
+                      :level (lsp-diagnostics--flycheck-calculate-level severity? tags?)
+                      :id code?
+                      :group group
+                      :line (lsp-translate-line (1+ start-line))
+                      :column (1+ (lsp-translate-column start-character))
+                      :end-line (lsp-translate-line (1+ end-line))
+                      :end-column (1+ (lsp-translate-column end-character)))
+                     (-mapcat
+                      (-lambda ((&DiagnosticRelatedInformation
+                                 :message
+                                 :location
+                                 (&Location :range (&Range :start (&Position :line      start-line
+                                                                             :character start-character)
+                                                           :end   (&Position :line      end-line
+                                                                             :character end-character))
+                                            :uri)))
+                        `(,(flycheck-error-new
+                            :buffer (current-buffer)
+                            :checker checker
+                            :filename (-> uri lsp--uri-to-path lsp--fix-path-casing)
+                            :message message
+                            :level (lsp-diagnostics--flycheck-calculate-level (1+ severity?) tags?)
+                            :id code?
+                            :group group
+                            :line (lsp-translate-line (1+ start-line))
+                            :column (1+ (lsp-translate-column start-character))
+                            :end-line (lsp-translate-line (1+ end-line))
+                            :end-column (1+ (lsp-translate-column end-character)))))
+                      related-information?)))))
+         (funcall callback 'finished))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -2621,6 +2628,10 @@ CALLBACK is the status callback passed by Flycheck."
                    (when (string= event "finished\n")
                      (async-upgrade--reload-packages packages)
                      (message "Package upgrade complete!")))))))
+
+(defalias 'jb/xstate-dynamic-params
+  (kmacro
+   "C-SPC C-s i \" C-s C-x n n C-a t y p e : S-SPC C-e , SPC p a r a m s : S-SPC ( { e v e n t C-e SPC = > S-SPC e v e n t . o u t p u t C-SPC C-a { C-x n w"))
 
 (defun count-repititions ()
   (interactive)
