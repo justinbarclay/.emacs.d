@@ -1572,9 +1572,9 @@ parses its input."
          ("C-/" . #'company-other-backend))
   :config
   (require 'company-files)
-  (setq company-minimum-prefix-length 1
+  (setq company-minimum-prefix-length 2
         company-tooltip-limit 14
-        company-idle-delay 0.1
+        company-idle-delay 0.2
         company-selection-wrap-around t
         company-tooltip-align-annotations t
         company-require-match 'never
@@ -1589,8 +1589,7 @@ parses its input."
 
         ;; Buffer-local backends will be computed when loading a major mode, so
         ;; only specify a global default here.
-        company-backends '((company-capf :separate company-dabbrev)
-                           company-files
+        company-backends '((company-capf :separate company-files :separate company-dabbrev)
                            company-yasnippet)
 
         ;; These auto-complete the current selection when
@@ -1601,8 +1600,15 @@ parses its input."
         ;; Make `company-dabbrev' fully case-sensitive, to improve UX with
         ;; domain-specific words with particular casing.
         company-dabbrev-ignore-case nil
-        company-dabbrev-downcase nil)
+        company-dabbrev-downcase nil
+        company-transformers '(company-sort-by-occurrence))
   (add-to-list 'company-files--regexps "file:\\(\\(?:\\.\\{1,2\\}/\\|~/\\|/\\)[^\]\n]*\\)"))
+
+(use-package company-prescient
+  :after company
+  :hook (company-mode . company-prescient-mode)
+  :config
+  (prescient-persist-mode))
 
 (use-package company-box
   :hook (company-mode . company-box-mode)
