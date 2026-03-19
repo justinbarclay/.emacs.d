@@ -12,6 +12,7 @@
   - [[#package-repositories][Package repositories]]
   - [[#personal-information][Personal information]]
   - [[#function-for-making-readmeorg-work][Function for making README.org work]]
+  - [[#lsp-mode-optimizations][Lsp mode optimizations]]
 - [[#vars][Vars]]
   - [[#os][OS]]
 - [[#tent-pole][Tent Pole]]
@@ -227,6 +228,13 @@ Tangle and Compile init file
       ;;(byte-compile-file "~/.emacs.d/init.el")
   (add-hook 'after-save-hook #'my/tangle-dotfiles)
 #+END_SRC
+
+** Lsp mode optimizations
+https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
+#+begin_src elisp :tangle early-init.el
+(setenv "LSP_USE_PLISTS" "true")
+#+end_src
+
 * Vars
 Let's describe some variables to help determine how to configure Emacs
 ** OS
@@ -3096,10 +3104,12 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
            . lsp-deferred)
     (lsp-mode . lsp-enable-which-key-integration)
     :init
+    (setq read-process-output-max (* 1024 1024)) ;; 1mb
     (add-to-list 'load-path (concat (expand-file-name package-user-dir)
                                     "/lsp-mode/clients/"))
     :custom
-    (lsp-idle-delay 0.1)
+    (lsp-use-plists t)
+    (lsp-idle-delay 0.3)
     (lsp-log-io nil)
     (lsp-completion-provider :none)
     (lsp-headerline-breadcrumb-enable nil)

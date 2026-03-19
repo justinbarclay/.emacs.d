@@ -32,6 +32,8 @@
     ;;(byte-compile-file "~/.emacs.d/init.el")
 (add-hook 'after-save-hook #'my/tangle-dotfiles)
 
+(setenv "LSP_USE_PLISTS" "true")
+
 (defvar jb/os-linux-p (eq system-type 'gnu/linux))
 (defvar jb/os-windows-p (eq system-type 'windows-nt))
 (defvar jb/os-macos-p (eq system-type 'darwin))

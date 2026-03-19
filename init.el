@@ -1912,10 +1912,12 @@ Overall Tone:
          . lsp-deferred)
   (lsp-mode . lsp-enable-which-key-integration)
   :init
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
   (add-to-list 'load-path (concat (expand-file-name package-user-dir)
                                   "/lsp-mode/clients/"))
   :custom
-  (lsp-idle-delay 0.1)
+  (lsp-use-plists t)
+  (lsp-idle-delay 0.3)
   (lsp-log-io nil)
   (lsp-completion-provider :none)
   (lsp-headerline-breadcrumb-enable nil)
