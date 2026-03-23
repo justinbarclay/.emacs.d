@@ -553,9 +553,45 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    magit-set-upstream-on-push 'askifnotset))
 
 (use-package forge
-  :after magit
+  :defer 5
   :init
-  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+  :config
+  (defvar jb/forge-known-pr-ids nil)
+  (defun jb/forge-fetch-all-cooperatively ()
+    "Fetch all loaded repositories cooperatively and notify of new PRs."
+    (interactive)
+    (make-thread
+     (lambda ()
+       (unless jb/forge-known-pr-ids
+         (setq jb/forge-known-pr-ids
+               (mapcar #'car (forge-sql [:select [id] :from pullreq]))))
+       (let ((repos (forge-sql [:select [worktree] :from repository])))
+         (dolist (repo repos)
+           (let ((default-directory (car repo)))
+             (when (and default-directory (file-exists-p default-directory))
+               (condition-case nil
+                   (forge-pull)
+                 (error nil))
+               (thread-yield)
+               (sleep-for 2)))))
+       (sleep-for 10)
+       (let ((current-prs (forge-sql [:select [pullreq:id pullreq:title repository:worktree]
+                                      :from pullreq
+                                      :inner-join repository :on (= pullreq:repository repository:id)])))
+         (dolist (pr current-prs)
+           (let ((id (nth 0 pr))
+                 (title (nth 1 pr))
+                 (worktree (nth 2 pr)))
+             (unless (member id jb/forge-known-pr-ids)
+               (push id jb/forge-known-pr-ids)
+               (require 'notifications nil t)
+               (when (fboundp 'notifications-notify)
+                 (notifications-notify
+                  :title (format "New PR in %s" (if worktree (file-name-nondirectory (directory-file-name worktree)) "Repo"))
+                  :body title)))))))))
+  (jb/forge-fetch-all-cooperatively)
+  (run-with-timer 900 900 #'jb/forge-fetch-all-cooperatively))
 
 (use-package hl-todo
   :hook (after-init . global-hl-todo-mode))
@@ -2332,6 +2368,72 @@ CALLBACK is the status callback passed by Flycheck."
 
 (use-package yaml-mode
   :defer t)
+
+(defun jb/yaml-ts-dwim-indent ()
+  "Cycle through valid Tree-sitter indentation levels for the current YAML line."
+  (interactive)
+  (if (< (current-column) (current-indentation))
+      (back-to-indentation)
+    (let* ((prev-line-pos
+            (save-excursion
+              (forward-line -1)
+              (while (and (not (bobp)) (looking-at-p "^[ \t]*$"))
+                (forward-line -1))
+              (point)))
+           (prev-line-indent (save-excursion
+                               (goto-char prev-line-pos)
+                               (current-indentation)))
+           (prev-line-text (save-excursion
+                             (goto-char prev-line-pos)
+                             (buffer-substring-no-properties
+                              (line-beginning-position)
+                              (line-end-position))))
+           (levels (list 0))
+           (node (and (> prev-line-pos 0)
+                      (treesit-node-at (save-excursion
+                                         (goto-char prev-line-pos)
+                                         (line-end-position))))))
+
+      ;; Traverse Tree-sitter AST from the previous line to find all valid parent columns
+      (while node
+        (let ((type (treesit-node-type node)))
+          (when (member type '("block_mapping_pair" "block_sequence_item" "block_node"))
+            (push (save-excursion
+                    (goto-char (treesit-node-start node))
+                    (current-column))
+                  levels)))
+        (setq node (treesit-node-parent node)))
+
+      ;; Add previous line's exact indent (valid sibling level)
+      (push prev-line-indent levels)
+
+      ;; If previous line indicates a child block is starting, add that indentation level
+      (when (string-match-p "\\(:\\|-\\)[ \t]*$" prev-line-text)
+        (push (+ prev-line-indent (or (bound-and-true-p yaml-ts-mode-indent-offset) 2)) levels))
+
+      (setq levels (sort (delete-dups levels) #'<))
+
+      ;; Cycle logic
+      (let* ((current (current-indentation))
+             (next-levels (cl-remove-if (lambda (x) (<= x current)) levels))
+             (next-level (if next-levels (car next-levels) (car levels))))
+        (indent-line-to next-level)
+        (when (< (current-column) next-level)
+          (back-to-indentation))))))
+
+(use-feature yaml-ts-mode
+  :bind
+  (:map yaml-ts-mode-map
+        ("<tab>" . jb/yaml-ts-dwim-indent)
+        ("TAB" . jb/yaml-ts-dwim-indent))
+  :config
+  (when (fboundp 'derived-mode-add-parents)
+    (derived-mode-add-parents 'yaml-ts-mode '(prog-mode))))
+
+(use-package yaml-pro
+ :after yaml-ts-mode
+ :hook ((yaml-ts-mode . yaml-pro-ts-mode)
+        (yaml-mode . yaml-pro-mode)))
 
 (use-package ssh-config-mode
   :defer t)
