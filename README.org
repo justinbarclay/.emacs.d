@@ -3080,8 +3080,7 @@ Better movement through treesitter
 *** agent-shell
 :header-args: :tangle no
 #+begin_src elisp
-(use-package agent-shell
-  :vc (:url "https://github.com/xenodium/agent-shell"))
+(use-package agent-shell)
 #+end_src
 
 **** dependencies

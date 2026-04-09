@@ -1898,8 +1898,7 @@ Overall Tone:
   (with-eval-after-load 'magit
     (ai-code-magit-setup-transients)))
 
-(use-package agent-shell
-  :vc (:url "https://github.com/xenodium/agent-shell"))
+(use-package agent-shell)
 
 (use-package acp
   :vc (:url "https://github.com/xenodium/acp.el"))
