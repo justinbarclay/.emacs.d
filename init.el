@@ -589,9 +589,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                (when (fboundp 'notifications-notify)
                  (notifications-notify
                   :title (format "New PR in %s" (if worktree (file-name-nondirectory (directory-file-name worktree)) "Repo"))
-                  :body title)))))))))
-  (jb/forge-fetch-all-cooperatively)
-  (run-with-timer 900 900 #'jb/forge-fetch-all-cooperatively))
+                  :body title))))))))))
+  ;; (jb/forge-fetch-all-cooperatively)
+  ;; (run-with-timer 900 900 #'jb/forge-fetch-all-cooperatively)
 
 (use-package hl-todo
   :hook (after-init . global-hl-todo-mode))

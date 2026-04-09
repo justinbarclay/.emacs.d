@@ -982,9 +982,10 @@ Now that we have that installed we can pull in org-pdftools from github
                  (when (fboundp 'notifications-notify)
                    (notifications-notify
                     :title (format "New PR in %s" (if worktree (file-name-nondirectory (directory-file-name worktree)) "Repo"))
-                    :body title)))))))))
-    (jb/forge-fetch-all-cooperatively)
-    (run-with-timer 900 900 #'jb/forge-fetch-all-cooperatively))
+                    :body title))))))))))
+    ;; (jb/forge-fetch-all-cooperatively)
+    ;; (run-with-timer 900 900 #'jb/forge-fetch-all-cooperatively)
+
 #+END_SRC
 *** Magit TODO
 Due to how hl-todo specified versions, we have to do a full clone and specify the version, as mentioned [[https://github.com/progfolio/elpaca/wiki/Warnings-and-Errors#unmet-dependency-version][here]]
