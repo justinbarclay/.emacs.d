@@ -1932,8 +1932,7 @@ Overall Tone:
 
 (use-package agent-shell)
 
-(use-package acp
-  :vc (:url "https://github.com/xenodium/acp.el"))
+(use-package acp)
 
 (use-package shell-maker
   :ensure t)

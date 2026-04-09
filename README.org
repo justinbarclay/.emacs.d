@@ -1208,7 +1208,7 @@ I'm a big fan of the Cascadia font from Microsoft lately. It's looks pretty good
 #+BEGIN_src elisp :tangle early-init.el
 (let ((font-name (if jb/os-windows-p
                      "CaskaydiaCove NFM"
-                   "CaskaydiaMono Nerd Font Mono")))
+                   "CaskaydiaMono Nerd Font")))
   (set-face-attribute 'default nil
                       :family font-name :height 150 :weight 'normal))
 #+END_SRC
@@ -3140,14 +3140,14 @@ Better movement through treesitter
 
 *** agent-shell
 :header-args: :tangle no
+
 #+begin_src elisp
 (use-package agent-shell)
 #+end_src
 
 **** dependencies
 #+begin_src elisp
-(use-package acp
-  :vc (:url "https://github.com/xenodium/acp.el"))
+(use-package acp)
 #+end_src
 
 #+begin_src elisp
