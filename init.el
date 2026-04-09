@@ -716,6 +716,20 @@ for example \"https://user@myhost.com\"."
                                   :api-url "https://freshrss.cloudbreak.app/api/fever.php"
                                   :password (fetch-elfeed-password)))))
 
+(setq window-combination-resize t)
+
+(winner-mode +1)
+
+(defun jb/toggle-delete-other-windows ()
+  "Delete other windows in frame if any, or restore previous window config."
+  (interactive)
+  (if (and winner-mode
+           (equal (selected-window) (next-window)))
+      (winner-undo)
+    (delete-other-windows)))
+
+(global-set-key (kbd "C-x 1") #'jb/toggle-delete-other-windows)
+
 (use-package ligature
   :commands (global-ligature-mode)
   :config
@@ -1077,6 +1091,11 @@ for example \"https://user@myhost.com\"."
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 
+(add-hook 'after-save-hook
+          #'executable-make-buffer-file-executable-if-script-p)
+(setq reb-re-syntax 'string)
+(setq ffap-machine-p-known 'reject)
+
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
 (setq-default truncate-lines t)
@@ -1094,6 +1113,9 @@ for example \"https://user@myhost.com\"."
 (save-place-mode 1)
 ;; keep track of saved places in ~/.emacs.d/places
 (setq save-place-file (concat user-emacs-directory "places"))
+(advice-add 'save-place-find-file-hook :after
+            (lambda (&rest _)
+              (when buffer-file-name (ignore-errors (recenter)))))
 
 (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
 
@@ -1105,6 +1127,8 @@ for example \"https://user@myhost.com\"."
 (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
 
 (unbind-key "M-,")
+
+(setq set-mark-command-repeat-pop t)
 
 (defun pop-mark-dwim ()
   "If xref history exist, use that to move around and if not pop off the global mark stack."
@@ -1300,7 +1324,15 @@ for example \"https://user@myhost.com\"."
 
 (use-feature savehist
   :init
-  (savehist-mode))
+  (savehist-mode)
+  :config
+  (setq savehist-additional-variables
+        '(search-ring regexp-search-ring kill-ring))
+  (add-hook 'savehist-save-hook
+            (lambda ()
+              (setq kill-ring
+                    (mapcar #'substring-no-properties
+                            (cl-remove-if-not #'stringp kill-ring))))))
 
 (defun ivy-rich-switch-buffer-user-buffer-p (buffer)
   "Check whether BUFFER-NAME is a user buffer."

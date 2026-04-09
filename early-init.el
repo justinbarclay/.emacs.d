@@ -75,14 +75,20 @@
  ;; When one selects something in another program to paste it into Emacs,
  ;; but kills something in Emacs before actually pasting it,
  ;; this selection is gone unless this variable is non-nil
- ;;save-interprogram-paste-before-kill nil ;; This is disabled because it crashes emacs.
+ save-interprogram-paste-before-kill t
+
+ ;; No duplicates in kill ring
+ kill-do-not-save-duplicates t
 
  ;; Shows all options when running apropos. For more info,
  ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
  apropos-do-all t
 
  ;; Mouse yank commands yank at point instead of at click.
- mouse-yank-at-point t)
+ mouse-yank-at-point t
+
+ ;; Auto-select help windows
+ help-window-select t)
 
 (setq-default ring-bell-function 'ignore)
 
@@ -99,9 +105,16 @@
 ;; Go straight to scratch buffer on startup
 (setq-default inhibit-startup-message t)
 
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
 (setq bidi-inhibit-bpa t)
 
-(setq-default read-process-output-max (* 1024 1024)) ;; 1mb
+(setq-default read-process-output-max (* 4 1024 1024)) ;; 4mb
+
+(setq redisplay-skip-fontification-on-input t)
+
+(setq-default cursor-in-non-selected-windows nil)
+(setq highlight-nonselected-windows nil)
 
 (global-display-line-numbers-mode)
 (set-default 'display-line-numbers-type 't)

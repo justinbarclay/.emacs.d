@@ -58,6 +58,7 @@
   - [[#searching][Searching]]
 - [[#editing][Editing]]
   - [[#buffer-encoding][Buffer Encoding]]
+  - [[#editing-enhancements][Editing Enhancements]]
   - [[#newline-and-indent][Newline and indent]]
   - [[#truncate-lines][Truncate lines]]
   - [[#highlight-current-line][Highlight current line]]
@@ -1138,6 +1139,26 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 
 * Look and Feel
 ** Window
+*** Proportional Resizing
+#+begin_src elisp
+  (setq window-combination-resize t)
+#+end_src
+
+*** Reversible C-x 1
+#+begin_src elisp
+  (winner-mode +1)
+
+  (defun jb/toggle-delete-other-windows ()
+    "Delete other windows in frame if any, or restore previous window config."
+    (interactive)
+    (if (and winner-mode
+             (equal (selected-window) (next-window)))
+        (winner-undo)
+      (delete-other-windows)))
+
+  (global-set-key (kbd "C-x 1") #'jb/toggle-delete-other-windows)
+#+end_src
+
 *** Natural colouring from emacs chrome
 #+BEGIN_src elisp :tangle early-init.el
   (when jb/os-macos-p
@@ -1265,14 +1286,20 @@ No cursor blinking, it's distracting
    ;; When one selects something in another program to paste it into Emacs,
    ;; but kills something in Emacs before actually pasting it,
    ;; this selection is gone unless this variable is non-nil
-   ;;save-interprogram-paste-before-kill nil ;; This is disabled because it crashes emacs.
+   save-interprogram-paste-before-kill t
+
+   ;; No duplicates in kill ring
+   kill-do-not-save-duplicates t
 
    ;; Shows all options when running apropos. For more info,
    ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
    apropos-do-all t
 
    ;; Mouse yank commands yank at point instead of at click.
-   mouse-yank-at-point t)
+   mouse-yank-at-point t
+
+   ;; Auto-select help windows
+   help-window-select t)
 #+END_SRC
 
 My name isn't "Tinker", so I don't need a bell.
@@ -1299,6 +1326,8 @@ Note:
 Disabling the BPA makes redisplay faster, but might produce incorrect
 display reordering of bidirectional text with embedded parentheses
 #+BEGIN_src elisp :tangle early-init.el
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
 (setq bidi-inhibit-bpa t)
 #+END_SRC
 
@@ -1308,9 +1337,20 @@ We want to unbind ~C-l~ so we can use it later
 #+end_src
 
 ** Performance
-Increase the size of read-process-output-max from default of 4k to 1Mb
+Increase the size of read-process-output-max from default of 4k to 4Mb
 #+BEGIN_src elisp :tangle early-init.el
-  (setq-default read-process-output-max (* 1024 1024)) ;; 1mb
+  (setq-default read-process-output-max (* 4 1024 1024)) ;; 4mb
+#+END_SRC
+
+Skip fontification during input for smoother typing and scrolling
+#+BEGIN_src elisp :tangle early-init.el
+  (setq redisplay-skip-fontification-on-input t)
+#+END_SRC
+
+Disable cursors in non-focused windows
+#+BEGIN_src elisp :tangle early-init.el
+  (setq-default cursor-in-non-selected-windows nil)
+  (setq highlight-nonselected-windows nil)
 #+END_SRC
 
 ** Line Numbers
@@ -1807,6 +1847,14 @@ General config to make editing text feel nice
   (set-keyboard-coding-system 'utf-8)
 #+end_src
 
+** Editing Enhancements
+#+begin_src elisp
+  (add-hook 'after-save-hook
+            #'executable-make-buffer-file-executable-if-script-p)
+  (setq reb-re-syntax 'string)
+  (setq ffap-machine-p-known 'reject)
+#+end_src
+
 ** Newline and indent
 #+BEGIN_src elisp
   (define-key global-map (kbd "RET") 'newline-and-indent)
@@ -1842,6 +1890,9 @@ Remember where point was when I come back to a file
   (save-place-mode 1)
   ;; keep track of saved places in ~/.emacs.d/places
   (setq save-place-file (concat user-emacs-directory "places"))
+  (advice-add 'save-place-find-file-hook :after
+              (lambda (&rest _)
+                (when buffer-file-name (ignore-errors (recenter)))))
 #+END_SRC
 ** Comment or Uncomment region
 #+BEGIN_src elisp
@@ -1865,6 +1916,8 @@ Moving around with the mark should be really simple. It's such a super power tha
 Here is an example of and another examp I guess it is corfu being slow due to too many candidates?
 #+begin_src elisp
   (unbind-key "M-,")
+
+  (setq set-mark-command-repeat-pop t)
 
   (defun pop-mark-dwim ()
     "If xref history exist, use that to move around and if not pop off the global mark stack."
@@ -2122,7 +2175,15 @@ Save minibuffer history for better integration with orderless
 #+begin_src elisp
   (use-feature savehist
     :init
-    (savehist-mode))
+    (savehist-mode)
+    :config
+    (setq savehist-additional-variables
+          '(search-ring regexp-search-ring kill-ring))
+    (add-hook 'savehist-save-hook
+              (lambda ()
+                (setq kill-ring
+                      (mapcar #'substring-no-properties
+                              (cl-remove-if-not #'stringp kill-ring))))))
 #+end_src
 
 ***** Marginalia
