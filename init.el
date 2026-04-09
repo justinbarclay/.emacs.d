@@ -1625,8 +1625,7 @@ parses its input."
 
         ;; Buffer-local backends will be computed when loading a major mode, so
         ;; only specify a global default here.
-        company-backends '((company-capf :separate company-files :separate company-dabbrev)
-                           company-yasnippet)
+        company-backends '(company-capf)
 
         ;; These auto-complete the current selection when
         ;; `company-auto-commit-chars' is typed. This is too magical. We
@@ -1638,6 +1637,19 @@ parses its input."
         company-dabbrev-ignore-case nil
         company-dabbrev-downcase nil
         company-transformers '(company-sort-by-occurrence))
+
+  (defun jb/set-company-backends ()
+    (let ((mode-mappings
+           '((text-mode ((company-dabbrev company-yasnippet) company-files))
+             (prog-mode ((:separate company-capf company-yasnippet company-files company-dabbrev-code)))
+             (conf-mode (company-capf company-dabbrev-code company-yasnippet)))))
+      ;; find the first match of mode for derived mode
+      (let ((mapping (cl-assoc-if #'derived-mode-p mode-mappings)))
+        (when mapping
+          (setq-local company-backends (cadr mapping))))))
+
+  (add-hook 'company-mode-hook #'jb/set-company-backends)
+
   (add-to-list 'company-files--regexps "file:\\(\\(?:\\.\\{1,2\\}/\\|~/\\|/\\)[^\]\n]*\\)"))
 
 (use-package company-prescient
