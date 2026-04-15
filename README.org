@@ -4251,8 +4251,8 @@ For saving root protected files
 (defun jb/stdev (a)
   (sqrt
    (/
-    (apply '+ (mapcar 'square (mapcar (lambda (subtract)
-                                        (- subtract (mean a)))
+    (apply '+ (mapcar 'jb/square (mapcar (lambda (subtract)
+                                           (- subtract (jb/mean a)))
                                       a)))
     (- (length a) 1 ))))
 #+END_SRC
