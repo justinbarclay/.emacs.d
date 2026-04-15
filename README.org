@@ -1138,7 +1138,7 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
 ** Window
 *** Proportional Resizing
 #+begin_src elisp
-  (setq window-combination-resize t)
+  (setopt window-combination-resize t)
 #+end_src
 
 *** Reversible C-x 1
@@ -1197,7 +1197,7 @@ Remove scroll bars
 *** Precision Framing
 Emacs keeps a margin between itself and other windows, but if we enable pixelwise resizing it keeps everything nice and snug
 #+begin_src elisp :tangle early-init.el
-  (setq frame-resize-pixelwise 't)
+  (setopt frame-resize-pixelwise t)
 #+end_src
 
 ** Font
@@ -1325,7 +1325,7 @@ display reordering of bidirectional text with embedded parentheses
 #+BEGIN_src elisp :tangle early-init.el
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
-(setq bidi-inhibit-bpa t)
+(setopt bidi-inhibit-bpa t)
 #+END_SRC
 
 We want to unbind ~C-l~ so we can use it later
@@ -1341,7 +1341,7 @@ Increase the size of read-process-output-max from default of 4k to 4Mb
 
 Skip fontification during input for smoother typing and scrolling
 #+BEGIN_src elisp :tangle early-init.el
-  (setq redisplay-skip-fontification-on-input t)
+  (setopt redisplay-skip-fontification-on-input t)
 #+END_SRC
 
 Disable cursors in non-focused windows
@@ -1848,8 +1848,8 @@ General config to make editing text feel nice
 #+begin_src elisp
   (add-hook 'after-save-hook
             #'executable-make-buffer-file-executable-if-script-p)
-  (setq reb-re-syntax 'string)
-  (setq ffap-machine-p-known 'reject)
+  (setopt reb-re-syntax 'string)
+  (setopt ffap-machine-p-known 'reject)
 #+end_src
 
 ** Newline and indent
@@ -1886,7 +1886,7 @@ Remember where point was when I come back to a file
 #+BEGIN_src elisp
   (save-place-mode 1)
   ;; keep track of saved places in ~/.emacs.d/places
-  (setq save-place-file (concat user-emacs-directory "places"))
+  (setopt save-place-file (concat user-emacs-directory "places"))
   (advice-add 'save-place-find-file-hook :after
               (lambda (&rest _)
                 (when buffer-file-name (ignore-errors (recenter)))))
@@ -1898,10 +1898,10 @@ Remember where point was when I come back to a file
 ** Backups
 Emacs can automatically create backup files. This tells Emacs to put all backups in ~/.emacs.d/backups. More [[http://www.gnu.org/software/emacs/manual/html_node/elisp/Backup-Files.html][info]].
 #+BEGIN_src elisp
-  (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
+  (setopt backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                  "backups"))))
-  (setq auto-save-default nil)
-  (setq backup-by-copying t)
+  (setopt auto-save-default nil)
+  (setopt backup-by-copying t)
 #+END_SRC
 ** Disable Superfluous warnings
 #+begin_src elisp
@@ -1914,7 +1914,7 @@ Here is an example of and another examp I guess it is corfu being slow due to to
 #+begin_src elisp
   (unbind-key "M-,")
 
-  (setq set-mark-command-repeat-pop t)
+  (setopt set-mark-command-repeat-pop t)
 
   (defun pop-mark-dwim ()
     "If xref history exist, use that to move around and if not pop off the global mark stack."
