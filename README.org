@@ -2408,7 +2408,7 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
   (use-package embark
     :bind
     (("C-." . embark-act)         ;; pick some comfortable binding
-     ("C-;" . embark-dwim)        ;; good alternative: M-.
+     ("M-." . embark-dwim)        ;; good alternative: C-;
      ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
     :init
@@ -3106,7 +3106,7 @@ Better movement through treesitter
 *** Aidermacs
 #+begin_src elisp
   (use-package aidermacs
-    :bind (("C-c C-a" . aidermacs-transient-menu))
+    :bind (("C-c a" . aidermacs-transient-menu))
     :hook (aidermacs-before-run-backend .
             (lambda ()
               (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
