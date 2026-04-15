@@ -712,7 +712,6 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 #+begin_src elisp
   (use-package org-roam
     :init
-    (setq org-roam-v2-ack t)
     :custom
     (org-roam-directory "~/dev/diary")
     (org-roam-completion-everywhere t)
