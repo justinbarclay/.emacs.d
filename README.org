@@ -2749,7 +2749,7 @@ This is stolen wholesale from Centaur Emacs. https://github.com/seagle0128/.emac
 #+end_src
 **** Kind Icon
 Things are always better when they are prettier, let's add icons to our in buffer completions and make them pretty. Nothing requires kind-icon, so nothing really brings it into scope. So, we can't just stuff everything into config. We need a way to trigger calling, and loading, kind-icons. So, we add kind-icon to corfu's formatters within the init block.
-#+begin_src elisp
+#+begin_src elisp :tangle no
   (use-package kind-icon
     :init
     (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)
