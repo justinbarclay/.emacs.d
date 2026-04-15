@@ -999,6 +999,17 @@ Due to how hl-todo specified versions, we have to do a full clone and specify th
     :hook (magit-mode . magit-todos-mode))
 #+end_src
 
+*** Diff Highlights
+Show per-line git diff indicators in the fringe — added, changed, and deleted lines.
+#+begin_src elisp
+  (use-package diff-hl
+    :hook ((prog-mode . diff-hl-mode)
+           (org-mode  . diff-hl-mode)
+           (dired-mode . diff-hl-dired-mode)
+           (magit-pre-refresh  . diff-hl-magit-pre-refresh)
+           (magit-post-refresh . diff-hl-magit-post-refresh)))
+#+end_src
+
 *** Code Review
 #+begin_src elisp
   (use-package code-review
@@ -1811,6 +1822,13 @@ Unbind C-s from isearch and make it the universal search command
     :bind ("C-s o" . occur))
 #+end_src
 
+*** Wgrep
+Make grep/rg/consult-grep results directly editable in-buffer — edit and save to apply changes across files.
+#+begin_src elisp
+  (use-package wgrep
+    :custom
+    (wgrep-auto-save-buffer t))
+#+end_src
 *** Multi Occur
 #+begin_src elisp
   (use-feature multi-occur
