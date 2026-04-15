@@ -770,7 +770,7 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
 
     (defun nov-previous-heading ()
       (interactive)
-      (text-property-search-forward 'outline-level))
+      (text-property-search-backward 'outline-level))
     (defun nov-jump-to-heading ()
       (interactive)
       (let* ((headings '())
