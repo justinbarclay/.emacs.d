@@ -1306,7 +1306,7 @@ My name isn't "Tinker", so I don't need a bell.
 
 #+BEGIN_src elisp :tangle early-init.el
 ;; Changes all yes/no questions to y/n type
-(fset 'yes-or-no-p 'y-or-n-p)
+(setopt use-short-answers t)
 
 ;; shell scripts
 (setq-default sh-basic-offset 2)
