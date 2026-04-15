@@ -900,7 +900,7 @@ Now that we have that installed we can pull in org-pdftools from github
         "Runs magit-commit unless prefix is passed"
         (interactive "P")
         (if show-options
-            (magit-key-mode-popup-committing)
+            (magit-commit '("--verbose"))
           (magit-commit))))
     :config
     ;; make magit status go full-screen but remember previous window
@@ -929,8 +929,6 @@ Now that we have that installed we can pull in org-pdftools from github
     (setopt
      ;; customize the iconify function for
      magit-format-file-function #'magit-format-file-nerd-icons
-     ;; don't put "origin-" in front of new branch names by default
-     magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
      ;; open magit status in same window as current buffer
      magit-status-buffer-switch-function #'switch-to-buffer
      ;; highlight word/letter changes in hunk diffs
