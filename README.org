@@ -574,7 +574,7 @@ as such need both of these modes loaded before they'll work.
   (defun jb/gen-curl-command ()
     (interactive)
     (let ((info (org-babel-get-src-block-info)))
-      (if (equalp "restclient" (car info))
+      (if (equal "restclient" (car info))
           (org-babel-execute-src-block t (cons "restclient-curl"
                                                (cdr info)))
           (message "I'm sorry, I can only generate curl commands for a restclient block."))))
