@@ -18,8 +18,8 @@
 (setq package-user-dir (concat user-emacs-directory "elpa"))
 (setq load-prefer-newer t)
 (setq package-archives
-      '(("melpa" . "http://melpa.org/packages/")
-        ("melpa-stable" . "http://stable.melpa.org/packages/")
+      '(("melpa" . "https://melpa.org/packages/")
+        ("melpa-stable" . "https://stable.melpa.org/packages/")
         ("gnu" . "https://elpa.gnu.org/packages/")
         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
@@ -56,7 +56,8 @@
 
 (setq-default frame-title-format "%b (%f)")
 
-(setq frame-resize-pixelwise 't)
+(setopt frame-resize-pixelwise 't
+        window-resize-pixelwise 't)
 
 (let ((font-name (if jb/os-windows-p
                      "CaskaydiaCove NFM"
@@ -93,7 +94,7 @@
 (setq-default ring-bell-function 'ignore)
 
 ;; Changes all yes/no questions to y/n type
-(fset 'yes-or-no-p 'y-or-n-p)
+(setopt use-short-answers t)
 
 ;; shell scripts
 (setq-default sh-basic-offset 2)
@@ -107,11 +108,11 @@
 
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
-(setq bidi-inhibit-bpa t)
+(setopt bidi-inhibit-bpa t)
 
 (setq-default read-process-output-max (* 4 1024 1024)) ;; 4mb
 
-(setq redisplay-skip-fontification-on-input t)
+(setopt redisplay-skip-fontification-on-input t)
 
 (setq-default cursor-in-non-selected-windows nil)
 (setq highlight-nonselected-windows nil)

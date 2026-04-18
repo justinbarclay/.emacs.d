@@ -1075,7 +1075,6 @@ Show per-line git diff indicators in the fringe — added, changed, and deleted 
 *** Mu4e Dashboard
 #+begin_src elisp
   ;; (push 'mu4e elpaca-ignored-dependencies)
-
   (use-package mu4e-dashboard
     :vc (:url "https://github.com/rougier/mu4e-dashboard" :rev :newest)
     :bind ("C-c d" . mu4e-dashboard)
@@ -1181,7 +1180,7 @@ Remove the tool bar
 
 Remove the menu bar
 #+BEGIN_src elisp :tangle early-init.el
-  (menu-bar-mode -1)
+(menu-bar-mode -1)
 #+END_SRC
 
 Remove scroll bars
@@ -1191,7 +1190,7 @@ Remove scroll bars
 #+END_SRC
 *** Scrolling
 #+begin_src elisp :tangle early-init.el
-  (pixel-scroll-precision-mode 1)
+(pixel-scroll-precision-mode 1)
 #+end_src
 
 *** Emacs should not take focus when it launches
@@ -1208,7 +1207,8 @@ Remove scroll bars
 *** Precision Framing
 Emacs keeps a margin between itself and other windows, but if we enable pixelwise resizing it keeps everything nice and snug
 #+begin_src elisp :tangle early-init.el
-  (setopt frame-resize-pixelwise t)
+  (setopt frame-resize-pixelwise 't
+          window-resize-pixelwise 't)
 #+end_src
 
 ** Font

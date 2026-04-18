@@ -249,7 +249,7 @@ This function is called by `org-babel-execute-src-block'"
 (defun jb/gen-curl-command ()
   (interactive)
   (let ((info (org-babel-get-src-block-info)))
-    (if (equalp "restclient" (car info))
+    (if (equal "restclient" (car info))
         (org-babel-execute-src-block t (cons "restclient-curl"
                                              (cdr info)))
         (message "I'm sorry, I can only generate curl commands for a restclient block."))))
@@ -365,7 +365,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package org-roam
   :init
-  (setq org-roam-v2-ack t)
   :custom
   (org-roam-directory "~/dev/diary")
   (org-roam-completion-everywhere t)
@@ -413,7 +412,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
   (defun nov-previous-heading ()
     (interactive)
-    (text-property-search-forward 'outline-level))
+    (text-property-search-backward 'outline-level))
   (defun nov-jump-to-heading ()
     (interactive)
     (let* ((headings '())
@@ -508,7 +507,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       "Runs magit-commit unless prefix is passed"
       (interactive "P")
       (if show-options
-          (magit-key-mode-popup-committing)
+          (magit-commit '("--verbose"))
         (magit-commit))))
   :config
   ;; make magit status go full-screen but remember previous window
@@ -537,8 +536,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setopt
    ;; customize the iconify function for
    magit-format-file-function #'magit-format-file-nerd-icons
-   ;; don't put "origin-" in front of new branch names by default
-   magit-default-tracking-name-function #'magit-default-tracking-name-branch-only
    ;; open magit status in same window as current buffer
    magit-status-buffer-switch-function #'switch-to-buffer
    ;; highlight word/letter changes in hunk diffs
@@ -601,6 +598,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (magit-todos-exclude-globs '("dist/**"))
   :hook (magit-mode . magit-todos-mode))
 
+(use-package diff-hl
+  :hook ((prog-mode . diff-hl-mode)
+         (org-mode  . diff-hl-mode)
+         (dired-mode . diff-hl-dired-mode)
+         (magit-pre-refresh  . diff-hl-magit-pre-refresh)
+         (magit-post-refresh . diff-hl-magit-post-refresh)))
+
 (use-package code-review
   :vc (:url "https://github.com/doomelpa/code-review" :rev :newest))
 
@@ -656,7 +660,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (display-line-numbers-mode -1))
 
 ;; (push 'mu4e elpaca-ignored-dependencies)
-
 (use-package mu4e-dashboard
   :vc (:url "https://github.com/rougier/mu4e-dashboard" :rev :newest)
   :bind ("C-c d" . mu4e-dashboard)
@@ -716,7 +719,7 @@ for example \"https://user@myhost.com\"."
                                   :api-url "https://freshrss.cloudbreak.app/api/fever.php"
                                   :password (fetch-elfeed-password)))))
 
-(setq window-combination-resize t)
+(setopt window-combination-resize t)
 
 (winner-mode +1)
 
@@ -1067,6 +1070,10 @@ for example \"https://user@myhost.com\"."
 (use-feature occur
   :bind ("C-s o" . occur))
 
+(use-package wgrep
+  :custom
+  (wgrep-auto-save-buffer t))
+
 (use-feature multi-occur
   :init
   (defun get-buffers-matching-mode (mode)
@@ -1093,8 +1100,8 @@ for example \"https://user@myhost.com\"."
 
 (add-hook 'after-save-hook
           #'executable-make-buffer-file-executable-if-script-p)
-(setq reb-re-syntax 'string)
-(setq ffap-machine-p-known 'reject)
+(setopt reb-re-syntax 'string)
+(setopt ffap-machine-p-known 'reject)
 
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
@@ -1112,23 +1119,23 @@ for example \"https://user@myhost.com\"."
 
 (save-place-mode 1)
 ;; keep track of saved places in ~/.emacs.d/places
-(setq save-place-file (concat user-emacs-directory "places"))
+(setopt save-place-file (concat user-emacs-directory "places"))
 (advice-add 'save-place-find-file-hook :after
             (lambda (&rest _)
               (when buffer-file-name (ignore-errors (recenter)))))
 
 (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
 
-(setq backup-directory-alist `(("." . ,(concat user-emacs-directory
+(setopt backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
-(setq auto-save-default nil)
-(setq backup-by-copying t)
+(setopt auto-save-default nil)
+(setopt backup-by-copying t)
 
 (setq-default warning-suppress-log-types '((copilot copilot-no-mode-indent)))
 
 (unbind-key "M-,")
 
-(setq set-mark-command-repeat-pop t)
+(setopt set-mark-command-repeat-pop t)
 
 (defun pop-mark-dwim ()
   "If xref history exist, use that to move around and if not pop off the global mark stack."
@@ -1544,7 +1551,7 @@ parses its input."
 (use-package embark
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("M-." . embark-dwim)        ;; good alternative: C-;
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
   :init
@@ -1910,7 +1917,7 @@ Overall Tone:
           (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))))))
 
 (use-package aidermacs
-  :bind (("C-c C-a" . aidermacs-transient-menu))
+  :bind (("C-c a" . aidermacs-transient-menu))
   :hook (aidermacs-before-run-backend .
           (lambda ()
             (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
@@ -2681,8 +2688,8 @@ CALLBACK is the status callback passed by Flycheck."
 (defun jb/stdev (a)
   (sqrt
    (/
-    (apply '+ (mapcar 'square (mapcar (lambda (subtract)
-                                        (- subtract (mean a)))
+    (apply '+ (mapcar 'jb/square (mapcar (lambda (subtract)
+                                           (- subtract (jb/mean a)))
                                       a)))
     (- (length a) 1 ))))
 
