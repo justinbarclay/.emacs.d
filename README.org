@@ -17,7 +17,6 @@
   - [[#os][OS]]
 - [[#tent-pole][Tent Pole]]
   - [[#use-package][use-package]]
-  - [[#seq][seq]]
   - [[#org-mode][Org Mode]]
   - [[#ltex][Ltex]]
   - [[#eshell][EShell]]
@@ -173,7 +172,9 @@ They are really noisy and annoying right now. And nothing I can deal with.
   (setq native-comp-async-report-warnings-errors nil)
 #+end_src
 ** Unload some built-in packages
-Other dependencies need updated packages and Elpaca is not good about unloading them. So we have to do it for Elpaca.
+Other dependencies need updated packages.
+
+This was occasionally needed by Elpaca because Elpaca decided not to handle this. So we handled it for them, but this also should help when we manually upgrade jsonrpc
 #+begin_src elisp :tangle early-init.el
   (when (featurep 'jsonrpc)
       (unload-feature 'jsonrpc))
@@ -309,23 +310,6 @@ This is hidden here to load right after we have use-package to be able to benchm
     ;; To disable collection of benchmark data after init is done.
     (add-hook 'window-setup-hook 'benchmark-init/deactivate))
 #+END_SRC
-** seq
-#+begin_src elisp :tangle no
-  (defun +elpaca-unload-seq (e)
-    (and (featurep 'seq) (unload-feature 'seq t))
-    (elpaca--continue-build e))
-
-  ;; You could embed this code directly in the reicpe, I just abstracted it into a function.
-  (defun +elpaca-seq-build-steps ()
-    (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
-                         elpaca--pre-built-steps elpaca-build-steps))
-            (list '+elpaca-unload-seq 'elpaca--activate-package)))
-
-  (use-package seq
-    :init
-    (require 'seq)
-    :ensure `(seq :build ,(+elpaca-seq-build-steps)))
-#+end_src
 ** Org Mode
 *** Org
 #+BEGIN_src elisp
@@ -1075,7 +1059,6 @@ Show per-line git diff indicators in the fringe — added, changed, and deleted 
 
 *** Mu4e Dashboard
 #+begin_src elisp
-  ;; (push 'mu4e elpaca-ignored-dependencies)
   (use-package mu4e-dashboard
     :vc (:url "https://github.com/rougier/mu4e-dashboard" :rev :newest)
     :bind ("C-c d" . mu4e-dashboard)
