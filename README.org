@@ -2998,14 +2998,14 @@ Better movement through treesitter
 *** MCP
 #+begin_src elisp
   (use-package mcp
-    :commands (mcp-hub-start-all-server mcp-hub-stop-all-server)
+    :commands (mcp-hub-start-all-server mcp-hub-close-all-server)
     :config
     (defun jb/mcp-refresh-project-servers ()
       "Re-initialize MCP servers based on the current project's environment.
   This ensures that project-local environment variables (like DATABASE_URI)
   and project-specific filesystem roots are correctly loaded into MCP."
       (interactive)
-      (mcp-hub-stop-all-server)
+      (mcp-hub-close-all-server)
       (let* ((project-root (or (and (fboundp 'project-root)
                                    (project-current)
                                    (project-root (project-current)))

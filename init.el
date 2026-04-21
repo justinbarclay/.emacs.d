@@ -659,7 +659,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
   (display-line-numbers-mode -1))
 
-;; (push 'mu4e elpaca-ignored-dependencies)
 (use-package mu4e-dashboard
   :vc (:url "https://github.com/rougier/mu4e-dashboard" :rev :newest)
   :bind ("C-c d" . mu4e-dashboard)
@@ -1816,14 +1815,14 @@ parses its input."
   (global-treesit-auto-mode))
 
 (use-package mcp
-  :commands (mcp-hub-start-all-server mcp-hub-stop-all-server)
+  :commands (mcp-hub-start-all-server mcp-hub-close-all-server)
   :config
   (defun jb/mcp-refresh-project-servers ()
     "Re-initialize MCP servers based on the current project's environment.
 This ensures that project-local environment variables (like DATABASE_URI)
 and project-specific filesystem roots are correctly loaded into MCP."
     (interactive)
-    (mcp-hub-stop-all-server)
+    (mcp-hub-close-all-server)
     (let* ((project-root (or (and (fboundp 'project-root)
                                  (project-current)
                                  (project-root (project-current)))
