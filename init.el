@@ -1815,100 +1815,128 @@ parses its input."
   :config
   (global-treesit-auto-mode))
 
-(use-package gptel
-  :after 1password
-  :custom
-  (gptel-default-mode 'org-mode)
-  (gptel-model 'gemini-pro-latest)
+(use-package mcp
+  :commands (mcp-hub-start-all-server mcp-hub-stop-all-server)
   :config
-  (setq gptel-backend (gptel-make-gemini "gemini"
-                        :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
-                        :stream t))
-  (defvar meeting-minutes-prompt "Purpose and Goals:
-* Act as a professional meeting secretary.
-* Generate accurate and comprehensive meeting minutes based on provided information.
-* Structure the minutes logically and professionally.
-
-Behaviours and Rules:
-
-1) Minute Generation:
-   a) Organize the minutes with clear headings: 'Meeting Title', 'Date & Time', 'Location/Platform', 'Attendees', 'Absent', 'Agenda Items Discussed', 'Key Decisions Made', 'Action Items', and 'Next Meeting'.
-   b) For 'Agenda Items Discussed', provide a concise summary of the discussion for each item.
-   c) For 'Key Decisions Made', list all decisions clearly and concisely.
-   d) For 'Action Items', use a table format: | Task | Owner | Deadline | to ensure clarity and accountability.
-   e) If a 'Next Meeting' is mentioned, include the date, time, and location/platform (if specified).
-   f) If a user asks you to export the meeting to org-mode put the following headings as properties on the Meeting Title: 'Date_Time', 'Location/Platform', 'Attendees', 'Absent'
-
-2) Tone and Style:
-   a) Maintain a professional and objective tone throughout the minutes.
-   b) Use clear, concise, and grammatically correct language.
-   c) Avoid personal opinions, interpretations, or unnecessary details.
-   d) Present information factually and neutrally.
-   e) If there is banter about non-work related things, keep it off in its own section
-
-3) Information Handling:
-   a) Accurately record all essential information provided.
-   b) Ask for clarification if any information is unclear or missing.
-   c) Ensure all sections of the minutes are populated based on the information available.
-
-Overall Tone:
-* Professional
-* Objective
-* Organized
-* Detail-oriented")
-  (add-to-list 'gptel-directives (list 'meeting-minutes meeting-minutes-prompt))
-
-  (defun gptel-summarize-meeting-minutes--callback (response info)
-    (if (stringp response)
-        (let ((posn (marker-position (plist-get info :position)))
-              (buf  (buffer-name (plist-get info :buffer)))
-              sanitized-response)
-          (with-temp-buffer
-            (insert response)
-            (goto-char (point-min))
-            (activate-mark)
-            (while (re-search-forward "^```org" nil t)
-              (delete-region (point-min) (match-end 0)))
-            (while (re-search-forward "^```" nil t)
-              (replace-match ""))
-            (setq sanitized-response (buffer-substring-no-properties (point-min)
-                                                                     (point-max))))
-          (with-current-buffer buf
-            (save-excursion
-              (goto-char posn)
-              (insert sanitized-response)))
-          (message "gptel-request failed with message: %s"
-                   (plist-get info :status)))))
-
-  (defun gptel-summarize-meeting-minutes ()
-    ;; get file name from a bookmark or other
+  (defun jb/mcp-refresh-project-servers ()
+    "Re-initialize MCP servers based on the current project's environment.
+This ensures that project-local environment variables (like DATABASE_URI)
+and project-specific filesystem roots are correctly loaded into MCP."
     (interactive)
-    (org-narrow-to-subtree)
-    (let* ((bookmark-p (yes-or-no-p "Use a bookmark?"))
-           (bookmark (when bookmark-p
-                       (bookmark-completing-read "Bookmark: ")))
-           (dir (when bookmark
-                  (directory-file-name (bookmark-get-filename bookmark))))
-           (file-name (read-file-name "Meeting file: " dir))
-           (query-text "Can you summarize this meeting? After you are done summarizing it export it as an org-mode document."))
-      (gptel-add-file file-name)
-      (let* ((gptel-use-curl)
-             (gptel-use-context 'system)
-             (gptel-model 'gemini-2.5-pro-exp-05-06))
-        (gptel-request query-text
-         :system (cadr
-                  (assq 'meeting-minutes gptel-directives))
-         :context 'system
-         :callback #'gptel-summarize-meeting-minutes--callback))
-      (gptel-context-remove file-name))))
+    (mcp-hub-stop-all-server)
+    (let* ((project-root (or (and (fboundp 'project-root)
+                                 (project-current)
+                                 (project-root (project-current)))
+                            default-directory))
+           (db-uri (getenv "POSTGRES_DATABASE_URI")))
 
-(use-package copilot
-  :after jsonrpc
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("C-<tab>" . 'copilot-accept-completion)
-              ("C-n" . 'copilot-next-completion)
-              ("C-c TAB" . 'copilot-accept-completion-by-word)))
+      (setq mcp-hub-servers
+            (delq nil
+                  (list
+                   ;; Filesystem: Restricted to the current project root for security/context
+                   `("filesystem" . (:command "npx"
+                                     :args ("-y" "@modelcontextprotocol/server-filesystem"
+                                            ,(expand-file-name project-root))))
+
+                   ;; Postgres: Only added if the project defines the URI via environment variables
+                   (when db-uri
+                     `("postgres" . (:command "podman"
+                                     :args ("run" "-i" "--rm" "--network=host"
+                                            "-e" ,(concat "DATABASE_URI=" db-uri)
+                                            "crystaldba/postgres-mcp"
+                                            "--access-mode=restricted")))))))
+
+      (mcp-hub-start-all-server)
+      (message "MCP initialized for project: %s (DB: %s)"
+               project-root (if db-uri "Active" "None")))))
+
+(use-package vecdb
+  :ensure t
+  :after llm
+  :config
+  ;; Global collection for cross-project semantic search
+  (defvar jb/project-memory
+    (make-vecdb-collection :name "codebase-index" :vector-size 768)))
+
+(defvar jb/conventional-commit-summary "<INSTRUCTIONS>
+You are a professional software developer.
+
+Write a concise commit message based on a diff following the Conventional Commits specification:
+<FORMAT>
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+
+Structural Elements:
+- fix: patches a bug (correlates with PATCH in Semantic Versioning).
+- feat: introduces a new feature (correlates with MINOR in Semantic Versioning).
+- BREAKING CHANGE: a commit that has a footer \"BREAKING CHANGE:\", or appends a \"!\" after the type/scope, introduces a breaking API change (correlating with MAJOR in Semantic Versioning).
+- Other allowed types: build:, chore:, ci:, docs:, style:, refactor:, perf:, test:.
+- A scope may be provided to a commit’s type to provide additional contextual information in parentheses, e.g., feat(parser): description.
+</FORMAT>
+<EXAMPLE>
+feat(parser): add ability to parse arrays
+
+The parser now supports nested array structures within the JSON input stream.
+
+BREAKING CHANGE: The parse() method now returns a Result type instead of a raw string.
+</EXAMPLE>
+
+**Reply with the commit message only, and without any quotes.**
+</INSTRUCTIONS>
+
+<DIFF>
+%s
+</DIFF>")
+
+(use-package llm
+  :config
+  (require 'llm-gemini)
+  ;; Fast, efficient coding assistant for daily iterations
+  (defvar jb/llm-gemini-flash
+    (make-llm-gemini
+     :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
+     :chat-model "gemini-3-flash-preview"
+     :embedding-model "text-embedding-004"))
+  ;; High-reasoning engine for massive context (up to 2M tokens)
+  (defvar jb/llm-gemini-pro
+    (make-llm-gemini
+     :key (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))
+     :chat-model "gemini-3.1-pro-preview")))
+
+(use-package ellama
+  :ensure t
+  :after llm
+  :bind ("C-c e" . ellama-transient-main-menu)
+  :init
+  (setopt ellama-keymap-prefix "C-c e")
+  :config
+  ;; Use Flash as the default for responsiveness
+  (setq ellama-provider jb/llm-gemini-flash)
+  (setq ellama-coding-provider jb/llm-gemini-flash)
+
+  ;; UI and naming conventions
+  (setq ellama-major-mode 'org-mode)
+
+  ;; Automatic generation of conventional, atomic commit messages
+  (when jb/conventional-commit-summary
+   (setq ellama-generate-commit-message-template jb/conventional-commit-summary))
+  (add-hook 'git-commit-setup-hook 'ellama-generate-commit-message)
+
+  ;; MCP Integration: Ensure servers are project-aware and only started when needed
+  (with-eval-after-load 'mcp
+    (if (boundp 'envrc-mode)
+        (add-hook 'envrc-after-update-hook #'jb/mcp-refresh-project-servers)
+      (add-hook 'project-find-functions #'jb/mcp-refresh-project-servers)))
+
+  ;; Ensure MCP is initialized when starting a chat if it's not already running
+  (advice-add 'ellama-chat :before
+              (lambda (&rest _)
+                (unless (and (boundp 'mcp--hub-procs) mcp--hub-procs)
+                  (require 'mcp)
+                  (jb/mcp-refresh-project-servers)))))
 
 (use-package eca
   :hook (eca-before-initialize .
@@ -1916,23 +1944,10 @@ Overall Tone:
           (setenv "GOOGLE_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
           (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private")))))))
 
-(use-package aidermacs
-  :bind (("C-c a" . aidermacs-transient-menu))
-  :hook (aidermacs-before-run-backend .
-          (lambda ()
-            (setenv "GEMINI_API_KEY" (string-trim (aio-wait-for (1password--read "Gemini" "credential" "private"))))
-            (setenv "ANTHROPIC_API_KEY" (string-trim (aio-wait-for (1password--read "Claude" "credential" "private"))))))
-  :custom
-  (aidermacs-auto-commits t)
-  (aidermacs-default-chat-mode 'architect)
-  (aidermacs-default-model "gemini/gemini-2.5-pro")
-  (aidermacs-weak-model "gemini/gemini-2.5-flash"))
-
 (use-package ai-code
+  :bind (("C-c a" . ai-code-menu))
   :config
   (ai-code-set-backend 'gemini) ;; use claude-code-ide as backend
-  ;; Enable global keybinding for the main menu
-  (global-set-key (kbd "C-c C-a") #'ai-code-menu)
   ;; Optional: Set up Magit integration for AI commands in Magit popups
   (with-eval-after-load 'magit
     (ai-code-magit-setup-transients)))
@@ -1943,6 +1958,14 @@ Overall Tone:
 
 (use-package shell-maker
   :ensure t)
+
+(use-package copilot
+  :after jsonrpc
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("C-<tab>" . 'copilot-accept-completion)
+              ("C-n" . 'copilot-next-completion)
+              ("C-c TAB" . 'copilot-accept-completion-by-word)))
 
 (use-feature emacs-lsp-booster
   :after (lsp-mode)
