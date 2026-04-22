@@ -1909,6 +1909,8 @@ BREAKING CHANGE: The parse() method now returns a Result type instead of a raw s
   :ensure t
   :after llm
   :bind ("C-c e" . ellama-transient-main-menu)
+        (:map ellama-session-mode-map
+               ("C-c RET" . ellama-chat-send-last-message))
   :init
   (setopt ellama-keymap-prefix "C-c e")
   :config
@@ -1936,6 +1938,39 @@ BREAKING CHANGE: The parse() method now returns a Result type instead of a raw s
                 (unless (and (boundp 'mcp--hub-procs) mcp--hub-procs)
                   (require 'mcp)
                   (jb/mcp-refresh-project-servers)))))
+
+(use-feature ellama-tools
+ :after ellama
+ (require 'ellama-tools)
+ (with-eval-after-load 'ellama-tools
+   ;; Let clean calls run without repetitive prompts.
+   (setopt ellama-tools-allow-all t)
+
+   ;; Required safety layer.
+   (setopt ellama-tools-dlp-enabled t)
+   (setopt ellama-tools-dlp-mode 'enforce)
+
+   ;; Prefer fail-closed behavior for autonomous operation.
+   (setopt ellama-tools-dlp-input-fail-open nil)
+   (setopt ellama-tools-dlp-output-fail-open nil)
+
+   ;; Keep secret and output protections active.
+   (setopt ellama-tools-dlp-scan-env-exact-secrets t)
+   (setopt ellama-tools-dlp-input-default-action 'warn)
+   (setopt ellama-tools-dlp-output-default-action 'redact)
+
+   ;; Irreversible actions require stronger intent.
+   (setopt ellama-tools-irreversible-enabled t)
+   (setopt ellama-tools-irreversible-default-action 'warn)
+   (setopt ellama-tools-irreversible-require-typed-confirm t)
+
+   ;; Keep telemetry durable enough to tune.
+   (setopt ellama-tools-dlp-log-targets '(memory file))
+
+   ;; Strongly recommended when `ellama-tools-allow-all' is enabled.
+   (setopt ellama-tools-use-srt t)
+   (setopt ellama-tools-srt-args
+           '("--settings" "~/.config/ellama/srt-autonomous.json"))))
 
 (use-package eca
   :hook (eca-before-initialize .
