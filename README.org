@@ -3379,6 +3379,7 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
 #+BEGIN_src elisp
   (use-package lsp-mode
     :commands lsp
+    :vc (:url "https://github.com/justinbarclay/lsp-mode" :rev :newest)
     :hook ((rustic-mode
             rust-base-mode
             web-mode

@@ -2041,6 +2041,7 @@ BREAKING CHANGE: The parse() method now returns a Result type instead of a raw s
 
 (use-package lsp-mode
   :commands lsp
+  :vc (:url "https://github.com/justinbarclay/lsp-mode" :rev :newest)
   :hook ((rustic-mode
           rust-base-mode
           web-mode
