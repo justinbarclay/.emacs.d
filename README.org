@@ -3194,7 +3194,6 @@ Ellama is the primary interface for LLM interactions, leveraging the =llm= abstr
 
 #+begin_src elisp
   (use-package ellama
-    :ensure t
     :after llm
     :bind ("C-c e" . ellama-transient-main-menu)
           (:map ellama-session-mode-map
@@ -3232,6 +3231,7 @@ Ellama is the primary interface for LLM interactions, leveraging the =llm= abstr
 #+begin_src elisp
   (use-feature ellama-tools
    :after ellama
+   :config
    (require 'ellama-tools)
    (with-eval-after-load 'ellama-tools
      ;; Let clean calls run without repetitive prompts.

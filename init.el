@@ -1906,7 +1906,6 @@ BREAKING CHANGE: The parse() method now returns a Result type instead of a raw s
      :chat-model "gemini-3.1-pro-preview")))
 
 (use-package ellama
-  :ensure t
   :after llm
   :bind ("C-c e" . ellama-transient-main-menu)
         (:map ellama-session-mode-map
@@ -1941,6 +1940,7 @@ BREAKING CHANGE: The parse() method now returns a Result type instead of a raw s
 
 (use-feature ellama-tools
  :after ellama
+ :config
  (require 'ellama-tools)
  (with-eval-after-load 'ellama-tools
    ;; Let clean calls run without repetitive prompts.
