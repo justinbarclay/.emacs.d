@@ -496,6 +496,49 @@ You can also use @ as separator, instead of _.
     :hook (org-mode . org-modern-mode))
 #+end_src
 
+*** ox-latex
+#+begin_src elisp
+  (use-feature ox-latex
+    :config
+    ;; 1. Use booktabs for all tables (cleaner, no vertical lines)
+    (setq org-latex-tables-booktabs t)
+
+    ;; 2. Add required packages to every export
+    (add-to-list 'org-latex-packages-alist '("" "tabularx" t))
+    (add-to-list 'org-latex-packages-alist '("" "booktabs" t))
+
+    (add-to-list 'org-latex-classes
+                 '("supernote"
+                   "\\documentclass[8pt]{article}
+                    [NO-DEFAULT-PACKAGES]
+                    \\usepackage[utf8]{inputenc}
+                    \\usepackage[T1]{fontenc}
+                    \\usepackage{graphicx}
+                    \\usepackage{longtable}
+                    \\usepackage{wrapfig}
+                    \\usepackage{rotating}
+                    \\usepackage[normalem]{ulem}
+                    \\usepackage{amsmath}
+                    \\usepackage{amssymb}
+                    \\usepackage{capt-of}
+                    \\usepackage{hyperref}
+                    \\usepackage[paperwidth=140mm, paperheight=187mm,margin=15mm]{geometry}
+                    \\usepackage{setspace}
+                    \\setstretch{1.3}
+                    \\usepackage{dejavu} % Or your preferred font
+                    \\usepackage{tabularx}
+                    \\usepackage{booktabs}
+                    \\usepackage{microtype} % Improves spacing/wrapping
+                    \\setstretch{1.3}
+                    % This makes X columns in tabularx wrap text nicely
+                    \\newcolumntype{Y}{>{\\raggedright\\arraybackslash}X}"
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
+#+end_src
+
 *** Custom Org Functions
 These functions expand on the abilities of org-babel and ob-restclient mode and
 as such need both of these modes loaded before they'll work.
