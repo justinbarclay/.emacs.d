@@ -1594,7 +1594,7 @@ parses its input."
 
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
+  ;; :hook (completion-list-mode . consult-preview-at-point-mode)
 
   :init
   ;; Use Consult to select xref locations with preview
@@ -1638,75 +1638,7 @@ parses its input."
                  (window-parameters (mode-line-format . none)))))
 
 (use-package embark-consult
-  :after (embark consult)
-  :demand t ; only necessary if you have the hook below
-  ;; if you want to have consult previews as you move around an
-  ;; auto-updating embark collect buffer
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
-
-(use-package consult-omni
-  :vc (:url "https://github.com/justinbarclay/consult-omni" :branch "main" :rev :newest)
-  :commands (consult-omni-multi consult-omni-apps)
-  :init
-  (add-to-list 'load-path (concat (expand-file-name package-user-dir)
-                                  "/consult-omni/sources/"))
-  :custom
-  ;; General settings that apply to all sources
-  (consult-omni-show-preview t) ;;; show previews
-  (consult-omni-preview-key "C-o") ;;; set the preview key to C-o
-  (consult-omni-group-by :source)
-  :config
-  ;; Load Sources Core code
-  (require 'consult-omni-sources)
-  ;; Load Embark Actions
-  (require 'consult-omni-embark)
-  (when jb/os-macos-p
-    (add-to-list 'consult-omni-apps-paths "/Applications/Nix Apps"))
-
-  ;; Either load all source modules or a selected list
-
-   ;;; Select a list of modules you want to aload, otherwise all sources all laoded
-  (setq consult-omni-sources-modules-to-load
-        (list 'consult-omni-apps
-              'consult-omni-buffer
-               'consult-omni-calc
-               'consult-omni-dict
-               'consult-omni-fd
-               'consult-omni-google
-               'consult-omni-google-autosuggest
-               'consult-omni-gptel
-               'consult-omni-line-multi
-               ;;'consult-omni-org-agenda
-               'consult-omni-ripgrep
-               'consult-omni-ripgrep-all
-               'consult-omni-wikipedia
-               'consult-omni-youtube))
-
-  (consult-omni-sources-load-modules)
-   ;;; set multiple sources for consult-omni-multi command. Change these lists as needed for different interactive commands. Keep in mind that each source has to be a key in `consult-omni-sources-alist'.
-  (setq consult-omni-multi-sources '("calc"
-                                     "File"
-                                     "Buffer"
-                                     ;; "Bookmark"
-                                     "Apps"
-                                     "gptel"
-                                     "Dictionary"
-                                     "Google"
-                                     "Wikipedia"
-                                     ;; "elfeed"
-                                     "mu4e"
-                                     "buffers text search"
-                                     "Org Agenda"
-                                     ;; "GitHub"
-                                     "YouTube"))
-                                     ;; "Invidious"))
-
-  ;;; Pick you favorite autosuggest command.
-  (setq consult-omni-default-autosuggest-command #'consult-omni-dynamic-google-autosuggest) ;;or any other autosuggest source you define
-
-  ;;; Set your shorthand favorite interactive command
-  (setq consult-omni-default-interactive-command #'consult-omni-multi))
+  :after (embark consult))
 
 (use-package company
   :commands (company-complete-common
@@ -2235,6 +2167,10 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package lsp-ui
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
+
+(use-package lsp-tailwindcss
+  :config
+  (setopt lsp-tailwindcss-add-on-mode 't))
 
 (use-package devdocs)
 

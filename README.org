@@ -2476,7 +2476,7 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
 
     ;; Enable automatic preview at point in the *Completions* buffer. This is
     ;; relevant when you use the default completion UI.
-    :hook (completion-list-mode . consult-preview-at-point-mode)
+    ;; :hook (completion-list-mode . consult-preview-at-point-mode)
 
     :init
     ;; Use Consult to select xref locations with preview
@@ -2526,16 +2526,10 @@ Marginalia looks  and acts great, however as an old grey(ing) beard, I got used 
 Consult users will also want the embark-consult package.
 #+begin_src elisp
 (use-package embark-consult
-  :after (embark consult)
-  :demand t ; only necessary if you have the hook below
-  ;; if you want to have consult previews as you move around an
-  ;; auto-updating embark collect buffer
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+  :after (embark consult))
 #+end_src
-
 ***** Consult Omni
-#+begin_src elisp
+#+begin_src elisp :tangle no
   (use-package consult-omni
     :vc (:url "https://github.com/justinbarclay/consult-omni" :branch "main" :rev :newest)
     :commands (consult-omni-multi consult-omni-apps)
@@ -3603,6 +3597,13 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
     :commands lsp-ui-mode
     :hook (lsp-mode . lsp-ui-mode))
 #+END_SRC
+**** lsp-tailwindcss
+#+begin_src elisp
+  (use-package lsp-tailwindcss
+    :config
+    (setopt lsp-tailwindcss-add-on-mode 't))
+#+end_src
+
 *** Eglot
 :PROPERTIES:
 :header-args: :tangle no
