@@ -192,12 +192,15 @@
 
 (use-feature ox-latex
   :config
-  ;; 1. Use booktabs for all tables (cleaner, no vertical lines)
   (setq org-latex-tables-booktabs t)
 
-  ;; 2. Add required packages to every export
   (add-to-list 'org-latex-packages-alist '("" "tabularx" t))
   (add-to-list 'org-latex-packages-alist '("" "booktabs" t))
+
+  ;; 3. Use biblatex and biber for bibliographies
+  ;; (setq org-cite-export-processor '(biblatex "backend=biber"))
+  (setq org-latex-pdf-process
+        '("latexmk -f -pdf -pdflatex=\"pdflatex -interaction=nonstopmode\" -output-directory=%o %f"))
 
   (add-to-list 'org-latex-classes
                '("supernote"
@@ -422,6 +425,37 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
+
+(use-package citar
+  :after org
+  :custom
+  (org-cite-global-bibliography (list (expand-file-name "references.bib" org-directory)))
+  (citar-bibliography org-cite-global-bibliography)
+  (citar-notes-paths (list (expand-file-name org-directory)))
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+  :bind
+  (("C-c n b" . citar-open)))
+
+(use-package citar-embark
+  :after embark
+  :config (citar-embark-mode))
+
+(use-package citar-org-roam
+  :after (citar org-roam)
+  :config (citar-org-roam-mode))
+
+(use-package biblio)
+
+(use-package citeproc
+  :config
+  (setq org-cite-csl-styles-dir "~/Zotero/styles"))
+
+(use-feature bibtex
+  :config
+  (setq-default bibtex-dialect 'biblatex)
+  (setq LaTeX-biblatex-use-Biber t))
 
 (use-package org-noter
   :custom

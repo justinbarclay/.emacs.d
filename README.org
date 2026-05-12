@@ -495,17 +495,19 @@ You can also use @ as separator, instead of _.
   (use-package org-modern
     :hook (org-mode . org-modern-mode))
 #+end_src
-
 *** ox-latex
 #+begin_src elisp
   (use-feature ox-latex
     :config
-    ;; 1. Use booktabs for all tables (cleaner, no vertical lines)
     (setq org-latex-tables-booktabs t)
 
-    ;; 2. Add required packages to every export
     (add-to-list 'org-latex-packages-alist '("" "tabularx" t))
     (add-to-list 'org-latex-packages-alist '("" "booktabs" t))
+
+    ;; 3. Use biblatex and biber for bibliographies
+    ;; (setq org-cite-export-processor '(biblatex "backend=biber"))
+    (setq org-latex-pdf-process
+          '("latexmk -f -pdf -pdflatex=\"pdflatex -interaction=nonstopmode\" -output-directory=%o %f"))
 
     (add-to-list 'org-latex-classes
                  '("supernote"
@@ -761,6 +763,61 @@ Change priority cookies from alphanumeric cookies into symbols and explicitly co
           org-roam-ui-open-on-start t))
 #+end_src
 
+*** Bibliography and Research
+Modern research workflow using =org-cite=, =citar=, and =biblio.el=.
+
+**** citar
+=citar= is a modern bibliography frontend for Emacs. It provides a fast and feature-rich interface to your BibTeX files, integrating perfectly with =vertico=, =consult=, and =embark=.
+#+begin_src elisp
+  (use-package citar
+    :after org
+    :custom
+    (org-cite-global-bibliography (list (expand-file-name "references.bib" org-directory)))
+    (citar-bibliography org-cite-global-bibliography)
+    (citar-notes-paths (list (expand-file-name org-directory)))
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    :bind
+    (("C-c n b" . citar-open)))
+
+  (use-package citar-embark
+    :after embark
+    :config (citar-embark-mode))
+#+end_src
+
+**** citar-org-roam
+Integrate =citar= with =org-roam= for a seamless Zettelkasten research workflow.
+
+#+begin_src elisp
+  (use-package citar-org-roam
+    :after (citar org-roam)
+    :config (citar-org-roam-mode))
+#+end_src
+
+**** biblio
+Search and import bibliographic entries from various sources (ArXiv, DOI, Crossref, etc.) directly into your BibTeX file.
+
+#+begin_src elisp
+  (use-package biblio)
+#+end_src
+
+**** citeproc
+The =citeproc= package is required for exporting citations using the Citation Style Language (CSL).
+
+#+begin_src elisp
+  (use-package citeproc
+    :config
+    (setq org-cite-csl-styles-dir "~/Zotero/styles"))
+#+end_src
+
+**** bibtex
+#+begin_src elisp
+(use-feature bibtex
+  :config
+  (setq-default bibtex-dialect 'biblatex)
+  (setq LaTeX-biblatex-use-Biber t))
+#+end_src
 *** Org Noter
 #+begin_src elisp
   (use-package org-noter
