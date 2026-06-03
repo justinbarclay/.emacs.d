@@ -3958,8 +3958,9 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
     :hook (rustic-mode . find-rust-version)
     :custom
     (rustic-lsp-setup-p '())
-    (rustic-indent-offset 2)
     :config
+    (setq rustic-indent-offset 2)
+
     (defun find-rust-version ()
       "Get the Rust version specified in the Cargo.toml file."
       (when-let*
