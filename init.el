@@ -506,7 +506,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (use-package org-download
   :after org
-  :hook (org-mode . org-download-enable))
+  :hook (org-mode . org-download-enable)
+  :config
+  (defun my/org-download-clipboard-wsl-advice (orig-fun &rest args)
+    "Use PowerShell to paste clipboard images in WSL."
+    (if (and (eq system-type 'gnu/linux)
+             (getenv "WSL_DISTRO_NAME"))
+        (let ((org-download-screenshot-method
+               (lambda (filename) (jb/save-wsl-clipboard-image filename))))
+          (org-id-get-create)
+          (org-download-screenshot (car args)))
+      (apply orig-fun args)))
+  (advice-add 'org-download-clipboard :around #'my/org-download-clipboard-wsl-advice))
 
 (use-package org-transclusion
   :after org)
@@ -2360,8 +2371,9 @@ CALLBACK is the status callback passed by Flycheck."
   :hook (rustic-mode . find-rust-version)
   :custom
   (rustic-lsp-setup-p '())
-  (rustic-indent-offset 2)
   :config
+  (setq rustic-indent-offset 2)
+
   (defun find-rust-version ()
     "Get the Rust version specified in the Cargo.toml file."
     (when-let*
@@ -2732,17 +2744,39 @@ CALLBACK is the status callback passed by Flycheck."
     (kill-new filename)
     (message filename)))
 
-(defun jb/copy-image-as-png ()
-  (interactive)
-  (let* ((file-name (string-trim (shell-command-to-string "wslpath -w ./test.png")))
-         (command (format "%s; %s %s %s %s"
-                         "Add-Type -AssemblyName System.Windows.Forms"
-                         "[System.Windows.Forms.Clipboard]::GetDataObject().ContainsImage()"
-                         "-and"
-                         (format "[System.Windows.Forms.Clipboard]::GetImage().Save(\"%s\", \"Png\")"
-                                 file-name)
-                         "-and 1")))
-    (shell-command (format "powershell.exe -c '%s'" command))))
+(defun jb/save-wsl-clipboard-image (filename)
+    "Save the Windows clipboard image to FILENAME using PowerShell.
+Returns non-nil if successful."
+    (let* ((windows-path (string-trim
+                          (shell-command-to-string
+                           (format "wslpath -m %s" (shell-quote-argument (expand-file-name filename))))))
+           (ps-script (format "
+  Add-Type -AssemblyName System.Windows.Forms
+  Add-Type -AssemblyName System.Drawing
+
+  if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
+      [System.Windows.Forms.Clipboard]::GetImage().Save('%s', [System.Drawing.Imaging.ImageFormat]::Png)
+      Write-Output 'SUCCESS'
+  } else {
+      Write-Output 'NO_IMAGE'
+  }"
+                              windows-path))
+           (command (format "powershell.exe -c \"%s\"" ps-script))
+           (result (string-trim (shell-command-to-string command))))
+      (string-match-p "SUCCESS" result)))
+
+  (defun jb/copy-image-as-png ()
+    "Save Windows clipboard image to a date-named file and insert its path/link."
+    (interactive)
+    (let* ((filename (format-time-string "image-%Y%m%d-%H%M%S.png"))
+           (linux-path (expand-file-name filename)))
+      (if (jb/save-wsl-clipboard-image linux-path)
+          (progn
+            (if (derived-mode-p 'org-mode)
+                (insert (format "[[file:%s]]\n" filename))
+              (insert (format "%s\n" filename)))
+            (message "Image saved to %s" filename))
+        (message "Failed to save image. Clipboard might not contain an image."))))
 
 (setq file-name-handler-alist doom--file-name-handler-alist)
 

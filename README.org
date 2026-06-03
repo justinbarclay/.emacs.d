@@ -883,8 +883,23 @@ Now that we have that installed we can pull in org-pdftools from github
 #+begin_src elisp
   (use-package org-download
     :after org
-    :hook (org-mode . org-download-enable))
+    :hook (org-mode . org-download-enable)
+    :config
+    (defun my/org-download-clipboard-wsl-advice (orig-fun &rest args)
+      "Use PowerShell to paste clipboard images in WSL."
+      (if (and (eq system-type 'gnu/linux)
+               (getenv "WSL_DISTRO_NAME"))
+          (let ((org-download-screenshot-method
+                 (lambda (filename) (jb/save-wsl-clipboard-image filename))))
+            (org-id-get-create)
+            (org-download-screenshot (car args)))
+        (apply orig-fun args)))
+    (advice-add 'org-download-clipboard :around #'my/org-download-clipboard-wsl-advice))
 #+end_src
+
+#+RESULTS:
+: #s(hash-table data (:use-package (27161 53088 546714 931000) :use-package-secs (0 0 168 588000) :init (27161 53088 546709 651000) :init-secs (0 0 42 739000) :config (27161 53088 546695 651000) :config-secs (0 0 26 880000)))
+
 *** Org Transclusion
 #+begin_src elisp
 (use-package org-transclusion
@@ -4509,18 +4524,43 @@ For saving root protected files
 
 ** Copy Image From Clipboard
 #+begin_src elisp
-  (defun jb/copy-image-as-png ()
-    (interactive)
-    (let* ((file-name (string-trim (shell-command-to-string "wslpath -w ./test.png")))
-           (command (format "%s; %s %s %s %s"
-                           "Add-Type -AssemblyName System.Windows.Forms"
-                           "[System.Windows.Forms.Clipboard]::GetDataObject().ContainsImage()"
-                           "-and"
-                           (format "[System.Windows.Forms.Clipboard]::GetImage().Save(\"%s\", \"Png\")"
-                                   file-name)
-                           "-and 1")))
-      (shell-command (format "powershell.exe -c '%s'" command))))
+    (defun jb/save-wsl-clipboard-image (filename)
+      "Save the Windows clipboard image to FILENAME using PowerShell.
+  Returns non-nil if successful."
+      (let* ((windows-path (string-trim
+                            (shell-command-to-string
+                             (format "wslpath -m %s" (shell-quote-argument (expand-file-name filename))))))
+             (ps-script (format "
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+
+    if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
+        [System.Windows.Forms.Clipboard]::GetImage().Save('%s', [System.Drawing.Imaging.ImageFormat]::Png)
+        Write-Output 'SUCCESS'
+    } else {
+        Write-Output 'NO_IMAGE'
+    }"
+                                windows-path))
+             (command (format "powershell.exe -c \"%s\"" ps-script))
+             (result (string-trim (shell-command-to-string command))))
+        (string-match-p "SUCCESS" result)))
+
+    (defun jb/copy-image-as-png ()
+      "Save Windows clipboard image to a date-named file and insert its path/link."
+      (interactive)
+      (let* ((filename (format-time-string "image-%Y%m%d-%H%M%S.png"))
+             (linux-path (expand-file-name filename)))
+        (if (jb/save-wsl-clipboard-image linux-path)
+            (progn
+              (if (derived-mode-p 'org-mode)
+                  (insert (format "[[file:%s]]\n" filename))
+                (insert (format "%s\n" filename)))
+              (message "Image saved to %s" filename))
+          (message "Failed to save image. Clipboard might not contain an image."))))
 #+end_src
+
+#+RESULTS:
+: jb/copy-image-as-png
 
 ** Turn back on file-name-handler-alist
 #+BEGIN_src elisp
