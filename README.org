@@ -956,8 +956,10 @@ Now that we have that installed we can pull in org-pdftools from github
 #+end_src
 
 ** Magit
+Needed Magit deps
 #+begin_src elisp
 (use-package transient)
+(use-package lv)
 #+end_src
 
 #+BEGIN_SRC elisp
@@ -3597,13 +3599,6 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
     :commands lsp-ui-mode
     :hook (lsp-mode . lsp-ui-mode))
 #+END_SRC
-**** lsp-tailwindcss
-#+begin_src elisp
-  (use-package lsp-tailwindcss
-    :config
-    (setopt lsp-tailwindcss-add-on-mode 't))
-#+end_src
-
 *** Eglot
 :PROPERTIES:
 :header-args: :tangle no

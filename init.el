@@ -557,6 +557,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook (special-mode . (lambda () (display-line-numbers-mode -1))))
 
 (use-package transient)
+(use-package lv)
 
 ;; Magit is an Emacs interface to Git.
 ;; (It's awesome)
@@ -2167,10 +2168,6 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package lsp-ui
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
-
-(use-package lsp-tailwindcss
-  :config
-  (setopt lsp-tailwindcss-add-on-mode 't))
 
 (use-package devdocs)
 
