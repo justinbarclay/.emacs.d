@@ -978,6 +978,11 @@ for example \"https://user@myhost.com\"."
                                                        :height 1.0)
                                    " ")))
 
+(use-package kusanagi-theme
+  :vc (:url "https://github.com/LionyxML/kusanagi-theme" :rev :newest)
+  :init
+  (load-theme 'kusanagi t))
+
 (use-feature dired
   :bind (:map dired-mode-map
               ("RET" . dired-find-alternate-file)
