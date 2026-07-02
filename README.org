@@ -1752,52 +1752,14 @@ Turn on recent file mode so that you can more easily switch to recently edited f
     ;;:bind (("C-s p" . projectile-ripgrep))
     :commands
     (projectile-find-file projectile-switch-project projectile-ripgrep)
+    :bind ("C-c p" . projectile-dispatch)
     :config
-    (projectile-global-mode)
+    (projectile-mode)
     (setq projectile-completion-system 'auto)
     (setq projectile-enable-caching t)
     (add-to-list 'projectile-globally-ignored-directories "~")
 
-    (setq projectile-switch-project-action #'magit-status)
-
-    (define-key projectile-mode-map (kbd "C-c p") '("projectile" . projectile-command-map))
-
-    (defvar projectile-other-window-map
-      (let ((map (make-sparse-keymap)))
-        (define-key map (kbd "a") '("find-other-file-other-window" . projectile-find-other-file-other-window))
-        (define-key map (kbd "b") '("switch-to-buffer-other-window" . projectile-switch-to-buffer-other-window))
-        (define-key map (kbd "C-o") '("display-buffer" . projectile-display-buffer))
-        (define-key map (kbd "d") '("find-dir-other-window" . projectile-find-dir-other-window))
-        (define-key map (kbd "D") '("dired-other-window" . projectile-dired-other-window))
-        (define-key map (kbd "f") '("find-file-other-window" . projectile-find-file-other-window))
-        (define-key map (kbd "g") '("find-file-dwim-other-window" . projectile-find-file-dwim-other-window))
-        (define-key map (kbd "t") '("find-implementation-or-test-other-window" . projectile-find-implementation-or-test-other-window))
-        map))
-
-    (defvar projectile-other-frame-map
-      (let ((map (make-sparse-keymap)))
-        (define-key map (kbd "a") '("find-other-file-other-frame" . projectile-find-other-file-other-frame))
-        (define-key map (kbd "b") '("switch-to-buffer-other-frame" . projectile-switch-to-buffer-other-frame))
-        (define-key map (kbd "d") '("find-dir-other-frame" . projectile-find-dir-other-frame))
-        (define-key map (kbd "D") '("dired-other-frame" . projectile-dired-other-frame))
-        (define-key map (kbd "f") '("find-file-other-frame" . projectile-find-file-other-frame))
-        (define-key map (kbd "g") '("find-file-dwim-other-frame" . projectile-find-file-dwim-other-frame))
-        (define-key map (kbd "t") '("find-implementation-or-test-other-frame" . projectile-find-implementation-or-test-other-frame))
-        map))
-
-    (defvar projectile-search-map
-      (let ((map (make-sparse-keymap)))
-        (define-key map (kbd "g") '("grep" . projectile-grep))
-        (define-key map (kbd "r") '("ripgrep" . projectile-ripgrep))
-        (define-key map (kbd "s") '("ag" . projectile-ag))
-        (define-key map (kbd "x") '("find-references" . projectile-find-references))
-        map))
-
-    ;; (which-key-add-keymap-based-replacements projectile-command-map
-    ;;   "4" (cons "other-window" projectile-other-window-map)
-    ;;   "5" (cons "other-frame" projectile-other-frame-map)
-    ;;   "s" (cons "search" projectile-search-map))
-    )
+    (setq projectile-switch-project-action #'magit-status))
 #+END_SRC
 
 ** Treemacs
