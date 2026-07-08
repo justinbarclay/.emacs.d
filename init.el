@@ -948,7 +948,6 @@ for example \"https://user@myhost.com\"."
                                    " ")))
 
 (use-package kusanagi-theme
-  :vc (:url "https://github.com/LionyxML/kusanagi-theme" :rev :newest)
   :init
   (load-theme 'kusanagi t))
 

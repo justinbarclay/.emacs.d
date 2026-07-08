@@ -1622,7 +1622,6 @@ This code is liberally stolen from https://github.com/seagle0128/.emacs.d/blob/m
 *** Kusanagi
 #+begin_src elisp
 (use-package kusanagi-theme
-  :vc (:url "https://github.com/LionyxML/kusanagi-theme" :rev :newest)
   :init
   (load-theme 'kusanagi t))
 #+end_src
