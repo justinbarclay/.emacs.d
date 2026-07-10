@@ -578,6 +578,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :bind (("C-c g" . magit-status))
   :config
   ;; magit settings
+  (when (and (eq system-type 'windows-nt)
+             (file-exists-p "C:/Program Files/Git/bin/git.exe"))
+    (setq magit-git-executable "C:/Program Files/Git/bin/git.exe"))
   (setopt
    ;; Make magit-status go full-screen
    magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1
@@ -645,6 +648,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package magit-todos
   :init
   (setq magit-todos-nice (not (eq system-type 'windows-nt)))
+  (setq magit-todos-branch-list nil)
   :custom
   (magit-todos-exclude-globs '("dist/**"))
   :hook (magit-mode . magit-todos-mode))
