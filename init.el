@@ -576,50 +576,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-package magit
   :commands magit-get-top-dir
   :bind (("C-c g" . magit-status))
-  :hook
-  (git-commit-mode . magit-commit-mode-init)
-  :bind (:map magit-mode-map
-              ("c" . magit-maybe-commit))
-  :init
-  (progn
-    ;; magit extensions
-    ;; stops the invalid style showing up.
-    ;; From: http://git.io/rPBE0Q
-    (defun magit-commit-mode-init ()
-      "Force a new line to be inserted into a commit window"
-      (when (looking-at "\n"))
-      (open-line 1))
-    (defun magit-maybe-commit (&optional show-options)
-      "Runs magit-commit unless prefix is passed"
-      (interactive "P")
-      (if show-options
-          (magit-commit '("--verbose"))
-        (magit-commit))))
   :config
-  ;; make magit status go full-screen but remember previous window
-  ;; settings
-  ;; from: http://whattheemacsd.com/setup-magit.el-01.html
-  (advice-add 'magit-status :around #'(lambda (orig-fun &rest args)
-                                        (window-configuration-to-register :m)
-                                        (apply orig-fun args)
-                                        (delete-other-windows)))
-
-  (advice-add 'git-commit-commit :after #'(lambda (&rest _)
-                                            (delete-window)))
-
-  (advice-add 'git-commit-abort :after #'(lambda (&rest _)
-                                           (delete-window)))
-
-  ;; restore previously hidden windows
-  (advice-add 'magit-quit-window
-               :around
-               #'(lambda (oldfun)
-                   (let ((current-mode major-mode))
-                     (funcall oldfun)
-                     (when (eq 'magit-status-mode current-mode)
-                       (jump-to-register :m)))))
-   ;; magit settings
+  ;; magit settings
   (setopt
+   ;; Make magit-status go full-screen
+   magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1
+   ;; Restore the previous window configuration when burying/quitting magit
+   magit-bury-buffer-function #'magit-restore-window-configuration
    ;; customize the iconify function for
    magit-format-file-function #'magit-format-file-nerd-icons
    ;; open magit status in same window as current buffer
@@ -632,7 +595,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    magit-save-some-buffers nil
    ;; pop the process buffer if we're taking a while to complete
    magit-process-popup-time 10
-    ;; ask me if I want a tracking upstream
+   ;; ask me if I want a tracking upstream
    magit-set-upstream-on-push 'askifnotset))
 
 (use-package forge
@@ -680,6 +643,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   :hook (after-init . global-hl-todo-mode))
 
 (use-package magit-todos
+  :init
+  (setq magit-todos-nice (not (eq system-type 'windows-nt)))
   :custom
   (magit-todos-exclude-globs '("dist/**"))
   :hook (magit-mode . magit-todos-mode))
@@ -1053,6 +1018,10 @@ for example \"https://user@myhost.com\"."
   (require 'gnutls)
   (add-to-list 'gnutls-trustfiles (expand-file-name "~/.cert/cacert.pm"))
   (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m))
+
+(when jb/os-windows-p
+  (setq inhibit-compacting-font-caches t)
+  (setq w32-get-true-file-attributes nil))
 
 (when (not jb/os-windows-p)
   (use-package envrc
@@ -2423,7 +2392,7 @@ CALLBACK is the status callback passed by Flycheck."
   :custom
   (go-ts-mode-indent-offset 2)
   :config
-  (add-hook 'before-save-hook 'gofmt-before-save))
+  (add-hook 'before-save-hook 'gofmt-before-save nil 't))
 
 (use-package lua-mode)
 
