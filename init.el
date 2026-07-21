@@ -2348,6 +2348,8 @@ CALLBACK is the status callback passed by Flycheck."
   :hook (rustic-mode . find-rust-version)
   :custom
   (rustic-lsp-setup-p '())
+  (lsp-rust-analyzer-cargo-watch-command "clippy")  ; or lsp-rust-analyzer-check-command, depending on your lsp-mode version
+  (lsp-rust-analyzer-cargo-all-targets t)
   :config
   (setq rustic-indent-offset 2)
 
