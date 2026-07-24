@@ -1534,7 +1534,46 @@ Let's use Doom's version instead
     ;; set divider line in footer
     (when (eq lambda-line-position 'top)
       (setq-default mode-line-format (list "%_"))
-      (setq mode-line-format (list "%_"))))
+      (setq mode-line-format (list "%_")))
+
+    ;; --- Perf: lambda-line's magit header shelled out to git on every
+    ;; redisplay. `lambda-line-magit-mode' called `magit-toplevel',
+    ;; `magit-get-current-branch' and `git status --porcelain' every time the
+    ;; header-line was drawn — i.e. on every keystroke/scroll. On macOS,
+    ;; spawning those subprocesses per redisplay makes magit buffers lag. Cache
+    ;; the values per-buffer and recompute them only when magit itself refreshes.
+    (defvar-local jb/lambda-line-magit-cache nil
+      "Cached (PROJECT BRANCH STATUS) strings for the lambda-line magit header.")
+
+    (defun jb/lambda-line-magit-refresh-cache ()
+      "Recompute cached git values for the lambda-line magit header.
+  Runs from `magit-refresh-buffer-hook', so it fires exactly when magit
+  refreshes after a git operation — not on every redisplay."
+      (when (derived-mode-p 'magit-mode)
+        (setq jb/lambda-line-magit-cache
+              (list (file-name-nondirectory
+                     (directory-file-name (or (magit-toplevel) "")))
+                    (or (magit-get-current-branch) "")
+                    (lambda-line-git-parse-status)))))
+
+    (add-hook 'magit-refresh-buffer-hook #'jb/lambda-line-magit-refresh-cache)
+
+    (defun lambda-line-magit-mode ()
+      "Magit header for lambda-line, reading cached git values.
+  Overrides the upstream version, which spawned git on every redisplay."
+      (unless jb/lambda-line-magit-cache    ; first draw before any refresh hook
+        (jb/lambda-line-magit-refresh-cache))
+      (pcase-let ((`(,project ,branch ,status)
+                   (or jb/lambda-line-magit-cache '("" "" ""))))
+        (lambda-line-compose (lambda-line-status)
+                             (lambda-line-mode-name)
+                             (concat lambda-line-display-group-start
+                                     project
+                                     lambda-line-vc-symbol
+                                     branch
+                                     lambda-line-display-group-end)
+                             status
+                             ""))))
 #+end_src
 ** Rainbow delimiters
 #+BEGIN_src elisp
