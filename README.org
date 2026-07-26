@@ -288,6 +288,7 @@ As stolen from [[https://github.com/progfolio/.emacs.d/blob/cff07d4454d327a4df19
   (declare (indent defun))
   `(use-package ,name
      :ensure nil
+     :pin manual
      ,@args))
 #+end_src
 
