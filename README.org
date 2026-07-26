@@ -1458,8 +1458,7 @@ As of Emacs 26.0 we have native, perfomant, support for line numbers
 *** Catpuccin
 #+begin_src elisp
   (use-package catppuccin-theme
-    :init
-    (load-theme 'catppuccin t)
+    :defer t
     :config
     (setq catppuccin-flavor 'frappe))
 #+end_src

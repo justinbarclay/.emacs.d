@@ -844,8 +844,7 @@ for example \"https://user@myhost.com\"."
   (lambda-themes-set-variable-pitch nil))
 
 (use-package catppuccin-theme
-  :init
-  (load-theme 'catppuccin t)
+  :defer t
   :config
   (setq catppuccin-flavor 'frappe))
 
