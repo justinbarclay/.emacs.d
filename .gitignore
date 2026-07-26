@@ -17,6 +17,8 @@ customs.el
 eln-cache
 elpa
 elpaca/
+package-quickstart.el
+package-quickstart.elc
 emojis/
 forge-database.sqlite
 history
