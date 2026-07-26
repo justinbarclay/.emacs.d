@@ -169,7 +169,6 @@ Reset garbage collection to emacs default after 5s
 They are really noisy and annoying right now. And nothing I can deal with.
 #+begin_src elisp
   ;; -*- lexical-binding: t; -*-
-  (setq native-comp-deferred-compilation-deny-list '())
   (setq native-comp-async-report-warnings-errors nil)
 #+end_src
 ** Unload some built-in packages

@@ -1,5 +1,4 @@
 ;; -*- lexical-binding: t; -*-
-(setq native-comp-deferred-compilation-deny-list '())
 (setq native-comp-async-report-warnings-errors nil)
 
 (setq-default lexical-binding t
