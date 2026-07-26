@@ -28,10 +28,13 @@ parinfer-rust
 persist
 places
 projectile-bookmarks.eld
+projectile-frecency.eld
 .projectile.cache
 projectile.cache
 icons/
-projects
+projects.eld
+eca/
+*~
 quelpa/
 recentf
 request
