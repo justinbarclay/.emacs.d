@@ -20,6 +20,7 @@
   - [[#org-mode][Org Mode]]
   - [[#ltex][Ltex]]
   - [[#eshell][EShell]]
+  - [[#ghostel][ghostel]]
   - [[#vterm][Vterm]]
   - [[#eat][Eat]]
   - [[#magit][Magit]]
@@ -952,12 +953,16 @@ Now that we have that installed we can pull in org-pdftools from github
          (add-to-list 'eshell-command-completions-alist
                       '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
 #+END_SRC
+** ghostel
+#+begin_src elisp
+  (use-feature ghostel
+    :hook (ghostel-mode . (lambda () (display-line-numbers-mode -1))))
+#+end_src
 ** Vterm
 #+begin_src elisp
-  (use-package vterm
-    :ensure nil
-    :config
-    (display-line-numbers-mode -1))
+  (use-feature vterm
+    :hook (vterm-mode . (lambda () (display-line-numbers-mode -1))))
+
 #+end_src
 ** Eat
 #+begin_src elisp
