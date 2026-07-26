@@ -1082,6 +1082,10 @@ Overrides the upstream version, which spawned git on every redisplay."
   :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
            (recentf-max-menu-items 40)))
 
+(use-feature autorevert
+  :init
+  (global-auto-revert-mode))
+
 (use-package projectile
   :defer 1
   ;;:bind (("C-s p" . projectile-ripgrep))

@@ -1791,6 +1791,13 @@ Turn on recent file mode so that you can more easily switch to recently edited f
     :custom ((recentf-save-file (concat user-emacs-directory ".recentf"))
              (recentf-max-menu-items 40)))
 #+END_SRC
+** Autorevert
+Automatically refresh buffers when the underlying file changes on disk
+#+BEGIN_src elisp
+  (use-feature autorevert
+    :init
+    (global-auto-revert-mode))
+#+END_SRC
 
 ** Projectile
 #+BEGIN_src elisp
