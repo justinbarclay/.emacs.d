@@ -1917,6 +1917,13 @@ Unbind C-s from isearch and make it the universal search command
            :map isearch-mode-map
                 ("M-j" . avy-isearch)))
 #+end_src
+*** Anzu
+Show match count and position during isearch and query-replace
+#+begin_src elisp
+  (use-package anzu
+    :config
+    (global-anzu-mode))
+#+end_src
 *** Occur
 #+begin_src elisp
   (use-feature occur

@@ -1134,6 +1134,10 @@ Overrides the upstream version, which spawned git on every redisplay."
          :map isearch-mode-map
               ("M-j" . avy-isearch)))
 
+(use-package anzu
+  :config
+  (global-anzu-mode))
+
 (use-feature occur
   :bind ("C-s o" . occur))
 
