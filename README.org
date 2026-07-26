@@ -1869,7 +1869,6 @@ Allows one to switch to a buffer based by using numbers, instead of cycling with
 ** wind-move
 #+begin_src elisp
   (use-feature windmove-mode
-    :ensure nil
     :commands (windmove-left windmove-right windmove-up windmove-down)
     :init
     (defvar-keymap windmove-custom-mode-map
@@ -3397,7 +3396,7 @@ Ellama is the primary interface for LLM interactions, leveraging the =llm= abstr
   (use-package ai-code
     :bind (("C-c a" . ai-code-menu))
     :config
-    (ai-code-set-backend 'gemini) ;; use claude-code-ide as backend
+    (ai-code-set-backend 'antigravity)
     ;; Optional: Set up Magit integration for AI commands in Magit popups
     (with-eval-after-load 'magit
       (ai-code-magit-setup-transients)))
@@ -4027,19 +4026,6 @@ We need to remove rust-mode from auto-mode-alist because either Cargo or Rust-pl
                                               (cdr (assq 'packages metadata)))))))))))
     :config
     (electric-pair-mode 1))
-#+END_SRC
-
-*** Rust repl
-#+BEGIN_src elisp :tangle no
-(use-package evcxr-mode
-   :defer t
-   :ensure nil
-
-   :config (add-hook 'rustic-mode-hook 'evcxr-minor-mode)
-   :quelpa ((evcxr
-             :fetcher git
-             :url "https://github.com/SerialDev/evcxr-mode.git"
-             :upgrade t)))
 #+END_SRC
 
 ** Nix

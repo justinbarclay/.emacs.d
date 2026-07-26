@@ -29,6 +29,7 @@
   (declare (indent defun))
   `(use-package ,name
      :ensure nil
+     :pin manual
      ,@args))
 
 (use-package org
@@ -554,10 +555,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (add-to-list 'eshell-command-completions-alist
                       '("tar" "\\(\\.tar|\\.tgz\\|\\.tar\\.gz\\)\\'"))))))
 
-(use-package vterm
-  :ensure nil
-  :config
-  (display-line-numbers-mode -1))
+(use-feature ghostel
+  :hook (ghostel-mode . (lambda () (display-line-numbers-mode -1))))
+
+(use-feature vterm
+  :hook (vterm-mode . (lambda () (display-line-numbers-mode -1))))
 
 (use-package eat
   :init
@@ -1099,7 +1101,6 @@ Overrides the upstream version, which spawned git on every redisplay."
   :bind ("C-x o" . ace-window))
 
 (use-feature windmove-mode
-  :ensure nil
   :commands (windmove-left windmove-right windmove-up windmove-down)
   :init
   (defvar-keymap windmove-custom-mode-map
@@ -1977,7 +1978,7 @@ BREAKING CHANGE: The parse() method now returns a Result type instead of a raw s
 (use-package ai-code
   :bind (("C-c a" . ai-code-menu))
   :config
-  (ai-code-set-backend 'gemini) ;; use claude-code-ide as backend
+  (ai-code-set-backend 'antigravity)
   ;; Optional: Set up Magit integration for AI commands in Magit popups
   (with-eval-after-load 'magit
     (ai-code-magit-setup-transients)))
