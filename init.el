@@ -1763,7 +1763,14 @@ parses its input."
  :init (yas-global-mode))
 
 (use-package yasnippet-snippets
-  :after yasnippet)
+  :after yasnippet
+  :config
+  ;; yasnippet-snippets' typescript-mode/.yas-parents points at js-mode,
+  ;; which conflicts with typescript-ts-mode's built-in compat link to
+  ;; typescript-mode and triggers "Inconsistent hierarchy" warnings.
+  ;; We only use typescript-ts-mode, so drop the stale link.
+  (add-hook 'yas-after-reload-hook
+            (lambda () (remhash 'typescript-mode yas--parents))))
 
 (use-package apheleia
   :init
