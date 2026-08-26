@@ -3685,6 +3685,17 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
     (eglot-send-changes-idle-time 0.1))
 #+end_src
 
+*** Dump Jump
+#+begin_src elisp
+  (use-package dumb-jump
+    :ensure t
+    :custom
+    (dumb-jump-prefer-searcher 'rg)
+    (xref-show-definitions-function #'consult-xref)
+    :config
+    (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
+#+end_src
+
 *** DevDocs
 #+begin_src elisp
 (use-package devdocs)
@@ -4167,6 +4178,18 @@ Live preview of MarkDown
   (use-package nushell-ts-mode
     :mode "\\.nu\\'")
 #+end_src
+
+*** ob-nushell
+#+begin_src elisp
+(add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory))
+
+(use-package ob-nushell
+  :ensure nil
+  :after org
+  :init
+  (org-babel-do-load-languages 'org-babel-load-languages '((nushell . t))))
+#+end_src
+
 ** Terraform
 *** Terraform mode
 #+BEGIN_src elisp
@@ -4180,7 +4203,7 @@ Live preview of MarkDown
 #+END_SRC
 
 *** yaml-ts-mode
-#+begin_src elisp
+#+begin_src elisp :tangle no
   (defun jb/yaml-ts-dwim-indent ()
     "Cycle through valid Tree-sitter indentation levels for the current YAML line."
     (interactive)

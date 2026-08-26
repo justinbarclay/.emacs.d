@@ -1087,8 +1087,7 @@ Overrides the upstream version, which spawned git on every redisplay."
            (recentf-max-menu-items 40)))
 
 (use-feature autorevert
-  :init
-  (global-auto-revert-mode))
+  :hook (after-init . global-auto-revert-mode))
 
 (use-package projectile
   :defer 1
@@ -2142,7 +2141,13 @@ CALLBACK is the status callback passed by Flycheck."
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
-(use-package dumb-jump)
+(use-package dumb-jump
+  :ensure t
+  :custom
+  (dumb-jump-prefer-searcher 'rg)
+  (xref-show-definitions-function #'consult-xref)
+  :config
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
 
 (use-package devdocs)
 
@@ -2455,72 +2460,19 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package nushell-ts-mode
   :mode "\\.nu\\'")
 
+(add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory))
+
+(use-package ob-nushell
+  :ensure nil
+  :after org
+  :init
+  (org-babel-do-load-languages 'org-babel-load-languages '((nushell . t))))
+
 (use-package terraform-mode
 :mode "\\.tf\\'" )
 
 (use-package yaml-mode
   :defer t)
-
-(defun jb/yaml-ts-dwim-indent ()
-  "Cycle through valid Tree-sitter indentation levels for the current YAML line."
-  (interactive)
-  (if (< (current-column) (current-indentation))
-      (back-to-indentation)
-    (let* ((prev-line-pos
-            (save-excursion
-              (forward-line -1)
-              (while (and (not (bobp)) (looking-at-p "^[ \t]*$"))
-                (forward-line -1))
-              (point)))
-           (prev-line-indent (save-excursion
-                               (goto-char prev-line-pos)
-                               (current-indentation)))
-           (prev-line-text (save-excursion
-                             (goto-char prev-line-pos)
-                             (buffer-substring-no-properties
-                              (line-beginning-position)
-                              (line-end-position))))
-           (levels (list 0))
-           (node (and (> prev-line-pos 0)
-                      (treesit-node-at (save-excursion
-                                         (goto-char prev-line-pos)
-                                         (line-end-position))))))
-
-      ;; Traverse Tree-sitter AST from the previous line to find all valid parent columns
-      (while node
-        (let ((type (treesit-node-type node)))
-          (when (member type '("block_mapping_pair" "block_sequence_item" "block_node"))
-            (push (save-excursion
-                    (goto-char (treesit-node-start node))
-                    (current-column))
-                  levels)))
-        (setq node (treesit-node-parent node)))
-
-      ;; Add previous line's exact indent (valid sibling level)
-      (push prev-line-indent levels)
-
-      ;; If previous line indicates a child block is starting, add that indentation level
-      (when (string-match-p "\\(:\\|-\\)[ \t]*$" prev-line-text)
-        (push (+ prev-line-indent (or (bound-and-true-p yaml-ts-mode-indent-offset) 2)) levels))
-
-      (setq levels (sort (delete-dups levels) #'<))
-
-      ;; Cycle logic
-      (let* ((current (current-indentation))
-             (next-levels (cl-remove-if (lambda (x) (<= x current)) levels))
-             (next-level (if next-levels (car next-levels) (car levels))))
-        (indent-line-to next-level)
-        (when (< (current-column) next-level)
-          (back-to-indentation))))))
-
-(use-feature yaml-ts-mode
-  :bind
-  (:map yaml-ts-mode-map
-        ("<tab>" . jb/yaml-ts-dwim-indent)
-        ("TAB" . jb/yaml-ts-dwim-indent))
-  :config
-  (when (fboundp 'derived-mode-add-parents)
-    (derived-mode-add-parents 'yaml-ts-mode '(prog-mode))))
 
 (use-package yaml-pro
  :after yaml-ts-mode
