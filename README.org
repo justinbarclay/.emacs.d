@@ -49,6 +49,7 @@
 - [[#navigating][Navigating]]
   - [[#uniquify][Uniquify]]
   - [[#recentf][Recentf]]
+  - [[#autorevert][Autorevert]]
   - [[#projectile][Projectile]]
   - [[#treemacs][Treemacs]]
   - [[#treemacs-pojectile][Treemacs Pojectile]]
@@ -1794,8 +1795,7 @@ Turn on recent file mode so that you can more easily switch to recently edited f
 Automatically refresh buffers when the underlying file changes on disk
 #+BEGIN_src elisp
   (use-feature autorevert
-    :init
-    (global-auto-revert-mode))
+    :hook (after-init . global-auto-revert-mode))
 #+END_SRC
 
 ** Projectile
@@ -3519,6 +3519,8 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
             css-ts-mode
             go-base-mode
             LaTeX-mode
+            yaml-ts-mode
+            ruby-ts-mode
             nix-mode)
            . lsp-deferred)
     (lsp-mode . lsp-enable-which-key-integration)

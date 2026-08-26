@@ -2067,6 +2067,8 @@ BREAKING CHANGE: The parse() method now returns a Result type instead of a raw s
           css-ts-mode
           go-base-mode
           LaTeX-mode
+          yaml-ts-mode
+          ruby-ts-mode
           nix-mode)
          . lsp-deferred)
   (lsp-mode . lsp-enable-which-key-integration)
@@ -2171,6 +2173,8 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package lsp-ui
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
+
+(use-package dumb-jump)
 
 (use-package devdocs)
 
