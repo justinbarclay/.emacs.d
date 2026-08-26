@@ -788,6 +788,11 @@ for example \"https://user@myhost.com\"."
 
 (global-set-key (kbd "C-x 1") #'jb/toggle-delete-other-windows)
 
+(undelete-frame-mode 1)
+
+(setopt quit-window-kill-buffer t
+        kill-buffer-quit-windows t)
+
 (use-package ligature
   :commands (global-ligature-mode)
   :config
@@ -1173,6 +1178,10 @@ Overrides the upstream version, which spawned git on every redisplay."
 (setopt reb-re-syntax 'string)
 (setopt ffap-machine-p-known 'reject)
 
+(setopt kill-region-dwim 'emacs-word
+        delete-pair-push-mark t
+        electric-indent-actions '(yank))
+
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
 (setq-default truncate-lines t)
@@ -1180,6 +1189,7 @@ Overrides the upstream version, which spawned git on every redisplay."
 (global-hl-line-mode 1)
 
 (show-paren-mode 1)
+(setopt show-paren-not-in-comments-or-strings 'all)
 
 (setq-default indent-tabs-mode nil)
 
@@ -1249,35 +1259,13 @@ Overrides the upstream version, which spawned git on every redisplay."
   ;; editing experience without affecting cursor placement.
   (stripspace-restore-column t))
 
-(use-package treesit-fold
-  :hook
-  (after-init . global-treesit-fold-mode)
-  :bind ("C-<tab>" . treesit-fold-toggle)
-  :config
-  (setq treesit-fold-line-count-format " <%d lines> ")
-  (setq treesit-fold-on-next-line 't)
-
- (defun treesit-fold-range-jsx-element (node offset)
-  (let ((beg (treesit-node-end (treesit-node-child node 0 "name")))
-        (end (- (treesit-node-end node) 2)))
-    (treesit-fold--cons-add (cons beg end) offset)))
-
- (defun treesit-fold-parsers-tsx ()
-   "Rule set for TSX."
-   (append
-    (treesit-fold-parsers-javascript)
-    '((class_body    . treesit-fold-range-seq)
-      (enum_body     . treesit-fold-range-seq)
-      (named_imports . treesit-fold-range-seq)
-      (arrow_function . treesit-fold-range-seq)
-      (object_type   . treesit-fold-range-seq)
-      (formal_parameters . treesit-fold-range-seq)
-      (parenthesized_expression . treesit-fold-range-seq)
-      (jsx_self_closing_element   . treesit-fold-range-jsx-element)
-      (jsx_element   . treesit-fold-range-seq)
-      (jsx_expression . treesit-fold-range-seq))))
-
- (add-to-list 'treesit-fold-range-alist (cons 'tsx-ts-mode  (treesit-fold-parsers-tsx))))
+(use-feature hideshow
+  :hook (prog-mode . hs-minor-mode)
+  :bind (:map hs-minor-mode-map ("C-<tab>" . hs-cycle))
+  :custom
+  (hs-display-lines-hidden t)
+  (hs-show-indicators t)
+  (hs-indicator-type 'fringe))
 
 (use-package hungry-delete
   :hook (prog-mode . global-hungry-delete-mode))
@@ -1789,40 +1777,20 @@ parses its input."
   (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop)))
 
 (use-feature treesit
-  :config
-  (setq-default treesit-font-lock-level 4))
-
-(use-package treesit-auto
-  :if (and (require 'treesit)
-           (treesit-available-p))
-  :defer 1
-  :commands (make-treesit-auto-recipe)
   :custom
-  (treesit-auto-install 'prompt)
-  :init
-  (setq my-jsdoc-tsauto-config
-    (make-treesit-auto-recipe
-     :lang 'jsdoc
-     :ts-mode 'js-ts-mode
-     :url "https://github.com/tree-sitter/tree-sitter-jsdoc"
-     :revision "master"
-     :source-dir "src"
-     :requires 'javascript))
-  (setq my-js-tsauto-config
-   (make-treesit-auto-recipe
-    :lang 'javascript
-    :ts-mode 'js-ts-mode
-    :remap '(js2-mode js-mode javascript-mode)
-    :url "https://github.com/tree-sitter/tree-sitter-javascript"
-    :revision "master"
-    :requires 'jsdoc
-    :source-dir "src"
-    :ext "\\.js\\'"))
-  (add-to-list 'treesit-auto-recipe-list my-js-tsauto-config)
-  (add-to-list 'treesit-auto-recipe-list my-jsdoc-tsauto-config)
-  (add-to-list 'treesit-auto-langs 'jsdoc)
+  (treesit-enabled-modes t)
+  (treesit-auto-install-grammar 'ask)
   :config
-  (global-treesit-auto-mode))
+  (setq-default treesit-font-lock-level 4)
+
+  ;; Grammars Emacs ships no recipe for.
+  (dolist (src '((kotlin "https://github.com/fwcd/tree-sitter-kotlin")
+                 (nu     "https://github.com/nushell/tree-sitter-nu")))
+    (add-to-list 'treesit-language-source-alist src t))
+
+  ;; Neither mode registers itself unconditionally.
+  (add-to-list 'auto-mode-alist '("\\.kts?\\'" . kotlin-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.nu\\'"   . nushell-ts-mode)))
 
 (use-package mcp
   :commands (mcp-hub-start-all-server mcp-hub-close-all-server)

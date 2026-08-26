@@ -1242,6 +1242,20 @@ Show per-line git diff indicators in the fringe — added, changed, and deleted 
   (global-set-key (kbd "C-x 1") #'jb/toggle-delete-other-windows)
 #+end_src
 
+*** Reversible frames
+In the same spirit as the above, Emacs 31 can resurrect a deleted frame with ~C-x 5 u~.
+#+begin_src elisp
+  (undelete-frame-mode 1)
+#+end_src
+
+*** Quitting windows
+Make ~q~ kill the buffer rather than bury it, and have ~kill-buffer~ tidy up the window it
+was displayed in instead of leaving an orphan.
+#+begin_src elisp
+  (setopt quit-window-kill-buffer t
+          kill-buffer-quit-windows t)
+#+end_src
+
 *** Natural colouring from emacs chrome
 #+BEGIN_src elisp :tangle early-init.el
   (when jb/os-macos-p
@@ -1977,6 +1991,14 @@ General config to make editing text feel nice
   (setopt ffap-machine-p-known 'reject)
 #+end_src
 
+A few Emacs 31 conveniences: ~C-w~ with no active region kills the previous word instead of
+erroring, ~delete-pair~ leaves a mark behind so we can get back, and yanked text gets reindented.
+#+begin_src elisp
+  (setopt kill-region-dwim 'emacs-word
+          delete-pair-push-mark t
+          electric-indent-actions '(yank))
+#+end_src
+
 ** Newline and indent
 #+BEGIN_src elisp
   (define-key global-map (kbd "RET") 'newline-and-indent)
@@ -1990,8 +2012,12 @@ General config to make editing text feel nice
   (global-hl-line-mode 1)
 #+END_SRC
 ** Highlight matching parens
+Emacs 31 lets us stop matching parens that only appear inside comments and strings. ~all~
+suppresses them entirely; ~on-mismatch~ is the softer option, which only skips the mismatch
+highlighting.
 #+BEGIN_src elisp
   (show-paren-mode 1)
+  (setopt show-paren-not-in-comments-or-strings 'all)
 #+END_SRC
 ** No tabs
 I prefer spaces like some sort of monster
@@ -2106,7 +2132,8 @@ Emacs by default doesn't have a good story for folding text so we have to add on
   :hook (prog-mode . origami-mode))
 #+END_SRC
 
-#+begin_src elisp
+Superseded by built-in hideshow below, but kept untangled in case we want to switch back.
+#+begin_src elisp :tangle no
   (use-package treesit-fold
     :hook
     (after-init . global-treesit-fold-mode)
@@ -2136,6 +2163,28 @@ Emacs by default doesn't have a good story for folding text so we have to add on
         (jsx_expression . treesit-fold-range-seq))))
 
    (add-to-list 'treesit-fold-range-alist (cons 'tsx-ts-mode  (treesit-fold-parsers-tsx))))
+#+end_src
+
+As of Emacs 31, ~hideshow~ folds over tree-sitter nodes ­— ~hs-treesit-things~ defaults to the
+~list~ thing — which is what we were pulling in ~treesit-fold~ for. It also covers the two
+settings we had customized, and adds fringe indicators and state cycling that ~treesit-fold~
+does not have:
+
+| ~treesit-fold-line-count-format~ | ~hs-display-lines-hidden~ |
+| ~treesit-fold-on-next-line~      | ~hs-hide-block-behavior~  |
+| ~treesit-fold-toggle~            | ~hs-cycle~                |
+
+Worth checking fold granularity on a TSX file: the custom ~jsx_element~ rules above exist
+because ~treesit-fold~ got those ranges wrong, and whether hideshow's ~list~ navigation does
+better is an open question. If it doesn't, flip the tangle flags back around.
+#+begin_src elisp
+  (use-feature hideshow
+    :hook (prog-mode . hs-minor-mode)
+    :bind (:map hs-minor-mode-map ("C-<tab>" . hs-cycle))
+    :custom
+    (hs-display-lines-hidden t)
+    (hs-show-indicators t)
+    (hs-indicator-type 'fringe))
 #+end_src
 
 ** Hungry Delete
@@ -3070,45 +3119,39 @@ Major mode customizations
 #+end_src
 
 ** Tree Sitter support
+As of Emacs 31, ~treesit~ handles on its own what ~treesit-auto~ used to do for us. Setting
+~treesit-enabled-modes~ to ~t~ populates ~major-mode-remap-alist~ with every bundled ts-mode, and
+~treesit-auto-install-grammar~ offers to fetch a missing grammar when we first open such a file.
+
+Every grammar the bundled modes ask for already has a recipe: each mode file registers its own
+entry in ~treesit-language-source-alist~ when it loads, pinned to a tested commit. That covers all
+28 grammars the 27 remapped modes request — including ~javascript~ and ~jsdoc~, which is why we no
+longer hand-roll those recipes.
+
+Two of our third-party modes are not covered, so we map them by hand:
+- ~kotlin-ts-mode~ registers no ~auto-mode-alist~ entry at all.
+- ~nushell-ts-mode~ registers one, but guards it behind a load-time ~(treesit-ready-p 'nu)~, which
+  can never succeed before the grammar exists.
+
+Both gate on ~treesit-ready-p~ rather than ~treesit-ensure-installed~, so they will not auto-install.
+Run ~M-x treesit-install-language-grammar~ once for =kotlin= and =nu=; the recipes below are what
+makes that possible.
 #+begin_src elisp
   (use-feature treesit
-    :config
-    (setq-default treesit-font-lock-level 4))
-#+end_src
-*** Treesit Auto
-We want automatic fall back and to have manually manage `treesit-language-source-alist`.
-#+begin_src elisp
-  (use-package treesit-auto
-    :if (and (require 'treesit)
-             (treesit-available-p))
-    :defer 1
-    :commands (make-treesit-auto-recipe)
     :custom
-    (treesit-auto-install 'prompt)
-    :init
-    (setq my-jsdoc-tsauto-config
-      (make-treesit-auto-recipe
-       :lang 'jsdoc
-       :ts-mode 'js-ts-mode
-       :url "https://github.com/tree-sitter/tree-sitter-jsdoc"
-       :revision "master"
-       :source-dir "src"
-       :requires 'javascript))
-    (setq my-js-tsauto-config
-     (make-treesit-auto-recipe
-      :lang 'javascript
-      :ts-mode 'js-ts-mode
-      :remap '(js2-mode js-mode javascript-mode)
-      :url "https://github.com/tree-sitter/tree-sitter-javascript"
-      :revision "master"
-      :requires 'jsdoc
-      :source-dir "src"
-      :ext "\\.js\\'"))
-    (add-to-list 'treesit-auto-recipe-list my-js-tsauto-config)
-    (add-to-list 'treesit-auto-recipe-list my-jsdoc-tsauto-config)
-    (add-to-list 'treesit-auto-langs 'jsdoc)
+    (treesit-enabled-modes t)
+    (treesit-auto-install-grammar 'ask)
     :config
-    (global-treesit-auto-mode))
+    (setq-default treesit-font-lock-level 4)
+
+    ;; Grammars Emacs ships no recipe for.
+    (dolist (src '((kotlin "https://github.com/fwcd/tree-sitter-kotlin")
+                   (nu     "https://github.com/nushell/tree-sitter-nu")))
+      (add-to-list 'treesit-language-source-alist src t))
+
+    ;; Neither mode registers itself unconditionally.
+    (add-to-list 'auto-mode-alist '("\\.kts?\\'" . kotlin-ts-mode))
+    (add-to-list 'auto-mode-alist '("\\.nu\\'"   . nushell-ts-mode)))
 #+end_src
 *** Combobulate
 Better movement through treesitter
