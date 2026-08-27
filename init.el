@@ -2054,7 +2054,7 @@ See the note above for why point and hook depth both matter here."
   (lsp-log-io nil)
   (lsp-completion-provider :none)
   (lsp-headerline-breadcrumb-enable nil)
-  (lsp-solargraph-use-bundler 't)
+  (lsp-ruby-lsp-use-bundler t)
   (lsp-keymap-prefix "C-l")
   (lsp-diagnostic-clean-after-change 't)
   (lsp-copilot-enabled 't)
