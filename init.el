@@ -1883,37 +1883,42 @@ BREAKING CHANGE: The parse() method now returns a Result type instead of a raw s
      :chat-model "gemini-3.1-pro-preview")))
 
 (use-package ellama
-  :after llm
-  :bind ("C-c e" . ellama-transient-main-menu)
-        (:map ellama-session-mode-map
-               ("C-c RET" . ellama-chat-send-last-message))
-  :init
-  (setopt ellama-keymap-prefix "C-c e")
-  :config
-  ;; Use Flash as the default for responsiveness
-  (setq ellama-provider jb/llm-gemini-flash)
-  (setq ellama-coding-provider jb/llm-gemini-flash)
+    :after llm
+    :bind ("C-c e" . ellama-transient-main-menu)
+          (:map ellama-session-mode-map
+                 ("C-c RET" . ellama-chat-send-last-message))
+    :init
+    (setopt ellama-keymap-prefix "C-c e")
+    :config
+    ;; Use Flash as the default for responsiveness
+    (setq ellama-provider jb/llm-gemini-flash)
+    (setq ellama-coding-provider jb/llm-gemini-flash)
 
-  ;; UI and naming conventions
-  (setq ellama-major-mode 'org-mode)
+    ;; UI and naming conventions
+    (setq ellama-major-mode 'org-mode)
 
-  ;; Automatic generation of conventional, atomic commit messages
-  (when jb/conventional-commit-summary
-   (setq ellama-generate-commit-message-template jb/conventional-commit-summary))
-  (add-hook 'git-commit-setup-hook 'ellama-generate-commit-message)
+    ;; Automatic generation of conventional, atomic commit messages
+    (when jb/conventional-commit-summary
+     (setq ellama-generate-commit-message-template jb/conventional-commit-summary))
+    (defun jb/ellama-commit-message ()
+      "Generate a commit message at the top of the git commit buffer.
+See the note above for why point and hook depth both matter here."
+      (goto-char (point-min))
+      (ellama-generate-commit-message))
+    (add-hook 'git-commit-setup-hook #'jb/ellama-commit-message 90)
 
-  ;; MCP Integration: Ensure servers are project-aware and only started when needed
-  (with-eval-after-load 'mcp
-    (if (boundp 'envrc-mode)
-        (add-hook 'envrc-after-update-hook #'jb/mcp-refresh-project-servers)
-      (add-hook 'project-find-functions #'jb/mcp-refresh-project-servers)))
+    ;; MCP Integration: Ensure servers are project-aware and only started when needed
+    (with-eval-after-load 'mcp
+      (if (boundp 'envrc-mode)
+          (add-hook 'envrc-after-update-hook #'jb/mcp-refresh-project-servers)
+        (add-hook 'project-find-functions #'jb/mcp-refresh-project-servers)))
 
-  ;; Ensure MCP is initialized when starting a chat if it's not already running
-  (advice-add 'ellama-chat :before
-              (lambda (&rest _)
-                (unless (and (boundp 'mcp--hub-procs) mcp--hub-procs)
-                  (require 'mcp)
-                  (jb/mcp-refresh-project-servers)))))
+    ;; Ensure MCP is initialized when starting a chat if it's not already running
+    (advice-add 'ellama-chat :before
+                (lambda (&rest _)
+                  (unless (and (boundp 'mcp--hub-procs) mcp--hub-procs)
+                    (require 'mcp)
+                    (jb/mcp-refresh-project-servers)))))
 
 (use-feature ellama-tools
  :after ellama

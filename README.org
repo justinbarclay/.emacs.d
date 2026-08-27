@@ -3359,6 +3359,23 @@ LLM is a library that provides a unified interface for interacting with differen
 **** Ellama
 Ellama is the primary interface for LLM interactions, leveraging the =llm= abstraction layer for multiple backends, =vecdb= for local RAG, and =mcp= for environment interaction.
 
+Commit message generation runs on ~git-commit-setup-hook~ at depth 90 rather than the default,
+and forces point to ~point-min~ first. Both are load-bearing. ~ellama--insert~ calls a bare,
+unbounded ~fill-paragraph~ after every streamed chunk whenever the major mode derives from
+~text-mode~ — which the commit buffer does — and only ellama's own text carries the ~hard~
+newline property that survives filling. The single blank line ~git-commit-ensure-comment-gap~
+leaves above the ~#~ block is therefore the only thing keeping the template and the verbose diff
+out of the same paragraph as the message.
+
+At the default depth ellama runs /before/ that gap exists, so the insertion marker (type ~t~,
+created synchronously at position 1) gets pushed to position 2 when the gap opens, and the reply
+is written into the gap instead of above it. The message ends up glued to ~# Please enter…~ and
+the fill flattens the rest of the buffer into one wrapped blob.
+
+If this regresses, ~(setq-local ellama-fill-paragraphs nil)~ in the wrapper disables the fill
+outright — a buffer-local set, not a ~let~, since ellama reads it from the async callback long
+after the hook returns. The cost is an unwrapped message body.
+
 #+begin_src elisp
   (use-package ellama
     :after llm
@@ -3378,7 +3395,12 @@ Ellama is the primary interface for LLM interactions, leveraging the =llm= abstr
     ;; Automatic generation of conventional, atomic commit messages
     (when jb/conventional-commit-summary
      (setq ellama-generate-commit-message-template jb/conventional-commit-summary))
-    (add-hook 'git-commit-setup-hook 'ellama-generate-commit-message)
+    (defun jb/ellama-commit-message ()
+      "Generate a commit message at the top of the git commit buffer.
+See the note above for why point and hook depth both matter here."
+      (goto-char (point-min))
+      (ellama-generate-commit-message))
+    (add-hook 'git-commit-setup-hook #'jb/ellama-commit-message 90)
 
     ;; MCP Integration: Ensure servers are project-aware and only started when needed
     (with-eval-after-load 'mcp
