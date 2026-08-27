@@ -23,6 +23,7 @@
   - [[#ghostel][ghostel]]
   - [[#vterm][Vterm]]
   - [[#eat][Eat]]
+  - [[#comint][Comint]]
   - [[#magit][Magit]]
   - [[#pos-tip][pos-tip]]
   - [[#email-mu4e][Email (mu4e)]]
@@ -67,6 +68,7 @@
   - [[#no-tabs][No tabs]]
   - [[#set-base-indentation][Set base indentation]]
   - [[#save-place-in-file][Save place in file]]
+  - [[#mouse-wheel][Mouse Wheel]]
   - [[#comment-or-uncomment-region][Comment or Uncomment region]]
   - [[#backups][Backups]]
   - [[#disable-superfluous-warnings][Disable Superfluous warnings]]
@@ -975,6 +977,13 @@ Now that we have that installed we can pull in org-pdftools from github
   (use-feature special-mode
     :hook (special-mode . (lambda () (display-line-numbers-mode -1))))
 #+end_src
+** Comint
+#+begin_src elisp
+  (use-feature comint
+    :custom
+    (comint-scroll-to-bottom-on-input t)
+    (comint-scroll-to-bottom-on-output nil))
+#+end_src
 
 ** Magit
 Needed Magit deps
@@ -1280,7 +1289,15 @@ Remove scroll bars
 #+END_SRC
 *** Scrolling
 #+begin_src elisp :tangle early-init.el
-(pixel-scroll-precision-mode 1)
+  (pixel-scroll-precision-mode 1)
+  (setq-default scroll-conservatively 101
+                scroll-margin 0
+                scroll-preserve-screen-position t
+                scroll-error-top-bottom t
+                auto-window-vscroll nil
+                hscroll-margin 2
+                hscroll-step 1
+                fast-but-imprecise-scrolling t)
 #+end_src
 
 *** Emacs should not take focus when it launches
@@ -1928,7 +1945,9 @@ Unbind C-s from isearch and make it the universal search command
   (use-feature isearch
     :bind (("C-s i" . isearch-forward-regexp)
            :map isearch-mode-map
-                ("M-j" . avy-isearch)))
+                ("M-j" . avy-isearch))
+    :custom
+    (isearch-allow-scroll 'unlimited))
 #+end_src
 *** Anzu
 Show match count and position during isearch and query-replace
@@ -2042,6 +2061,17 @@ Remember where point was when I come back to a file
               (lambda (&rest _)
                 (when buffer-file-name (ignore-errors (recenter)))))
 #+END_SRC
+** Mouse Wheel
+#+begin_src elisp
+  (use-feature mwheel
+    :custom
+    (mouse-wheel-progressive-speed nil)
+    (mouse-wheel-scroll-amount '(1
+                                 ((shift) . hscroll)
+                                 ((meta))
+                                 ((control meta) . global-text-scale)
+                                 ((control) . text-scale))))
+#+end_src
 ** Comment or Uncomment region
 #+BEGIN_src elisp
   (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
@@ -3109,13 +3139,29 @@ Major mode customizations
         '("rustfmt" "--edition" (or (bound-and-true-p rust-edition) "2024")
           "--quiet" "--emit" "stdout"))
     (setq apheleia-formatters (map-insert apheleia-formatters 'rubyfmt '("rubyfmt")))
-    (map-put! apheleia-mode-alist 'js-ts-mode '(biome))
-    (map-put! apheleia-mode-alist 'json-ts-mode '(biome))
-    (map-put! apheleia-mode-alist 'typescript-ts-mode '(biome))
-    (map-put! apheleia-mode-alist 'tsx-ts-mode '(biome))
-    ;;(map-put! apheleia-mode-alist 'jsx-ts-mode '(biome))
+    (map-put! apheleia-formatters 'oxfmt
+        '("apheleia-npx" "oxfmt" "--stdin-filepath" filepath))
+    (map-put! apheleia-mode-alist 'js-ts-mode '(oxfmt))
+    (map-put! apheleia-mode-alist 'json-ts-mode '(oxfmt))
+    (map-put! apheleia-mode-alist 'typescript-ts-mode '(oxfmt))
+    (map-put! apheleia-mode-alist 'tsx-ts-mode '(oxfmt))
+    (map-put! apheleia-mode-alist 'jsx-ts-mode '(oxfmt))
+    (map-put! apheleia-mode-alist 'js-mode '(oxfmt))
+    (map-put! apheleia-mode-alist 'typescript-mode '(oxfmt))
+    (map-put! apheleia-mode-alist 'json-mode '(oxfmt))
     ;; Override ruby-ts-mode defaults
-    (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop)))
+    (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop))
+    (add-hook 'apheleia-mode-hook
+              (lambda ()
+                (when (and (derived-mode-p 'js-base-mode
+                                           'typescript-ts-base-mode
+                                           'js-mode
+                                           'typescript-mode
+                                           'json-ts-mode
+                                           'json-mode)
+                           (or (locate-dominating-file default-directory "biome.json")
+                               (locate-dominating-file default-directory "biome.jsonc")))
+                  (setq-local apheleia-formatter 'biome)))))
 #+end_src
 
 ** Tree Sitter support
@@ -3693,6 +3739,19 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
   (use-package lsp-ui
     :commands lsp-ui-mode
     :hook (lsp-mode . lsp-ui-mode))
+#+END_SRC
+
+**** lsp-buffer
+#+BEGIN_src elisp
+  (use-package lsp-buffer
+    :ensure nil
+    :load-path "site-lisp"
+    :after lsp-mode
+    :bind (:map lsp-command-map
+           ("w l" . my/lsp-buffer-show-servers)
+           ("w t" . my/lsp-buffer-toggle-server)
+           ("w e" . my/lsp-buffer-enable-server)
+           ("w d" . my/lsp-buffer-disable-server)))
 #+END_SRC
 *** Eglot
 :PROPERTIES:

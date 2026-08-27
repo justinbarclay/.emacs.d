@@ -49,6 +49,14 @@
   (scroll-bar-mode -1))
 
 (pixel-scroll-precision-mode 1)
+(setq-default scroll-conservatively 101
+              scroll-margin 0
+              scroll-preserve-screen-position t
+              scroll-error-top-bottom t
+              auto-window-vscroll nil
+              hscroll-margin 2
+              hscroll-step 1
+              fast-but-imprecise-scrolling t)
 
 (when (display-graphic-p) ; Start full screen
   (add-to-list 'default-frame-alist '(fullscreen . t))

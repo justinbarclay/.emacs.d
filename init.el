@@ -568,6 +568,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (use-feature special-mode
   :hook (special-mode . (lambda () (display-line-numbers-mode -1))))
 
+(use-feature comint
+  :custom
+  (comint-scroll-to-bottom-on-input t)
+  (comint-scroll-to-bottom-on-output nil))
+
 (use-package transient)
 (use-package lv)
 
@@ -1135,7 +1140,9 @@ Overrides the upstream version, which spawned git on every redisplay."
 (use-feature isearch
   :bind (("C-s i" . isearch-forward-regexp)
          :map isearch-mode-map
-              ("M-j" . avy-isearch)))
+              ("M-j" . avy-isearch))
+  :custom
+  (isearch-allow-scroll 'unlimited))
 
 (use-package anzu
   :config
@@ -1202,6 +1209,15 @@ Overrides the upstream version, which spawned git on every redisplay."
 (advice-add 'save-place-find-file-hook :after
             (lambda (&rest _)
               (when buffer-file-name (ignore-errors (recenter)))))
+
+(use-feature mwheel
+  :custom
+  (mouse-wheel-progressive-speed nil)
+  (mouse-wheel-scroll-amount '(1
+                               ((shift) . hscroll)
+                               ((meta))
+                               ((control meta) . global-text-scale)
+                               ((control) . text-scale))))
 
 (global-set-key (kbd "C-;") 'comment-or-uncomment-region)
 
@@ -1767,13 +1783,29 @@ parses its input."
       '("rustfmt" "--edition" (or (bound-and-true-p rust-edition) "2024")
         "--quiet" "--emit" "stdout"))
   (setq apheleia-formatters (map-insert apheleia-formatters 'rubyfmt '("rubyfmt")))
-  (map-put! apheleia-mode-alist 'js-ts-mode '(biome))
-  (map-put! apheleia-mode-alist 'json-ts-mode '(biome))
-  (map-put! apheleia-mode-alist 'typescript-ts-mode '(biome))
-  (map-put! apheleia-mode-alist 'tsx-ts-mode '(biome))
-  ;;(map-put! apheleia-mode-alist 'jsx-ts-mode '(biome))
+  (map-put! apheleia-formatters 'oxfmt
+      '("apheleia-npx" "oxfmt" "--stdin-filepath" filepath))
+  (map-put! apheleia-mode-alist 'js-ts-mode '(oxfmt))
+  (map-put! apheleia-mode-alist 'json-ts-mode '(oxfmt))
+  (map-put! apheleia-mode-alist 'typescript-ts-mode '(oxfmt))
+  (map-put! apheleia-mode-alist 'tsx-ts-mode '(oxfmt))
+  (map-put! apheleia-mode-alist 'jsx-ts-mode '(oxfmt))
+  (map-put! apheleia-mode-alist 'js-mode '(oxfmt))
+  (map-put! apheleia-mode-alist 'typescript-mode '(oxfmt))
+  (map-put! apheleia-mode-alist 'json-mode '(oxfmt))
   ;; Override ruby-ts-mode defaults
-  (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop)))
+  (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop))
+  (add-hook 'apheleia-mode-hook
+            (lambda ()
+              (when (and (derived-mode-p 'js-base-mode
+                                         'typescript-ts-base-mode
+                                         'js-mode
+                                         'typescript-mode
+                                         'json-ts-mode
+                                         'json-mode)
+                         (or (locate-dominating-file default-directory "biome.json")
+                             (locate-dominating-file default-directory "biome.jsonc")))
+                (setq-local apheleia-formatter 'biome)))))
 
 (use-feature treesit
   :custom
@@ -2145,6 +2177,16 @@ CALLBACK is the status callback passed by Flycheck."
 (use-package lsp-ui
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
+
+(use-package lsp-buffer
+  :ensure nil
+  :load-path "site-lisp"
+  :after lsp-mode
+  :bind (:map lsp-command-map
+         ("w l" . my/lsp-buffer-show-servers)
+         ("w t" . my/lsp-buffer-toggle-server)
+         ("w e" . my/lsp-buffer-enable-server)
+         ("w d" . my/lsp-buffer-disable-server)))
 
 (use-package dumb-jump
   :ensure t
