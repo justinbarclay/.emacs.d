@@ -1077,9 +1077,7 @@ Overrides the upstream version, which spawned git on every redisplay."
 
 (when (not jb/os-windows-p)
   (use-package envrc
-    :defer 2
-    :config
-    (envrc-global-mode)))
+    :hook (after-init . envrc-global-mode)))
 
 (use-feature uniquify
   :config
@@ -1779,22 +1777,27 @@ parses its input."
   :init
   (apheleia-global-mode)
   :config
-  (map-put! apheleia-formatters 'rustfmt
-      '("rustfmt" "--edition" (or (bound-and-true-p rust-edition) "2024")
-        "--quiet" "--emit" "stdout"))
-  (setq apheleia-formatters (map-insert apheleia-formatters 'rubyfmt '("rubyfmt")))
-  (map-put! apheleia-formatters 'oxfmt
-      '("apheleia-npx" "oxfmt" "--stdin-filepath" filepath))
-  (map-put! apheleia-mode-alist 'js-ts-mode '(oxfmt))
-  (map-put! apheleia-mode-alist 'json-ts-mode '(oxfmt))
-  (map-put! apheleia-mode-alist 'typescript-ts-mode '(oxfmt))
-  (map-put! apheleia-mode-alist 'tsx-ts-mode '(oxfmt))
-  (map-put! apheleia-mode-alist 'jsx-ts-mode '(oxfmt))
-  (map-put! apheleia-mode-alist 'js-mode '(oxfmt))
-  (map-put! apheleia-mode-alist 'typescript-mode '(oxfmt))
-  (map-put! apheleia-mode-alist 'json-mode '(oxfmt))
+  (setf (alist-get 'rustfmt apheleia-formatters)
+        '("rustfmt" "--edition" (or (bound-and-true-p rust-edition) "2024")
+          "--quiet" "--emit" "stdout"))
+  (setf (alist-get 'rubyfmt apheleia-formatters)
+        '("rubyfmt"))
+  (setf (alist-get 'oxfmt apheleia-formatters)
+        '("apheleia-npx" "oxfmt" "--stdin-filepath" filepath))
+
+  (dolist (mode '(js-ts-mode
+                  json-ts-mode
+                  typescript-ts-mode
+                  tsx-ts-mode
+                  jsx-ts-mode
+                  js-mode
+                  typescript-mode
+                  json-mode))
+    (setf (alist-get mode apheleia-mode-alist) '(oxfmt)))
+
   ;; Override ruby-ts-mode defaults
-  (map-put! apheleia-mode-alist 'ruby-ts-mode '(rubocop))
+  (setf (alist-get 'ruby-ts-mode apheleia-mode-alist) '(rubocop))
+  ;;
   (add-hook 'apheleia-mode-hook
             (lambda ()
               (when (and (derived-mode-p 'js-base-mode
@@ -2000,12 +2003,21 @@ See the note above for why point and hook depth both matter here."
   (with-eval-after-load 'magit
     (ai-code-magit-setup-transients)))
 
-(use-package agent-shell)
+(use-package agent-shell
+  :custom
+  (agent-shell-inhibit-system-sleep nil)
+  (agent-shell-antigravity-environment
+   '("SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"
+     "SSL_CERT_DIR=/etc/ssl/certs")))
 
 (use-package acp)
 
 (use-package shell-maker
   :ensure t)
+
+(use-package agent-shell-dashboard
+  :vc (:url "https://github.com/wandersoncferreira/agent-shell-dashboard" :rev :newest)
+  :after agent-shell)
 
 (use-package copilot
   :after jsonrpc
