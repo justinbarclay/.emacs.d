@@ -1761,17 +1761,28 @@ parses its input."
               ((facep sym)    'ElispFace))))))
 
 (use-package yasnippet
- :init (yas-global-mode))
+  :init (yas-global-mode)
+  :config
+  ;; Fallback stubs for js2-mode AST functions used by js-mode snippets
+  ;; (prevents void-function errors in typescript or non-js2 js buffers)
+  (unless (fboundp 'js2-node-type)
+    (defvar js2-COMMENT 163)
+    (defun js2-node-at-point () (when (nth 4 (syntax-ppss)) js2-COMMENT))
+    (defun js2-node-type (node) (or node -1))))
 
 (use-package yasnippet-snippets
   :after yasnippet
   :config
-  ;; yasnippet-snippets' typescript-mode/.yas-parents points at js-mode,
-  ;; which conflicts with typescript-ts-mode's built-in compat link to
-  ;; typescript-mode and triggers "Inconsistent hierarchy" warnings.
-  ;; We only use typescript-ts-mode, so drop the stale link.
-  (add-hook 'yas-after-reload-hook
-            (lambda () (remhash 'typescript-mode yas--parents))))
+  ;; Drop the stale typescript-mode -> js-mode link immediately on load
+  ;; and flush the cached parent hierarchies
+  (defun jb/drop-typescript-yas-parents ()
+    (remhash 'typescript-mode yas--parents)
+    (put 'typescript-mode 'yas--all-parents nil)
+    (put 'typescript-ts-mode 'yas--all-parents nil)
+    (put 'tsx-ts-mode 'yas--all-parents nil))
+
+  (jb/drop-typescript-yas-parents)
+  (add-hook 'yas-after-reload-hook #'jb/drop-typescript-yas-parents))
 
 (use-package apheleia
   :init
@@ -2067,7 +2078,7 @@ See the note above for why point and hook depth both matter here."
 
 (use-package lsp-mode
   :commands lsp
-  :vc (:url "https://github.com/justinbarclay/lsp-mode" :rev :newest)
+  :vc (:url "https://github.com/pradyuman/lsp-mode" :branch "codex/add-biome-client" :rev :newest)
   :hook ((rustic-mode
           rust-base-mode
           web-mode
@@ -2199,6 +2210,73 @@ CALLBACK is the status callback passed by Flycheck."
          ("w t" . my/lsp-buffer-toggle-server)
          ("w e" . my/lsp-buffer-enable-server)
          ("w d" . my/lsp-buffer-disable-server)))
+
+(use-package lsp-oxc
+  :ensure nil
+  :after lsp-mode
+  :commands (lsp-oxlint-fix-all)
+  :init
+  (defgroup lsp-oxc nil
+    "LSP support for Oxlint."
+    :group 'lsp-mode)
+
+  (defcustom lsp-oxlint-bin nil
+    "Path to oxlint executable."
+    :type '(choice (const :tag "Auto" nil) file)
+    :group 'lsp-oxc)
+
+  (defun lsp-oxc--find-bin (bin custom-bin)
+    (or custom-bin
+        (let ((root (or (locate-dominating-file default-directory "node_modules")
+                        (lsp-workspace-root))))
+          (when root
+            (let ((npath (expand-file-name (concat "node_modules/.bin/" bin) root)))
+              (when (file-executable-p npath) npath))))
+        (executable-find bin)))
+
+  (defun lsp-oxlint--server-command ()
+    (list (or (lsp-oxc--find-bin "oxlint" lsp-oxlint-bin) "oxlint") "--lsp"))
+
+  (defun lsp-oxlint-fix-all ()
+    "Perform the source.fixAll code action for Oxlint."
+    (interactive)
+    (condition-case nil
+        (lsp-execute-code-action-by-kind "source.fixAll.oxc")
+      (lsp-no-code-actions
+       (when (called-interactively-p 'any)
+         (lsp--info "source.fixAll.oxc action not available")))))
+
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection #'lsp-oxlint--server-command)
+    :activation-fn (lambda (filename _mode)
+                     (and (or (locate-dominating-file default-directory ".oxlintrc.json")
+                              (locate-dominating-file default-directory "oxlint.json")
+                              (locate-dominating-file default-directory "oxlint.jsonc"))
+                          (member (lsp-buffer-language)
+                                  '("javascript"
+                                    "javascriptreact"
+                                    "typescript"
+                                    "typescriptreact"
+                                    "json"
+                                    "jsonc"
+                                    "vue"
+                                    "svelte"
+                                    "astro"))))
+    :add-on? t
+    :multi-root t
+    :priority -1
+    :server-id 'oxlint))
+
+  (with-eval-after-load 'lsp-biome
+    (require 'cl-lib)
+    (when-let ((biome-client (gethash 'biome lsp-clients)))
+      (let ((orig-act (lsp--client-activation-fn biome-client)))
+        (setf (cl-struct-slot-value 'lsp--client 'activation-fn biome-client)
+              (lambda (filename mode)
+                (and (or (locate-dominating-file default-directory "biome.json")
+                         (locate-dominating-file default-directory "biome.jsonc"))
+                     (funcall orig-act filename mode))))))))
 
 (use-package dumb-jump
   :ensure t
