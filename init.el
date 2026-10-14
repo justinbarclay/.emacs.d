@@ -193,14 +193,112 @@
 (use-feature ox-latex
   :config
   (setq org-latex-tables-booktabs t)
+  (setq org-latex-default-class "modern")
+  (setq org-latex-src-block-backend 'listings)
 
   (add-to-list 'org-latex-packages-alist '("" "tabularx" t))
   (add-to-list 'org-latex-packages-alist '("" "booktabs" t))
+  (add-to-list 'org-latex-listings-langs '(typescript "typescript"))
 
   ;; 3. Use biblatex and biber for bibliographies
   ;; (setq org-cite-export-processor '(biblatex "backend=biber"))
   (setq org-latex-pdf-process
         '("latexmk -f -pdf -pdflatex=\"pdflatex -interaction=nonstopmode\" -output-directory=%o %f"))
+
+  (add-to-list 'org-latex-classes
+               '("modern"
+                 "\\documentclass[11pt]{article}
+[DEFAULT-PACKAGES]
+[PACKAGES]
+\\usepackage{microtype}
+\\usepackage{xcolor}
+\\usepackage{parskip}
+\\usepackage{setspace}
+\\usepackage{titlesec}
+\\usepackage{fancyhdr}
+\\usepackage{lastpage}
+\\usepackage{tcolorbox}
+\\usepackage[scaled=0.92]{helvet}
+\\usepackage[margin=1in]{geometry}
+\\usepackage{listings}
+
+\\renewcommand{\\familydefault}{\\sfdefault}
+\\setstretch{1.15}
+
+\\definecolor{primary}{HTML}{1A365D}
+\\definecolor{secondary}{HTML}{2B6CB0}
+\\definecolor{codebg}{HTML}{F8FAFC}
+\\definecolor{codeborder}{HTML}{E2E8F0}
+\\definecolor{kwcolor}{HTML}{1E40AF}
+\\definecolor{typecolor}{HTML}{0D9488}
+\\definecolor{strcolor}{HTML}{B91C1C}
+\\definecolor{commentcolor}{HTML}{64748B}
+
+\\titleformat{\\section}{\\color{primary}\\sffamily\\Large\\bfseries\\raggedright}{\\thesection}{1em}{}[\\color{secondary}\\vspace{2pt}\\hrule height 1.2pt\\vspace{6pt}]
+\\titleformat{\\subsection}{\\color{secondary}\\sffamily\\large\\bfseries\\raggedright}{\\thesubsection}{1em}{}
+\\titleformat{\\subsubsection}{\\color{secondary}\\sffamily\\normalsize\\bfseries\\raggedright}{\\thesubsubsection}{1em}{}
+
+\\pagestyle{fancy}
+\\fancyhf{}
+\\renewcommand{\\headrulewidth}{0.4pt}
+\\renewcommand{\\footrulewidth}{0.4pt}
+\\renewcommand{\\headrule}{\\hbox to\\headwidth{\\color{secondary}\\leaders\\hrule height \\headrulewidth\\hfill}}
+\\renewcommand{\\footrule}{\\hbox to\\headwidth{\\color{codeborder}\\leaders\\hrule height \\footrulewidth\\hfill}}
+\\lhead{\\small\\color{secondary}\\sffamily\\nouppercase{\\leftmark}}
+\\rhead{\\small\\color{secondary}\\sffamily}
+\\lfoot{}
+\\rfoot{\\small\\color{secondary}\\sffamily Page \\thepage\\ of \\pageref{LastPage}}
+
+\\fancypagestyle{plain}{
+  \\fancyhf{}
+  \\renewcommand{\\headrulewidth}{0pt}
+  \\renewcommand{\\footrulewidth}{0.4pt}
+  \\renewcommand{\\footrule}{\\hbox to\\headwidth{\\color{codeborder}\\leaders\\hrule height \\footrulewidth\\hfill}}
+  \\rfoot{\\small\\color{secondary}\\sffamily Page \\thepage\\ of \\pageref{LastPage}}
+}
+
+\\renewenvironment{quote}{\\begin{tcolorbox}[colback=codebg,colframe=secondary,arc=3pt,boxrule=0.5pt,leftrule=3.5pt,left=10pt,top=8pt,bottom=8pt,right=10pt]}{\\end{tcolorbox}}
+\\hypersetup{colorlinks=true, linkcolor=secondary, urlcolor=secondary, citecolor=primary}
+
+\\lstdefinelanguage{typescript}{
+  keywords={export, const, let, var, function, type, interface, extends, implements, typeof, keyof, return, if, else},
+  keywordstyle=\\color{kwcolor}\\bfseries,
+  morekeywords=[2]{unknown, string, number, boolean, null, undefined, void, any, never, JSX, Element, Omit, Partial, Extract},
+  keywordstyle=[2]\\color{typecolor}\\bfseries,
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\\color{commentcolor}\\itshape,
+  stringstyle=\\color{strcolor},
+  morestring=[b]',
+  morestring=[b]\"
+}
+
+\\lstset{
+  basicstyle=\\ttfamily\\footnotesize,
+  breaklines=true,
+  breakatwhitespace=false,
+  backgroundcolor=\\color{codebg},
+  frame=single,
+  rulecolor=\\color{codeborder},
+  showstringspaces=false,
+  tabsize=2,
+  xleftmargin=8pt,
+  xrightmargin=8pt,
+  framexleftmargin=6pt,
+  framexrightmargin=6pt,
+  framextopmargin=6pt,
+  framexbottommargin=6pt,
+  keywordstyle=\\color{kwcolor}\\bfseries,
+  commentstyle=\\color{commentcolor}\\itshape,
+  stringstyle=\\color{strcolor}
+}
+[EXTRA]"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
   (add-to-list 'org-latex-classes
                '("supernote"
