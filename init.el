@@ -191,23 +191,23 @@
   :hook (org-mode . org-modern-mode))
 
 (use-feature ox-latex
-  :config
-  (setq org-latex-tables-booktabs t)
-  (setq org-latex-default-class "modern")
-  (setq org-latex-src-block-backend 'listings)
+    :config
+    (setq org-latex-tables-booktabs t)
+    (setq org-latex-default-class "modern")
+    (setq org-latex-src-block-backend 'listings)
 
-  (add-to-list 'org-latex-packages-alist '("" "tabularx" t))
-  (add-to-list 'org-latex-packages-alist '("" "booktabs" t))
-  (add-to-list 'org-latex-listings-langs '(typescript "typescript"))
+    (add-to-list 'org-latex-packages-alist '("" "tabularx" t))
+    (add-to-list 'org-latex-packages-alist '("" "booktabs" t))
+    (add-to-list 'org-latex-listings-langs '(typescript "typescript"))
 
-  ;; 3. Use biblatex and biber for bibliographies
-  ;; (setq org-cite-export-processor '(biblatex "backend=biber"))
-  (setq org-latex-pdf-process
-        '("latexmk -f -pdf -pdflatex=\"pdflatex -interaction=nonstopmode\" -output-directory=%o %f"))
+    ;; 3. Use biblatex and biber for bibliographies
+    ;; (setq org-cite-export-processor '(biblatex "backend=biber"))
+    (setq org-latex-pdf-process
+          '("latexmk -f -pdf -pdflatex=\"pdflatex -interaction=nonstopmode\" -output-directory=%o %f"))
 
-  (add-to-list 'org-latex-classes
-               '("modern"
-                 "\\documentclass[11pt]{article}
+    (add-to-list 'org-latex-classes
+                 '("modern"
+                   "\\documentclass[11pt]{article}
 [DEFAULT-PACKAGES]
 [PACKAGES]
 \\usepackage{microtype}
@@ -294,42 +294,42 @@
   stringstyle=\\color{strcolor}
 }
 [EXTRA]"
-                 ("\\section{%s}" . "\\section*{%s}")
-                 ("\\subsection{%s}" . "\\subsection*{%s}")
-                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
-  (add-to-list 'org-latex-classes
-               '("supernote"
-                 "\\documentclass[8pt]{article}
-                  [NO-DEFAULT-PACKAGES]
-                  \\usepackage[utf8]{inputenc}
-                  \\usepackage[T1]{fontenc}
-                  \\usepackage{graphicx}
-                  \\usepackage{longtable}
-                  \\usepackage{wrapfig}
-                  \\usepackage{rotating}
-                  \\usepackage[normalem]{ulem}
-                  \\usepackage{amsmath}
-                  \\usepackage{amssymb}
-                  \\usepackage{capt-of}
-                  \\usepackage{hyperref}
-                  \\usepackage[paperwidth=140mm, paperheight=187mm,margin=15mm]{geometry}
-                  \\usepackage{setspace}
-                  \\setstretch{1.3}
-                  \\usepackage{dejavu} % Or your preferred font
-                  \\usepackage{tabularx}
-                  \\usepackage{booktabs}
-                  \\usepackage{microtype} % Improves spacing/wrapping
-                  \\setstretch{1.3}
-                  % This makes X columns in tabularx wrap text nicely
-                  \\newcolumntype{Y}{>{\\raggedright\\arraybackslash}X}"
-                 ("\\section{%s}" . "\\section*{%s}")
-                 ("\\subsection{%s}" . "\\subsection*{%s}")
-                 ("\\section{%s}" . "\\section*{%s}")
-                 ("\\subsection{%s}" . "\\subsection*{%s}")
-                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
+    (add-to-list 'org-latex-classes
+                 '("supernote"
+                   "\\documentclass[8pt]{article}
+                    [NO-DEFAULT-PACKAGES]
+                    \\usepackage[utf8]{inputenc}
+                    \\usepackage[T1]{fontenc}
+                    \\usepackage{graphicx}
+                    \\usepackage{longtable}
+                    \\usepackage{wrapfig}
+                    \\usepackage{rotating}
+                    \\usepackage[normalem]{ulem}
+                    \\usepackage{amsmath}
+                    \\usepackage{amssymb}
+                    \\usepackage{capt-of}
+                    \\usepackage{hyperref}
+                    \\usepackage[paperwidth=140mm, paperheight=187mm,margin=15mm]{geometry}
+                    \\usepackage{setspace}
+                    \\setstretch{1.3}
+                    \\usepackage{dejavu} % Or your preferred font
+                    \\usepackage{tabularx}
+                    \\usepackage{booktabs}
+                    \\usepackage{microtype} % Improves spacing/wrapping
+                    \\setstretch{1.3}
+                    % This makes X columns in tabularx wrap text nicely
+                    \\newcolumntype{Y}{>{\\raggedright\\arraybackslash}X}"
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 
 ;; generated-curl-command is used to communicate state across several function calls
 (setq generated-curl-command nil)
@@ -2208,10 +2208,35 @@ See the note above for why point and hook depth both matter here."
   (lsp-completion-provider :none)
   (lsp-headerline-breadcrumb-enable nil)
   (lsp-ruby-lsp-use-bundler t)
+  (lsp-steep-use-bundler t)
   (lsp-keymap-prefix "C-l")
   (lsp-diagnostic-clean-after-change 't)
   (lsp-copilot-enabled 't)
   :config
+  (dolist (dir '("[/\\\\]tmp\\'"
+                 "[/\\\\]vendor\\'"
+                 "[/\\\\]\\.claude\\'"
+                 "[/\\\\]coverage\\'"
+                 "[/\\\\]storage\\'"))
+    (add-to-list 'lsp-file-watch-ignored-directories dir))
+
+  (with-eval-after-load 'lsp-steep
+    (when-let ((client (gethash 'steep-ls lsp-clients)))
+      (aset client 2 t))
+    (lsp-disable-method-for-server "textDocument/completion" 'steep-ls)
+    (lsp-disable-method-for-server "completionItem/resolve" 'steep-ls)
+    (advice-add 'lsp-steep--build-command :filter-return
+                (lambda (cmd) (append cmd '("-j" "2" "--refork")))))
+
+  (defun my/lsp-dedupe-completion-candidates (candidates)
+    "Deduplicate candidates returned by `lsp-completion--filter-candidates'."
+    (if (listp candidates)
+        (delete-dups candidates)
+      candidates))
+
+  (advice-add 'lsp-completion--filter-candidates
+              :filter-return #'my/lsp-dedupe-completion-candidates)
+
   ;; I need a hook that after lsp initialized in a buffer and that buffer is running lsp-biome to print a message.
   (add-hook 'lsp-after-initialize-hook (lambda () (when (and (bound-and-true-p lsp-mode)
                                                              (string-equal (lsp--client-server-id
@@ -2587,7 +2612,9 @@ CALLBACK is the status callback passed by Flycheck."
   :bind (:map ruby-ts-mode-map
               ("C-c r b" . 'treesit-beginning-of-defun)
               ("C-c r e" . 'treesit-end-of-defun))
-  :hook (ruby-base-mode . subword-mode)
+  :hook ((ruby-base-mode . subword-mode)
+         (ruby-base-mode . (lambda ()
+                             (setq-local lsp-enabled-clients '(ruby-lsp-ls steep-ls)))))
   :custom (ruby-indent-level 2)
           (ruby-indent-tabs-mode nil))
 

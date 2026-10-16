@@ -3770,10 +3770,35 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
     (lsp-completion-provider :none)
     (lsp-headerline-breadcrumb-enable nil)
     (lsp-ruby-lsp-use-bundler t)
+    (lsp-steep-use-bundler t)
     (lsp-keymap-prefix "C-l")
     (lsp-diagnostic-clean-after-change 't)
     (lsp-copilot-enabled 't)
     :config
+    (dolist (dir '("[/\\\\]tmp\\'"
+                   "[/\\\\]vendor\\'"
+                   "[/\\\\]\\.claude\\'"
+                   "[/\\\\]coverage\\'"
+                   "[/\\\\]storage\\'"))
+      (add-to-list 'lsp-file-watch-ignored-directories dir))
+
+    (with-eval-after-load 'lsp-steep
+      (when-let ((client (gethash 'steep-ls lsp-clients)))
+        (aset client 2 t))
+      (lsp-disable-method-for-server "textDocument/completion" 'steep-ls)
+      (lsp-disable-method-for-server "completionItem/resolve" 'steep-ls)
+      (advice-add 'lsp-steep--build-command :filter-return
+                  (lambda (cmd) (append cmd '("-j" "2" "--refork")))))
+
+    (defun my/lsp-dedupe-completion-candidates (candidates)
+      "Deduplicate candidates returned by `lsp-completion--filter-candidates'."
+      (if (listp candidates)
+          (delete-dups candidates)
+        candidates))
+
+    (advice-add 'lsp-completion--filter-candidates
+                :filter-return #'my/lsp-dedupe-completion-candidates)
+
     ;; I need a hook that after lsp initialized in a buffer and that buffer is running lsp-biome to print a message.
     (add-hook 'lsp-after-initialize-hook (lambda () (when (and (bound-and-true-p lsp-mode)
                                                                (string-equal (lsp--client-server-id
@@ -4290,7 +4315,9 @@ Autoformatting
     :bind (:map ruby-ts-mode-map
                 ("C-c r b" . 'treesit-beginning-of-defun)
                 ("C-c r e" . 'treesit-end-of-defun))
-    :hook (ruby-base-mode . subword-mode)
+    :hook ((ruby-base-mode . subword-mode)
+           (ruby-base-mode . (lambda ()
+                               (setq-local lsp-enabled-clients '(ruby-lsp-ls steep-ls)))))
     :custom (ruby-indent-level 2)
             (ruby-indent-tabs-mode nil))
 #+END_SRC
