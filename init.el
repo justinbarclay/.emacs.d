@@ -2176,7 +2176,6 @@ See the note above for why point and hook depth both matter here."
 
 (use-package lsp-mode
   :commands lsp
-  :vc (:url "https://github.com/pradyuman/lsp-mode" :branch "codex/add-biome-client" :rev :newest)
   :hook ((rustic-mode
           rust-base-mode
           web-mode
@@ -2212,6 +2211,7 @@ See the note above for why point and hook depth both matter here."
   (lsp-keymap-prefix "C-l")
   (lsp-diagnostic-clean-after-change 't)
   (lsp-copilot-enabled 't)
+  (lsp-clients-tsgo-path "tsc")
   :config
   (dolist (dir '("[/\\\\]tmp\\'"
                  "[/\\\\]vendor\\'"
@@ -2237,88 +2237,34 @@ See the note above for why point and hook depth both matter here."
   (advice-add 'lsp-completion--filter-candidates
               :filter-return #'my/lsp-dedupe-completion-candidates)
 
-  ;; I need a hook that after lsp initialized in a buffer and that buffer is running lsp-biome to print a message.
-  (add-hook 'lsp-after-initialize-hook (lambda () (when (and (bound-and-true-p lsp-mode)
-                                                             (string-equal (lsp--client-server-id
-                                                                            (lsp--workspace-client
-                                                                             lsp--cur-workspace))
-                                                                           "lsp-biome"))
-                                                    (message "LSP Biome initialized in buffer %s" (buffer-name)))))
+  (defvar lsp-javascript--tsc-major-cache (make-hash-table :test #'equal)
+    "Map an absolute tsc path to its major version, or nil if unknown.")
 
-  (defvar lsp-flycheck-mapping '(less-css-mode (less-stylelint less)
-                                               css-base-mode (css-stylelint)
-                                               js-base-mode (javascript-eslint)
-                                               typescript-ts-base-mode (javascript-eslint)
-                                               tsx-ts-mode (javascript-eslint)
-                                               jsx-ts-mode (javascript-eslint))
-    "a selections of major modes and the associated checkers to run after lsp
-runs it's diagnostics.")
-  (defvar-local my/flycheck-local-cache nil)
+  (defun lsp-javascript--tsc-major (tsc)
+    "Major version reported by `TSC --version', cached by path."
+    (with-memoization (gethash tsc lsp-javascript--tsc-major-cache)
+      (with-temp-buffer
+        (when (eql 0 (ignore-errors (process-file tsc nil t nil "--version")))
+          (goto-char (point-min))
+          (when (re-search-forward "Version \\([0-9]+\\)\\." nil t)
+            (string-to-number (match-string 1)))))))
 
-  (defun my/flycheck-checker-get (fn checker property)
-    (or (alist-get property (alist-get checker my/flycheck-local-cache))
-        (funcall fn checker property)))
+  (defun lsp-javascript--project-ts-major ()
+    "TypeScript major version: the project's `node_modules' first, then the global tsc."
+    (if-let* ((root (locate-dominating-file default-directory "node_modules/typescript/package.json")))
+        (car (version-to-list
+              (alist-get 'version (json-read-file (f-join root "node_modules/typescript/package.json")))))
+      (when-let* ((tsc (executable-find "tsc" t)))
+        (lsp-javascript--tsc-major tsc))))
 
-  (advice-add 'flycheck-checker-get :around 'my/flycheck-checker-get)
-
-  (add-hook 'lsp-managed-mode-hook
-            (lambda ()
-              (when-let ((checkers (plist-get lsp-flycheck-mapping major-mode)))
-                (setq my/flycheck-local-cache `((lsp . ((next-checkers . ,checkers))))))))
-  (setopt flycheck-error-list-minimum-level nil)
-  (setopt flycheck-relevant-error-other-file-show 't)
-  (setopt flycheck-relevant-error-other-file-minimum-level 'warning)
-  ;; As stolen from https://github.com/emacs-lsp/lsp-mode/issues/3279
-  (defun lsp-diagnostics--flycheck-start (checker callback)
-    "Start an LSP syntax check with CHECKER.
-
-CALLBACK is the status callback passed by Flycheck."
-
-    (remove-hook 'lsp-on-idle-hook #'lsp-diagnostics--flycheck-buffer t)
-
-    (->> (lsp--get-buffer-diagnostics
-          (-mapcat)
-          (-lambda ((&Diagnostic :message :severity? :tags? :code? :source? :related-information?
-                                  :range (&Range :start (&Position :line      start-line
-                                                                   :character start-character)
-                                                 :end   (&Position :line      end-line
-                                                                   :character end-character))))
-             (let ((group (gensym)))
-               (cons (flycheck-error-new
-                      :buffer (current-buffer)
-                      :checker checker
-                      :filename buffer-file-name
-                      :message message
-                      :level (lsp-diagnostics--flycheck-calculate-level severity? tags?)
-                      :id code?
-                      :group group
-                      :line (lsp-translate-line (1+ start-line))
-                      :column (1+ (lsp-translate-column start-character))
-                      :end-line (lsp-translate-line (1+ end-line))
-                      :end-column (1+ (lsp-translate-column end-character)))
-                     (-mapcat
-                      (-lambda ((&DiagnosticRelatedInformation
-                                 :message
-                                 :location
-                                 (&Location :range (&Range :start (&Position :line      start-line
-                                                                             :character start-character)
-                                                           :end   (&Position :line      end-line
-                                                                             :character end-character))
-                                            :uri)))
-                        `(,(flycheck-error-new
-                            :buffer (current-buffer)
-                            :checker checker
-                            :filename (-> uri lsp--uri-to-path lsp--fix-path-casing)
-                            :message message
-                            :level (lsp-diagnostics--flycheck-calculate-level (1+ severity?) tags?)
-                            :id code?
-                            :group group
-                            :line (lsp-translate-line (1+ start-line))
-                            :column (1+ (lsp-translate-column start-character))
-                            :end-line (lsp-translate-line (1+ end-line))
-                            :end-column (1+ (lsp-translate-column end-character)))))
-                      related-information?)))))
-         (funcall callback 'finished))))
+  (with-eval-after-load 'lsp-javascript
+    (require 'cl-lib)
+    (when-let ((client (gethash 'tsgo lsp-clients)))
+      (setf (cl-struct-slot-value 'lsp--client 'priority client) 0)
+      (setf (cl-struct-slot-value 'lsp--client 'activation-fn client)
+            (lambda (file-name major-mode)
+              (and (lsp-typescript-javascript-tsx-jsx-activate-p file-name major-mode)
+                   (>= (or (lsp-javascript--project-ts-major) 0) 7)))))))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
