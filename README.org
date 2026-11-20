@@ -122,7 +122,6 @@
   - [[#alert][Alert]]
 - [[#misc-1][Misc]]
   - [[#codemetrics][codemetrics]]
-  - [[#yequake][Yequake]]
   - [[#dot][dot]]
   - [[#1password][1Password]]
   - [[#helpful][Helpful]]
@@ -532,6 +531,7 @@ You can also use @ as separator, instead of _.
 \\usepackage[scaled=0.92]{helvet}
 \\usepackage[margin=1in]{geometry}
 \\usepackage{listings}
+\\usepackage{pdflscape}
 
 \\renewcommand{\\familydefault}{\\sfdefault}
 \\setstretch{1.15}
@@ -2384,11 +2384,11 @@ Load this before we load Flycheck
     :custom
     (flycheck-disabled-checkers '(org-lint))
     (checkdoc-force-docstrings-flag nil)
-    ;; (flycheck-javascript-eslint-executable "eslint_d")
-    ;; (flycheck-typescript-tslint-executable "eslint_d")
     (flycheck-check-syntax-automatically '(save idle-change idle-buffer-switch mode-enabled))
     (flycheck-standard-error-navigation nil)
-    (flycheck-stylelintrc ".stylelintrc.json"))
+    (flycheck-stylelintrc ".stylelintrc.json")
+    ;; Don't re-show errors at point after every check; flycheck-posframe pops up again otherwise
+    (flycheck-auto-display-errors-after-checking nil))
 #+END_SRC
 
 ** Flyspell
@@ -3080,7 +3080,7 @@ Cape adds some more completion backends for us, allowing us to get file and dabb
            ("C-/" . #'company-other-backend))
     :config
     (require 'company-files)
-    (setq company-minimum-prefix-length 2
+    (setq company-minimum-prefix-length 1
           company-tooltip-limit 14
           company-idle-delay 0.2
           company-selection-wrap-around t
@@ -3785,8 +3785,8 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
     (with-eval-after-load 'lsp-steep
       (when-let ((client (gethash 'steep-ls lsp-clients)))
         (aset client 2 t))
-      (lsp-disable-method-for-server "textDocument/completion" 'steep-ls)
-      (lsp-disable-method-for-server "completionItem/resolve" 'steep-ls)
+      ;; (lsp-disable-method-for-server "textDocument/completion" 'steep-ls)
+      ;; (lsp-disable-method-for-server "completionItem/resolve" 'steep-ls)
       (advice-add 'lsp-steep--build-command :filter-return
                   (lambda (cmd) (append cmd '("-j" "2" "--refork")))))
 
@@ -3826,7 +3826,25 @@ lsp-mode overtakes flycheck's system in whichever buffer it runs in. This causes
         (setf (cl-struct-slot-value 'lsp--client 'activation-fn client)
               (lambda (file-name major-mode)
                 (and (lsp-typescript-javascript-tsx-jsx-activate-p file-name major-mode)
-                     (>= (or (lsp-javascript--project-ts-major) 0) 7)))))))
+                     (>= (or (lsp-javascript--project-ts-major) 0) 7))))))
+
+    (defun lsp-cssmodules--server-command ()
+      (list (or (let ((root (or (locate-dominating-file default-directory "node_modules")
+                                (lsp-workspace-root))))
+                  (when root
+                    (let ((bin (expand-file-name "node_modules/.bin/cssmodules-language-server" root)))
+                      (when (file-executable-p bin) bin))))
+                (executable-find "cssmodules-language-server")
+                "cssmodules-language-server")
+            "--stdio"))
+
+    (lsp-register-client
+     (make-lsp-client
+      :new-connection (lsp-stdio-connection #'lsp-cssmodules--server-command)
+      :activation-fn (lsp-activate-on "javascriptreact" "typescriptreact" "typescript" "javascript")
+      :server-id 'cssmodules-ls
+      :priority -1
+      :add-on? t)))
 
 #+END_SRC
 
@@ -4179,7 +4197,6 @@ This was suggested by @dpsutton on the slack channel and seems to be really inte
   (use-feature typescript-ts-base-mode
     :custom
     (typescript-indent-level 2)
-    ;;(lsp-eslint-enable 't)
     :config
     (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 #+end_src
@@ -4643,22 +4660,6 @@ Then we want org support for math latex
 #+begin_src elisp :tangle no
 (use-package cognitive-complexity
   :ensure (:type git :host github :repo "emacs-vs/cognitive-complexity"))
-#+end_src
-
-** Yequake
-#+begin_src elisp
-  (use-package yequake
-    :config
-    (add-to-list 'yequake-frames '("consult-omni-demo"
-                                   (buffer-fns . #'consult-omni-apps)
-                                   (width . 0.8)
-                                   (height . 0.1)
-                                   (top . 0.5)
-                                   (frame-parameters . ((name . "yequake-demo")
-                                                        (minibuffer . only)
-                                                        (autoraise . t)
-                                                        (window-system . ns)))))) ;;change accordingly
-
 #+end_src
 
 ** dot

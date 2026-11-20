@@ -221,6 +221,7 @@
 \\usepackage[scaled=0.92]{helvet}
 \\usepackage[margin=1in]{geometry}
 \\usepackage{listings}
+\\usepackage{pdflscape}
 
 \\renewcommand{\\familydefault}{\\sfdefault}
 \\setstretch{1.15}
@@ -1431,11 +1432,11 @@ Overrides the upstream version, which spawned git on every redisplay."
   :custom
   (flycheck-disabled-checkers '(org-lint))
   (checkdoc-force-docstrings-flag nil)
-  ;; (flycheck-javascript-eslint-executable "eslint_d")
-  ;; (flycheck-typescript-tslint-executable "eslint_d")
   (flycheck-check-syntax-automatically '(save idle-change idle-buffer-switch mode-enabled))
   (flycheck-standard-error-navigation nil)
-  (flycheck-stylelintrc ".stylelintrc.json"))
+  (flycheck-stylelintrc ".stylelintrc.json")
+  ;; Don't re-show errors at point after every check; flycheck-posframe pops up again otherwise
+  (flycheck-auto-display-errors-after-checking nil))
 
 (use-feature flyspell
   :hook ((prog-mode . flyspell-prog-mode)
@@ -1748,7 +1749,7 @@ parses its input."
          ("C-/" . #'company-other-backend))
   :config
   (require 'company-files)
-  (setq company-minimum-prefix-length 2
+  (setq company-minimum-prefix-length 1
         company-tooltip-limit 14
         company-idle-delay 0.2
         company-selection-wrap-around t
@@ -2223,8 +2224,8 @@ See the note above for why point and hook depth both matter here."
   (with-eval-after-load 'lsp-steep
     (when-let ((client (gethash 'steep-ls lsp-clients)))
       (aset client 2 t))
-    (lsp-disable-method-for-server "textDocument/completion" 'steep-ls)
-    (lsp-disable-method-for-server "completionItem/resolve" 'steep-ls)
+    ;; (lsp-disable-method-for-server "textDocument/completion" 'steep-ls)
+    ;; (lsp-disable-method-for-server "completionItem/resolve" 'steep-ls)
     (advice-add 'lsp-steep--build-command :filter-return
                 (lambda (cmd) (append cmd '("-j" "2" "--refork")))))
 
@@ -2264,7 +2265,25 @@ See the note above for why point and hook depth both matter here."
       (setf (cl-struct-slot-value 'lsp--client 'activation-fn client)
             (lambda (file-name major-mode)
               (and (lsp-typescript-javascript-tsx-jsx-activate-p file-name major-mode)
-                   (>= (or (lsp-javascript--project-ts-major) 0) 7)))))))
+                   (>= (or (lsp-javascript--project-ts-major) 0) 7))))))
+
+  (defun lsp-cssmodules--server-command ()
+    (list (or (let ((root (or (locate-dominating-file default-directory "node_modules")
+                              (lsp-workspace-root))))
+                (when root
+                  (let ((bin (expand-file-name "node_modules/.bin/cssmodules-language-server" root)))
+                    (when (file-executable-p bin) bin))))
+              (executable-find "cssmodules-language-server")
+              "cssmodules-language-server")
+          "--stdio"))
+
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection #'lsp-cssmodules--server-command)
+    :activation-fn (lsp-activate-on "javascriptreact" "typescriptreact" "typescript" "javascript")
+    :server-id 'cssmodules-ls
+    :priority -1
+    :add-on? t)))
 
 (use-package lsp-ui
   :commands lsp-ui-mode
@@ -2509,7 +2528,6 @@ See the note above for why point and hook depth both matter here."
 (use-feature typescript-ts-base-mode
   :custom
   (typescript-indent-level 2)
-  ;;(lsp-eslint-enable 't)
   :config
   (flycheck-add-mode 'javascript-eslint 'typescript-ts-base-mode))
 
@@ -2767,18 +2785,6 @@ See the note above for why point and hook depth both matter here."
                           :notifier
                           #'alert-burnt-toast-notify)
       (setq alert-default-style 'burnt-toast))
-
-(use-package yequake
-  :config
-  (add-to-list 'yequake-frames '("consult-omni-demo"
-                                 (buffer-fns . #'consult-omni-apps)
-                                 (width . 0.8)
-                                 (height . 0.1)
-                                 (top . 0.5)
-                                 (frame-parameters . ((name . "yequake-demo")
-                                                      (minibuffer . only)
-                                                      (autoraise . t)
-                                                      (window-system . ns)))))) ;;change accordingly
 
 (use-package graphviz-dot-mode)
 
