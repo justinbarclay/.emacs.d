@@ -159,6 +159,7 @@
   (add-to-list 'org-src-lang-modes '("jsx" . jsx-ts))
   (add-to-list 'org-src-lang-modes '("javascript" . javascript-ts))
   (add-to-list 'org-src-lang-modes '("ruby" . ruby-ts))
+  (add-to-list 'org-src-lang-modes '("haskell" . haskell-ts))
   (add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))
    ;; `org-babel-do-load-languages' significantly slows loading time,
    ;; so let's run this well after we've loaded
@@ -169,6 +170,7 @@
                                                             (js . t)
                                                             (sql . t)
                                                             (python . t)
+                                                            (haskell . t)
                                                             (ruby . t))))))
 
 (use-package org-contrib
@@ -2115,9 +2117,10 @@ See the note above for why point and hook depth both matter here."
 
 (use-package agent-shell
   :custom
+  (agent-shell-session-restore-verbosity 'full)
   (agent-shell-inhibit-system-sleep nil)
   (agent-shell-antigravity-environment
-   '("SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"
+   '("SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
      "SSL_CERT_DIR=/etc/ssl/certs")))
 
 (use-package acp)
@@ -2125,8 +2128,14 @@ See the note above for why point and hook depth both matter here."
 (use-package shell-maker
   :ensure t)
 
-(use-package agent-shell-dashboard
-  :vc (:url "https://github.com/wandersoncferreira/agent-shell-dashboard" :rev :newest)
+(use-package persp-mode
+  :init
+  (setq persp-keymap-prefix nil)
+  :config
+  (substitute-key-definition 'persp-key-map nil persp-mode-map))
+
+(use-package agent-shell-hq
+  :vc (:url "https://github.com/SreenivasVRao/agent-shell-hq" :rev :newest)
   :after agent-shell)
 
 (use-package copilot
@@ -2685,14 +2694,6 @@ See the note above for why point and hook depth both matter here."
 
 (use-package nushell-ts-mode
   :mode "\\.nu\\'")
-
-(add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory))
-
-(use-package ob-nushell
-  :ensure nil
-  :after org
-  :init
-  (org-babel-do-load-languages 'org-babel-load-languages '((nushell . t))))
 
 (use-package terraform-mode
 :mode "\\.tf\\'" )
