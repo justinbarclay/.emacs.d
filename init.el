@@ -1194,18 +1194,15 @@ Overrides the upstream version, which spawned git on every redisplay."
   :hook (after-init . global-auto-revert-mode))
 
 (use-package projectile
-  :defer 1
-  ;;:bind (("C-s p" . projectile-ripgrep))
+  :hook (after-init . projectile-mode)
   :commands
   (projectile-find-file projectile-switch-project projectile-ripgrep)
   :bind ("C-c p" . projectile-dispatch)
-  :config
-  (projectile-mode)
-  (setq projectile-completion-system 'auto)
-  (setq projectile-enable-caching t)
-  (add-to-list 'projectile-globally-ignored-directories "~")
-
-  (setq projectile-switch-project-action #'magit-status))
+  :custom
+  (projectile-completion-system 'default)
+  (projectile-enable-caching t)
+  (projectile-ignored-projects '("~"))
+  (projectile-switch-project-action #'magit-status))
 
 (use-package ace-window
   :bind ("C-x o" . ace-window))
@@ -2116,6 +2113,7 @@ See the note above for why point and hook depth both matter here."
     (ai-code-magit-setup-transients)))
 
 (use-package agent-shell
+  :hook (agent-shell . (lambda () (display-line-numbers-mode -1)))
   :custom
   (agent-shell-session-restore-verbosity 'full)
   (agent-shell-inhibit-system-sleep nil)
